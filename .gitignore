@@ -1,0 +1,9 @@
+/fltk-1.3/
+/fltk-dialog
+
+*.o
+
+*~
+*.old
+*.bak
+
