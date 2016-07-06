@@ -241,7 +241,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dalert + dchoice + dfilechooser + ddirchoser + dinput + dpassword + dcolor + dcolorhtml + dprogress)
+  if ((dalert + dchoice + dfilechooser + ddirchoser + dinput + dpassword + dcolor + dcolorhtml + dprogress + dvalslider)
        >= 2)
   {
     std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
