@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Valuator.H>
+/* fl_ok, fl_cancel */
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
@@ -41,17 +42,17 @@
 
 #include "fltk-dialog.h"
 
-double sliderval = 0;
 
+double slidval_round;
 
-static void sliderval_callback(Fl_Widget* o, void*)
+static void slider_callback(Fl_Widget* o, void*)
 {
-  sliderval = ((Fl_Valuator*)o)->value();
+  slidval_round = ((Fl_Valuator*)o)->value();
 }
 
 void slider_ok_cb(Fl_Widget*, void*)
 {
-  std::cout << sliderval << std::endl;
+  std::cout << slidval_round << std::endl;
   exit(0);
 }
 
@@ -123,8 +124,9 @@ int dialog_fl_value_slider(char *slider_msg,
       o->minimum(min);
       o->maximum(max);
       o->step(step);
-      o->value(val);
-      o->callback((Fl_Callback*)sliderval_callback);
+      slidval_round = o->round(val);
+      o->value(slidval_round);
+      o->callback((Fl_Callback*)slider_callback);
     } // Fl_Value_Slider *o
     { Fl_Return_Button *o = new Fl_Return_Button(winw-butw*2-bord*2,
                                                  boxh+textheight+buth,
@@ -144,7 +146,7 @@ int dialog_fl_value_slider(char *slider_msg,
   } // Fl_Window *o
   w->show();
   int ret = Fl::run();
-  std::cout << sliderval << std::endl;
+  std::cout << slidval_round << std::endl;
 
   return ret;
 }
