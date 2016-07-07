@@ -42,13 +42,14 @@
 
 #include "fltk-dialog.h"
 
-Fl_Window *prog_win;
-Fl_Progress *progress;
 
-void progress_close_cb(Fl_Widget*, void*)
+Fl_Window *prog_win;
+Fl_Progress *prog_bar;
+
+static void prog_but_cb(Fl_Widget*)
 {
-  prog_win->remove(progress);
-  delete(progress);
+  prog_win->remove(prog_bar);
+  delete(prog_bar);
   exit(0);
 }
 
@@ -59,8 +60,8 @@ int dialog_fl_progress(char *progress_msg,
                        char *progress_title,
                        int autoclose)
 {
-  Fl_Box *prog_box;
-  Fl_Button *prog_but = NULL;
+  Fl_Box *box;
+  Fl_Button *but = NULL;
 
   int winw = 320;
   int winh = 0;
@@ -74,7 +75,6 @@ int dialog_fl_progress(char *progress_msg,
   std::string line, linesubstr;
   int percent = 0;
   char percent_label[5];
-  int ret = 1;
 
   if (progress_msg == NULL) {
     progress_msg = (char *)"Simple FLTK progress bar";
@@ -103,33 +103,37 @@ int dialog_fl_progress(char *progress_msg,
   prog_win->begin();
 
   /* message text */
-  prog_box = new Fl_Box(0, 0, bord, boxh, progress_msg);
-  prog_box->box(FL_NO_BOX);
-  prog_box->align(FL_ALIGN_RIGHT);
+  box = new Fl_Box(0, 0, bord, boxh, progress_msg);
+  box->box(FL_NO_BOX);
+  box->align(FL_ALIGN_RIGHT);
 
   /* create the progress bar */
-  progress = new Fl_Progress(bord, boxh, winw-bord*2, barh);
-  progress->minimum(0);
-  progress->maximum(100);
-  progress->color(0x88888800);  /* background color */
-  progress->selection_color(0x4444ff00);  /* progress bar color */
-  progress->labelcolor(FL_WHITE);  /* percent text color */
-  progress->value(0);
-  progress->label("0%");
+  prog_bar = new Fl_Progress(bord, boxh, winw-bord*2, barh);
+  prog_bar->minimum(0);
+  prog_bar->maximum(100);
+  prog_bar->color(0x88888800);  /* background color */
+  prog_bar->selection_color(0x4444ff00);  /* progress bar color */
+  prog_bar->labelcolor(FL_WHITE);  /* percent text color */
+  prog_bar->value(0);
+  prog_bar->label("0%");
 
   if (autoclose == 0) {
     /* close button */
-    prog_but = new Fl_Button(winw-butw-bord,
-                             boxh+textheight+buth,
-                             butw,
-                             buth,
-                             fl_close);
-    prog_but->deactivate();
-    prog_but->callback(progress_close_cb);
+    but = new Fl_Button(winw-butw-bord,
+                        boxh+textheight+buth,
+                        butw,
+                        buth,
+                        fl_close);
+    but->deactivate();
+    but->callback(prog_but_cb);
   }
 
   prog_win->end();
   prog_win->show();
+
+  /* initialize with 0% bar */
+  prog_win->wait_for_expose();
+  Fl::flush();
 
   /* get stdin line by line */
   for (/**/; std::getline(std::cin, line); /**/) {
@@ -137,24 +141,23 @@ int dialog_fl_progress(char *progress_msg,
       linesubstr = line.substr(1,3);
       percent = atoi(linesubstr.c_str());
       if (percent >= 0 && percent <= 100) {
-        progress->value(percent);  /* update progress bar */
+        prog_bar->value(percent);  /* update progress bar */
         sprintf(percent_label, "%d%%", percent);
-        progress->label(percent_label);  /* update progress bar's label */
+        prog_bar->label(percent_label);  /* update progress bar's label */
         Fl::check();  /* update the screen */
         if (percent == 100) {
           if (autoclose == 0) {
-            prog_but->activate();
+            but->activate();
           } else {
-            prog_win->remove(progress);
-            delete(progress);
-            ret = 0;
+            prog_win->remove(prog_bar);
+            delete(prog_bar);
+            exit(0);
           }
         }
       }
     }
   }
 
-  if (autoclose == 0) { ret = Fl::run(); }
-  return ret;
+  return Fl::run();
 }
 
