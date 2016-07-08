@@ -25,6 +25,9 @@
 #ifndef FLTK_DIALOG_H
 #define FLTK_DIALOG_H
 
+/* about.cpp */
+int about(void);
+
 /* choice.cpp */
 int dialog_fl_choice(char *choice_msg, char *choice_title,
                      char *choice_but_yes, char *choice_but_no);
@@ -59,6 +62,7 @@ char *translate(char *inputText);
 
 /* version.cpp */
 void print_fltk_version(void);
+/* std::string get_fltk_version(); */
 
 #endif  /* FLTK_DIALOG_H */
 

@@ -28,7 +28,7 @@ endif
 
 
 BIN = fltk-dialog
-OBJS = choice.o color.o file.o input.o message.o password.o progress.o slider.o translate.o version.o main.o
+OBJS = about.o choice.o color.o file.o input.o message.o password.o progress.o slider.o translate.o version.o main.o
 
 define CLEAN
 	-rm -f $(BIN) $(OBJS)

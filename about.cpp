@@ -23,39 +23,56 @@
  */
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Pixmap.H>
 
-/* std::cout, std::endl */
-#include <iostream>
-/* std::stringstream, str */
-#include <sstream>
-/* std::string, c_str, substr, */
+/* std::string, c_str */
 #include <string>
-/* atoi */
-#include <stdlib.h>
 
+#include "fltk.xpm"
 #include "fltk-dialog.h"
 
 
 std::string get_fltk_version();
 
-void print_fltk_version() {
-  std::cout << "using FLTK version " << get_fltk_version() << std::endl;
+static void about_but_cb(Fl_Widget*)
+{
+  exit(0);
 }
 
-/* get the version strings from the linked in static or
- * the runtime library without leading zeros */
-std::string get_fltk_version() {
-  std::stringstream ss;
-  std::string ver, maj, min1, min2, pat1, pat2;
-  ss << Fl::api_version();
-  ver  = ss.str();
-  maj  = ver.substr(0,1);
-  min1 = ver.substr(1,1);
-  min2 = ver.substr(2,1);
-  pat1 = ver.substr(3,1);
-  pat2 = ver.substr(4,1);
-  if (atoi(min1.c_str()) == 0) { min1 = ""; }
-  if (atoi(pat1.c_str()) == 0) { pat1 = ""; }
-  return maj + "." + min1 + min2 + "." + pat1 + pat2;
+int about() {
+  Fl_Window *win;
+  Fl_Box    *box;
+  Fl_Pixmap *pix;
+  Fl_Button *but;
+
+  int winw = 360;
+  int winh = 220;
+  int bord = 10;
+  int butw = 100;
+  int buth = 25;
+
+  std::string getver = get_fltk_version();
+  std::string about_text = "\n"
+    "- FLTK dialog -\n"
+    "Display dialog boxes from shell scripts.\n\n"
+    "Using FLTK version " + getver + " (www.fltk.org).";
+  const char *about_text_c = about_text.c_str();
+
+  win = new Fl_Window(winw, winh);
+  box = new Fl_Box(0, 0, winw, winh-bord*3, about_text_c);
+  pix = new Fl_Pixmap(fltk_xpm);
+  but = new Fl_Button((winw-butw)/2, winh-buth-bord,
+                      butw, buth, fl_close);
+  box->box(FL_NO_BOX);
+  box->image(pix);
+  but->callback(about_but_cb);
+  win->label("About FLTK dialog");
+  win->end();
+  win->show();
+  return Fl::run();
 }
 

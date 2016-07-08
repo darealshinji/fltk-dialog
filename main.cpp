@@ -59,6 +59,7 @@ void print_usage(char *prog) {
   H0 "Options:" H1;
   H0 "  -h, --help                 Show help options" H1;
   H0 "  -v, --version              Show FLTK and program version" H1;
+  H0 "  --about                    About FLTK dialog" H1;
   H0 "  --text=TEXT                Set the dialog text" H1;
   H0 "  --title=TITLE              Set the dialog title" H1;
   H0 "  --warning                  Display warning dialog" H1;
@@ -123,8 +124,12 @@ int main(int argc, char **argv)
   }
 
   for (int i = 1; i < argc; ++i) {
-    if ((strcmp("--help", argv[i]) == 0) ||
-        (strcmp("-h", argv[i]) == 0))
+    if (strcmp("--about", argv[i]) == 0)
+    {
+      return about();
+    }
+    else if ((strcmp("--help", argv[i]) == 0) ||
+             (strcmp("-h", argv[i]) == 0))
     {
       print_usage(argv[0]);
       return 0;
