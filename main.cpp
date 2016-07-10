@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+#include <FL/Fl.H>
+#include <FL/fl_draw.H>
+
 /* std::cout, std::cerr, std::endl */
 #include <iostream>
 /* getopt_long_only */
@@ -43,18 +46,36 @@
 #define DIALOG_FL_PROGRESS 10
 #define DIALOG_FL_VALUE_SLIDER 11
 
-#if !defined(__APPLE__) && !defined(WIN32)
-  #define USINGGTK << " (GTK)" <<
-#else
-  #define USINGGTK <<
-#endif
 
+static int use_symbols = 0;
+
+/* global FLTK callback for drawing all label text */
+void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
+{
+  fl_font(o->font, o->size);
+  fl_color((Fl_Color)o->color);
+  fl_draw(o->value, x, y, w, h, a, o->image, use_symbols);
+}
+
+/* global FLTK callback for measuring all labels */
+void measure_cb(const Fl_Label *o, int &w, int &h)
+{
+  fl_font(o->font, o->size);
+  fl_measure(o->value, w, h, use_symbols);
+}
+
+#if !defined(__APPLE__) && !defined(WIN32)
+#  define USINGGTK << " (GTK)" <<
+#else
+#  define USINGGTK <<
+#endif
 
 #define H0 std::cout <<
 #define H1 << std::endl
-void print_usage(char *prog) {
+void print_usage(char *prog)
+{
   H0 "Usage:" H1;
-  H0 "  " << prog << " [OPTION ...]" H1
+  H0 "  " << prog << " OPTION [...]" H1
     H1;
   H0 "Options:" H1;
   H0 "  -h, --help                 Show help options" H1;
@@ -78,9 +99,9 @@ void print_usage(char *prog) {
   H0 "  --no-label=TEXT            Sets the label of the No button" H1
     H1;
   H0 "File/directory selection options:" H1;
-  H0 "  --native                   Use the operating system's native file" H1 <<
-     "                             chooser" USINGGTK " if available, otherwise" H1 <<
-     "                             fall back to FLTK's own version" H1
+  H0 "  --native                   Use the operating system's native file" H1
+  << "                             chooser" USINGGTK " if available, otherwise" H1
+  << "                             fall back to FLTK's own version" H1
     H1;
   H0 "Progress options:" H1;
   H0 "  --auto-close               Set initial value" H1
@@ -90,7 +111,7 @@ void print_usage(char *prog) {
   H0 "  --min-value=VALUE          Set minimum value" H1;
   H0 "  --max-value=VALUE          Set maximum value" H1;
   H0 "  --step=VALUE               Set step size" H1;
-  H0 "VALUE can be float point or integer" H1
+  H0 " VALUE can be float point or integer" H1
     H1;
 }
 #undef H0
@@ -114,28 +135,24 @@ int main(int argc, char **argv)
   int autoclose = 0;
 
   /* using these to check if two or more dialog options were specified */
-  int dalert, dchoice, dfilechooser, ddirchoser, dinput, dpassword, dcolor, dcolorhtml, dprogress, dvalslider;
-  dalert = dchoice = dfilechooser = ddirchoser = dinput = dpassword = dcolor = dcolorhtml = dprogress = dvalslider = 0;
+  int dalert, dchoice, dfilechooser, ddirchoser, dinput, dpassword,
+    dcolor, dcolorhtml, dprogress, dvalslider;
+  dalert = dchoice = dfilechooser = ddirchoser = dinput = dpassword =
+    dcolor = dcolorhtml = dprogress = dvalslider = 0;
 
-  if (argc <= 1) {
-    std::cerr << argv[0] << ": no command line arguments given" << std::endl;
-    print_usage(argv[0]);
-    return 1;
-  }
+  /* disable fltk's '@' symbols */
+  Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
 
   for (int i = 1; i < argc; ++i) {
-    if (strcmp("--about", argv[i]) == 0)
-    {
+    if (strcmp("--about", argv[i]) == 0) {
       return about();
-    }
-    else if ((strcmp("--help", argv[i]) == 0) ||
-             (strcmp("-h", argv[i]) == 0))
+    } else if ((strcmp("--help", argv[i]) == 0) ||
+               (strcmp("-h", argv[i]) == 0))
     {
       print_usage(argv[0]);
       return 0;
-    }
-    else if ((strcmp("--version", argv[i]) == 0) ||
-             (strcmp("-v", argv[i]) == 0))
+    } else if ((strcmp("--version", argv[i]) == 0) ||
+               (strcmp("-v", argv[i]) == 0))
     {
       print_fltk_version();
       return 0;
@@ -163,13 +180,13 @@ int main(int argc, char **argv)
     { "progress",   no_argument,       0, 'P' },
     { "auto-close", no_argument,       0, 'a' },
     { "scale",      no_argument,       0, 'S' },
-    { 0,0,0,0 }
+    { 0, 0, 0, 0 }
   };
 
-  while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index)) != -1)
+  while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index))
+         != -1)
   {
-    switch (opt)
-    {
+    switch (opt) {
       case 'T':
         msg = optarg;
         break;
@@ -246,63 +263,78 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dalert + dchoice + dfilechooser + ddirchoser + dinput + dpassword + dcolor + dcolorhtml + dprogress + dvalslider)
-       >= 2)
+  if ((dalert + dchoice + dfilechooser + ddirchoser + dinput +
+       dpassword + dcolor + dcolorhtml + dprogress + dvalslider) >= 2)
   {
-    std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
+    std::cerr << argv[0] << ": two or more dialog options specified"
+      << std::endl;
     return 1;
   }
 
   if ((native == 1) && ((dialog != DIALOG_FL_FILE_CHOOSER) &&
                         (dialog != DIALOG_FL_DIR_CHOOSER)))
   {
-    std::cerr << argv[0] << ": --native can only be used with --file or --directory" << std::endl;
+    std::cerr << argv[0] << ": --native can only be used with --file or "
+      "--directory" << std::endl;
     return 1;
   }
 
-  if ((dialog != DIALOG_FL_CHOICE) && ((but_yes != NULL) || (but_no != NULL))) {
-    std::cerr << argv[0] << ": --yes-label and --no-label can only be used with --question" << std::endl;
-    return 1;
-  }
-
-  if ((autoclose == 1) && (dialog != DIALOG_FL_PROGRESS))
+  if ((dialog != DIALOG_FL_CHOICE) && ((but_yes != NULL) ||
+                                       (but_no != NULL)))
   {
-    std::cerr << argv[0] << ": --auto-close can only be used with --progress" << std::endl;
+    std::cerr << argv[0] << ": --yes-label and --no-label can only be used "
+      "with --question" << std::endl;
     return 1;
   }
 
-  switch (dialog)
-  {
+  if ((autoclose == 1) && (dialog != DIALOG_FL_PROGRESS)) {
+    std::cerr << argv[0] << ": --auto-close can only be used with --progress"
+      << std::endl;
+    return 1;
+  }
+
+  switch (dialog) {
     case DIALOG_FL_MESSAGE:
       return dialog_fl_message(msg, title);
+
     case DIALOG_ALERT:
       return dialog_fl_message(msg, title, 1);
+
     case DIALOG_FL_CHOICE:
       return dialog_fl_choice(msg, title, but_yes, but_no);
+
     case DIALOG_FL_FILE_CHOOSER:
       if (native == 1) {
         return dialog_fl_native_file_chooser(title);
       } else {
         return dialog_fl_file_chooser(title);
       }
+
     case DIALOG_FL_DIR_CHOOSER:
       if (native == 1) {
         return dialog_fl_native_file_chooser(title, 1);
       } else {
         return dialog_fl_dir_chooser(title);
       }
+
     case DIALOG_FL_INPUT:
       return dialog_fl_input(msg, title);
+
     case DIALOG_FL_PASSWORD:
       return dialog_fl_password(msg, title);
+
     case DIALOG_FL_COLOR:
       return dialog_fl_color(title);
+
     case DIALOG_FL_COLOR_HTML:
       return dialog_fl_color(title, 1);
+
     case DIALOG_FL_PROGRESS:
       return dialog_fl_progress(msg, title, autoclose);
+
     case DIALOG_FL_VALUE_SLIDER:
-      return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
+      return dialog_fl_value_slider(msg, title, minval,
+                                    maxval, stepval, initval);
   }
 }
 
