@@ -30,32 +30,33 @@
 #include <sstream>
 /* std::string, c_str, substr, */
 #include <string>
-/* atoi */
-#include <stdlib.h>
+/* strcmp */
+#include <string.h>
 
 #include "fltk-dialog.h"
 
 
-std::string get_fltk_version();
-
-void print_fltk_version() {
-  std::cout << "using FLTK version " << get_fltk_version() << std::endl;
-}
-
 /* get the version strings from the linked in static or
  * the runtime library without leading zeros */
-std::string get_fltk_version() {
+std::string get_fltk_version()
+{
   std::stringstream ss;
   std::string ver, maj, min1, min2, pat1, pat2;
-  ss << Fl::api_version();
+  int api = Fl::api_version();
+  ss << api;
   ver  = ss.str();
   maj  = ver.substr(0,1);
   min1 = ver.substr(1,1);
   min2 = ver.substr(2,1);
   pat1 = ver.substr(3,1);
   pat2 = ver.substr(4,1);
-  if (atoi(min1.c_str()) == 0) { min1 = ""; }
-  if (atoi(pat1.c_str()) == 0) { pat1 = ""; }
+  if (strcmp(min1.c_str(), "0") == 0) { min1 = ""; }
+  if (strcmp(pat1.c_str(), "0") == 0) { pat1 = ""; }
   return maj + "." + min1 + min2 + "." + pat1 + pat2;
+}
+
+void print_fltk_version()
+{
+  std::cout << "using FLTK version " << get_fltk_version() << std::endl;
 }
 
