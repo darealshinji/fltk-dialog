@@ -31,13 +31,15 @@
 #include "fltk-dialog.h"
 
 
-int dialog_fl_password(char *password_msg,
+int dialog_fl_password(const char *password_msg,
                        char *password_title)
 {
+  std::string s;
+
   if (password_msg == NULL) {
-    password_msg = (char *)"Enter a password:";
+    s = "Enter a password:";
   } else {
-    password_msg = translate(password_msg);
+    s = translate(password_msg);
   }
 
   if (password_title == NULL) {
@@ -46,7 +48,7 @@ int dialog_fl_password(char *password_msg,
 
   fl_message_title(password_title);
 
-  const char *password_label = fl_password("%s", NULL, password_msg);
+  const char *password_label = fl_password("%s", NULL, s.c_str());
   std::cout << password_label << std::endl;
   return 0;
 }

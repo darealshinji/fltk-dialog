@@ -25,17 +25,22 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 
+/* std::string */
+#include <string>
+
 #include "fltk-dialog.h"
 
 
-int dialog_fl_message(char *message_msg,
+int dialog_fl_message(const char *message_msg,
                       char *message_title,
                       int   alert)
 {
+  std::string s;
+
   if (message_msg == NULL) {
-    message_msg = (char *)"no message";
+    s = "no message";
   } else {
-    message_msg = translate(message_msg);
+    s = translate(message_msg);
   }
 
   if (message_title == NULL) {
@@ -45,9 +50,9 @@ int dialog_fl_message(char *message_msg,
   fl_message_title(message_title);
 
   if (alert == 1) {
-    fl_alert("%s", message_msg);
+    fl_alert("%s", s.c_str());
   } else {
-    fl_message("%s", message_msg);
+    fl_message("%s", s.c_str());
   }
   return 0;
 }

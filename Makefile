@@ -60,10 +60,12 @@ $(fltk):
 	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $@
 
 $(fltk)/fltk-config: $(fltk)
-	[ -x $@ ] || (cd $< && NOCONFIGURE=1 ./autogen.sh && \
-CXXFLAGS="$(fltk_CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-./configure $(fltk_config))
+	test -x $@ || (cd $(fltk) && NOCONFIGURE=1 ./autogen.sh && \
+	  CXXFLAGS="$(fltk_CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	  ./configure $(fltk_config))
 
 $(fltk)/lib/libfltk.a: $(fltk)/fltk-config
 	$(MAKE) -C $(fltk)
+
+about.o main.o: CXXFLAGS+=-Wno-unused-parameter
 

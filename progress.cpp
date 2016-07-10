@@ -56,7 +56,7 @@ static void prog_but_cb(Fl_Widget*)
 /* run a test:
  * (for n in `seq 1 100`; do echo "#$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
  */
-int dialog_fl_progress(char *progress_msg,
+int dialog_fl_progress(const char *progress_msg,
                        char *progress_title,
                        int autoclose)
 {
@@ -67,19 +67,19 @@ int dialog_fl_progress(char *progress_msg,
   int winh = 0;
   int barh = 30;
   int bord = 10;
-  int textheight = FL_NORMAL_SIZE + 4;
+  int textheight = 18;
   int textlines = 1;
   int butw = 100;
-  int buth = 25;
+  int buth = 26;
 
-  std::string line, linesubstr;
+  std::string s, line, linesubstr;
   int percent = 0;
   char percent_label[5];
 
   if (progress_msg == NULL) {
-    progress_msg = (char *)"Simple FLTK progress bar";
+    s = "Simple FLTK progress bar";
   } else {
-    progress_msg = translate(progress_msg);
+    s = translate(progress_msg);
     for (size_t i = 0; i < strlen(progress_msg); i++) {
       if (progress_msg[i] == '\n')
         textlines++;
@@ -103,7 +103,7 @@ int dialog_fl_progress(char *progress_msg,
   prog_win->begin();
 
   /* message text */
-  box = new Fl_Box(0, 0, bord, boxh, progress_msg);
+  box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   box->box(FL_NO_BOX);
   box->align(FL_ALIGN_RIGHT);
 

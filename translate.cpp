@@ -45,15 +45,11 @@ std::string findAndReplace(std::string ReplaceString,
 /* translate \n (\\n) and \t (\\t) characters given through
  * command line arguments to real printf characters, ignoring
  * other occurences of \ (\\) */
-char *translate(char *inputText)
+std::string translate(const char *inputText)
 {
   std::string s(inputText);
   s = findAndReplace(s, "\\n", "\n");
   s = findAndReplace(s, "\\t", "\t");
-
-  char *a = new char[s.size() + 1];
-  a[s.size()] = 0;
-  memcpy(a, s.c_str(), s.size());
-  return a;
+  return s;
 }
 

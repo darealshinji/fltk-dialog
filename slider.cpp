@@ -45,37 +45,38 @@
 
 double slidval_round;
 
-static void slider_callback(Fl_Widget* o, void*)
+static void slider_cb(Fl_Widget* o)
 {
   slidval_round = ((Fl_Valuator*)o)->value();
 }
 
-void slider_ok_cb(Fl_Widget*, void*)
+static void slider_ok_cb(Fl_Widget*)
 {
   std::cout << slidval_round << std::endl;
   exit(0);
 }
 
-void slider_close_cb(Fl_Widget*, void*)
+static void slider_cancel_cb(Fl_Widget*)
 {
   exit(1);
 }
 
-int dialog_fl_value_slider(char *slider_msg,
+int dialog_fl_value_slider(const char *slider_msg,
                            char *slider_title,
                            char *slider_min,
                            char *slider_max,
                            char *slider_step,
                            char *slider_val)
 {
+  std::string s;
   Fl_Window *w;
   int winw = 320;
   int slidh = 30;
   int bord = 10;
-  int textheight = FL_NORMAL_SIZE + 4;
+  int textheight = 18;
   int textlines = 1;
   int butw = 100;
-  int buth = 25;
+  int buth = 26;
 
   double min = 0;
   double max = 100;
@@ -83,9 +84,9 @@ int dialog_fl_value_slider(char *slider_msg,
   double val = min;
 
   if (slider_msg == NULL) {
-    slider_msg = (char *)"Simple FLTK scaler";
+    s = "Simple FLTK scaler";
   } else {
-    slider_msg = translate(slider_msg);
+    s = translate(slider_msg);
     for (size_t i = 0; i < strlen(slider_msg); i++) {
       if (slider_msg[i] == '\n')
         textlines++;
@@ -102,23 +103,15 @@ int dialog_fl_value_slider(char *slider_msg,
   if (slider_val  != NULL) { val = atof(slider_val); }
 
   int boxh = textlines*textheight + bord*2;
-  { Fl_Window *o = new Fl_Window(winw,
-                                 boxh+slidh+bord*3+textheight,
+  { Fl_Window *o = new Fl_Window(winw, boxh+slidh+bord*3+textheight,
                                  slider_title);
     w = o; if (w) {/**/}
-    { Fl_Box *o = new Fl_Box(0,
-                             0,
-                             bord,
-                             boxh,
-                             slider_msg);
+    { Fl_Box *o = new Fl_Box(0, 0, bord, boxh, s.c_str());
       o->box(FL_NO_BOX);
       o->align(FL_ALIGN_RIGHT);
     } // Fl_Box *o
-    { Fl_Value_Slider *o = new Fl_Value_Slider(bord,
-                                               boxh,
-                                               winw-bord*2,
-                                               slidh,
-                                               NULL);
+    { Fl_Value_Slider *o = new Fl_Value_Slider(bord, boxh, winw-bord*2,
+                                               slidh, NULL);
       o->type(FL_HOR_NICE_SLIDER);
       o->box(FL_FLAT_BOX);
       o->minimum(min);
@@ -126,21 +119,17 @@ int dialog_fl_value_slider(char *slider_msg,
       o->step(step);
       slidval_round = o->round(val);
       o->value(slidval_round);
-      o->callback((Fl_Callback*)slider_callback);
+      o->callback(slider_cb);
     } // Fl_Value_Slider *o
     { Fl_Return_Button *o = new Fl_Return_Button(winw-butw*2-bord*2,
                                                  boxh+textheight+buth,
-                                                 butw,
-                                                 buth,
-                                                 fl_ok);
+                                                 butw, buth, fl_ok);
       o->callback(slider_ok_cb);
     } // Fl_Button *o
     { Fl_Button *o = new Fl_Button(winw-butw-bord,
                                    boxh+textheight+buth,
-                                   butw,
-                                   buth,
-                                   fl_cancel);
-      o->callback(slider_close_cb);
+                                   butw, buth, fl_cancel);
+      o->callback(slider_cancel_cb);
     } // Fl_Button *o
     o->end();
   } // Fl_Window *o
