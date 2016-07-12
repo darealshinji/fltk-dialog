@@ -2,6 +2,7 @@
 /fltk-dialog
 
 *.o
+a.out
 
 *~
 *.old
