@@ -39,6 +39,8 @@
 #include <stdlib.h>
 /* strlen */
 #include <string.h>
+/* isatty */
+#include <unistd.h>
 
 #include "fltk-dialog.h"
 
@@ -88,6 +90,13 @@ int dialog_fl_progress(const char *progress_msg,
 
   if (progress_title == NULL) {
     progress_title = (char *)"FLTK progress window";
+  }
+
+  /* check for input data */
+  if (isatty(STDIN_FILENO)) {
+    s = "Error: no input data receiving";
+    dialog_fl_message(s.c_str(), progress_title, 1);
+    return 1;
   }
 
   int boxh = textlines*textheight + bord*2;
