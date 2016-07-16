@@ -23,6 +23,7 @@
  */
 
 #include <FL/Fl.H>
+/* fl_ok, fl_cancel */
 #include <FL/fl_ask.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Box.H>
@@ -56,7 +57,7 @@ static void prog_but_cb(Fl_Widget*)
 }
 
 /* run a test:
- * (for n in `seq 1 100`; do echo "#$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
+ * (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
  */
 int dialog_fl_progress(const char *progress_msg,
                        char *progress_title,
@@ -128,11 +129,8 @@ int dialog_fl_progress(const char *progress_msg,
 
   if (autoclose == 0) {
     /* close button */
-    but = new Fl_Button(winw-butw-bord,
-                        boxh+textheight+buth,
-                        butw,
-                        buth,
-                        fl_close);
+    but = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
+                        butw, buth, fl_close);
     but->deactivate();
     but->callback(prog_but_cb);
   }
@@ -146,8 +144,8 @@ int dialog_fl_progress(const char *progress_msg,
 
   /* get stdin line by line */
   for (/**/; std::getline(std::cin, line); /**/) {
-    if (line.compare(0,1,"#") == 0) {  /* "grep" lines beginning with a '#' */
-      linesubstr = line.substr(1,3);
+    if (line.compare(0,1,"#") != 0) {  /* ignore lines beginning with a '#' */
+      linesubstr = line.substr(0,3);
       percent = atoi(linesubstr.c_str());
       if (percent >= 0 && percent <= 100) {
         prog_bar->value(percent);  /* update progress bar */
