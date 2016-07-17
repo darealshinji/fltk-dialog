@@ -67,11 +67,6 @@ void measure_cb(const Fl_Label *o, int &w, int &h)
   fl_measure(o->value, w, h, use_symbols);
 }
 
-#if !defined(__APPLE__) && !defined(WIN32)
-#  define USINGGTK << " (GTK)" <<
-#else
-#  define USINGGTK <<
-#endif
 #define H0 std::cout <<
 #define H1 << std::endl
 void print_usage(char *prog)
@@ -102,7 +97,7 @@ void print_usage(char *prog)
     H1;
   H0 "File/directory selection options:" H1;
   H0 "  --native                   Use the operating system's native file" H1
-  << "                             chooser" USINGGTK " if available, otherwise" H1
+  << "                             chooser (GTK) if available, otherwise" H1
   << "                             fall back to FLTK's own version" H1
     H1;
   H0 "Progress options:" H1;
@@ -118,7 +113,6 @@ void print_usage(char *prog)
 }
 #undef H0
 #undef H1
-#undef USINGGTK
 
 int main(int argc, char **argv)
 {
