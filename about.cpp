@@ -168,6 +168,18 @@ void license()
     "statement can be included in user documentation to satisfy this requirement:\n"
     "[program/widget] is based in part on the work of the FLTK project (http://www.fltk.org).\n"
     "\n"
+    "    This library is free software; you can redistribute it and/or\n"
+    "    modify it under the terms of the GNU Library General Public\n"
+    "    License as published by the Free Software Foundation; either\n"
+    "    version 2 of the License, or (at your option) any later version.\n"
+    "\n"
+    "    This library is distributed in the hope that it will be useful,\n"
+    "    but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+    "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n"
+    "    Library General Public License for more details.\n"
+    "\n"
+    "    You should have received a copy of the GNU Library General Public License\n"
+    "    along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
   );
   but_close = new Fl_Button((winw-butw)/2, winh-buth-bord,
                             butw, buth, fl_close);
