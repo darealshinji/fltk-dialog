@@ -24,6 +24,8 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Pixmap.H>
+#include <FL/Fl_RGB_Image.H>
 
 /* std::cout, std::cerr, std::endl */
 #include <iostream>
@@ -33,6 +35,7 @@
 #include <string.h>
 
 #include "fltk-dialog.h"
+#include "icon.xpm"
 
 #define DIALOG_FL_MESSAGE 1
 #define DIALOG_ALERT 2
@@ -69,7 +72,6 @@ void measure_cb(const Fl_Label *o, int &w, int &h)
 #else
 #  define USINGGTK <<
 #endif
-
 #define H0 std::cout <<
 #define H1 << std::endl
 void print_usage(char *prog)
@@ -142,6 +144,11 @@ int main(int argc, char **argv)
 
   /* disable fltk's '@' symbols */
   Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
+
+  /* set global default icon for all windows */
+  Fl_Pixmap win_pixmap(icon_xpm);
+  Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
+  Fl_Window::default_icon(&win_icon);
 
   for (int i = 1; i < argc; ++i) {
     if (strcmp("--about", argv[i]) == 0) {
