@@ -35,7 +35,7 @@
 #include <math.h>
 
 
-#define INT_TO_HEX(x) std::setfill ('0') << std::setw(2) << std::hex << x
+#define INT_TO_HEX(x) std::setfill('0') << std::setw(2) << std::hex << x
 
 int dialog_fl_color(char *color_title,
                     int   html)
