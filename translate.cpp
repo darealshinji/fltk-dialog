@@ -22,10 +22,8 @@
  * SOFTWARE.
  */
 
-/* std::string, c_str, size */
-#include <string>
-/* memcpy */
-#include <string.h>
+#include <string>     /* std::string, std::string::npos, size */
+#include <algorithm>  /* find, replace */
 
 
 /* used by translate() function;
@@ -37,7 +35,7 @@ std::string findAndReplace(std::string ReplaceString,
 {
   size_t index;
   while ((index = ReplaceString.find(FindWord)) != std::string::npos) {
-    ReplaceString.replace(index, FindWord.length(), ReplaceWord);
+    ReplaceString.replace(index, FindWord.size(), ReplaceWord);
   }
   return ReplaceString;
 }

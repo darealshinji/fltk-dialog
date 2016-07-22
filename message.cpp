@@ -25,15 +25,14 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 
-/* std::string */
-#include <string>
+#include <string>  /* std::string, c_str */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.h"  /* translate */
 
 
 int dialog_fl_message(const char *message_msg,
-                      char *message_title,
-                      int   alert)
+                            char *message_title,
+                            int   type)
 {
   std::string s;
 
@@ -49,7 +48,7 @@ int dialog_fl_message(const char *message_msg,
 
   fl_message_title(message_title);
 
-  if (alert == 1) {
+  if (type == ALERT) {
     fl_alert("%s", s.c_str());
   } else {
     fl_message("%s", s.c_str());

@@ -25,14 +25,14 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 
-/* std::cout, std::endl */
-#include <iostream>
+#include <iostream>  /* std::cout, std::endl */
+#include <string>    /* std::string, c_str */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.h"  /* translate */
 
 
 int dialog_fl_password(const char *password_msg,
-                       char *password_title)
+                             char *password_title)
 {
   std::string s;
 

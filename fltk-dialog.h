@@ -26,41 +26,58 @@
 #define FLTK_DIALOG_H
 
 /* about.cpp */
+void license(void);
 int about(void);
 
 /* choice.cpp */
-int dialog_fl_choice(const char *choice_msg, char *choice_title,
-                     char *choice_but_yes, char *choice_but_no);
+int dialog_fl_choice(const char *choice_msg,
+                           char *choice_title,
+                           char *choice_but_yes,
+                           char *choice_but_no);
 
 /* color.cpp */
-int dialog_fl_color(char *color_title, int html=0);
+#define COLOR_RGB 0
+#define COLOR_HTML 1
+int dialog_fl_color(char *color_title,
+                    int   type=COLOR_RGB);
 
 /* file.cpp */
 int dialog_fl_file_chooser(char *file_chooser_title);
 int dialog_fl_dir_chooser(char *dir_chooser_title);
-int dialog_fl_native_file_chooser(char *fnfc_title, int fnfc_dir=0);
+#define FILE_CHOOSER 0
+#define DIR_CHOOSER 1
+int dialog_fl_native_file_chooser(char *fnfc_title,
+                                  int   fnfc_dir=FILE_CHOOSER);
 
 /* input.cpp */
-int dialog_fl_input(const char *input_msg, char *input_title);
+int dialog_fl_input(const char *input_msg,
+                          char *input_title);
 
 /* message.cpp */
-int dialog_fl_message(const char *message_msg, char *message_title,
-                      int alert=0);
+#define MESSAGE 0
+#define ALERT 1
+int dialog_fl_message(const char *message_msg,
+                            char *message_title,
+                            int   type=MESSAGE);
 
 /* password.cpp */
-int dialog_fl_password(const char *password_msg, char *password_title);
+int dialog_fl_password(const char *password_msg,
+                             char *password_title);
 
 /* progress.cpp */
-int dialog_fl_progress(const char *progress_msg, char *progress_title,
-                       int autoclose=0);
+int dialog_fl_progress(const char *progress_msg,
+                             char *progress_title,
+                             int   autoclose=0);
 
 /* slider.cpp */
-int dialog_fl_value_slider(const char *slider_msg, char *slider_title,
-                           char *slider_min, char *slider_max,
-                           char *slider_step, char *slider_val);
+int dialog_fl_value_slider(const char *slider_msg,
+                                 char *slider_title,
+                                 char *slider_min,
+                                 char *slider_max,
+                                 char *slider_step,
+                                 char *slider_val);
 
-/* std::string */
-#include <string>
+#include <string>  /* std::string */
 
 /* translate.cpp */
 std::string translate(const char *inputText);
@@ -69,5 +86,5 @@ std::string translate(const char *inputText);
 void print_fltk_version(void);
 std::string get_fltk_version(void);
 
-#endif  /* FLTK_DIALOG_H */
+#endif  /* !FLTK_DIALOG_H */
 

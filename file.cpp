@@ -26,8 +26,9 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Native_File_Chooser.H>
 
-/* std::cout, std::endl */
-#include <iostream>
+#include <iostream>  /* std::cout, std::endl */
+
+#include "fltk-dialog.h"  /* DIR_CHOOSER */
 
 
 int dialog_fl_file_chooser(char *file_chooser_title)
@@ -58,7 +59,7 @@ int dialog_fl_native_file_chooser(char *fnfc_title,
   Fl_Native_File_Chooser fnfc;
   char *fnfc_def_title = NULL;
 
-  if (fnfc_dir == 1) {
+  if (fnfc_dir == DIR_CHOOSER) {
     fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
     fnfc_def_title = (char *)"Select a directory";
   } else {

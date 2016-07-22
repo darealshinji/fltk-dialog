@@ -25,20 +25,18 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Color_Chooser.H>
 
-/* std::cout, std::endl */
-#include <iostream>
-/* std::setfill, std::setw */
-#include <iomanip>
-/* std::hex */
-#include <ios>
-/* round */
-#include <math.h>
+#include <iostream>  /* std::cout, std::endl */
+#include <iomanip>   /* std::setfill, std::setw */
+#include <ios>       /* std::hex */
+#include <math.h>    /* round */
+
+#include "fltk-dialog.h"  /* COLOR_HTML */
 
 
 #define INT_TO_HEX(x) std::setfill('0') << std::setw(2) << std::hex << x
 
 int dialog_fl_color(char *color_title,
-                    int   html)
+                    int   type)
 {
   double r,g,b;
   r = g = b = 1.0;
@@ -51,7 +49,7 @@ int dialog_fl_color(char *color_title,
     size_t colr = round(255*r);
     size_t colg = round(255*g);
     size_t colb = round(255*b);
-    if (html == 1) {
+    if (type == COLOR_HTML) {
       /* html hex value */
       std::cout << "#" << INT_TO_HEX(colr) << INT_TO_HEX(colg) << INT_TO_HEX(colb) << std::endl;
     } else {

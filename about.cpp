@@ -23,23 +23,19 @@
  */
 
 #include <FL/Fl.H>
-/* fl_ok, fl_cancel */
-#include <FL/fl_ask.H>
+#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Text_Display.H>
 
-/* std::string, c_str */
-#include <string>
+#include <string>    /* std::string, c_str */
+#include <stdlib.h>  /* exit */
 
 #include "fltk.xpm"
-#include "fltk-dialog.h"
+#include "fltk-dialog.h"  /* license, get_fltk_version */
 
-
-void license(void);
-std::string get_fltk_version(void);
 
 static void about_but_lic_cb(Fl_Widget*)
 {

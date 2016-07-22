@@ -22,18 +22,12 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
+#include <FL/Fl.H>   /* Fl::api_version */
 
-/* std::cout, std::endl */
-#include <iostream>
-/* std::stringstream, str */
-#include <sstream>
-/* std::string, c_str, substr, */
-#include <string>
-/* strcmp */
-#include <string.h>
-
-#include "fltk-dialog.h"
+#include <string>    /* std::string, c_str, substr, */
+#include <iostream>  /* std::cout, std::endl */
+#include <sstream>   /* std::stringstream, str */
+#include <string.h>  /* strcmp */
 
 
 /* get the version strings from the linked in static or

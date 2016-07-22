@@ -23,27 +23,20 @@
  */
 
 #include <FL/Fl.H>
-/* fl_ok, fl_cancel */
-#include <FL/fl_ask.H>
+#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Window.H>
 
-/* std::getline, c_str, compare, substr */
-#include <string>
-/* std::cin */
-#include <iostream>
-/* sprintf */
-#include <stdio.h>
-/* atoi */
-#include <stdlib.h>
-/* strlen */
-#include <string.h>
-/* isatty */
-#include <unistd.h>
+#include <string>    /* std::string, std::getline, c_str, compare, substr */
+#include <iostream>  /* std::cin */
+#include <stdio.h>   /* sprintf */
+#include <stdlib.h>  /* exit, atoi */
+#include <string.h>  /* strlen */
+#include <unistd.h>  /* isatty */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.h"  /* translate, dialog_fl_message */
 
 
 Fl_Window *prog_win;
@@ -60,8 +53,8 @@ static void prog_but_cb(Fl_Widget*)
  * (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
  */
 int dialog_fl_progress(const char *progress_msg,
-                       char *progress_title,
-                       int autoclose)
+                             char *progress_title,
+                             int   autoclose)
 {
   Fl_Box *box;
   Fl_Button *but = NULL;
@@ -84,8 +77,9 @@ int dialog_fl_progress(const char *progress_msg,
   } else {
     s = translate(progress_msg);
     for (size_t i = 0; i < strlen(progress_msg); i++) {
-      if (progress_msg[i] == '\n')
+      if (progress_msg[i] == '\n') {
         textlines++;
+      }
     }
   }
 
@@ -96,7 +90,7 @@ int dialog_fl_progress(const char *progress_msg,
   /* check for input data */
   if (isatty(STDIN_FILENO)) {
     s = "Error: no input data receiving";
-    dialog_fl_message(s.c_str(), progress_title, 1);
+    dialog_fl_message(s.c_str(), progress_title, ALERT);
     return 1;
   }
 

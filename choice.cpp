@@ -25,13 +25,15 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 
-#include "fltk-dialog.h"
+#include <string>  /* std::string, c_str */
+
+#include "fltk-dialog.h"  /* translate */
 
 
 int dialog_fl_choice(const char *choice_msg,
-                     char *choice_title,
-                     char *choice_but_yes,
-                     char *choice_but_no)
+                           char *choice_title,
+                           char *choice_but_yes,
+                           char *choice_but_no)
 {
   std::string s;
 

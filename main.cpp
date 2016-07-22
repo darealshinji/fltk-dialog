@@ -27,12 +27,9 @@
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_RGB_Image.H>
 
-/* std::cout, std::cerr, std::endl */
-#include <iostream>
-/* getopt_long_only */
-#include <getopt.h>
-/* strcmp */
-#include <string.h>
+#include <iostream>  /* std::cout, std::cerr, std::endl */
+#include <getopt.h>  /* getopt_long_only */
+#include <string.h>  /* strcmp */
 
 #include "fltk-dialog.h"
 #include "icon.xpm"
@@ -296,24 +293,24 @@ int main(int argc, char **argv)
 
   switch (dialog) {
     case DIALOG_FL_MESSAGE:
-      return dialog_fl_message(msg, title);
+      return dialog_fl_message(msg, title, MESSAGE);
 
     case DIALOG_ALERT:
-      return dialog_fl_message(msg, title, 1);
+      return dialog_fl_message(msg, title, ALERT);
 
     case DIALOG_FL_CHOICE:
       return dialog_fl_choice(msg, title, but_yes, but_no);
 
     case DIALOG_FL_FILE_CHOOSER:
       if (native == 1) {
-        return dialog_fl_native_file_chooser(title);
+        return dialog_fl_native_file_chooser(title, FILE_CHOOSER);
       } else {
         return dialog_fl_file_chooser(title);
       }
 
     case DIALOG_FL_DIR_CHOOSER:
       if (native == 1) {
-        return dialog_fl_native_file_chooser(title, 1);
+        return dialog_fl_native_file_chooser(title, DIR_CHOOSER);
       } else {
         return dialog_fl_dir_chooser(title);
       }
@@ -325,17 +322,16 @@ int main(int argc, char **argv)
       return dialog_fl_password(msg, title);
 
     case DIALOG_FL_COLOR:
-      return dialog_fl_color(title);
+      return dialog_fl_color(title, COLOR_RGB);
 
     case DIALOG_FL_COLOR_HTML:
-      return dialog_fl_color(title, 1);
+      return dialog_fl_color(title, COLOR_HTML);
 
     case DIALOG_FL_PROGRESS:
       return dialog_fl_progress(msg, title, autoclose);
 
     case DIALOG_FL_VALUE_SLIDER:
-      return dialog_fl_value_slider(msg, title, minval,
-                                    maxval, stepval, initval);
+      return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
   }
 }
 
