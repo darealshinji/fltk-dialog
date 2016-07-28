@@ -1,3 +1,6 @@
+ifneq ($(wildcard config.mak),)
+include config.mak
+endif
 
 fltk = fltk-1.3
 OPT = -Os

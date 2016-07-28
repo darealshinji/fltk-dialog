@@ -1,5 +1,6 @@
 /fltk-1.3/
 /fltk-dialog
+/config.mak
 
 *.o
 a.out
