@@ -32,22 +32,9 @@
 #include <string.h>  /* strcmp */
 
 #include "fltk-dialog.h"
+#include "main.h"
 #include "icon.xpm"
 
-#define DIALOG_FL_MESSAGE 1
-#define DIALOG_ALERT 2
-#define DIALOG_FL_CHOICE 3
-#define DIALOG_FL_FILE_CHOOSER 4
-#define DIALOG_FL_DIR_CHOOSER 5
-#define DIALOG_FL_INPUT 6
-#define DIALOG_FL_PASSWORD 7
-#define DIALOG_FL_COLOR 8
-#define DIALOG_FL_COLOR_HTML 9
-#define DIALOG_FL_PROGRESS 10
-#define DIALOG_FL_VALUE_SLIDER 11
-
-
-static int use_symbols = 0;
 
 /* global FLTK callback for drawing all label text */
 void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
@@ -64,52 +51,47 @@ void measure_cb(const Fl_Label *o, int &w, int &h)
   fl_measure(o->value, w, h, use_symbols);
 }
 
-#define H0 std::cout <<
-#define H1 << std::endl
 void print_usage(char *prog)
 {
-  H0 "Usage:" H1;
-  H0 "  " << prog << " OPTION [...]" H1
-    H1;
-  H0 "Options:" H1;
-  H0 "  -h, --help                 Show help options" H1;
-  H0 "  -v, --version              Show FLTK and program version" H1;
-  H0 "  --about                    About FLTK dialog" H1;
-  H0 "  --text=TEXT                Set the dialog text" H1;
-  H0 "  --title=TITLE              Set the dialog title" H1;
-  H0 "  --warning                  Display warning dialog" H1;
-  H0 "  --question                 Display question dialog" H1;
-  H0 "  --file                     Display file selection dialog" H1;
-  H0 "  --directory                Display directory selection dialog" H1;
-  H0 "  --entry                    Display text entry dialog" H1;
-  H0 "  --password                 Display password dialog" H1;
-  H0 "  --progress                 Display progress indication dialog" H1;
-  H0 "  --color                    Display color selection dialog; RGB output" H1;
-  H0 "  --color-html               Display color selection dialog; HTML output" H1;
-  H0 "  --scale                    Display scale dialog" H1
-    H1;
-  H0 "Question options:" H1;
-  H0 "  --yes-label=TEXT           Sets the label of the Yes button" H1;
-  H0 "  --no-label=TEXT            Sets the label of the No button" H1
-    H1;
-  H0 "File/directory selection options:" H1;
-  H0 "  --native                   Use the operating system's native file" H1
-  << "                             chooser (GTK) if available, otherwise" H1
-  << "                             fall back to FLTK's own version" H1
-    H1;
-  H0 "Progress options:" H1;
-  H0 "  --auto-close               Set initial value" H1
-    H1;
-  H0 "Scale options:" H1;
-  H0 "  --value=VALUE              Set initial value" H1;
-  H0 "  --min-value=VALUE          Set minimum value" H1;
-  H0 "  --max-value=VALUE          Set maximum value" H1;
-  H0 "  --step=VALUE               Set step size" H1;
-  H0 " VALUE can be float point or integer" H1
-    H1;
+  std::cout << "Usage:\n"
+  "  " << prog << " OPTION [...]\n"
+  "\n"
+  "Options:\n"
+  "  -h, --help                 Show help options\n"
+  "  -v, --version              Show FLTK and program version\n"
+  "  --about                    About FLTK dialog\n"
+  "  --text=TEXT                Set the dialog text\n"
+  "  --title=TITLE              Set the dialog title\n"
+  "  --warning                  Display warning dialog\n"
+  "  --question                 Display question dialog\n"
+  "  --file                     Display file selection dialog\n"
+  "  --directory                Display directory selection dialog\n"
+  "  --entry                    Display text entry dialog\n"
+  "  --password                 Display password dialog\n"
+  "  --progress                 Display progress indication dialog\n"
+  "  --color                    Display color selection dialog; RGB output\n"
+  "  --color-html               Display color selection dialog; HTML output\n"
+  "  --scale                    Display scale dialog\n"
+  "\n"
+  "Question options:\n"
+  "  --yes-label=TEXT           Sets the label of the Yes button\n"
+  "  --no-label=TEXT            Sets the label of the No button\n"
+  "\n"
+  "File/directory selection options:\n"
+  "  --native                   Use the operating system's native file\n"
+  "                             chooser (GTK) if available, otherwise\n"
+  "                             fall back to FLTK's own version\n"
+  "\n"
+  "Progress options:\n"
+  "  --auto-close               Dismiss the dialog when 100% has been reached\n"
+  "\n"
+  "Scale options:\n"
+  "  --value=VALUE              Set initial value\n"
+  "  --min-value=VALUE          Set minimum value\n"
+  "  --max-value=VALUE          Set maximum value\n"
+  "  --step=VALUE               Set step size\n"
+  " VALUE can be float point or integer\n" << std::endl;
 }
-#undef H0
-#undef H1
 
 int main(int argc, char **argv)
 {
@@ -141,6 +123,12 @@ int main(int argc, char **argv)
   Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
   Fl_Window::default_icon(&win_icon);
 
+  /* run "About" dialog if startet
+   * without command line options */
+  if (argc < 2) {
+    return about();
+  }
+
   for (int i = 1; i < argc; ++i) {
     if (strcmp("--about", argv[i]) == 0) {
       return about();
@@ -158,100 +146,98 @@ int main(int argc, char **argv)
   }
 
   static struct option long_options[] = {
-    { "text",       required_argument, 0, 'T' },
-    { "title",      required_argument, 0, 't' },
-    { "yes-label",  required_argument, 0, 'y' },
-    { "no-label",   required_argument, 0, 'n' },
-    { "value",      required_argument, 0, 'v' },
-    { "min-value",  required_argument, 0, 'm' },
-    { "max-value",  required_argument, 0, 'M' },
-    { "step",       required_argument, 0, 's' },
-    { "warning",    no_argument,       0, 'w' },
-    { "question",   no_argument,       0, 'q' },
-    { "file",       no_argument,       0, 'f' },
-    { "directory",  no_argument,       0, 'd' },
-    { "native",     no_argument,       0, 'N' },
-    { "entry",      no_argument,       0, 'e' },
-    { "password",   no_argument,       0, 'p' },
-    { "color",      no_argument,       0, 'c' },
-    { "color-html", no_argument,       0, 'C' },
-    { "progress",   no_argument,       0, 'P' },
-    { "auto-close", no_argument,       0, 'a' },
-    { "scale",      no_argument,       0, 'S' },
+    { "text",       required_argument, 0, _LO_TEXT       },
+    { "title",      required_argument, 0, _LO_TITLE      },
+    { "yes-label",  required_argument, 0, _LO_YES_LABEL  },
+    { "no-label",   required_argument, 0, _LO_NO_LABEL   },
+    { "value",      required_argument, 0, _LO_VALUE      },
+    { "min-value",  required_argument, 0, _LO_MIN_VALUE  },
+    { "max-value",  required_argument, 0, _LO_MAX_VALUE  },
+    { "step",       required_argument, 0, _LO_STEP       },
+    { "warning",    no_argument,       0, _LO_WARNING    },
+    { "question",   no_argument,       0, _LO_QUESTION   },
+    { "file",       no_argument,       0, _LO_FILE       },
+    { "directory",  no_argument,       0, _LO_DIRECTORY  },
+    { "native",     no_argument,       0, _LO_NATIVE     },
+    { "entry",      no_argument,       0, _LO_ENTRY      },
+    { "password",   no_argument,       0, _LO_PASSWORD   },
+    { "color",      no_argument,       0, _LO_COLOR      },
+    { "color-html", no_argument,       0, _LO_COLOR_HTML },
+    { "progress",   no_argument,       0, _LO_PROGRESS   },
+    { "auto-close", no_argument,       0, _LO_AUTO_CLOSE },
+    { "scale",      no_argument,       0, _LO_SCALE      },
     { 0, 0, 0, 0 }
   };
 
-  while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index))
-         != -1)
-  {
+  while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index)) != -1) {
     switch (opt) {
-      case 'T':
+      case _LO_TEXT:
         msg = optarg;
         break;
-      case 't':
+      case _LO_TITLE:
         title = optarg;
         break;
-      case 'y':
+      case _LO_YES_LABEL:
         but_yes = optarg;
         break;
-      case 'n':
+      case _LO_NO_LABEL:
         but_no = optarg;
         break;
-      case 'v':
+      case _LO_VALUE:
         initval = optarg;
         break;
-      case 'm':
+      case _LO_MIN_VALUE:
         minval = optarg;
         break;
-      case 'M':
+      case _LO_MAX_VALUE:
         maxval = optarg;
         break;
-      case 's':
+      case _LO_STEP:
         stepval = optarg;
         break;
-      case 'w':
+      case _LO_WARNING:
         dialog = DIALOG_ALERT;
         dalert = 1;
         break;
-      case 'q':
+      case _LO_QUESTION:
         dialog = DIALOG_FL_CHOICE;
         dchoice = 1;
         break;
-      case 'f':
+      case _LO_FILE:
         dialog = DIALOG_FL_FILE_CHOOSER;
         dfilechooser = 1;
         break;
-      case 'd':
+      case _LO_DIRECTORY:
         dialog = DIALOG_FL_DIR_CHOOSER;
         ddirchoser = 1;
         break;
-      case 'N':
+      case _LO_NATIVE:
         native = 1;
         break;
-      case 'e':
+      case _LO_ENTRY:
         dialog = DIALOG_FL_INPUT;
         dinput = 1;
         break;
-      case 'p':
+      case _LO_PASSWORD:
         dialog = DIALOG_FL_PASSWORD;
         dpassword = 1;
         break;
-      case 'c':
+      case _LO_COLOR:
         dialog = DIALOG_FL_COLOR;
         dcolor = 1;
         break;
-      case 'C':
+      case _LO_COLOR_HTML:
         dialog = DIALOG_FL_COLOR_HTML;
         dcolorhtml = 1;
         break;
-      case 'P':
+      case _LO_PROGRESS:
         dialog = DIALOG_FL_PROGRESS;
         dprogress = 1;
         break;
-      case 'a':
+      case _LO_AUTO_CLOSE:
         autoclose = 1;
         break;
-      case 'S':
+      case _LO_SCALE:
         dialog = DIALOG_FL_VALUE_SLIDER;
         dvalslider = 1;
         break;
