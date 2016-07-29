@@ -15,6 +15,7 @@
 /* getopt long_options */
 #define _LO_ABOUT 'A'
 #define _LO_IGNORE_ESCAPE 'B'
+#define _LO_SCHEME 'C'
 #define _LO_TEXT 'a'
 #define _LO_TITLE 'b'
 #define _LO_YES_LABEL 'c'

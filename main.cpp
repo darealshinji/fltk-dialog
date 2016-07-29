@@ -67,7 +67,6 @@ void print_usage(char *prog)
   "Options:\n"
   "  -h, --help                 Show help options\n"
   "  -v, --version              Show FLTK and program version\n"
-  "  --ignore-escape            Don't close window on hitting ESC button\n"
   "  --about                    About FLTK dialog\n"
   "  --text=TEXT                Set the dialog text\n"
   "  --title=TITLE              Set the dialog title\n"
@@ -81,6 +80,9 @@ void print_usage(char *prog)
   "  --color                    Display color selection dialog; RGB output\n"
   "  --color-html               Display color selection dialog; HTML output\n"
   "  --scale                    Display scale dialog\n"
+  "  --ignore-escape            Don't close window on hitting ESC button\n"
+  "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
+  "                             gleam, platic or simple; default is gtk+\n"
   "\n"
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
@@ -112,6 +114,8 @@ int main(int argc, char **argv)
   char *maxval = NULL;
   char *stepval = NULL;
   char *initval = NULL;
+  const char *scheme = "default";
+  const char *scheme_default = "gtk+";
   int opt = 0;
   int long_index = 0;
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
@@ -135,6 +139,7 @@ int main(int argc, char **argv)
   /* run "About" dialog if invoked
    * without command line options */
   if (argc < 2) {
+    Fl::scheme(scheme_default);
     return about();
   }
 
@@ -155,6 +160,7 @@ int main(int argc, char **argv)
   static struct option long_options[] = {
     { "about",         no_argument,       0, _LO_ABOUT         },
     { "ignore-escape", no_argument,       0, _LO_IGNORE_ESCAPE },
+    { "scheme",        required_argument, 0, _LO_SCHEME        },
     { "text",          required_argument, 0, _LO_TEXT          },
     { "title",         required_argument, 0, _LO_TITLE         },
     { "yes-label",     required_argument, 0, _LO_YES_LABEL     },
@@ -186,6 +192,9 @@ int main(int argc, char **argv)
         break;
       case _LO_IGNORE_ESCAPE:
         Fl::add_handler(esc_handler);
+        break;
+      case _LO_SCHEME:
+        scheme = optarg;
         break;
       case _LO_TEXT:
         msg = optarg;
@@ -290,6 +299,25 @@ int main(int argc, char **argv)
   if ((autoclose == 1) && (dialog != DIALOG_FL_PROGRESS)) {
     std::cerr << argv[0] << ": --auto-close can only be used with --progress"
       << std::endl;
+    return 1;
+  }
+
+  if (strcmp("gtk", scheme) == 0) {
+    scheme = "gtk+";
+  } else if (strcmp("simple", scheme) == 0) {
+    scheme = "none";
+  }
+  if (strcmp("default", scheme) == 0) {
+    Fl::scheme(scheme_default);
+  } else if ((strcmp("none", scheme) == 0) ||
+             (strcmp("gtk+", scheme) == 0) ||
+             (strcmp("gleam", scheme) == 0) ||
+             (strcmp("plastic", scheme) == 0))
+  {
+    Fl::scheme(scheme);
+  } else {
+    std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
+      "Available schemes are: default gtk+ gleam platic simple" << std::endl;
     return 1;
   }
 
