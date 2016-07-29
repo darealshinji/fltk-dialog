@@ -51,6 +51,14 @@ void measure_cb(const Fl_Label *o, int &w, int &h)
   fl_measure(o->value, w, h, use_symbols);
 }
 
+static int esc_handler(int event)
+{
+  if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape) {
+    return 1; /* ignore Escape key */
+  }
+  return 0;
+}
+
 void print_usage(char *prog)
 {
   std::cout << "Usage:\n"
@@ -59,6 +67,7 @@ void print_usage(char *prog)
   "Options:\n"
   "  -h, --help                 Show help options\n"
   "  -v, --version              Show FLTK and program version\n"
+  "  --ignore-escape            Don't close window on hitting ESC button\n"
   "  --about                    About FLTK dialog\n"
   "  --text=TEXT                Set the dialog text\n"
   "  --title=TITLE              Set the dialog title\n"
@@ -110,9 +119,9 @@ int main(int argc, char **argv)
   int autoclose = 0;
 
   /* using these to check if two or more dialog options were specified */
-  int dalert, dchoice, dfilechooser, ddirchoser, dinput, dpassword,
+  int dabout, dalert, dchoice, dfilechooser, ddirchoser, dinput, dpassword,
     dcolor, dcolorhtml, dprogress, dvalslider;
-  dalert = dchoice = dfilechooser = ddirchoser = dinput = dpassword =
+  dabout = dalert = dchoice = dfilechooser = ddirchoser = dinput = dpassword =
     dcolor = dcolorhtml = dprogress = dvalslider = 0;
 
   /* disable fltk's '@' symbols */
@@ -123,17 +132,15 @@ int main(int argc, char **argv)
   Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
   Fl_Window::default_icon(&win_icon);
 
-  /* run "About" dialog if startet
+  /* run "About" dialog if invoked
    * without command line options */
   if (argc < 2) {
     return about();
   }
 
   for (int i = 1; i < argc; ++i) {
-    if (strcmp("--about", argv[i]) == 0) {
-      return about();
-    } else if ((strcmp("--help", argv[i]) == 0) ||
-               (strcmp("-h", argv[i]) == 0))
+    if ((strcmp("--help", argv[i]) == 0) ||
+        (strcmp("-h", argv[i]) == 0))
     {
       print_usage(argv[0]);
       return 0;
@@ -146,31 +153,40 @@ int main(int argc, char **argv)
   }
 
   static struct option long_options[] = {
-    { "text",       required_argument, 0, _LO_TEXT       },
-    { "title",      required_argument, 0, _LO_TITLE      },
-    { "yes-label",  required_argument, 0, _LO_YES_LABEL  },
-    { "no-label",   required_argument, 0, _LO_NO_LABEL   },
-    { "value",      required_argument, 0, _LO_VALUE      },
-    { "min-value",  required_argument, 0, _LO_MIN_VALUE  },
-    { "max-value",  required_argument, 0, _LO_MAX_VALUE  },
-    { "step",       required_argument, 0, _LO_STEP       },
-    { "warning",    no_argument,       0, _LO_WARNING    },
-    { "question",   no_argument,       0, _LO_QUESTION   },
-    { "file",       no_argument,       0, _LO_FILE       },
-    { "directory",  no_argument,       0, _LO_DIRECTORY  },
-    { "native",     no_argument,       0, _LO_NATIVE     },
-    { "entry",      no_argument,       0, _LO_ENTRY      },
-    { "password",   no_argument,       0, _LO_PASSWORD   },
-    { "color",      no_argument,       0, _LO_COLOR      },
-    { "color-html", no_argument,       0, _LO_COLOR_HTML },
-    { "progress",   no_argument,       0, _LO_PROGRESS   },
-    { "auto-close", no_argument,       0, _LO_AUTO_CLOSE },
-    { "scale",      no_argument,       0, _LO_SCALE      },
+    { "about",         no_argument,       0, _LO_ABOUT         },
+    { "ignore-escape", no_argument,       0, _LO_IGNORE_ESCAPE },
+    { "text",          required_argument, 0, _LO_TEXT          },
+    { "title",         required_argument, 0, _LO_TITLE         },
+    { "yes-label",     required_argument, 0, _LO_YES_LABEL     },
+    { "no-label",      required_argument, 0, _LO_NO_LABEL      },
+    { "value",         required_argument, 0, _LO_VALUE         },
+    { "min-value",     required_argument, 0, _LO_MIN_VALUE     },
+    { "max-value",     required_argument, 0, _LO_MAX_VALUE     },
+    { "step",          required_argument, 0, _LO_STEP          },
+    { "warning",       no_argument,       0, _LO_WARNING       },
+    { "question",      no_argument,       0, _LO_QUESTION      },
+    { "file",          no_argument,       0, _LO_FILE          },
+    { "directory",     no_argument,       0, _LO_DIRECTORY     },
+    { "native",        no_argument,       0, _LO_NATIVE        },
+    { "entry",         no_argument,       0, _LO_ENTRY         },
+    { "password",      no_argument,       0, _LO_PASSWORD      },
+    { "color",         no_argument,       0, _LO_COLOR         },
+    { "color-html",    no_argument,       0, _LO_COLOR_HTML    },
+    { "progress",      no_argument,       0, _LO_PROGRESS      },
+    { "auto-close",    no_argument,       0, _LO_AUTO_CLOSE    },
+    { "scale",         no_argument,       0, _LO_SCALE         },
     { 0, 0, 0, 0 }
   };
 
   while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index)) != -1) {
     switch (opt) {
+      case _LO_ABOUT:
+        dialog = DIALOG_ABOUT;
+        dabout = 1;
+        break;
+      case _LO_IGNORE_ESCAPE:
+        Fl::add_handler(esc_handler);
+        break;
       case _LO_TEXT:
         msg = optarg;
         break;
@@ -247,7 +263,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dalert + dchoice + dfilechooser + ddirchoser + dinput +
+  if ((dabout + dalert + dchoice + dfilechooser + ddirchoser + dinput +
        dpassword + dcolor + dcolorhtml + dprogress + dvalslider) >= 2)
   {
     std::cerr << argv[0] << ": two or more dialog options specified"
@@ -278,6 +294,9 @@ int main(int argc, char **argv)
   }
 
   switch (dialog) {
+    case DIALOG_ABOUT:
+      return about();
+
     case DIALOG_FL_MESSAGE:
       return dialog_fl_message(msg, title, MESSAGE);
 

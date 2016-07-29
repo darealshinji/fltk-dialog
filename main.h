@@ -1,4 +1,5 @@
 /* dialog types */
+#define DIALOG_ABOUT 0
 #define DIALOG_FL_MESSAGE 1
 #define DIALOG_ALERT 2
 #define DIALOG_FL_CHOICE 3
@@ -12,6 +13,8 @@
 #define DIALOG_FL_VALUE_SLIDER 11
 
 /* getopt long_options */
+#define _LO_ABOUT 'A'
+#define _LO_IGNORE_ESCAPE 'B'
 #define _LO_TEXT 'a'
 #define _LO_TITLE 'b'
 #define _LO_YES_LABEL 'c'
