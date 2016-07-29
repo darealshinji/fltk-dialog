@@ -57,11 +57,10 @@ int dialog_fl_calendar(char *calendar_title)
     calendar_title = (char *)"FLTK calendar";
   }
 
-  Fl_Window win(winw, winh);
+  Fl_Window win(winw, winh, calendar_title);
   Fl_Agenda_Calendar *cal = new Fl_Agenda_Calendar(bord, bord,
                                                    winw-bord*2,
                                                    calh-bord*2);
-  win.label(calendar_title);
   win.begin();
   Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
                                                   calh, butw, buth,
