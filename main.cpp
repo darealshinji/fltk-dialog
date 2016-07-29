@@ -136,6 +136,9 @@ int main(int argc, char **argv)
   Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
   Fl_Window::default_icon(&win_icon);
 
+  /* use a slightly brighter gray than the default one in FLTK */
+  Fl::background(204, 204, 204);
+
   /* run "About" dialog if invoked
    * without command line options */
   if (argc < 2) {
