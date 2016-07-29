@@ -270,7 +270,8 @@ int main(int argc, char **argv)
         dvalslider = 1;
         break;
       default:
-        print_usage(argv[0]);
+        std::cerr << "See `" << argv[0] << " --help' for available commands"
+          << std::endl;
         return 1;
     }
   }
