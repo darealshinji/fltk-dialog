@@ -5,7 +5,7 @@ endif
 fltk = fltk-1.3
 OPT = -Os
 
-CXXFLAGS += $(OPT) -Wall -Wextra -I. -I./$(fltk)
+CXXFLAGS += $(OPT) -Wall -Wextra -Isrc -I$(fltk)
 CXXFLAGS += $(shell $(fltk)/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 fltk_CXXFLAGS := $(OPT) -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 
@@ -31,10 +31,10 @@ endif
 
 
 BIN = fltk-dialog
-OBJS = \
+OBJS = $(addprefix src/,\
  about.o choice.o calendar.o color.o file.o input.o message.o password.o \
  progress.o slider.o translate.o version.o main.o \
- Flek/FDate.o Flek/Fl_Calendar.o
+ Flek/FDate.o Flek/Fl_Calendar.o)
 
 define CLEAN
 	-rm -f $(BIN) $(OBJS)
@@ -77,5 +77,5 @@ $(fltk)/fltk-config: $(fltk)
 $(fltk)/lib/libfltk.a: $(fltk)/fltk-config
 	$(MAKE) -C $(fltk)
 
-about.o main.o: CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/main.o: CXXFLAGS+=-Wno-unused-parameter
 
