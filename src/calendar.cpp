@@ -23,6 +23,9 @@
  */
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
 #include <iostream>  /* std::cout, std::endl */
@@ -30,16 +33,43 @@
 #include "Flek/Fl_Calendar.H"
 
 
+static void calendar_ok_cb(Fl_Widget *w)
+{
+  w->window()->hide();
+  return;
+}
+
+static void calendar_cancel_cb(Fl_Widget*)
+{
+  exit(1);
+}
+
 int dialog_fl_calendar(char *calendar_title)
 {
+  int winw = 250;
+  int calh = winw;
+  int bord = 10;
+  int butw = 110;  /* instead of 100; it's symmetrical */
+  int buth = 26;
+  int winh = calh+buth+bord;
+
   if (calendar_title == NULL) {
     calendar_title = (char *)"FLTK calendar";
   }
 
-  Fl_Window win(250, 250);
-  Fl_Agenda_Calendar *cal = new Fl_Agenda_Calendar(10, 10, win.w()-20, win.h()-20);
-  win.resizable(cal);
+  Fl_Window win(winw, winh);
+  Fl_Agenda_Calendar *cal = new Fl_Agenda_Calendar(bord, bord,
+                                                   winw-bord*2,
+                                                   calh-bord*2);
   win.label(calendar_title);
+  win.begin();
+  Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
+                                                  calh, butw, buth,
+                                                  fl_ok);
+  but_ok->callback(calendar_ok_cb);
+  Fl_Button *but_cancel = new Fl_Button(winw-butw-bord, calh,
+                                        butw, buth, fl_cancel);
+  but_cancel->callback(calendar_cancel_cb);
   win.end();
   win.show();
 
