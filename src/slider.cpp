@@ -123,7 +123,7 @@ int dialog_fl_value_slider(const char *slider_msg,
                                                  boxh+textheight+buth,
                                                  butw, buth, fl_ok);
       o->callback(slider_ok_cb);
-    } /* Fl_Button *o */
+    } /* Fl_Return_Button *o */
     { Fl_Button *o = new Fl_Button(winw-butw-bord,
                                    boxh+textheight+buth,
                                    butw, buth, fl_cancel);
@@ -132,9 +132,7 @@ int dialog_fl_value_slider(const char *slider_msg,
     o->end();
   } /* Fl_Window *o */
   w->show();
-  int ret = Fl::run();
-  std::cout << slidval_round << std::endl;
 
-  return ret;
+  return Fl::run();
 }
 
