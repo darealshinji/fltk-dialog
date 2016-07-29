@@ -37,7 +37,7 @@
 #include <stdlib.h>  /* exit, atof */
 #include <string.h>  /* strlen */
 
-#include "fltk-dialog.h"  /* translate */
+#include "fltk-dialog.h"
 
 
 double slidval_round;
@@ -104,9 +104,12 @@ int dialog_fl_value_slider(const char *slider_msg,
   Fl_Window *win = new Fl_Window(winw, boxh+slidh+bord*3+textheight,
                                  slider_title);
   win->begin();
+  win->callback(window_cb);  /* exit(1) */
+
   Fl_Box *box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   box->box(FL_NO_BOX);
   box->align(FL_ALIGN_RIGHT);
+
   Fl_Value_Slider *slider = new Fl_Value_Slider(bord, boxh,
                                                 winw-bord*2, slidh,
                                                 NULL);
@@ -118,6 +121,7 @@ int dialog_fl_value_slider(const char *slider_msg,
   slidval_round = slider->round(val);
   slider->value(slidval_round);
   slider->callback(slider_cb);
+
   Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
                                                   boxh+textheight+buth,
                                                   butw, buth, fl_ok);
@@ -126,6 +130,7 @@ int dialog_fl_value_slider(const char *slider_msg,
                                         boxh+textheight+buth,
                                         butw, buth, fl_cancel);
   but_cancel->callback(slider_cancel_cb);
+
   win->end();
   win->show();
 

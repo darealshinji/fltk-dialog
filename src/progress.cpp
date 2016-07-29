@@ -36,7 +36,7 @@
 #include <string.h>  /* strlen */
 #include <unistd.h>  /* isatty */
 
-#include "fltk-dialog.h"  /* translate, dialog_fl_message */
+#include "fltk-dialog.h"
 
 
 Fl_Window *prog_win;
@@ -49,12 +49,18 @@ static void prog_but_cb(Fl_Widget*)
   exit(0);
 }
 
+static void dont_close_cb(Fl_Widget*)
+{
+  return;  /* block the window's close button */
+}
+
 /* run a test:
  * (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
  */
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
-                             int   autoclose)
+                             int   autoclose,
+                             int   dont_close)
 {
   Fl_Box *box;
   Fl_Button *but = NULL;
@@ -105,6 +111,11 @@ int dialog_fl_progress(const char *progress_msg,
   prog_win = new Fl_Window(winw, winh);
   prog_win->label(progress_title);
   prog_win->begin();
+  if (dont_close == 1) {
+    prog_win->callback(dont_close_cb);
+  } else {
+    prog_win->callback(window_cb);  /* exit(1) */
+  }
 
   /* message text */
   box = new Fl_Box(0, 0, bord, boxh, s.c_str());
@@ -149,6 +160,10 @@ int dialog_fl_progress(const char *progress_msg,
         if (percent == 100) {
           if (autoclose == 0) {
             but->activate();
+            if (dont_close == 1) {
+              /* re-enable window's close button */
+              prog_win->callback(window_cb);
+            }
           } else {
             prog_win->remove(prog_bar);
             delete(prog_bar);

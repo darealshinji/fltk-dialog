@@ -28,7 +28,7 @@
 #include <iostream>  /* std::cout, std::endl */
 #include <string>    /* std::string, c_str */
 
-#include "fltk-dialog.h"  /* translate */
+#include "fltk-dialog.h"
 
 
 int dialog_fl_password(const char *password_msg,

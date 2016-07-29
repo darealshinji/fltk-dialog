@@ -34,7 +34,7 @@
 #include <stdlib.h>  /* exit */
 
 #include "fltk.xpm"
-#include "fltk-dialog.h"  /* license, get_fltk_version */
+#include "fltk-dialog.h"
 
 
 static void about_but_lic_cb(Fl_Widget*)
@@ -81,6 +81,8 @@ int about()
   win = new Fl_Window(winw, winh, "About FLTK dialog");
   box = new Fl_Box(bord, bord, winw-bord*2, winh-buth-bord*3, about_text_c);
   pixmap = new Fl_Pixmap(fltk_xpm);
+  win->begin();
+  win->callback(window_cb);  /* exit(1) */
   box->box(FL_UP_BOX);
   box->image(pixmap);
   but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");

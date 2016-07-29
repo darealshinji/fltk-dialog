@@ -29,8 +29,10 @@
 #include <FL/Fl_Window.H>
 
 #include <iostream>  /* std::cout, std::endl */
+#include <stdlib.h>  /* exit */
 
 #include "Flek/Fl_Calendar.H"
+#include "fltk-dialog.h"
 
 
 static void calendar_ok_cb(Fl_Widget *w)
@@ -62,6 +64,7 @@ int dialog_fl_calendar(char *calendar_title)
                                                    winw-bord*2,
                                                    calh-bord*2);
   win.begin();
+  win.callback(window_cb);  /* exit(1) */
   Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
                                                   calh, butw, buth,
                                                   fl_ok);

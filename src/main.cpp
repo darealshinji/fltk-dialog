@@ -29,6 +29,7 @@
 
 #include <iostream>  /* std::cout, std::cerr, std::endl */
 #include <getopt.h>  /* getopt_long_only */
+#include <stdlib.h>  /* exit */
 #include <string.h>  /* strcmp */
 
 #include "fltk-dialog.h"
@@ -41,14 +42,19 @@ void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
 {
   fl_font(o->font, o->size);
   fl_color((Fl_Color)o->color);
-  fl_draw(o->value, x, y, w, h, a, o->image, use_symbols);
+  fl_draw(o->value, x, y, w, h, a, o->image, USE_SYMBOLS);
 }
 
 /* global FLTK callback for measuring all labels */
 void measure_cb(const Fl_Label *o, int &w, int &h)
 {
   fl_font(o->font, o->size);
-  fl_measure(o->value, w, h, use_symbols);
+  fl_measure(o->value, w, h, USE_SYMBOLS);
+}
+
+void window_cb(Fl_Widget*)
+{
+  exit(1);
 }
 
 static int esc_handler(int event)
@@ -81,7 +87,7 @@ void print_usage(char *prog)
   "  --color                    Display color selection dialog; RGB output\n"
   "  --color-html               Display color selection dialog; HTML output\n"
   "  --scale                    Display scale dialog\n"
-  "  --ignore-escape            Don't close window on hitting ESC button\n"
+  "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
   "                             gleam, platic or simple; default is gtk+\n"
   "\n"
@@ -96,6 +102,8 @@ void print_usage(char *prog)
   "\n"
   "Progress options:\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
+  "  --no-close                 Block the window's close button until 100% has\n"
+  "                             been reached\n"
   "\n"
   "Scale options:\n"
   "  --value=VALUE              Set initial value\n"
@@ -122,6 +130,7 @@ int main(int argc, char **argv)
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
   int native = 0;
   int autoclose = 0;
+  int dont_close = 0;
 
   /* using these to check if two or more dialog options were specified */
   int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dinput,
@@ -162,30 +171,31 @@ int main(int argc, char **argv)
   }
 
   static struct option long_options[] = {
-    { "about",         no_argument,       0, _LO_ABOUT         },
-    { "ignore-escape", no_argument,       0, _LO_IGNORE_ESCAPE },
-    { "scheme",        required_argument, 0, _LO_SCHEME        },
-    { "text",          required_argument, 0, _LO_TEXT          },
-    { "title",         required_argument, 0, _LO_TITLE         },
-    { "yes-label",     required_argument, 0, _LO_YES_LABEL     },
-    { "no-label",      required_argument, 0, _LO_NO_LABEL      },
-    { "value",         required_argument, 0, _LO_VALUE         },
-    { "min-value",     required_argument, 0, _LO_MIN_VALUE     },
-    { "max-value",     required_argument, 0, _LO_MAX_VALUE     },
-    { "step",          required_argument, 0, _LO_STEP          },
-    { "warning",       no_argument,       0, _LO_WARNING       },
-    { "question",      no_argument,       0, _LO_QUESTION      },
-    { "file",          no_argument,       0, _LO_FILE          },
-    { "directory",     no_argument,       0, _LO_DIRECTORY     },
-    { "native",        no_argument,       0, _LO_NATIVE        },
-    { "entry",         no_argument,       0, _LO_ENTRY         },
-    { "password",      no_argument,       0, _LO_PASSWORD      },
-    { "color",         no_argument,       0, _LO_COLOR         },
-    { "color-html",    no_argument,       0, _LO_COLOR_HTML    },
-    { "progress",      no_argument,       0, _LO_PROGRESS      },
-    { "auto-close",    no_argument,       0, _LO_AUTO_CLOSE    },
-    { "scale",         no_argument,       0, _LO_SCALE         },
-    { "calendar",      no_argument,       0, _LO_CALENDAR      },
+    { "about",      no_argument,       0, _LO_ABOUT         },
+    { "no-escape",  no_argument,       0, _LO_NO_ESCAPE     },
+    { "no-close",   no_argument,       0, _LO_NO_CLOSE      },
+    { "scheme",     required_argument, 0, _LO_SCHEME        },
+    { "text",       required_argument, 0, _LO_TEXT          },
+    { "title",      required_argument, 0, _LO_TITLE         },
+    { "yes-label",  required_argument, 0, _LO_YES_LABEL     },
+    { "no-label",   required_argument, 0, _LO_NO_LABEL      },
+    { "value",      required_argument, 0, _LO_VALUE         },
+    { "min-value",  required_argument, 0, _LO_MIN_VALUE     },
+    { "max-value",  required_argument, 0, _LO_MAX_VALUE     },
+    { "step",       required_argument, 0, _LO_STEP          },
+    { "warning",    no_argument,       0, _LO_WARNING       },
+    { "question",   no_argument,       0, _LO_QUESTION      },
+    { "file",       no_argument,       0, _LO_FILE          },
+    { "directory",  no_argument,       0, _LO_DIRECTORY     },
+    { "native",     no_argument,       0, _LO_NATIVE        },
+    { "entry",      no_argument,       0, _LO_ENTRY         },
+    { "password",   no_argument,       0, _LO_PASSWORD      },
+    { "color",      no_argument,       0, _LO_COLOR         },
+    { "color-html", no_argument,       0, _LO_COLOR_HTML    },
+    { "progress",   no_argument,       0, _LO_PROGRESS      },
+    { "auto-close", no_argument,       0, _LO_AUTO_CLOSE    },
+    { "scale",      no_argument,       0, _LO_SCALE         },
+    { "calendar",   no_argument,       0, _LO_CALENDAR      },
     { 0, 0, 0, 0 }
   };
 
@@ -195,8 +205,11 @@ int main(int argc, char **argv)
         dialog = DIALOG_ABOUT;
         dabout = 1;
         break;
-      case _LO_IGNORE_ESCAPE:
+      case _LO_NO_ESCAPE:
         Fl::add_handler(esc_handler);
+        break;
+      case _LO_NO_CLOSE:
+        dont_close=1;
         break;
       case _LO_SCHEME:
         scheme = optarg;
@@ -312,6 +325,12 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  if ((dont_close == 1) && (dialog != DIALOG_FL_PROGRESS)) {
+    std::cerr << argv[0] << ": --no-close can only be used with --progress"
+      << std::endl;
+    return 1;
+  }
+
   if (strcmp("gtk", scheme) == 0) {
     scheme = "gtk+";
   } else if (strcmp("simple", scheme) == 0) {
@@ -371,7 +390,7 @@ int main(int argc, char **argv)
       return dialog_fl_color(title, COLOR_HTML);
 
     case DIALOG_FL_PROGRESS:
-      return dialog_fl_progress(msg, title, autoclose);
+      return dialog_fl_progress(msg, title, autoclose, dont_close);
 
     case DIALOG_FL_VALUE_SLIDER:
       return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);

@@ -15,8 +15,9 @@
 
 /* getopt long_options */
 #define _LO_ABOUT 'A'
-#define _LO_IGNORE_ESCAPE 'B'
-#define _LO_SCHEME 'C'
+#define _LO_NO_ESCAPE 'B'
+#define _LO_NO_CLOSE 'C'
+#define _LO_SCHEME 'D'
 #define _LO_TEXT 'a'
 #define _LO_TITLE 'b'
 #define _LO_YES_LABEL 'c'
@@ -40,5 +41,5 @@
 #define _LO_CALENDAR 'u'
 
 /* don't use fltk's '@' symbols */
-static int use_symbols = 0;
+#define USE_SYMBOLS 0
 

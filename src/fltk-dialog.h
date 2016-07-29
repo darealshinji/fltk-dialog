@@ -25,6 +25,11 @@
 #ifndef FLTK_DIALOG_H
 #define FLTK_DIALOG_H
 
+#include <FL/Fl.H>
+
+/* main.cpp */
+void window_cb(Fl_Widget*);
+
 /* about.cpp */
 void license(void);
 int about(void);
@@ -70,7 +75,8 @@ int dialog_fl_password(const char *password_msg,
 /* progress.cpp */
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
-                             int   autoclose=0);
+                             int   autoclose=0,
+                             int   dont_close=0);
 
 /* slider.cpp */
 int dialog_fl_value_slider(const char *slider_msg,

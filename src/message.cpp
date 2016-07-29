@@ -27,7 +27,7 @@
 
 #include <string>  /* std::string, c_str */
 
-#include "fltk-dialog.h"  /* translate */
+#include "fltk-dialog.h"
 
 
 int dialog_fl_message(const char *message_msg,

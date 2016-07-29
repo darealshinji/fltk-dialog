@@ -28,7 +28,7 @@
 
 #include <iostream>  /* std::cout, std::endl */
 
-#include "fltk-dialog.h"  /* DIR_CHOOSER */
+#include "fltk-dialog.h"
 
 
 int dialog_fl_file_chooser(char *file_chooser_title)

@@ -30,7 +30,7 @@
 #include <ios>       /* std::hex */
 #include <math.h>    /* round */
 
-#include "fltk-dialog.h"  /* COLOR_HTML */
+#include "fltk-dialog.h"
 
 
 #define INT_TO_HEX(x) std::setfill('0') << std::setw(2) << std::hex << x
