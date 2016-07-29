@@ -17,6 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
+ *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
  */
 
 #include <FL/Fl.H>
@@ -58,12 +59,8 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h,
 			     (h/6)*(i/7) + y,
 			     (w/7),
 			     (h/6));
-#ifndef FLEK_FLTK_2
     days[i]->down_box (FL_THIN_DOWN_BOX);
     days[i]->labelsize (10);
-#else
-    days[i]->label_size (10);
-#endif
     days[i]->box (FL_THIN_UP_BOX);
     days[i]->color (52);
     days[i]->callback ((Fl_Callback*)&fl_calendar_button_cb, (void *)this);
@@ -182,92 +179,46 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h,
 			      (w/7) + wxi,
 			      ((h - title_height)/7));
     weekdays[i]->box (FL_THIN_UP_BOX);  
-#ifndef FLEK_FLTK_2
     weekdays[i]->labelsize (10);
-#else
-    weekdays[i]->label_size (10);
-#endif
     weekdays[i]->color (52);  
   }
 
-/* labels changed for fltk-dialog */
-  weekdays[SUNDAY]->label("Su");
-  weekdays[MONDAY]->label("Mo");
-  weekdays[TUESDAY]->label("Tu");
-  weekdays[WEDNESDAY]->label("We");
-  weekdays[THURSDAY]->label("Th");
-  weekdays[FRIDAY]->label("Fr");
-  weekdays[SATURDAY]->label("Sa");
-/*
-  weekdays[SUNDAY]->label ("S");
-  weekdays[MONDAY]->label ("M");
-  weekdays[TUESDAY]->label ("T");
-  weekdays[WEDNESDAY]->label ("W");
-  weekdays[THURSDAY]->label ("R");
-  weekdays[FRIDAY]->label ("F");
-  weekdays[SATURDAY]->label ("S");
-*/
+  weekdays[SUNDAY]->label ("Su");
+  weekdays[MONDAY]->label ("Mo");
+  weekdays[TUESDAY]->label ("Tu");
+  weekdays[WEDNESDAY]->label ("We");
+  weekdays[THURSDAY]->label ("Th");
+  weekdays[FRIDAY]->label ("Fr");
+  weekdays[SATURDAY]->label ("Sa");
 
   prv_year = new Fl_Repeat_Button ((x - of + w - (int)(w/7) * 4), y, (w/7), (h/8), "Y-");
-#ifdef AGENDA
-  prv_year->repeat (1000,500);
-#endif
   prv_year->box (FL_THIN_UP_BOX);
-#ifndef FLEK_FLTK_2
   prv_year->labelsize (10);
   prv_year->down_box (FL_THIN_DOWN_BOX);
-#else
-  prv_year->label_size (10);
-#endif
   prv_year->callback ((Fl_Callback*)&fl_calendar_prv_year_cb, (void *)this);  
   
   prv_month = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 3, y, (w/7), (h/8), "M-");
-#ifdef AGENDA
-  prv_month->repeat (1000,500);
-#endif
   prv_month->box (FL_THIN_UP_BOX);
-#ifndef FLEK_FLTK_2
   prv_month->labelsize (10);
   prv_month->down_box (FL_THIN_DOWN_BOX);
-#else
-  prv_month->label_size (10);
-#endif
   prv_month->callback ((Fl_Callback*)&fl_calendar_prv_month_cb, (void *)this);  
 
   nxt_month = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 2, y, (w/7), (h/8), "M+");
-#ifdef AGENDA
-  nxt_month->repeat (1000,500);
-#endif
   nxt_month->box (FL_THIN_UP_BOX);
-#ifndef FLEK_FLTK_2
   nxt_month->labelsize (10);
   nxt_month->down_box (FL_THIN_DOWN_BOX);
-#else
-  nxt_month->label_size (10);
-#endif
   nxt_month->callback ((Fl_Callback*)&fl_calendar_nxt_month_cb, (void *)this);
   
   nxt_year = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 1, y, (w/7) + of, (h/8), "Y+");
-#ifdef AGENDA
-  nxt_year->repeat (1000,500);
-#endif
   nxt_year->box (FL_THIN_UP_BOX);
-#ifndef FLEK_FLTK_2
   nxt_year->labelsize (10);
   nxt_year->down_box (FL_THIN_DOWN_BOX);
-#else
-  nxt_year->label_size (10);
-#endif
   nxt_year->callback ((Fl_Callback*)&fl_calendar_nxt_year_cb, (void *)this);
 
   caption = new Fl_Box (x, y, (w/7)*3 + oi, (h/8));
   caption->box (FL_THIN_UP_BOX);
-#ifndef FLEK_FLTK_2
   caption->labelfont (FL_HELVETICA_BOLD);
   caption->labelsize (10);
-#else
-  caption->label_size (10);
-#endif
 
   Fl_Calendar_Base::csize (x, y + title_height + (h - title_height) / 7, w, h - title_height - (h - title_height) / 7);
   update ();
@@ -317,7 +268,6 @@ Fl_Calendar::update ()
   
   char tmp[32];
   sprintf (tmp, "%.3s %d", month_name[month ()-1], year ());
-  //sprintf (tmp, "%s %d", month_name[month ()-1], year ());
   Fl_Calendar_Base::update ();
   if (caption->label ())
     free ((void *) caption->label ());
@@ -414,166 +364,4 @@ Fl_Calendar::handle (int event)
     return 1;
   }
   return Fl_Group::handle (event);
-}
-
-
-// The following can be static since the popup calendar behaves
-// as a modal dialog
-
-struct datestruct { int flag; int m; int d; int y; char szDte[20]; };
-
-static  datestruct seldate;
-static  Fl_Window *popcal_form;
-static  Fl_Calendar *popcal;
-
-static void popcal_cb (Fl_Calendar *c, long d)
-{
-  if (d) {
-    seldate.flag = 1;
-    seldate.m = c->month ();
-    seldate.d = c->day ();
-    seldate.y = c->year ();
-  } 
-}
-
-static void makepopcal() {
-  if (popcal_form) return;
-  Fl_Window *w = popcal_form = new Fl_Window(7*20+4,8*20+4);
-  w->clear_border();
-  w->box(FL_UP_BOX);
-  (popcal = new Fl_Calendar(2, 2));
-  popcal->callback ( (Fl_Callback*)popcal_cb);
-  w->end();
-  w->set_modal();
-  return;
-}
-
-static datestruct * fl_popcal(int popcalfmt)
-{
-  makepopcal();
-  seldate.flag = -1;
-  popcal_form->show();
-  for (;;) {
-    Fl::wait();
-    if (seldate.flag > -1)
-      break;
-  }
-  popcal_form->hide();
-  if (seldate.flag == 1 )
-    strcpy (seldate.szDte, popcal->to_string (popcalfmt));
-  else
-    seldate.szDte[0] = 0; 
-  return &seldate;
-}
-
-/* disabled for fltk-dialog */
-/*
-#include "pixmaps/calendar.xpm"
- */
-
-void Fl_Date_Input::btnDate_Input_cb_i ()
-{
-  datestruct *retdate = fl_popcal(popcalfmt);
-  if (retdate->flag == 1)
-    Input.value (retdate->szDte);
-  return;
-}
-
-// button callback has to execute the real callback contained in
-// the parent Group widget
-
-/* fltk-dialog: disable -Wunused-parameter warning */
-void btnDate_Input_cb (Fl_Widget *v) /* , void *d) */
-{
-  ((Fl_Date_Input *)(v->parent()))->btnDate_Input_cb_i ();
-  return;
-}
-
-
-Fl_Date_Input::Fl_Date_Input (int X,int Y,int W,int H, char *L)
- : Fl_Group (X, Y, W, H, L),
-   Input (X, Y, W - H, H),
-   Btn (X + W - H + 1, Y + 1, H - 2, H - 2)
-{
-  xpos = X; 
-  ypos = Y; 
-  width = W; 
-  height = H;
-
-/* disabled for fltk-dialog */
-/*
-  (new Fl_Pixmap (calendar_xpm))->label (&Btn);
- */
-  Btn.callback ((Fl_Callback *)btnDate_Input_cb, 0);
-  popcalfmt = 0;
-  end();
-}
-
-// Date_Input value is contained in the Input widget
-
-void Fl_Date_Input::value( const char *s )
-{
-  Input.value (s);
-}
-
-const char *Fl_Date_Input::value()
-{
-  return (Input.value ());
-}
-
-#ifndef FLEK_FLTK_2
-void Fl_Date_Input::text_font (int tf) { Input.textfont (tf); }
-#else
-void Fl_Date_Input::text_font (Fl_Font tf) { Input.text_font (tf); }
-#endif
-
-#ifndef FLEK_FLTK_2
-void Fl_Date_Input::text_size(int sz) { Input.textsize (sz); }
-#else
-void Fl_Date_Input::text_size(int sz) { Input.text_size (sz); }
-#endif
-
-void Fl_Date_Input::format (int fmt)
-{
-  switch (fmt) {
-    case 0: 
-    case 1: 
-    case 2:
-    case 3:
-    case 4: 
-      popcalfmt = fmt; 
-      break;
-    default : 
-      popcalfmt = 0;
-  }
-}
-
-Fl_Agenda_Calendar::Fl_Agenda_Calendar (int x, int y, int w, int h, 
-					const char *l, int title_height) : Fl_Calendar (x, y, w, h, l)
-{
-  if (title_height < 0) {
-    title_height = h / 8;
-  }
-
-  int i;
-  for (i = 0; i<7; i++) {
-    weekdays[i]->size(weekdays[i]->w(), (h - title_height)/7);
-  }
-  
-  prv_year->size(prv_year->w(), title_height);
-  prv_year->label("Y-");
-
-  prv_month->size(prv_month->w(), title_height);
-  prv_month->label("M-");
-  
-  nxt_month->size(nxt_month->w(), title_height);
-  nxt_month->label("M+");
-  
-  nxt_year->size(nxt_year->w(), title_height);
-  nxt_year->label("Y+");
-  
-  caption->size(caption->w(), title_height);
-  
-  Fl_Calendar_Base::csize (x, y + title_height + (h - title_height) / 7, w, h - title_height - (h - title_height) / 7);
-  update ();
 }

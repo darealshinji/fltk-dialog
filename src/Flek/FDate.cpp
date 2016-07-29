@@ -17,17 +17,13 @@
  * USA.
  *
  * Authors: David Freese <dfreese@intrepid.net>
+ *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
  */
 
 #include <time.h>
-// Evil #include <iostream.h>
-//#include <iomanip.h>
 #include <stdio.h>
 #include <string.h>
 #include <Flek/FDate.H>
-
-// This class is based on the date class by Dave Freese
-// <dfreese@intrepid.net>
 
 const int FDate::days[] =
   { 0, 31, 28, 31, 30,  31,  30,  31,  31,  30,  31,  30, 31 };
@@ -155,15 +151,6 @@ bool FDate::valid (int y, int m, int d) {
   return true;
 }
 
-/* Always link all apps with with libstdc++ for a trivial thing
-   like this?  This should probably be put in a separate flek-stdc++
-   library?
-ostream &operator<< (ostream &output, const FDate &d) {
-  output << d.to_string ();
-  return output;
-}
-*/
-
 bool FDate::end_of_month (int d) {
   if (Month == 2 && leap_year (Year))
     return (d == 29);  // last day of Feb in leap year
@@ -232,12 +219,6 @@ void FDate::operator= (const FDate &d) {
   this->Day = d.Day;
 }
 
-double FDate::julian_date () {
-  int days_in_year = 365;
-  if (leap_year ()) days_in_year++;
-  return (Year + 1.0 * (day_of_year (Year, Month, Day) - 1) / days_in_year);
-}
-
 void FDate::next_month () {
   if (Month == 12) {
     Month = 1;
@@ -275,51 +256,19 @@ void FDate::next_year () {
 }
 
 
-char* FDate::to_string (int fmt) const {
-  /* fltk-dialog: larger array */
-  static char temp[40];  /* temp[20] */
-  char        temp_month[10];
-  switch (fmt) {
-   case 1 :
-    sprintf (temp, "%02d/%02d/%04d", Month, Day, Year);
-    break;
-   case 2 :  
-    sprintf (temp, "%s %2d, %4d",
-	     month_name[Month - 1], 
-	     Day, 
-	     Year);
-    break;
-   case 3 :
-    strcpy (temp_month, month_name [Month - 1]);
-    temp_month[3] = 0; 
-    sprintf (temp, "%s %2d, %4d", temp_month, Day, Year);
-    break;
-   case 4 :
-    strcpy (temp_month, month_name [Month - 1]);
-    temp_month[3] = 0; 
-    sprintf (temp, "%d %s %4d", Day, temp_month, Year);
-    break;
-  /* fltk-dialog: add custom format */
-   case 5 :
-    int wd;
-    const char *wdn;
-    wd = day_of_week (Year, Month, Day);
-    if (wd == 0) { wd = 7; }  /* Sunday */
-    wdn = weekday_name[wd - 1];
-    sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day, Day,
-             month_name[Month - 1], Month, Month, Year, wdn, wd);
-    break;
-   case 0 :
-   default :
-    sprintf (temp, "%02d/%02d/%02d", Month, Day, 
-	     Year > 1999 ? Year - 2000 : Year - 1900);
-    break;
-  }      
-  return temp;
-}
-
 char* FDate::to_string () const {
-  return to_string (Fmt);
+  static char temp[40];
+  int wd;
+  const char *wdn;
+  wd = day_of_week (Year, Month, Day);
+  if (wd == 0) {
+    /* Sunday */
+    wd = 7;
+  }
+  wdn = weekday_name[wd - 1];
+  sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day, Day,
+           month_name[Month - 1], Month, Month, Year, wdn, wd);
+  return temp;
 }
 
 int FDate::days_in_month (int month, int leap) {

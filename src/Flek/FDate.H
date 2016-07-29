@@ -17,14 +17,18 @@
  * USA.
  *
  * Authors: David Freese
+ *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
  */
 
 #ifndef __FDATE_H__
 #define __FDATE_H__
 
-#include <Flek/FBase.H>
-// CET - libstdc++ ios evil on Linux
-//#include <iostream.h>
+/* from FBase.H */
+class FBase
+{
+ public:
+  typedef FBase *Ptr;
+};
 
 typedef enum {
   SUNDAY,
@@ -159,13 +163,6 @@ class FDate : public FBase
   int day ();
 
   /**
-   * Gets the Julian date.
-   * 
-   * @return The julian date value for this object.
-   */
-  double julian_date ();
-
-  /**
    * Equality comparison of two dates.
    * 
    * @param src The FDate object to compare this one to.
@@ -220,12 +217,6 @@ class FDate : public FBase
    * Post-increment operator. Increment the date by one day.
    */
   FDate operator++ (int);
-
-  /**
-   * ostream operator.
-   */
-  // CET - libstdc++ ios evil on Linux
-  // friend ostream& operator << (ostream &, const FDate &);
 
   /**
    * Gets wether day d is at the end of the month.
@@ -360,13 +351,6 @@ class FDate : public FBase
    */
   void next_year ();
 
-  /**
-   * Convert the date to a string.
-   * 
-   * @param fmt The format to use during conversion.
-   */
-  char* to_string (int fmt) const;
-  
   /**
    * Convert the date to a string using the current format.
    */

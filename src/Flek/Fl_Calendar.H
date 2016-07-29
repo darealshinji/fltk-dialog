@@ -17,6 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
+ *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
  */
 
 #ifndef _FL_CALENDAR_H_
@@ -182,84 +183,5 @@ class Fl_Calendar : public Fl_Calendar_Base
   int selected_day_;
   
 };
-
-
-// Is Fl_Agenda_Calendar really necessary?  I don't see how title_height
-// makes the widget look any better.  - James
-
-/**
- * Fl_Agenda_Calendar is a subclass of Fl_Calendar.  This widget has a
- * slightly different user interface used for Agenda PDA.
- */
-class Fl_Agenda_Calendar : public Fl_Calendar
-{
-
- public:
-  
-  /**
-   * The constructor for an empty Fl_Agenda_Calendar.
-   */
-  Fl_Agenda_Calendar (int x, int y, int w = (7*20), int h = (8*20), 
-		      const char *l = 0, int title_height = -1);
-};
-
-/**
- * An input for getting and setting a date.
- */
-class Fl_Date_Input : public Fl_Group  {
-
- protected:
-  
-  Fl_Input   Input;
-  Fl_Button  Btn;
-  
-  int xpos;
-  int ypos;
-  int width;
-  int height;
-  int popcalfmt;
-  
- public:
-
-  /**
-   * Default constructor.
-   * 
-   * @param x The x coordinate.
-   * @param y The y coordinate.
-   * @param w The width of this widget.
-   * @param h The height of this widget.
-   * @param l The label.
-   */
-  Fl_Date_Input (int x, int y, int w, int h, char * = 0);
-  
-  void format (int);
-  
-  /**
-   * Gets the date value.
-   * 
-   * @return The date string.
-   */
-  const char *value ();
-
-  /**
-   * Sets the date value.
-   * 
-   * @param date The date string.
-   */
-  void value (const char* date);
-
-#ifndef FLEK_FLTK_2
-  void text_font (int);
-  void textfont (int t) { text_font(t); }
-  void textsize (int t) { text_size(t); }
-#else
-  void text_font (Fl_Font);
-#endif
-  void text_size (int);
-  
-  void btnDate_Input_cb_i ();
-  
-};
-
 
 #endif
