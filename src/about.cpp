@@ -111,7 +111,7 @@ void license()
   disp = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);
   disp->buffer(buff);
   buff->text(
-    /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' */
+    /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' LICENSE */
     "The MIT License (MIT)\n"
     "\n"
     "Copyright (c) 2016, djcj <djcj@gmx.de>\n"
@@ -136,7 +136,7 @@ void license()
     "\n"
     "\n"
     "\n"
-    "Copyright 1998-2016 by Bill Spitzak and others.\n"
+    "Copyright (c) 1998-2016 by Bill Spitzak and others.\n"
     "\n"
     "The FLTK library and included programs are provided under the terms of the\n"
     "GNU Library General Public License (LGPL) with the following exceptions:\n"
@@ -180,7 +180,7 @@ void license()
     "\n"
     "\n"
     "\n"
-    "Copyright 1999-2000 by the Flek development team.\n"
+    "Copyright (c) 1999-2000 by the Flek development team.\n"
     "\n"
     "This library is free software; you can redistribute it and/or\n"
     "modify it under the terms of the GNU Library General Public\n"

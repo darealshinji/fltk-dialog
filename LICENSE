@@ -24,7 +24,7 @@ SOFTWARE.
 
 fltk.xpm, icon.xpm:
 
-Copyright 1998-2016 by Bill Spitzak and others.
+Copyright (c) 1998-2016 by Bill Spitzak and others.
 
 The FLTK library and included programs are provided under the terms of the
 GNU Library General Public License (LGPL) with the following exceptions:
@@ -70,7 +70,7 @@ statement can be included in user documentation to satisfy this requirement:
 
 Flek/*:
 
-Copyright 1999-2000 by the Flek development team.
+Copyright (c) 1999-2000 by the Flek development team.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
