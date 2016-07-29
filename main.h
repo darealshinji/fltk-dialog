@@ -11,6 +11,7 @@
 #define DIALOG_FL_COLOR_HTML 9
 #define DIALOG_FL_PROGRESS 10
 #define DIALOG_FL_VALUE_SLIDER 11
+#define DIALOG_FL_CALENDAR 12
 
 /* getopt long_options */
 #define _LO_ABOUT 'A'
@@ -36,6 +37,7 @@
 #define _LO_PROGRESS 'r'
 #define _LO_AUTO_CLOSE 's'
 #define _LO_SCALE 't'
+#define _LO_CALENDAR 'u'
 
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;

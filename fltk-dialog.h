@@ -29,6 +29,9 @@
 void license(void);
 int about(void);
 
+/* calendar.cpp */
+int dialog_fl_calendar(char *calendar_title);
+
 /* choice.cpp */
 int dialog_fl_choice(const char *choice_msg,
                            char *choice_title,

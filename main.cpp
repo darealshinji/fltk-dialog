@@ -77,6 +77,7 @@ void print_usage(char *prog)
   "  --entry                    Display text entry dialog\n"
   "  --password                 Display password dialog\n"
   "  --progress                 Display progress indication dialog\n"
+  "  --calendar                 Display calendar dialog\n"
   "  --color                    Display color selection dialog; RGB output\n"
   "  --color-html               Display color selection dialog; HTML output\n"
   "  --scale                    Display scale dialog\n"
@@ -123,10 +124,10 @@ int main(int argc, char **argv)
   int autoclose = 0;
 
   /* using these to check if two or more dialog options were specified */
-  int dabout, dalert, dchoice, dfilechooser, ddirchoser, dinput, dpassword,
-    dcolor, dcolorhtml, dprogress, dvalslider;
-  dabout = dalert = dchoice = dfilechooser = ddirchoser = dinput = dpassword =
-    dcolor = dcolorhtml = dprogress = dvalslider = 0;
+  int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dinput,
+    dpassword, dcolor, dcolorhtml, dprogress, dvalslider;
+  dabout = dalert = dcalendar = dchoice = dfilechooser = ddirchoser = dinput =
+    dpassword = dcolor = dcolorhtml = dprogress = dvalslider = 0;
 
   /* disable fltk's '@' symbols */
   Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
@@ -184,6 +185,7 @@ int main(int argc, char **argv)
     { "progress",      no_argument,       0, _LO_PROGRESS      },
     { "auto-close",    no_argument,       0, _LO_AUTO_CLOSE    },
     { "scale",         no_argument,       0, _LO_SCALE         },
+    { "calendar",      no_argument,       0, _LO_CALENDAR      },
     { 0, 0, 0, 0 }
   };
 
@@ -269,6 +271,10 @@ int main(int argc, char **argv)
         dialog = DIALOG_FL_VALUE_SLIDER;
         dvalslider = 1;
         break;
+      case _LO_CALENDAR:
+        dialog = DIALOG_FL_CALENDAR;
+        dcalendar = 1;
+        break;
       default:
         std::cerr << "See `" << argv[0] << " --help' for available commands"
           << std::endl;
@@ -276,8 +282,8 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dabout + dalert + dchoice + dfilechooser + ddirchoser + dinput +
-       dpassword + dcolor + dcolorhtml + dprogress + dvalslider) >= 2)
+  if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser +
+       dinput + dpassword + dcolor + dcolorhtml + dprogress + dvalslider) >= 2)
   {
     std::cerr << argv[0] << ": two or more dialog options specified"
       << std::endl;
@@ -369,6 +375,9 @@ int main(int argc, char **argv)
 
     case DIALOG_FL_VALUE_SLIDER:
       return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
+
+    case DIALOG_FL_CALENDAR:
+      return dialog_fl_calendar(title);
   }
 }
 

@@ -59,8 +59,8 @@ int about()
   Fl_Pixmap *pixmap;
   Fl_Button *but_lic, *but_close;
 
-  int winw = 420;
-  int winh = 360;
+  int winw = 430;
+  int winh = 400;
   int bord = 10;
   int butw = 100;
   int buth = 26;
@@ -73,7 +73,9 @@ int about()
     "Copyright \xc2\xa9 2016 djcj <djcj@gmx.de>\n"
     "https://github.com/darealshinji/fltk-dialog\n\n"
     "The FLTK library and logo are\n"
-    "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.";
+    "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
+    "The calendar widget is copyright \xc2\xa9 1999-2000\n"
+    "by the Flek development team.";
   const char *about_text_c = about_text.c_str();
 
   win = new Fl_Window(winw, winh, "About FLTK dialog");
@@ -81,7 +83,7 @@ int about()
   pixmap = new Fl_Pixmap(fltk_xpm);
   box->box(FL_UP_BOX);
   box->image(pixmap);
-  but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "License");
+  but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
   but_lic->callback(about_but_lic_cb);
   but_close = new Fl_Button(winw-butw-bord, winh-buth-bord,
                             butw, buth, fl_close);
@@ -134,7 +136,6 @@ void license()
     "\n"
     "\n"
     "\n"
-    "\n"
     "Copyright 1998-2016 by Bill Spitzak and others.\n"
     "\n"
     "The FLTK library and included programs are provided under the terms of the\n"
@@ -176,6 +177,25 @@ void license()
     "\n"
     "    You should have received a copy of the GNU Library General Public License\n"
     "    along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
+    "\n"
+    "\n"
+    "\n"
+    "Copyright 1999-2000 by the Flek development team.\n"
+    "\n"
+    "This library is free software; you can redistribute it and/or\n"
+    "modify it under the terms of the GNU Library General Public\n"
+    "License as published by the Free Software Foundation; either\n"
+    "version 2 of the License, or (at your option) any later version.\n"
+    "\n"
+    "This library is distributed in the hope that it will be useful,\n"
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n"
+    "Library General Public License for more details.\n"
+    "\n"
+    "You should have received a copy of the GNU Library General Public\n"
+    "License along with this library; if not, write to the Free Software\n"
+    "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n"
+    "USA.\n"
   );
   but_close = new Fl_Button((winw-butw)/2, winh-buth-bord,
                             butw, buth, fl_close);
