@@ -89,7 +89,7 @@ void print_usage(char *prog)
   "  --scale                    Display scale dialog\n"
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
-  "                             gleam, platic or simple; default is gtk+\n"
+  "                             gleam, plastic or simple; default is gtk+\n"
   "\n"
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
@@ -346,7 +346,7 @@ int main(int argc, char **argv)
     Fl::scheme(scheme);
   } else {
     std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
-      "Available schemes are: default gtk+ gleam platic simple" << std::endl;
+      "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
   }
 
