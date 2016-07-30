@@ -53,7 +53,7 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h,
 				    const char *l) : Fl_Group (x, y, w, h, l), FDate () 
 {
   int i;  
-  
+
   for (i = 0; i<(7*6); i++) {
     days[i] = new Fl_Button ((w/7)*(i%7) + x,
 			     (h/6)*(i/7) + y,
@@ -88,11 +88,10 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
   }
 }
 
-
 void
 Fl_Calendar_Base::update ()
 {
-  int dow = day_of_week (year (), month (), 1);
+  int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
 
@@ -119,7 +118,7 @@ Fl_Button *
 Fl_Calendar_Base::day_button (int i)
 {
   if ((i > 0) && (i <= days_in_month ()))
-    return days[i + day_of_week (year (), month (), 1) - 1];
+    return days[i + day_of_week (year (), month (), 0) - 1];
   return 0;
 }
 
@@ -183,13 +182,13 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h,
     weekdays[i]->color (52);  
   }
 
-  weekdays[SUNDAY]->label ("Su");
-  weekdays[MONDAY]->label ("Mo");
-  weekdays[TUESDAY]->label ("Tu");
-  weekdays[WEDNESDAY]->label ("We");
-  weekdays[THURSDAY]->label ("Th");
-  weekdays[FRIDAY]->label ("Fr");
-  weekdays[SATURDAY]->label ("Sa");
+  weekdays[MONDAY - 1]->label ("Mo");
+  weekdays[TUESDAY - 1]->label ("Tu");
+  weekdays[WEDNESDAY - 1]->label ("We");
+  weekdays[THURSDAY - 1]->label ("Th");
+  weekdays[FRIDAY - 1]->label ("Fr");
+  weekdays[SATURDAY - 1]->label ("Sa");
+  weekdays[SUNDAY + 6]->label ("Su");
 
   prv_year = new Fl_Repeat_Button ((x - of + w - (int)(w/7) * 4), y, (w/7), (h/8), "Y-");
   prv_year->box (FL_THIN_UP_BOX);
@@ -256,7 +255,7 @@ void Fl_Calendar::csize (int cx, int cy, int cw, int ch)
 void 
 Fl_Calendar::update ()
 {
-  int dow = day_of_week (year (), month (), 1);
+  int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
   
