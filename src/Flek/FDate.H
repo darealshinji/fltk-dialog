@@ -71,7 +71,7 @@ class FDate : public FBase
   /**
    * Three argument constructor.  Initializes this object with the
    * year, month and day.
-   * 
+   *
    * @param y The year.
    * @param m The month.
    * @param d The day.
@@ -80,21 +80,21 @@ class FDate : public FBase
 
   /**
    * Copy constructor.
-   * 
+   *
    * @param src The FDate object to copy initial values from.
    */
   FDate (const FDate& src);
 
   /* (ScanDoc doesn't like this one)
    * Copy method.  This virtual method makes a new copy of this object.
-   * 
+   *
    * @return The pointer (FBase::Ptr) to the new FDate instance.
    */
   virtual FBase::Ptr copy () const;
 
   /**
    * Sets the date from the year, month, and day.
-   * 
+   *
    * @param y The year.
    * @param m The month, 1 through 12.
    * @param d The day, 1 through the numbers of days in that month.
@@ -103,7 +103,7 @@ class FDate : public FBase
 
   /**
    * Sets the date value from another FDate object.
-   * 
+   *
    * @param src The FDate object to set values from.
    */
   void set_date (const FDate& src);
@@ -115,49 +115,49 @@ class FDate : public FBase
 
   /**
    * Sets the year.
-   * 
+   *
    * @param y The year to associate with this object.
    */
   void year (int);
 
-  /** 
+  /**
    * Gets the year.
-   * 
+   *
    * @return The year associated with this object.
    */
   int year ();
 
   /**
    * Sets the month.
-   * 
+   *
    * @param m The month to associate with this object.
    */
   void month (int m);
 
   /**
    * Gets the month.
-   * 
+   *
    * @return The month associated with this object.
    */
   int  month ();
 
   /**
    * Sets the day.
-   * 
+   *
    * @param d The day of the month to associate with this object.
    */
   void day (int d);
 
   /**
    * Gets the day.
-   * 
+   *
    * @return The day of the month associated with this object.
    */
   int day ();
 
   /**
    * Equality comparison of two dates.
-   * 
+   *
    * @param src The FDate object to compare this one to.
    * @return True if this object and src are equal.  False otherwise.
    */
@@ -173,7 +173,7 @@ class FDate : public FBase
 
   /**
    * Comparison of two dates.
-   * 
+   *
    * @param src The FDate object to compare this one to.
    * @return True if this FDate object is less than the src object.  False otherwise.
    */
@@ -196,7 +196,7 @@ class FDate : public FBase
 
   /**
    * Adds days to the date.
-   * 
+   *
    * @param d The number of days to add to this date.
    */
   const FDate &operator+= (int d);
@@ -213,7 +213,7 @@ class FDate : public FBase
 
   /**
    * Gets wether day d is at the end of the month.
-   * 
+   *
    * @param d The day to check.
    * @return True if d is at the end of the month.  False otherwise.
    */
@@ -221,7 +221,7 @@ class FDate : public FBase
 
   /**
    * Gets wether year y is a leap year.
-   * 
+   *
    * @param y The year to check.
    * @return True if the year is a leap year.  False otherwise.
    */
@@ -229,7 +229,7 @@ class FDate : public FBase
 
   /**
    * Gets wether the year associated with this object is a leap year.
-   * 
+   *
    * @return True if the year is a leap year.  False otherwise.
    */
   bool leap_year ()
@@ -237,7 +237,7 @@ class FDate : public FBase
 
   /**
    * Gets wether the passed date is valid.
-   * 
+   *
    * @param y The year.
    * @param m The month, 1 through 12.
    * @param d The day, 1 through the numbers of days in that month.
@@ -247,7 +247,7 @@ class FDate : public FBase
 
   /**
    * Gets wether the current date is valid.
-   * 
+   *
    * @return True if the year, month and day make a valid date.  False otherwise.
    */
   bool valid ()
@@ -255,60 +255,60 @@ class FDate : public FBase
 
   /**
    * Gets the number of days in the month for a given month and leap value.
-   * 
+   *
    * @param m The month, 1 through 12.
    * @param leap Should be 1 if the associated year is a leap year, 0 otherwise.
    * @return The number of days in the month.
    */
   static int days_in_month (int m, int leap);
-  
+
   /**
    * Gets the number of days in the month for this date.
    *
    * @return The number of days in the month.
    */
-  int days_in_month () 
+  int days_in_month ()
     { return days_in_month (Month, leap_year (Year)); }
-  
+
   /**
    * Gets the day of the year for the passed date.
-   * 
+   *
    * @param y The year.
    * @param m The month, 1 through 12.
    * @param d The day, 1 through the numbers of days in that month.
    * @return The day of the year.
    */
   static int day_of_year (int y, int m, int d);
-  
+
   /**
    * Gets the day of the year for this date.
-   * 
+   *
    * @return The day of the year.
    */
-  int day_of_year () 
+  int day_of_year ()
     { return day_of_year (Year, Month, Day); }
 
   /**
    * Gets the day of the epoch for the passed date.
-   * 
+   *
    * @param y The year.
    * @param m The month, 1 through 12.
    * @param d The day, 1 through the numbers of days in that month.
    * @return The day of the epoch.
    */
   static int day_of_epoch (int y, int m, int d);
-  
+
   /**
    * Gets the day of the epoch for this date.
-   * 
+   *
    * @return The day of the epoch.
    */
-  int day_of_epoch () 
+  int day_of_epoch ()
     { return day_of_epoch (Year, Month, Day); }
 
   /**
    * Gets the day of the week for the passed date.
-   * 
+   *
    * @param y The year.
    * @param m The month, 1 through 12.
    * @param d The day, 1 through the numbers of days in that month.
@@ -318,12 +318,12 @@ class FDate : public FBase
 
   /**
    * Gets the day of the week for this date.
-   * 
+   *
    * @return The day of the week, 1 through 7.
    */
-  int day_of_week () 
+  int day_of_week ()
     { return day_of_week (Year, Month, Day); }
-  
+
   /**
    * Decrement the date by one month.
    */
@@ -338,7 +338,7 @@ class FDate : public FBase
    * Decrement the date by one year.
    */
   void previous_year ();
-  
+
   /**
    * Increment the date by one year.
    */
@@ -353,7 +353,7 @@ class FDate : public FBase
    * An array of days of the month for a non leap year, 1-12. (0 is ignored.)
    */
   static const int days[];
-  
+
   /**
    * An array of total days since the beginning of the year for
    * each month, 1-12.  (0 is ignored.)

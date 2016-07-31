@@ -38,15 +38,15 @@
 
 /** @package libflek_ui
  * Fl_Calendar_Base is a widget that allows a user to select a date
- * (day, month, and year) with a wall style calendar. 
+ * (day, month, and year) with a wall style calendar.
  */
 class Fl_Calendar_Base : public Fl_Group, public FDate {
-  
+
 public:
   /**
    * The constructor for an empty Fl_Calendar_Base.
    */
-  Fl_Calendar_Base (int x, int y, int w = (7*20), int h = (6*20),   
+  Fl_Calendar_Base (int x, int y, int w = (7*20), int h = (6*20),
 		    const char *l = 0);
 
   void update ();
@@ -63,12 +63,12 @@ public:
   void csize (int cx, int cy, int cw, int ch);
 
   /**
-   * Returns a pointer to the button for the day D in the Fl_Calendar. 
+   * Returns a pointer to the button for the day D in the Fl_Calendar.
    */
   Fl_Button * day_button (int i);
-   
+
  protected:
-  
+
   int cal_x;
   int cal_y;
   int cal_w;
@@ -78,44 +78,44 @@ public:
 };
 
 /**
- * Fl_Calendar is a subclass of Fl_Calendar.  This widget adds 
+ * Fl_Calendar is a subclass of Fl_Calendar.  This widget adds
  * day labels and controllers to the base calendar class.
  * <p><img src="Fl_Calendar.png">
  */
-class Fl_Calendar : public Fl_Calendar_Base 
+class Fl_Calendar : public Fl_Calendar_Base
 {
 
  public:
-  
+
   /**
    * The constructor for an empty Fl_Calendar.
    */
-  Fl_Calendar (int x, int y, int w = (7*20), int h = (8*20), 
+  Fl_Calendar (int x, int y, int w = (7*20), int h = (8*20),
   		    const char *l = 0);
 
   /**
-   * Sets the value of the widget back by one month. 
+   * Sets the value of the widget back by one month.
    */
   void previous_month ();
 
   /**
-   * Sets the value of the widget forward by one month. 
+   * Sets the value of the widget forward by one month.
    */
   void next_month ();
 
   /**
-   * Sets the value of the widget back by one year. 
+   * Sets the value of the widget back by one year.
    */
   void previous_year ();
 
   /**
-   * Sets the value of the widget forward by one year. 
+   * Sets the value of the widget forward by one year.
    */
   void next_year ();
 
   /**
    * Updates the widget after values have been changed.
-   */  
+   */
   void update ();
 
   /**
@@ -134,7 +134,7 @@ class Fl_Calendar : public Fl_Calendar_Base
    * Sets the Calendar's selection color.
    *
    * @param color The calendar's selection color.
-   */  
+   */
   void selection_color(Fl_Color c) {
 	Fl_Widget::selection_color(c);
 	for(int i = 0; i < 6*7; i++) {
@@ -149,7 +149,7 @@ class Fl_Calendar : public Fl_Calendar_Base
    * Gets the Calendar's selection color.
    *
    * @return The calendar's selection color.
-   */  
+   */
   Fl_Color selection_color() const {
     return Fl_Group::selection_color();
   }
@@ -173,7 +173,7 @@ class Fl_Calendar : public Fl_Calendar_Base
   int selected_day(int d) {selected_day_ = d; if (d) day(d); return d;}
 
  protected:
-  
+
   Fl_Box * weekdays[7];
   Fl_Box * caption;
   Fl_Repeat_Button * nxt_month;
@@ -181,7 +181,7 @@ class Fl_Calendar : public Fl_Calendar_Base
   Fl_Repeat_Button * nxt_year;
   Fl_Repeat_Button * prv_year;
   int selected_day_;
-  
+
 };
 
 #endif

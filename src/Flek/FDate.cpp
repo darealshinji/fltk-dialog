@@ -89,7 +89,7 @@ void FDate::set_date (int y, int m, int d) {
     Year = y;
     Month = m;
     Day = d;
-  } 
+  }
   else
     today ();
 }
@@ -219,7 +219,7 @@ void FDate::next_month () {
   }
   else
     Month++;
-  
+
   while (Day > days_in_month (Month, leap_year (Year)))
     Day--;
 }
@@ -231,7 +231,7 @@ void FDate::previous_month () {
   }
   else
     Month--;
-  
+
   while (Day > days_in_month (Month, leap_year (Year)))
     Day--;
 }
@@ -265,7 +265,7 @@ int FDate::days_in_month (int month, int leap) {
   /* Validate the month. */
   if (month < JANUARY || month > DECEMBER)
     return -1;
-  
+
   /* Return 28, 29, 30, or 31 based on month/leap. */
   switch (month) {
    case FEBRUARY:
@@ -283,20 +283,20 @@ int FDate::day_of_year (int year, int mon, int mday) {
 int FDate::day_of_epoch (int year, int mon, int mday) {
   int  doe;
   int  era, cent, quad, rest;
-  
+
   /* break down the year into 400, 100, 4, and 1 year multiples */
   rest = year - 1;
   quad = rest / 4;        rest %= 4;
   cent = quad / 25;       quad %= 25;
   era = cent / 4;         cent %= 4;
-  
+
   /* set up doe */
   doe = day_of_year (year, mon, mday);
   doe += era * (400 * 365 + 97);
   doe += cent * (100 * 365 + 24);
   doe += quad * (4 * 365 + 1);
   doe += rest * 365;
-  
+
   return doe;
 }
 
