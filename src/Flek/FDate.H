@@ -109,13 +109,6 @@ class FDate : public FBase
   void set_date (const FDate& src);
 
   /**
-   * Sets the date format.
-   * 
-   * @param fmt The date format.
-   */
-  void set_format (int fmt);
-
-  /**
    * Set the date value to today's date.
    */
   void today ();
@@ -382,7 +375,6 @@ private:
   int  Year;
   int  Month;
   int  Day;
-  int  Fmt;
   void help_increment ();
 
 };

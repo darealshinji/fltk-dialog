@@ -70,7 +70,6 @@ void FDate::today () {
 
 FDate::FDate () {
   today ();
-  Fmt = 0;
 }
 
 FDate::FDate (const FDate &dt) : FBase (dt) {
@@ -79,7 +78,6 @@ FDate::FDate (const FDate &dt) : FBase (dt) {
 
 FDate::FDate (int y, int m, int d) {
   set_date (y, m, d);
-  Fmt = 0;
 }
 
 FBase::Ptr FDate::copy (void) const {
@@ -100,11 +98,6 @@ void FDate::set_date (const FDate &dt) {
   Year = dt.Year;
   Month = dt.Month;
   Day = dt.Day;
-  Fmt = dt.Fmt;
-}
-
-void FDate::set_format (int iFmt) {
-  Fmt = iFmt;
 }
 
 void FDate::year (int y) {
@@ -261,10 +254,7 @@ char* FDate::to_string () const {
   int wd;
   const char *wdn;
   wd = day_of_week (Year, Month, Day);
-  if (wd == 0) {
-    /* Sunday */
-    wd = 7;
-  }
+  if (wd == 0) wd = 7;  /* Sunday */
   wdn = weekday_name[wd - 1];
   sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day, Day,
            month_name[Month - 1], Month, Month, Year, wdn, wd);
