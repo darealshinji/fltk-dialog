@@ -227,7 +227,7 @@ void FDate::next_month () {
   else
     Month++;
   
-  while ((Day >= 1) && (!valid ()))
+  while (Day > days_in_month (Month, leap_year (Year)))
     Day--;
 }
 
@@ -239,7 +239,7 @@ void FDate::previous_month () {
   else
     Month--;
   
-  while ((Day >= 1) && (!valid ()))
+  while (Day > days_in_month (Month, leap_year (Year)))
     Day--;
 }
 
