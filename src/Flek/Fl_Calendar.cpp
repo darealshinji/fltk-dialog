@@ -182,13 +182,13 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h,
     weekdays[i]->color (52);  
   }
 
-  weekdays[MONDAY - 1]->label ("Mo");
-  weekdays[TUESDAY - 1]->label ("Tu");
-  weekdays[WEDNESDAY - 1]->label ("We");
-  weekdays[THURSDAY - 1]->label ("Th");
-  weekdays[FRIDAY - 1]->label ("Fr");
-  weekdays[SATURDAY - 1]->label ("Sa");
-  weekdays[SUNDAY + 6]->label ("Su");
+  weekdays[MONDAY]->label ("Mo");
+  weekdays[TUESDAY]->label ("Tu");
+  weekdays[WEDNESDAY]->label ("We");
+  weekdays[THURSDAY]->label ("Th");
+  weekdays[FRIDAY]->label ("Fr");
+  weekdays[SATURDAY]->label ("Sa");
+  weekdays[SUNDAY]->label ("Su");
 
   prv_year = new Fl_Repeat_Button ((x - of + w - (int)(w/7) * 4), y, (w/7), (h/8), "Y-");
   prv_year->box (FL_THIN_UP_BOX);
@@ -255,7 +255,7 @@ void Fl_Calendar::csize (int cx, int cy, int cw, int ch)
 void 
 Fl_Calendar::update ()
 {
-  int dow = day_of_week (year (), month (), 0);
+  int dow = day_of_week (year (), month (), 1);
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
   
@@ -315,10 +315,12 @@ Fl_Calendar::handle (int event)
     d = day (); 
     y = year (); 
     switch(Fl::event_key ()) { 
+    /*
     case FL_Enter:
       selected_day_ = d;
       do_callback(this, d);
       break;
+     */
     case FL_Up: 
       o = -7; 
       break; 

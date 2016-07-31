@@ -31,13 +31,13 @@ class FBase
 };
 
 typedef enum {
-  SUNDAY,
   MONDAY,
   TUESDAY,
   WEDNESDAY,
   THURSDAY,
   FRIDAY,
-  SATURDAY
+  SATURDAY,
+  SUNDAY
 } FWeekday;
 
 typedef enum {

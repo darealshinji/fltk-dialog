@@ -124,7 +124,7 @@ int FDate::month () {
 }
 
 void FDate::day (int d) {
-  Day = d + 1;
+  Day = d;
 }
 
 int FDate::day () {
@@ -260,13 +260,13 @@ char* FDate::to_string () const {
   static char temp[40];
   int wd;
   const char *wdn;
-  wd = day_of_week (Year, Month, Day) - 1;
+  wd = day_of_week (Year, Month, Day);
   if (wd == 0) {
     /* Sunday */
     wd = 7;
   }
   wdn = weekday_name[wd - 1];
-  sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day-1, Day-1,
+  sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day, Day,
            month_name[Month - 1], Month, Month, Year, wdn, wd);
   return temp;
 }
