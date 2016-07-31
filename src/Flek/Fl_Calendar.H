@@ -46,8 +46,7 @@ public:
   /**
    * The constructor for an empty Fl_Calendar_Base.
    */
-  Fl_Calendar_Base (int x, int y, int w = (7*20), int h = (6*20),
-		    const char *l = 0);
+  Fl_Calendar_Base (int x, int y, int w = (7*20), int h = (6*20), const char *l = 0);
 
   void update ();
 
@@ -90,8 +89,7 @@ class Fl_Calendar : public Fl_Calendar_Base
   /**
    * The constructor for an empty Fl_Calendar.
    */
-  Fl_Calendar (int x, int y, int w = (7*20), int h = (8*20),
-  		    const char *l = 0);
+  Fl_Calendar (int x, int y, int w = (7*20), int h = (8*20), const char *l = 0);
 
   /**
    * Sets the value of the widget back by one month.
@@ -136,13 +134,13 @@ class Fl_Calendar : public Fl_Calendar_Base
    * @param color The calendar's selection color.
    */
   void selection_color(Fl_Color c) {
-	Fl_Widget::selection_color(c);
-	for(int i = 0; i < 6*7; i++) {
-		if(days[i]->color() == days[i]->selection_color()) {
-			days[i]->color(c);
-		}
-		days[i]->selection_color(c);
-	}
+    Fl_Widget::selection_color(c);
+    for(int i = 0; i < 6*7; i++) {
+      if(days[i]->color() == days[i]->selection_color()) {
+        days[i]->color(c);
+      }
+      days[i]->selection_color(c);
+    }
   }
 
   /**
@@ -161,7 +159,9 @@ class Fl_Calendar : public Fl_Calendar_Base
    *
    * @return The selected day if the user has selected a day, 0 otherwise.
    */
-  int selected_day() {return selected_day_;}
+  int selected_day() {
+    return selected_day_;
+  }
 
   /**
    * Sets the user selected day.  If d is non zero, this
@@ -170,7 +170,11 @@ class Fl_Calendar : public Fl_Calendar_Base
    * @return The selected day if the user has selected a day, 0 otherwise.
    */
   /* fltk-dialog: add return statement */
-  int selected_day(int d) {selected_day_ = d; if (d) day(d); return d;}
+  int selected_day(int d) {
+    selected_day_ = d;
+    if (d) day(d);
+    return d;
+  }
 
  protected:
 

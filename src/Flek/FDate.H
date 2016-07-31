@@ -23,7 +23,9 @@
 #ifndef __FDATE_H__
 #define __FDATE_H__
 
-/* from FBase.H */
+/**
+ * from FBase.H
+ */
 class FBase
 {
  public:
@@ -232,8 +234,9 @@ class FDate : public FBase
    *
    * @return True if the year is a leap year.  False otherwise.
    */
-  bool leap_year ()
-    { return leap_year (Year); }
+  bool leap_year () {
+    return leap_year (Year);
+  }
 
   /**
    * Gets wether the passed date is valid.
@@ -250,8 +253,9 @@ class FDate : public FBase
    *
    * @return True if the year, month and day make a valid date.  False otherwise.
    */
-  bool valid ()
-    { return valid (Year, Month, Day); }
+  bool valid () {
+    return valid (Year, Month, Day);
+  }
 
   /**
    * Gets the number of days in the month for a given month and leap value.
@@ -267,8 +271,9 @@ class FDate : public FBase
    *
    * @return The number of days in the month.
    */
-  int days_in_month ()
-    { return days_in_month (Month, leap_year (Year)); }
+  int days_in_month () {
+    return days_in_month (Month, leap_year (Year));
+  }
 
   /**
    * Gets the day of the year for the passed date.
@@ -285,8 +290,9 @@ class FDate : public FBase
    *
    * @return The day of the year.
    */
-  int day_of_year ()
-    { return day_of_year (Year, Month, Day); }
+  int day_of_year () {
+    return day_of_year (Year, Month, Day);
+  }
 
   /**
    * Gets the day of the epoch for the passed date.
@@ -303,8 +309,9 @@ class FDate : public FBase
    *
    * @return The day of the epoch.
    */
-  int day_of_epoch ()
-    { return day_of_epoch (Year, Month, Day); }
+  int day_of_epoch () {
+    return day_of_epoch (Year, Month, Day);
+  }
 
   /**
    * Gets the day of the week for the passed date.
@@ -321,8 +328,9 @@ class FDate : public FBase
    *
    * @return The day of the week, 1 through 7.
    */
-  int day_of_week ()
-    { return day_of_week (Year, Month, Day); }
+  int day_of_week () {
+    return day_of_week (Year, Month, Day);
+  }
 
   /**
    * Decrement the date by one month.

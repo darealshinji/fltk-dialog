@@ -29,8 +29,8 @@ const int FDate::days[] =
   { 0, 31, 28, 31, 30,  31,  30,  31,  31,  30,  31,  30, 31 };
 
 const int FDate::julian_days[2][13] = {
-    { 0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
-    { 0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
+  { 0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
+  { 0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
 };
 
 const char *FDate::month_name[] = {
@@ -89,9 +89,9 @@ void FDate::set_date (int y, int m, int d) {
     Year = y;
     Month = m;
     Day = d;
-  }
-  else
+  } else {
     today ();
+  }
 }
 
 void FDate::set_date (const FDate &dt) {
@@ -125,65 +125,72 @@ int FDate::day () {
 }
 
 bool FDate::leap_year (int y) {
-  if (y % 400 == 0 || ( y % 100 != 0 && y % 4 == 0 ))
+  if (y % 400 == 0 || ( y % 100 != 0 && y % 4 == 0 )) {
     return true;
+  }
   return false;
 }
 
 bool FDate::valid (int y, int m, int d) {
-  if (y < 1970 || y > 2035) return false;
-  if (m < 1 || m > 12) return false;
-  if (d < 1 ) return false;
+  if (y < 1970 || y > 2035) { return false; }
+  if (m < 1 || m > 12) { return false; }
+  if (d < 1 ) { return false; }
   if (leap_year (y)) {
-    if ((m == 2) && (d > 29))
+    if ((m == 2) && (d > 29)) {
       return false;
-    else
+    } else {
       return true;
+    }
   }
-  if (d > days[m]) return false;
+  if (d > days[m]) {
+    return false;
+  }
   return true;
 }
 
 bool FDate::end_of_month (int d) {
-  if (Month == 2 && leap_year (Year))
-    return (d == 29);  // last day of Feb in leap year
-  else
+  if (Month == 2 && leap_year (Year)) {
+    return (d == 29);  /* last day of Feb in leap year */
+  } else {
     return (d == days[Month]);
+  }
 }
 
 void FDate::help_increment () {
-  if (end_of_month (Day) && Month == 12) {  // end year
+  if (end_of_month (Day) && Month == 12) {  /* end year */
     Day = 1;
     Month = 1;
     ++Year;
   } else if (end_of_month (Day)) {
     Day = 1;
     ++Month;
-  } else
+  } else {
     ++Day;
+  }
 }
 
 FDate &FDate::operator++ () {
   help_increment ();
-  return *this;     // reference return to create an lvalue
+  return *this;  /* reference return to create an lvalue */
 }
 
 FDate FDate::operator++ (int) {
   FDate temp = *this;
   help_increment ();
-  return temp;     // return non-increment, saved temporary object
+  return temp;  /* return non-increment, saved temporary object */
 }
 
 const FDate &FDate::operator+= (int ndays) {
-  for (int i = 0; i < ndays; i++)
+  for (int i = 0; i < ndays; i++) {
     help_increment();
-  return *this;    // enables cascading
+  }
+  return *this;  /* enables cascading */
 }
 
 bool FDate::operator== (const FDate &d) {
-  if (this->Year != d.Year) return false;
-  if (this->Month != d.Month) return false;
-  if (this->Day != d.Day) return false;
+  if (this->Year != d.Year) { return false; }
+  if (this->Month != d.Month) { return false; }
+  if (this->Day != d.Day) { return false; }
   return true;
 }
 
@@ -192,17 +199,17 @@ bool FDate::operator!= (const FDate &d) {
 }
 
 bool FDate::operator< (const FDate &d) {
-  if (this->Year < d.Year) return true;
-  if (this->Year > d.Year) return false;
-  if (this->Month < d.Month) return true;
-  if (this->Month > d.Month) return false;
-  if (this->Day < d.Day) return true;
+  if (this->Year < d.Year) { return true; }
+  if (this->Year > d.Year) { return false; }
+  if (this->Month < d.Month) { return true; }
+  if (this->Month > d.Month) { return false; }
+  if (this->Day < d.Day) { return true; }
   return false;
 }
 
 bool FDate::operator> (const FDate &d) {
-  if (*this < d) return false;
-  if (*this == d) return false;
+  if (*this < d) { return false; }
+  if (*this == d) { return false; }
   return true;
 }
 
@@ -216,45 +223,48 @@ void FDate::next_month () {
   if (Month == 12) {
     Month = 1;
     Year++;
-  }
-  else
+  } else {
     Month++;
+  }
 
-  while (Day > days_in_month (Month, leap_year (Year)))
+  while (Day > days_in_month (Month, leap_year (Year))) {
     Day--;
+  }
 }
 
 void FDate::previous_month () {
   if (Month == 1) {
     Month = 12;
     Year--;
-  }
-  else
+  } else {
     Month--;
+  }
 
-  while (Day > days_in_month (Month, leap_year (Year)))
+  while (Day > days_in_month (Month, leap_year (Year))) {
     Day--;
+  }
 }
 
 void FDate::previous_year () {
-  if (Month == 2 && Day == 29)
+  if (Month == 2 && Day == 29) {
     Day = 28;
+  }
   Year--;
 }
 
 void FDate::next_year () {
-  if (Month == 2 && Day == 29)
+  if (Month == 2 && Day == 29) {
     Day = 28;
+  }
   Year++;
 }
-
 
 char* FDate::to_string () const {
   static char temp[40];
   int wd;
   const char *wdn;
   wd = day_of_week (Year, Month, Day);
-  if (wd == 0) wd = 7;  /* Sunday */
+  if (wd == 0) { wd = 7; }  /* Sunday */
   wdn = weekday_name[wd - 1];
   sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day, Day,
            month_name[Month - 1], Month, Month, Year, wdn, wd);
@@ -263,16 +273,15 @@ char* FDate::to_string () const {
 
 int FDate::days_in_month (int month, int leap) {
   /* Validate the month. */
-  if (month < JANUARY || month > DECEMBER)
+  if (month < JANUARY || month > DECEMBER) {
     return -1;
+  }
 
   /* Return 28, 29, 30, or 31 based on month/leap. */
-  switch (month) {
-   case FEBRUARY:
+  if (month == FEBRUARY) {
     return leap ? 29 : 28;
-   default:
-    return days[month];
   }
+  return days[month];
 }
 
 int FDate::day_of_year (int year, int mon, int mday) {
@@ -281,14 +290,19 @@ int FDate::day_of_year (int year, int mon, int mday) {
 }
 
 int FDate::day_of_epoch (int year, int mon, int mday) {
-  int  doe;
-  int  era, cent, quad, rest;
+  int doe, era, cent, quad, rest;
 
   /* break down the year into 400, 100, 4, and 1 year multiples */
   rest = year - 1;
-  quad = rest / 4;        rest %= 4;
-  cent = quad / 25;       quad %= 25;
-  era = cent / 4;         cent %= 4;
+
+  quad = rest / 4;
+  rest %= 4;
+
+  cent = quad / 25;
+  quad %= 25;
+
+  era = cent / 4;
+  cent %= 4;
 
   /* set up doe */
   doe = day_of_year (year, mon, mday);
@@ -300,7 +314,6 @@ int FDate::day_of_epoch (int year, int mon, int mday) {
   return doe;
 }
 
-int FDate::day_of_week (int year, int mon, int mday)
-{
+int FDate::day_of_week (int year, int mon, int mday) {
   return day_of_epoch (year, mon, mday) % 7;
 }
