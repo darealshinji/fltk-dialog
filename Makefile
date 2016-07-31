@@ -7,9 +7,10 @@ OPT = -Os
 
 CXXFLAGS += $(OPT) -Wall -Wextra -Isrc -I$(fltk)
 CXXFLAGS += $(shell $(fltk)/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
+CXXFLAGS += -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
 fltk_CXXFLAGS := $(OPT) -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 
-def_LDFLAGS := -Wl,-z,defs -Wl,--as-needed
+def_LDFLAGS := -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed
 LIBS = $(shell $(fltk)/fltk-config --ldflags) -lm
 
 fltk_config = \
