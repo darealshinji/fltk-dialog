@@ -26,9 +26,6 @@
 #include <algorithm>  /* find, replace */
 
 
-/* used by translate() function;
- * finds string FindWord in string ReplaceString and replaces
- * it with string ReplaceWord */
 std::string &repstr(      std::string &s,
                     const std::string &from,
                     const std::string &to)
