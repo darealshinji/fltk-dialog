@@ -18,6 +18,7 @@
 #define _LO_NO_ESCAPE 'B'
 #define _LO_NO_CLOSE 'C'
 #define _LO_SCHEME 'D'
+#define _LO_FORMAT 'E'
 #define _LO_TEXT 'a'
 #define _LO_TITLE 'b'
 #define _LO_YES_LABEL 'c'
@@ -42,4 +43,12 @@
 
 /* don't use fltk's '@' symbols */
 #define USE_SYMBOLS 0
+
+/* djcj: I find this easier than using extra print-error functions */
+#define P_ERR(x) \
+ std::cerr << argv[0] << ": " << x << std::endl; \
+ return 1
+#define P_ERRX(x) \
+ std::cerr << x << std::endl; \
+ return 1
 

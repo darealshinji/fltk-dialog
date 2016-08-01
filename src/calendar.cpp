@@ -29,11 +29,32 @@
 #include <FL/Fl_Window.H>
 
 #include <iostream>  /* std::cout, std::endl */
+#include <string>    /* std::string, c_str */
+#include <stdio.h>   /* sprintf */
 #include <stdlib.h>  /* exit */
+#include <string.h>  /* memset, strncpy */
+#include <time.h>    /* strptime, strftime */
 
 #include "Flek/Fl_Calendar.H"
 #include "fltk-dialog.h"
 
+
+/* must be global */
+char formattedDate[255];
+
+char *getFormattedDate(int y, int m, int d, char *fmt)
+{
+  struct tm tm;
+  char buf[255];
+  char date[31];
+
+  sprintf(date, "%d-%d-%d", y, m, d);
+  memset(&tm, 0, sizeof(struct tm));
+  strptime(date, "%Y-%m-%d", &tm);
+  strftime(buf, sizeof(buf), fmt, &tm);
+  strncpy(formattedDate, buf, sizeof(buf));
+  return formattedDate;
+}
 
 static void calendar_ok_cb(Fl_Widget *w)
 {
@@ -46,7 +67,8 @@ static void calendar_cancel_cb(Fl_Widget*)
   exit(1);
 }
 
-int dialog_fl_calendar(char *calendar_title)
+int dialog_fl_calendar(       char *calendar_title,
+                       std::string  fmt)
 {
   int winw = 250;
   int calh = winw;
@@ -54,9 +76,34 @@ int dialog_fl_calendar(char *calendar_title)
   int butw = 110;  /* instead of 100; it's symmetrical */
   int buth = 26;
   int winh = calh+buth+bord;
+  int ret, y, m, d;
+  char *fmtc, *date_formatted;
 
   if (calendar_title == NULL) {
     calendar_title = (char *)"FLTK calendar";
+  }
+
+  if (fmt == "") {
+    fmt = "%Y-%m-%d";
+  } else {
+    /* glibc date formats
+     * example date: 2006-01-08 */
+    fmt = repstr(fmt, "%", "%%");   /* literal %; add first! */
+    fmt = repstr(fmt, "d", "%-d");  /* day (8) */
+    fmt = repstr(fmt, "D", "%d");   /* day (08) */
+    fmt = repstr(fmt, "m", "%-m");  /* month (1) */
+    fmt = repstr(fmt, "M", "%m");   /* month (01) */
+    fmt = repstr(fmt, "y", "%y");   /* year (06) */
+    fmt = repstr(fmt, "Y", "%Y");   /* year (2006) */
+    fmt = repstr(fmt, "j", "%-j");  /* day of the year (8) */
+    fmt = repstr(fmt, "J", "%j");   /* day of the year (008) */
+    fmt = repstr(fmt, "W", "%A");   /* weekday name (Sunday) */
+    fmt = repstr(fmt, "w", "%a");   /* weekday name (Sun) */
+    fmt = repstr(fmt, "n", "%-V");  /* ISO 8601 week number (1) */
+    fmt = repstr(fmt, "N", "%V");   /* ISO 8601 week number (01) */
+    fmt = repstr(fmt, "B", "%B");   /* month name (January) */
+    fmt = repstr(fmt, "b", "%b");   /* month name (Jan) */
+    fmt = repstr(fmt, "u", "%u");   /* day of the week, Monday being 1 (7) */
   }
 
   Fl_Window win(winw, winh, calendar_title);
@@ -72,8 +119,13 @@ int dialog_fl_calendar(char *calendar_title)
   win.end();
   win.show();
 
-  int ret = Fl::run();
-  std::cout << cal->to_string() << std::endl;
+  ret = Fl::run();
+  y = cal->year();
+  m = cal->month();
+  d = cal->day();
+  fmtc = (char *)fmt.c_str();
+  date_formatted = getFormattedDate(y, m, d, fmtc);
+  std::cout << date_formatted << std::endl;
   return ret;
 }
 

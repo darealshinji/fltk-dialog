@@ -26,6 +26,7 @@
 #define FLTK_DIALOG_H
 
 #include <FL/Fl.H>
+#include <string>  /* std::string */
 
 /* main.cpp */
 void window_cb(Fl_Widget*);
@@ -35,7 +36,8 @@ void license(void);
 int about(void);
 
 /* calendar.cpp */
-int dialog_fl_calendar(char *calendar_title);
+int dialog_fl_calendar(       char *calendar_title,
+                       std::string  fmt);
 
 /* choice.cpp */
 int dialog_fl_choice(const char *choice_msg,
@@ -86,9 +88,10 @@ int dialog_fl_value_slider(const char *slider_msg,
                                  char *slider_step,
                                  char *slider_val);
 
-#include <string>  /* std::string */
-
 /* translate.cpp */
+std::string &repstr(      std::string &s,
+                    const std::string &from,
+                    const std::string &to);
 std::string translate(const char *inputText);
 
 /* version.cpp */

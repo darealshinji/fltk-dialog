@@ -28,6 +28,7 @@
 #include <FL/Fl_RGB_Image.H>
 
 #include <iostream>  /* std::cout, std::cerr, std::endl */
+#include <string>    /* std::string, c_str */
 #include <getopt.h>  /* getopt_long_only */
 #include <stdlib.h>  /* exit */
 #include <string.h>  /* strcmp */
@@ -105,6 +106,26 @@ void print_usage(char *prog)
   "  --no-close                 Block the window's close button until 100% has\n"
   "                             been reached\n"
   "\n"
+  "Calendar options:\n"
+  "  --format=FORMAT            Set a custom output format\n"
+  "                             Interpreted sequences for FORMAT are:\n"
+  "                             (using the date 2006-01-08)\n"
+  "                             d  day (8)\n"
+  "                             D  day (08)\n"
+  "                             m  month (1)\n"
+  "                             M  month (01)\n"
+  "                             y  year (06)\n"
+  "                             Y  year (2006)\n"
+  "                             j  day of the year (8)\n"
+  "                             J  day of the year (008)\n"
+  "                             W  weekday name (Sunday)\n"
+  "                             w  weekday name (Sun)\n"
+  "                             n  ISO 8601 week number (1)\n"
+  "                             N  ISO 8601 week number (01)\n"
+  "                             B  month name (January)\n"
+  "                             b  month name (Jan)\n"
+  "                             u  day of the week, Monday being 1 (7)\n"
+  "\n"
   "Scale options:\n"
   "  --value=VALUE              Set initial value\n"
   "  --min-value=VALUE          Set minimum value\n"
@@ -123,6 +144,7 @@ int main(int argc, char **argv)
   char *maxval = NULL;
   char *stepval = NULL;
   char *initval = NULL;
+  std::string fmt = "";
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
   int opt = 0;
@@ -175,6 +197,7 @@ int main(int argc, char **argv)
     { "no-escape",  no_argument,       0, _LO_NO_ESCAPE     },
     { "no-close",   no_argument,       0, _LO_NO_CLOSE      },
     { "scheme",     required_argument, 0, _LO_SCHEME        },
+    { "format",     required_argument, 0, _LO_FORMAT        },
     { "text",       required_argument, 0, _LO_TEXT          },
     { "title",      required_argument, 0, _LO_TITLE         },
     { "yes-label",  required_argument, 0, _LO_YES_LABEL     },
@@ -213,6 +236,9 @@ int main(int argc, char **argv)
         break;
       case _LO_SCHEME:
         scheme = optarg;
+        break;
+      case _LO_FORMAT:
+        fmt = std::string(optarg);
         break;
       case _LO_TEXT:
         msg = optarg;
@@ -289,46 +315,38 @@ int main(int argc, char **argv)
         dcalendar = 1;
         break;
       default:
-        std::cerr << "See `" << argv[0] << " --help' for available commands"
-          << std::endl;
-        return 1;
+        P_ERRX("See `" << argv[0] << " --help' for available commands");
     }
   }
 
   if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser +
        dinput + dpassword + dcolor + dcolorhtml + dprogress + dvalslider) >= 2)
   {
-    std::cerr << argv[0] << ": two or more dialog options specified"
-      << std::endl;
-    return 1;
+    P_ERR("two or more dialog options specified");
   }
 
   if ((native == 1) && ((dialog != DIALOG_FL_FILE_CHOOSER) &&
                         (dialog != DIALOG_FL_DIR_CHOOSER)))
   {
-    std::cerr << argv[0] << ": --native can only be used with --file or "
-      "--directory" << std::endl;
-    return 1;
+    P_ERR("--native can only be used with --file or --directory");
   }
 
   if ((dialog != DIALOG_FL_CHOICE) && ((but_yes != NULL) ||
                                        (but_no != NULL)))
   {
-    std::cerr << argv[0] << ": --yes-label and --no-label can only be used "
-      "with --question" << std::endl;
-    return 1;
+    P_ERR("--yes-label and --no-label can only be used with --question");
   }
 
   if ((autoclose == 1) && (dialog != DIALOG_FL_PROGRESS)) {
-    std::cerr << argv[0] << ": --auto-close can only be used with --progress"
-      << std::endl;
-    return 1;
+    P_ERR("--auto-close can only be used with --progress");
   }
 
   if ((dont_close == 1) && (dialog != DIALOG_FL_PROGRESS)) {
-    std::cerr << argv[0] << ": --no-close can only be used with --progress"
-      << std::endl;
-    return 1;
+    P_ERR("--no-close can only be used with --progress");
+  }
+
+  if ((fmt != "") && (dialog != DIALOG_FL_CALENDAR)) {
+    P_ERR("--format can only be used with --calendar");
   }
 
   if (strcmp("gtk", scheme) == 0) {
@@ -345,9 +363,8 @@ int main(int argc, char **argv)
   {
     Fl::scheme(scheme);
   } else {
-    std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
-      "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
-    return 1;
+    P_ERRX("\"" << scheme << "\" is not a valid scheme!\n"\
+      "Available schemes are: default gtk+ gleam plastic simple");
   }
 
   switch (dialog) {
@@ -396,7 +413,7 @@ int main(int argc, char **argv)
       return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
 
     case DIALOG_FL_CALENDAR:
-      return dialog_fl_calendar(title);
+      return dialog_fl_calendar(title, fmt);
   }
 }
 

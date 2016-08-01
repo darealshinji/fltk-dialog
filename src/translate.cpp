@@ -29,15 +29,16 @@
 /* used by translate() function;
  * finds string FindWord in string ReplaceString and replaces
  * it with string ReplaceWord */
-std::string findAndReplace(std::string ReplaceString,
-                           std::string FindWord,
-                           std::string ReplaceWord)
+std::string &repstr(      std::string &s,
+                    const std::string &from,
+                    const std::string &to)
 {
-  size_t index;
-  while ((index = ReplaceString.find(FindWord)) != std::string::npos) {
-    ReplaceString.replace(index, FindWord.size(), ReplaceWord);
+  if(!from.empty()) {
+    for(size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size()) {
+      s.replace(pos, from.size(), to);
+    }
   }
-  return ReplaceString;
+  return s;
 }
 
 /* translate \n (\\n) and \t (\\t) characters given through
@@ -46,8 +47,8 @@ std::string findAndReplace(std::string ReplaceString,
 std::string translate(const char *inputText)
 {
   std::string s(inputText);
-  s = findAndReplace(s, "\\n", "\n");
-  s = findAndReplace(s, "\\t", "\t");
+  s = repstr(s, "\\n", "\n");
+  s = repstr(s, "\\t", "\t");
   return s;
 }
 
