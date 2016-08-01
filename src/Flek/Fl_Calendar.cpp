@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
- *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
+ *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #include <FL/Fl.H>

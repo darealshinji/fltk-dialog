@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: David Freese <dfreese@intrepid.net>
- *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
+ *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #include <time.h>
@@ -257,18 +257,6 @@ void FDate::next_year () {
     Day = 28;
   }
   Year++;
-}
-
-char* FDate::to_string () const {
-  static char temp[40];
-  int wd;
-  const char *wdn;
-  wd = day_of_week (Year, Month, Day);
-  if (wd == 0) { wd = 7; }  /* Sunday */
-  wdn = weekday_name[wd - 1];
-  sprintf (temp, "%02d,%d|%s,%02d,%d|%d|%s,%d", Day, Day,
-           month_name[Month - 1], Month, Month, Year, wdn, wd);
-  return temp;
 }
 
 int FDate::days_in_month (int month, int leap) {

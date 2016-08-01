@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: David Freese
- *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
+ *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #ifndef __FDATE_H__
@@ -353,11 +353,6 @@ class FDate : public FBase
   void next_year ();
 
   /**
-   * Convert the date to a string using the current format.
-   */
-  char* to_string () const;
-
-  /**
    * An array of days of the month for a non leap year, 1-12. (0 is ignored.)
    */
   static const int days[];
@@ -374,7 +369,7 @@ class FDate : public FBase
   static const char* month_name[];
 
   /**
-   * fltk-dialog: An array of weekday names.
+   * An array of weekday names.
    */
   static const char* weekday_name[];
 

@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
- *          2016  djcj <djcj@gmx.de> (removed code not used by fltk-dialog)
+ *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #ifndef _FL_CALENDAR_H_
@@ -169,7 +169,6 @@ class Fl_Calendar : public Fl_Calendar_Base
    *
    * @return The selected day if the user has selected a day, 0 otherwise.
    */
-  /* fltk-dialog: add return statement */
   int selected_day(int d) {
     selected_day_ = d;
     if (d) day(d);
