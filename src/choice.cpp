@@ -33,7 +33,8 @@
 int dialog_fl_choice(const char *choice_msg,
                            char *choice_title,
                            char *choice_but_yes,
-                           char *choice_but_no)
+                           char *choice_but_no,
+                           char *choice_but_alt)
 {
   std::string s;
 
@@ -56,6 +57,6 @@ int dialog_fl_choice(const char *choice_msg,
   }
 
   fl_message_title(choice_title);
-  return fl_choice("%s", choice_but_yes, choice_but_no, NULL, s.c_str());
+  return fl_choice("%s", choice_but_yes, choice_but_no, choice_but_alt, s.c_str());
 }
 

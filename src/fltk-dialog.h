@@ -43,7 +43,8 @@ int dialog_fl_calendar(       char *calendar_title,
 int dialog_fl_choice(const char *choice_msg,
                            char *choice_title,
                            char *choice_but_yes,
-                           char *choice_but_no);
+                           char *choice_but_no,
+                           char *choice_but_alt);
 
 /* color.cpp */
 #define COLOR_RGB 0

@@ -95,6 +95,8 @@ void print_usage(char *prog)
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
   "  --no-label=TEXT            Sets the label of the No button\n"
+  "  --alt-label=TEXT           Add a third button and set its label;\n"
+  "                             exit code is 2\n"
   "\n"
   "File/directory selection options:\n"
   "  --native                   Use the operating system's native file\n"
@@ -140,6 +142,7 @@ int main(int argc, char **argv)
   char *title = NULL;
   char *but_yes = NULL;
   char *but_no = NULL;
+  char *but_alt = NULL;
   char *minval = NULL;
   char *maxval = NULL;
   char *stepval = NULL;
@@ -202,6 +205,7 @@ int main(int argc, char **argv)
     { "title",      required_argument, 0, _LO_TITLE         },
     { "yes-label",  required_argument, 0, _LO_YES_LABEL     },
     { "no-label",   required_argument, 0, _LO_NO_LABEL      },
+    { "alt-label",  required_argument, 0, _LO_ALT_LABEL     },
     { "value",      required_argument, 0, _LO_VALUE         },
     { "min-value",  required_argument, 0, _LO_MIN_VALUE     },
     { "max-value",  required_argument, 0, _LO_MAX_VALUE     },
@@ -251,6 +255,9 @@ int main(int argc, char **argv)
         break;
       case _LO_NO_LABEL:
         but_no = optarg;
+        break;
+      case _LO_ALT_LABEL:
+        but_alt = optarg;
         break;
       case _LO_VALUE:
         initval = optarg;
@@ -331,10 +338,10 @@ int main(int argc, char **argv)
     P_ERR("--native can only be used with --file or --directory");
   }
 
-  if ((dialog != DIALOG_FL_CHOICE) && ((but_yes != NULL) ||
-                                       (but_no != NULL)))
+  if ((dialog != DIALOG_FL_CHOICE) &&
+      ((but_yes != NULL) || (but_no != NULL) || (but_alt != NULL)))
   {
-    P_ERR("--yes-label and --no-label can only be used with --question");
+    P_ERR("--yes-label/--no-label/--alt-label can only be used with --question");
   }
 
   if ((autoclose == 1) && (dialog != DIALOG_FL_PROGRESS)) {
@@ -378,7 +385,7 @@ int main(int argc, char **argv)
       return dialog_fl_message(msg, title, ALERT);
 
     case DIALOG_FL_CHOICE:
-      return dialog_fl_choice(msg, title, but_yes, but_no);
+      return dialog_fl_choice(msg, title, but_yes, but_no, but_alt);
 
     case DIALOG_FL_FILE_CHOOSER:
       if (native == 1) {

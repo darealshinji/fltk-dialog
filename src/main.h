@@ -19,6 +19,7 @@
 #define _LO_NO_CLOSE 'C'
 #define _LO_SCHEME 'D'
 #define _LO_FORMAT 'E'
+#define _LO_ALT_LABEL 'F'
 #define _LO_TEXT 'a'
 #define _LO_TITLE 'b'
 #define _LO_YES_LABEL 'c'
