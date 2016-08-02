@@ -1,49 +1,53 @@
 /* dialog types */
-#define DIALOG_ABOUT 0
-#define DIALOG_FL_MESSAGE 1
-#define DIALOG_ALERT 2
-#define DIALOG_FL_CHOICE 3
-#define DIALOG_FL_FILE_CHOOSER 4
-#define DIALOG_FL_DIR_CHOOSER 5
-#define DIALOG_FL_INPUT 6
-#define DIALOG_FL_PASSWORD 7
-#define DIALOG_FL_COLOR 8
-#define DIALOG_FL_COLOR_HTML 9
-#define DIALOG_FL_PROGRESS 10
-#define DIALOG_FL_VALUE_SLIDER 11
-#define DIALOG_FL_CALENDAR 12
+enum dialogTypes {
+  DIALOG_ABOUT,
+  DIALOG_ALERT,
+  DIALOG_FL_CALENDAR,
+  DIALOG_FL_CHOICE,
+  DIALOG_FL_COLOR,
+  DIALOG_FL_COLOR_HTML,
+  DIALOG_FL_DIR_CHOOSER,
+  DIALOG_FL_FILE_CHOOSER,
+  DIALOG_FL_INPUT,
+  DIALOG_FL_MESSAGE,
+  DIALOG_FL_PASSWORD,
+  DIALOG_FL_PROGRESS,
+  DIALOG_FL_VALUE_SLIDER
+};
 
 /* getopt long_options */
-#define _LO_ABOUT 'A'
-#define _LO_NO_ESCAPE 'B'
-#define _LO_NO_CLOSE 'C'
-#define _LO_SCHEME 'D'
-#define _LO_FORMAT 'E'
-#define _LO_ALT_LABEL 'F'
-#define _LO_TEXT 'a'
-#define _LO_TITLE 'b'
-#define _LO_YES_LABEL 'c'
-#define _LO_NO_LABEL 'd'
-#define _LO_VALUE 'e'
-#define _LO_MIN_VALUE 'f'
-#define _LO_MAX_VALUE 'g'
-#define _LO_STEP 'h'
-#define _LO_WARNING 'i'
-#define _LO_QUESTION 'j'
-#define _LO_FILE 'k'
-#define _LO_DIRECTORY 'l'
-#define _LO_NATIVE 'm'
-#define _LO_ENTRY 'n'
-#define _LO_PASSWORD 'o'
-#define _LO_COLOR 'p'
-#define _LO_COLOR_HTML 'q'
-#define _LO_PROGRESS 'r'
-#define _LO_AUTO_CLOSE 's'
-#define _LO_SCALE 't'
-#define _LO_CALENDAR 'u'
+enum longOpts {
+  LO_ABOUT,
+  LO_ALT_LABEL,
+  LO_AUTO_CLOSE,
+  LO_CALENDAR,
+  LO_COLOR,
+  LO_COLOR_HTML,
+  LO_DIRECTORY,
+  LO_ENTRY,
+  LO_FILE,
+  LO_FORMAT,
+  LO_MAX_VALUE,
+  LO_MIN_VALUE,
+  LO_NATIVE,
+  LO_NO_CLOSE,
+  LO_NO_ESCAPE,
+  LO_NO_LABEL,
+  LO_PASSWORD,
+  LO_PROGRESS,
+  LO_QUESTION,
+  LO_SCALE,
+  LO_SCHEME,
+  LO_STEP,
+  LO_TEXT,
+  LO_TITLE,
+  LO_VALUE,
+  LO_WARNING,
+  LO_YES_LABEL
+};
 
 /* don't use fltk's '@' symbols */
-#define USE_SYMBOLS 0
+static int use_symbols = 0;
 
 /* djcj: I find this easier than using extra print-error functions */
 #define P_ERR(x) \

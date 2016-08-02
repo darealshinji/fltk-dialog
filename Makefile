@@ -70,7 +70,7 @@ else \
   git clone --depth 1 "https://github.com/darealshinji/fltk-1.3" $@; \
 fi
 
-$(fltk)/fltk-config:
+$(fltk)/fltk-config: $(fltk)
 	test -x $@ || (cd $(fltk) && NOCONFIGURE=1 ./autogen.sh && \
   CXXFLAGS="$(fltk_CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
   ./configure $(fltk_config))
