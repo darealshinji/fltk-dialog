@@ -84,7 +84,7 @@ void print_usage(char *prog)
   "  --entry                    Display text entry dialog\n"
   "  --password                 Display password dialog\n"
   "  --progress                 Display progress indication dialog\n"
-  "  --calendar                 Display calendar dialog\n"
+  "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
   "  --color                    Display color selection dialog; RGB output\n"
   "  --color-html               Display color selection dialog; HTML output\n"
   "  --scale                    Display scale dialog\n"
@@ -95,7 +95,7 @@ void print_usage(char *prog)
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
   "  --no-label=TEXT            Sets the label of the No button\n"
-  "  --alt-label=TEXT           Add a third button and set its label;\n"
+  "  --alt-label=TEXT           Adds a third button and sets its label;\n"
   "                             exit code is 2\n"
   "\n"
   "File/directory selection options:\n"
@@ -133,7 +133,8 @@ void print_usage(char *prog)
   "  --min-value=VALUE          Set minimum value\n"
   "  --max-value=VALUE          Set maximum value\n"
   "  --step=VALUE               Set step size\n"
-  " VALUE can be float point or integer\n" << std::endl;
+  "                             VALUE can be float point or integer\n"
+    << std::endl;
 }
 
 int main(int argc, char **argv)
