@@ -48,8 +48,11 @@ int dialog_fl_password(const char *password_msg,
 
   fl_message_title(password_title);
 
-  const char *password_label = fl_password("%s", NULL, s.c_str());
-  std::cout << password_label << std::endl;
-  return 0;
+  if (const char *password_label = fl_password("%s", NULL, s.c_str())) {
+    std::cout << password_label << std::endl;
+    return 0;
+  } else {
+    return 1;
+  }
 }
 

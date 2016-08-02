@@ -70,11 +70,7 @@ else \
   git clone --depth 1 "https://github.com/darealshinji/fltk-1.3" $@; \
 fi
 
-$(fltk)/patch_applied_stamp: $(fltk)
-	test -f $@ || (cd $< && patch -p1 <../fl_ask-window_cb.diff && \
-  touch ../$@)
-
-$(fltk)/fltk-config: $(fltk)/patch_applied_stamp
+$(fltk)/fltk-config:
 	test -x $@ || (cd $(fltk) && NOCONFIGURE=1 ./autogen.sh && \
   CXXFLAGS="$(fltk_CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
   ./configure $(fltk_config))
