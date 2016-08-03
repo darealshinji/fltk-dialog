@@ -39,6 +39,8 @@
 #include "fltk-dialog.h"
 
 
+Fl_Calendar *cal;
+
 /* must be global */
 char formattedDate[255];
 
@@ -64,6 +66,7 @@ static void calendar_ok_cb(Fl_Widget *w)
 
 static void calendar_cancel_cb(Fl_Widget*)
 {
+  delete cal;
   exit(1);
 }
 
@@ -107,9 +110,9 @@ int dialog_fl_calendar(       char *calendar_title,
   }
 
   Fl_Window win(winw, winh, calendar_title);
-  Fl_Calendar *cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
+  cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
   win.begin();
-  win.callback(window_cb);  /* exit(1) */
+  win.callback(calendar_cancel_cb);  /* exit(1) */
   Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
                                                   calh, butw, buth, fl_ok);
   but_ok->callback(calendar_ok_cb);
@@ -126,6 +129,7 @@ int dialog_fl_calendar(       char *calendar_title,
   fmtc = (char *)fmt.c_str();
   date_formatted = getFormattedDate(y, m, d, fmtc);
   std::cout << date_formatted << std::endl;
+  delete cal;
   return ret;
 }
 

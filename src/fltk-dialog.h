@@ -28,9 +28,6 @@
 #include <FL/Fl.H>
 #include <string>  /* std::string */
 
-/* main.cpp */
-void window_cb(Fl_Widget*);
-
 /* about.cpp */
 void license(void);
 int about(void);

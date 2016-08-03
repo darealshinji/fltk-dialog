@@ -42,11 +42,18 @@
 Fl_Window *prog_win;
 Fl_Progress *prog_bar;
 
-static void prog_but_cb(Fl_Widget*)
+static void prog_exit0_cb(Fl_Widget*)
 {
   prog_win->remove(prog_bar);
-  delete(prog_bar);
+  delete prog_bar;
   exit(0);
+}
+
+static void prog_exit1_cb(Fl_Widget*)
+{
+  prog_win->remove(prog_bar);
+  delete prog_bar;
+  exit(1);
 }
 
 static void dont_close_cb(Fl_Widget*)
@@ -114,7 +121,7 @@ int dialog_fl_progress(const char *progress_msg,
   if (dont_close == 1) {
     prog_win->callback(dont_close_cb);
   } else {
-    prog_win->callback(window_cb);  /* exit(1) */
+    prog_win->callback(prog_exit1_cb);
   }
 
   /* message text */
@@ -137,7 +144,7 @@ int dialog_fl_progress(const char *progress_msg,
     but = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
                         butw, buth, fl_close);
     but->deactivate();
-    but->callback(prog_but_cb);
+    but->callback(prog_exit0_cb);
   }
 
   prog_win->end();
@@ -162,11 +169,11 @@ int dialog_fl_progress(const char *progress_msg,
             but->activate();
             if (dont_close == 1) {
               /* re-enable window's close button */
-              prog_win->callback(window_cb);
+              prog_win->callback(prog_exit1_cb);
             }
           } else {
             prog_win->remove(prog_bar);
-            delete(prog_bar);
+            delete prog_bar;
             exit(0);
           }
         }

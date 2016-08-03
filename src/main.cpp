@@ -53,11 +53,6 @@ void measure_cb(const Fl_Label *o, int &w, int &h)
   fl_measure(o->value, w, h, use_symbols);
 }
 
-void window_cb(Fl_Widget*)
-{
-  exit(1);
-}
-
 static int esc_handler(int event)
 {
   if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape) {

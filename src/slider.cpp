@@ -40,6 +40,7 @@
 #include "fltk-dialog.h"
 
 
+Fl_Value_Slider *slider;
 double slidval_round;
 
 static void slider_cb(Fl_Widget *o)
@@ -55,6 +56,7 @@ static void slider_ok_cb(Fl_Widget *w)
 
 static void slider_cancel_cb(Fl_Widget*)
 {
+  delete slider;
   exit(1);
 }
 
@@ -104,15 +106,13 @@ int dialog_fl_value_slider(const char *slider_msg,
   Fl_Window *win = new Fl_Window(winw, boxh+slidh+bord*3+textheight,
                                  slider_title);
   win->begin();
-  win->callback(window_cb);  /* exit(1) */
+  win->callback(slider_cancel_cb);  /* exit(1) */
 
   Fl_Box *box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   box->box(FL_NO_BOX);
   box->align(FL_ALIGN_RIGHT);
 
-  Fl_Value_Slider *slider = new Fl_Value_Slider(bord, boxh,
-                                                winw-bord*2, slidh,
-                                                NULL);
+  slider = new Fl_Value_Slider(bord, boxh, winw-bord*2, slidh, NULL);
   slider->type(FL_HOR_NICE_SLIDER);
   slider->box(FL_FLAT_BOX);
   slider->minimum(min);
@@ -136,6 +136,7 @@ int dialog_fl_value_slider(const char *slider_msg,
 
   int ret = Fl::run();
   std::cout << slidval_round << std::endl;
+  delete slider;
   return ret;
 }
 

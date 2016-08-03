@@ -37,6 +37,10 @@
 #include "fltk-dialog.h"
 
 
+Fl_Pixmap *about_pixmap;
+Fl_Text_Buffer *license_buffer;
+Fl_Text_Display *license_display;
+
 static void about_but_lic_cb(Fl_Widget*)
 {
   license();
@@ -47,8 +51,11 @@ static void about_hide_cb(Fl_Widget *w)
   w->window()->hide();
 }
 
-static void about_but_close_cb(Fl_Widget*)
+static void about_close_cb(Fl_Widget*)
 {
+  delete about_pixmap;
+  delete license_buffer;
+  delete license_display;
   exit(0);
 }
 
@@ -56,7 +63,6 @@ int about()
 {
   Fl_Window *win;
   Fl_Box    *box;
-  Fl_Pixmap *pixmap;
   Fl_Button *but_lic, *but_close;
 
   int winw = 430;
@@ -80,26 +86,26 @@ int about()
 
   win = new Fl_Window(winw, winh, "About FLTK dialog");
   box = new Fl_Box(bord, bord, winw-bord*2, winh-buth-bord*3, about_text_c);
-  pixmap = new Fl_Pixmap(fltk_xpm);
+  about_pixmap = new Fl_Pixmap(fltk_xpm);
   win->begin();
-  win->callback(window_cb);  /* exit(1) */
+  win->callback(about_close_cb);  /* exit(0) */
   box->box(FL_UP_BOX);
-  box->image(pixmap);
+  box->image(about_pixmap);
   but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
   but_lic->callback(about_but_lic_cb);
   but_close = new Fl_Button(winw-butw-bord, winh-buth-bord,
                             butw, buth, fl_close);
-  but_close->callback(about_but_close_cb);
+  but_close->callback(about_close_cb);
   win->end();
   win->show();
-  return Fl::run();
+  int ret = Fl::run();
+  delete about_pixmap;
+  return ret;
 }
 
 void license()
 {
   Fl_Window *win;
-  Fl_Text_Buffer *buff;
-  Fl_Text_Display *disp;
   Fl_Button *but_close;
 
   int winw = 600;
@@ -109,10 +115,10 @@ void license()
   int buth = 26;
 
   win = new Fl_Window(winw, winh, "Terms and Conditions");
-  buff = new Fl_Text_Buffer();
-  disp = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);
-  disp->buffer(buff);
-  buff->text(
+  license_buffer = new Fl_Text_Buffer();
+  license_display = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);
+  license_display->buffer(license_buffer);
+  license_buffer->text(
     /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' LICENSE */
     "The MIT License (MIT)\n"
     "\n"
@@ -205,5 +211,7 @@ void license()
   win->end();
   win->show();
   Fl::run();
+  delete license_buffer;
+  delete license_display;
 }
 
