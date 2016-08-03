@@ -85,8 +85,7 @@ void print_usage(char *prog)
   "  --password                 Display password dialog\n"
   "  --progress                 Display progress indication dialog\n"
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
-  "  --color                    Display color selection dialog; RGB output\n"
-  "  --color-html               Display color selection dialog; HTML output\n"
+  "  --color                    Display color selection dialog\n"
   "  --scale                    Display scale dialog\n"
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
@@ -160,9 +159,9 @@ int main(int argc, char **argv)
 
   /* using these to check if two or more dialog options were specified */
   int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dinput,
-    dpassword, dcolor, dcolorhtml, dprogress, dvalslider;
+    dpassword, dcolor, dprogress, dvalslider;
   dabout = dalert = dcalendar = dchoice = dfilechooser = ddirchoser = dinput =
-    dpassword = dcolor = dcolorhtml = dprogress = dvalslider = 0;
+    dpassword = dcolor = dprogress = dvalslider = 0;
 
   /* disable fltk's '@' symbols */
   Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
@@ -219,7 +218,6 @@ int main(int argc, char **argv)
     { "entry",      no_argument,       0, LO_ENTRY      },
     { "password",   no_argument,       0, LO_PASSWORD   },
     { "color",      no_argument,       0, LO_COLOR      },
-    { "color-html", no_argument,       0, LO_COLOR_HTML },
     { "progress",   no_argument,       0, LO_PROGRESS   },
     { "auto-close", no_argument,       0, LO_AUTO_CLOSE },
     { "scale",      no_argument,       0, LO_SCALE      },
@@ -303,10 +301,6 @@ int main(int argc, char **argv)
         dialog = DIALOG_FL_COLOR;
         dcolor = 1;
         break;
-      case LO_COLOR_HTML:
-        dialog = DIALOG_FL_COLOR_HTML;
-        dcolorhtml = 1;
-        break;
       case LO_PROGRESS:
         dialog = DIALOG_FL_PROGRESS;
         dprogress = 1;
@@ -328,7 +322,7 @@ int main(int argc, char **argv)
   }
 
   if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser +
-       dinput + dpassword + dcolor + dcolorhtml + dprogress + dvalslider) >= 2)
+       dinput + dpassword + dcolor + dprogress + dvalslider) >= 2)
   {
     P_ERR("two or more dialog options specified");
   }
@@ -409,10 +403,7 @@ int main(int argc, char **argv)
       return dialog_fl_password(msg, title);
 
     case DIALOG_FL_COLOR:
-      return dialog_fl_color(title, COLOR_RGB);
-
-    case DIALOG_FL_COLOR_HTML:
-      return dialog_fl_color(title, COLOR_HTML);
+      return dialog_fl_color(title);
 
     case DIALOG_FL_PROGRESS:
       return dialog_fl_progress(msg, title, autoclose, dont_close);

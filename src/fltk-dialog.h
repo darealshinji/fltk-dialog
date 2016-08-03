@@ -47,10 +47,7 @@ int dialog_fl_choice(const char *choice_msg,
                            char *choice_but_alt);
 
 /* color.cpp */
-#define COLOR_RGB 0
-#define COLOR_HTML 1
-int dialog_fl_color(char *color_title,
-                    int   type=COLOR_RGB);
+int dialog_fl_color(char *color_title);
 
 /* file.cpp */
 int dialog_fl_file_chooser(char *file_chooser_title);
