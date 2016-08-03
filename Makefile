@@ -11,7 +11,7 @@ CXXFLAGS += -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
 fltk_CXXFLAGS := $(OPT) -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 
 def_LDFLAGS := -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed
-LIBS = $(shell $(fltk)/fltk-config --ldflags) -lm
+LIBS = $(shell $(fltk)/fltk-config --ldflags --use-images) -lm
 
 fltk_config = \
  --enable-static \
@@ -33,8 +33,8 @@ endif
 
 BIN = fltk-dialog
 OBJS = $(addprefix src/,\
- about.o choice.o calendar.o color.o file.o input.o message.o password.o \
- progress.o slider.o translate.o version.o main.o \
+ about.o choice.o calendar.o color.o file.o html.o input.o message.o \
+ password.o progress.o slider.o translate.o version.o main.o \
  Flek/FDate.o Flek/Fl_Calendar.o)
 
 define CLEAN
@@ -78,5 +78,5 @@ $(fltk)/fltk-config: $(fltk)
 $(fltk)/lib/libfltk.a: $(fltk)/fltk-config
 	$(MAKE) -C $(fltk)
 
-src/about.o src/main.o: CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/html.o src/main.o: CXXFLAGS+=-Wno-unused-parameter
 

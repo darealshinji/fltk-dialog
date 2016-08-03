@@ -57,6 +57,9 @@ int dialog_fl_dir_chooser(char *dir_chooser_title);
 int dialog_fl_native_file_chooser(char *fnfc_title,
                                   int   fnfc_dir=FILE_CHOOSER);
 
+/* html.cpp */
+int dialog_html_viewer(const char *file);
+
 /* input.cpp */
 int dialog_fl_input(const char *input_msg,
                           char *input_title);

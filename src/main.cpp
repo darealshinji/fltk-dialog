@@ -87,6 +87,7 @@ void print_usage(char *prog)
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
   "  --color                    Display color selection dialog\n"
   "  --scale                    Display scale dialog\n"
+  "  --html=FILE                Display HTML viewer\n"
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
   "                             gleam, plastic or simple; default is gtk+\n"
@@ -150,6 +151,7 @@ int main(int argc, char **argv)
   std::string fmt = "";
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
+  const char *html = NULL;
   int opt = 0;
   int long_index = 0;
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
@@ -158,13 +160,10 @@ int main(int argc, char **argv)
   int dont_close = 0;
 
   /* using these to check if two or more dialog options were specified */
-  int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dinput,
-    dpassword, dcolor, dprogress, dvalslider;
-  dabout = dalert = dcalendar = dchoice = dfilechooser = ddirchoser = dinput =
-    dpassword = dcolor = dprogress = dvalslider = 0;
-
-  /* disable fltk's '@' symbols */
-  Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
+  int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dhtml,
+    dinput, dpassword, dcolor, dprogress, dvalslider;
+  dabout = dalert = dcalendar = dchoice = dfilechooser = ddirchoser = dhtml =
+    dinput = dpassword = dcolor = dprogress = dvalslider = 0;
 
   /* set global default icon for all windows */
   Fl_Pixmap win_pixmap(icon_xpm);
@@ -177,6 +176,8 @@ int main(int argc, char **argv)
   /* run "About" dialog if invoked
    * without command line options */
   if (argc < 2) {
+    /* disable fltk's '@' symbols */
+    Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
     Fl::scheme(scheme_default);
     return about();
   }
@@ -210,6 +211,7 @@ int main(int argc, char **argv)
     { "min-value",  required_argument, 0, LO_MIN_VALUE  },
     { "max-value",  required_argument, 0, LO_MAX_VALUE  },
     { "step",       required_argument, 0, LO_STEP       },
+    { "html",       required_argument, 0, LO_HTML       },
     { "warning",    no_argument,       0, LO_WARNING    },
     { "question",   no_argument,       0, LO_QUESTION   },
     { "file",       no_argument,       0, LO_FILE       },
@@ -270,6 +272,11 @@ int main(int argc, char **argv)
       case LO_STEP:
         stepval = optarg;
         break;
+      case LO_HTML:
+        dialog = DIALOG_HTML;
+        html = optarg;
+        dhtml = 1;
+        break;
       case LO_WARNING:
         dialog = DIALOG_ALERT;
         dalert = 1;
@@ -322,7 +329,7 @@ int main(int argc, char **argv)
   }
 
   if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser +
-       dinput + dpassword + dcolor + dprogress + dvalslider) >= 2)
+       dhtml + dinput + dpassword + dcolor + dprogress + dvalslider) >= 2)
   {
     P_ERR("two or more dialog options specified");
   }
@@ -349,6 +356,11 @@ int main(int argc, char **argv)
 
   if ((fmt != "") && (dialog != DIALOG_FL_CALENDAR)) {
     P_ERR("--format can only be used with --calendar");
+  }
+
+  /* keep fltk's '@' symbols only enabled for HTML viewer */
+  if (dialog != DIALOG_HTML) {
+    Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
 
   if (strcmp("gtk", scheme) == 0) {
@@ -398,6 +410,9 @@ int main(int argc, char **argv)
 
     case DIALOG_FL_INPUT:
       return dialog_fl_input(msg, title);
+
+    case DIALOG_HTML:
+      return dialog_html_viewer(html);
 
     case DIALOG_FL_PASSWORD:
       return dialog_fl_password(msg, title);
