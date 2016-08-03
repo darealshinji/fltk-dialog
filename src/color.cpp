@@ -33,12 +33,9 @@
 #include "fltk-dialog.h"
 
 
-#define HEX(x) std::setfill('0') << std::setw(2) << std::hex << x
-
 int dialog_fl_color(char *color_title)
 {
-  double r,g,b;
-  r = g = b = 1.0;
+  double r,g,b; r=g=b = 1;
 
   if (color_title == NULL) {
     color_title = (char *)"FLTK color chooser";
@@ -48,13 +45,23 @@ int dialog_fl_color(char *color_title)
     size_t colr = round(255*r);
     size_t colg = round(255*g);
     size_t colb = round(255*b);
-    std::cout << colr << " " << colg << " " << colb
-      << "|#" << HEX(colr) << HEX(colg) << HEX(colb) << std::endl;
+    double h,s,v; h=s=v = 0;
+    Fl_Color_Chooser::rgb2hsv(r,g,b, h,s,v);
+
+    std::cout << std::fixed << std::setprecision(3)
+      /* RGB values [0.000-1.000] */
+      << r << " " << g << " " << b << "|"
+      /* RGB values [0-255] */
+      << colr << " " << colg << " " << colb << "|"
+      /* HTML hex value */
+      << "#" << std::setfill('0') << std::setw(2) << std::hex
+      << colr << colg << colb << "|"
+      /* HSV values */
+      << h << " " << s << " " << v << std::endl;
+
     return 0;
   } else {
     return 1;
   }
 }
-
-#undef HEX
 
