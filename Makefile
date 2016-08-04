@@ -2,13 +2,41 @@ ifneq ($(wildcard config.mak),)
 include config.mak
 endif
 
-# config
-LOCAL_JPEG  ?= 1
-LOCAL_PNG   ?= 1
-LOCAL_ZLIB  ?= 1
-STATIC_FLTK ?= 1
+# set to "no" if you want to link
+# against system libraries
+LOCAL_JPEG    ?= yes
+LOCAL_PNG     ?= yes
+LOCAL_ZLIB    ?= yes
 
+# yes: FLTK version string will be set statically;
+#   don't use this on shared libraries!
+# no: version string will be obtained dynamically
+#   from the linked in library; works with statically
+#   linked FLTK too, but makes more sense on shared libs
+# TODO: actually use the system libs or build shared
+#   libs if disabled
+STATIC_FLTK   ?= yes
+
+# set to "no" if you don't want an embedded FLKT
+# icon to appear in taskbar and windows
+WITH_ICON     ?= yes
+
+# set to "no" to disable certain features
+WITH_CALENDAR ?= yes
+WITH_COLOR    ?= yes
+WITH_ENTRY    ?= yes
+WITH_FILE     ?= yes
+WITH_HTML     ?= yes
+WITH_PASSWORD ?= yes
+WITH_PROGRESS ?= yes
+WITH_SCALE    ?= yes
+
+# checkout directory for FLTK
 fltk = fltk-1.3
+
+BIN = fltk-dialog
+OBJS = $(addprefix src/,about.o choice.o message.o translate.o version.o main.o)
+
 OPT ?= -Os
 
 common_CXXFLAGS := $(OPT) -Wall -Wextra \
@@ -16,15 +44,51 @@ common_CXXFLAGS := $(OPT) -Wall -Wextra \
  -ffunction-sections -fdata-sections
 
 LDFLAGS += \
- -s -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
+ -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
 
 CXXFLAGS += $(common_CXXFLAGS) -Isrc -I$(fltk) \
  $(shell $(fltk)/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 
-ifeq ($(STATIC_FLTK),1)
+ifneq ($(STATIC_FLTK),no)
 CXXFLAGS += \
  -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
  -DREVISION=\"$(shell cat $(fltk)/revision)\"
+endif
+
+ifneq ($(WITH_ICON),no)
+CXXFLAGS += -DWITH_ICON
+endif
+ifneq ($(WITH_CALENDAR),no)
+CXXFLAGS += -DWITH_CALENDAR
+OBJS += src/calendar.o src/Flek/FDate.o src/Flek/Fl_Calendar.o
+endif
+ifneq ($(WITH_COLOR),no)
+CXXFLAGS += -DWITH_COLOR
+OBJS += src/color.o
+endif
+ifneq ($(WITH_ENTRY),no)
+CXXFLAGS += -DWITH_ENTRY
+OBJS += src/input.o
+endif
+ifneq ($(WITH_FILE),no)
+CXXFLAGS += -DWITH_FILE
+OBJS += src/file.o
+endif
+ifneq ($(WITH_HTML),no)
+CXXFLAGS += -DWITH_HTML
+OBJS += src/html.o
+endif
+ifneq ($(WITH_PASSWORD),no)
+CXXFLAGS += -DWITH_PASSWORD
+OBJS += src/password.o
+endif
+ifneq ($(WITH_PROGRESS),no)
+CXXFLAGS += -DWITH_PROGRESS
+OBJS += src/progress.o
+endif
+ifneq ($(WITH_SCALE),no)
+CXXFLAGS += -DWITH_SCALE
+OBJS += src/slider.o
 endif
 
 fltk_CXXFLAGS := $(common_CXXFLAGS) \
@@ -38,25 +102,18 @@ fltk_config = \
  --disable-debug \
  --disable-gl \
  --enable-threads
-ifeq ($(LOCAL_JPEG),1)
+ifneq ($(LOCAL_JPEG),no)
 fltk_config += --enable-localjpeg
 endif
-ifeq ($(LOCAL_PNG),1)
+ifneq ($(LOCAL_PNG),no)
 fltk_config += --enable-localpng
 endif
-ifeq ($(LOCAL_ZLIB),1)
+ifneq ($(LOCAL_ZLIB),no)
 fltk_config += --enable-localzlib
 endif
 
-
-BIN = fltk-dialog
-OBJS = $(addprefix src/,\
- about.o choice.o calendar.o color.o file.o html.o input.o message.o \
- password.o progress.o slider.o translate.o version.o main.o \
- Flek/FDate.o Flek/Fl_Calendar.o)
-
 define CLEAN
-	-rm -f $(BIN) $(OBJS)
+	-rm -f $(BIN) src/*.o src/Flek/*.o
 	[ ! -f $(fltk)/Makefile ] || $(MAKE) -C $(fltk) $@
 endef
 
@@ -71,7 +128,7 @@ distclean:
 	-rm -rf $(fltk)/autom4te.cache
 
 mostlyclean:
-	-rm -f $(BIN) $(OBJS)
+	-rm -f $(BIN) src/*.o src/Flek/*.o
 
 clobber: mostlyclean
 	-rm -rf $(fltk)

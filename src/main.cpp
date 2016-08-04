@@ -35,7 +35,9 @@
 
 #include "fltk-dialog.h"
 #include "main.h"
-#include "icon.xpm"
+#ifdef WITH_ICON
+#  include "icon.xpm"
+#endif
 
 
 /* global FLTK callback for drawing all label text */
@@ -74,15 +76,31 @@ void print_usage(char *prog)
   "  --title=TITLE              Set the dialog title\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
+#ifdef WITH_FILE
   "  --file                     Display file selection dialog\n"
   "  --directory                Display directory selection dialog\n"
+#endif
+#ifdef WITH_ENTRY
   "  --entry                    Display text entry dialog\n"
+#endif
+#ifdef WITH_PASSWORD
   "  --password                 Display password dialog\n"
+#endif
+#ifdef WITH_PROGRESS
   "  --progress                 Display progress indication dialog\n"
+#endif
+#ifdef WITH_CALENDAR
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
+#endif
+#ifdef WITH_COLOR
   "  --color                    Display color selection dialog\n"
+#endif
+#ifdef WITH_SCALE
   "  --scale                    Display scale dialog\n"
+#endif
+#ifdef WITH_HTML
   "  --html=FILE                Display HTML viewer\n"
+#endif
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
   "                             gleam, plastic or simple; default is gtk+\n"
@@ -92,16 +110,21 @@ void print_usage(char *prog)
   "  --no-label=TEXT            Sets the label of the No button\n"
   "  --alt-label=TEXT           Adds a third button and sets its label;\n"
   "                             exit code is 2\n"
+#ifdef WITH_FILE
   "\n"
   "File/directory selection options:\n"
   "  --native                   Use the operating system's native file\n"
   "                             chooser (GTK) if available, otherwise\n"
   "                             fall back to FLTK's own version\n"
+#endif  /* WITH_FILE */
+#ifdef WITH_PROGRESS
   "\n"
   "Progress options:\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --no-close                 Block the window's close button until 100% has\n"
   "                             been reached\n"
+#endif  /* WITH_PROGRESS */
+#ifdef WITH_CALENDAR
   "\n"
   "Calendar options:\n"
   "  --format=FORMAT            Set a custom output format\n"
@@ -122,6 +145,8 @@ void print_usage(char *prog)
   "                             B  month name (January)\n"
   "                             b  month name (Jan)\n"
   "                             u  day of the week, Monday being 1 (7)\n"
+#endif  /* WITH_CALENDAR */
+#ifdef WITH_SCALE
   "\n"
   "Scale options:\n"
   "  --value=VALUE              Set initial value\n"
@@ -129,6 +154,7 @@ void print_usage(char *prog)
   "  --max-value=VALUE          Set maximum value\n"
   "  --step=VALUE               Set step size\n"
   "                             VALUE can be float point or integer\n"
+#endif  /* WITH_SCALE */
     << std::endl;
 }
 
@@ -139,20 +165,30 @@ int main(int argc, char **argv)
   char *but_yes = NULL;
   char *but_no = NULL;
   char *but_alt = NULL;
+#ifdef WITH_SCALE
   char *minval = NULL;
   char *maxval = NULL;
   char *stepval = NULL;
   char *initval = NULL;
+#endif  /* WITH_SCALE */
+#ifdef WITH_CALENDAR
   std::string fmt = "";
+#endif
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
+#ifdef WITH_HTML
   const char *html = NULL;
+#endif
   int opt = 0;
   int long_index = 0;
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
+#ifdef WITH_FILE
   bool native = false;
+#endif
+#ifdef WITH_PROGRESS
   bool autoclose = false;
   bool dont_close = false;
+#endif
 
   /* using these to check if two or more dialog options were specified */
   int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dhtml,
@@ -160,10 +196,12 @@ int main(int argc, char **argv)
   dabout = dalert = dcalendar = dchoice = dfilechooser = ddirchoser = dhtml =
     dinput = dpassword = dcolor = dprogress = dvalslider = 0;
 
+#ifdef WITH_ICON
   /* set global default icon for all windows */
   Fl_Pixmap win_pixmap(icon_xpm);
   Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
   Fl_Window::default_icon(&win_icon);
+#endif
 
   /* use a slightly brighter gray than the default one in FLTK */
   Fl::background(204, 204, 204);
@@ -190,31 +228,47 @@ int main(int argc, char **argv)
   static struct option long_options[] = {
     { "about",      no_argument,       0, LO_ABOUT      },
     { "no-escape",  no_argument,       0, LO_NO_ESCAPE  },
-    { "no-close",   no_argument,       0, LO_NO_CLOSE   },
     { "scheme",     required_argument, 0, LO_SCHEME     },
-    { "format",     required_argument, 0, LO_FORMAT     },
     { "text",       required_argument, 0, LO_TEXT       },
     { "title",      required_argument, 0, LO_TITLE      },
     { "yes-label",  required_argument, 0, LO_YES_LABEL  },
     { "no-label",   required_argument, 0, LO_NO_LABEL   },
     { "alt-label",  required_argument, 0, LO_ALT_LABEL  },
+#ifdef WITH_HTML
+    { "html",       required_argument, 0, LO_HTML       },
+#endif
+    { "warning",    no_argument,       0, LO_WARNING    },
+    { "question",   no_argument,       0, LO_QUESTION   },
+#ifdef WITH_FILE
+    { "file",       no_argument,       0, LO_FILE       },
+    { "directory",  no_argument,       0, LO_DIRECTORY  },
+    { "native",     no_argument,       0, LO_NATIVE     },
+#endif  /* WITH_FILE */
+#ifdef WITH_ENTRY
+    { "entry",      no_argument,       0, LO_ENTRY      },
+#endif
+#ifdef WITH_PASSWORD
+    { "password",   no_argument,       0, LO_PASSWORD   },
+#endif
+#ifdef WITH_COLOR
+    { "color",      no_argument,       0, LO_COLOR      },
+#endif
+#ifdef WITH_PROGRESS
+    { "progress",   no_argument,       0, LO_PROGRESS   },
+    { "auto-close", no_argument,       0, LO_AUTO_CLOSE },
+    { "no-close",   no_argument,       0, LO_NO_CLOSE   },
+#endif  /* WITH_PROGRESS */
+#ifdef WITH_SCALE
+    { "scale",      no_argument,       0, LO_SCALE      },
     { "value",      required_argument, 0, LO_VALUE      },
     { "min-value",  required_argument, 0, LO_MIN_VALUE  },
     { "max-value",  required_argument, 0, LO_MAX_VALUE  },
     { "step",       required_argument, 0, LO_STEP       },
-    { "html",       required_argument, 0, LO_HTML       },
-    { "warning",    no_argument,       0, LO_WARNING    },
-    { "question",   no_argument,       0, LO_QUESTION   },
-    { "file",       no_argument,       0, LO_FILE       },
-    { "directory",  no_argument,       0, LO_DIRECTORY  },
-    { "native",     no_argument,       0, LO_NATIVE     },
-    { "entry",      no_argument,       0, LO_ENTRY      },
-    { "password",   no_argument,       0, LO_PASSWORD   },
-    { "color",      no_argument,       0, LO_COLOR      },
-    { "progress",   no_argument,       0, LO_PROGRESS   },
-    { "auto-close", no_argument,       0, LO_AUTO_CLOSE },
-    { "scale",      no_argument,       0, LO_SCALE      },
+#endif  /* WITH_SCALE */
+#ifdef WITH_CALENDAR
     { "calendar",   no_argument,       0, LO_CALENDAR   },
+    { "format",     required_argument, 0, LO_FORMAT     },
+#endif
     { 0, 0, 0, 0 }
   };
 
@@ -227,14 +281,8 @@ int main(int argc, char **argv)
       case LO_NO_ESCAPE:
         Fl::add_handler(esc_handler);
         break;
-      case LO_NO_CLOSE:
-        dont_close=1;
-        break;
       case LO_SCHEME:
         scheme = optarg;
-        break;
-      case LO_FORMAT:
-        fmt = std::string(optarg);
         break;
       case LO_TEXT:
         msg = optarg;
@@ -251,6 +299,69 @@ int main(int argc, char **argv)
       case LO_ALT_LABEL:
         but_alt = optarg;
         break;
+#ifdef WITH_HTML
+      case LO_HTML:
+        dialog = DIALOG_HTML;
+        html = optarg;
+        dhtml = 1;
+        break;
+#endif  /* WITH_HTML */
+      case LO_WARNING:
+        dialog = DIALOG_ALERT;
+        dalert = 1;
+        break;
+      case LO_QUESTION:
+        dialog = DIALOG_FL_CHOICE;
+        dchoice = 1;
+        break;
+#ifdef WITH_FILE
+      case LO_FILE:
+        dialog = DIALOG_FL_FILE_CHOOSER;
+        dfilechooser = 1;
+        break;
+      case LO_DIRECTORY:
+        dialog = DIALOG_FL_DIR_CHOOSER;
+        ddirchoser = 1;
+        break;
+      case LO_NATIVE:
+        native = true;
+        break;
+#endif  /* WITH_FILE */
+#ifdef WITH_ENTRY
+      case LO_ENTRY:
+        dialog = DIALOG_FL_INPUT;
+        dinput = 1;
+        break;
+#endif  /* WITH_ENTRY */
+#ifdef WITH_PASSWORD
+      case LO_PASSWORD:
+        dialog = DIALOG_FL_PASSWORD;
+        dpassword = 1;
+        break;
+#endif  /* WITH_PASSWORD */
+#ifdef WITH_COLOR
+      case LO_COLOR:
+        dialog = DIALOG_FL_COLOR;
+        dcolor = 1;
+        break;
+#endif  /* WITH_COLOR */
+#ifdef WITH_PROGRESS
+      case LO_PROGRESS:
+        dialog = DIALOG_FL_PROGRESS;
+        dprogress = 1;
+        break;
+      case LO_AUTO_CLOSE:
+        autoclose = 1;
+        break;
+      case LO_NO_CLOSE:
+        dont_close=1;
+        break;
+#endif  /* WITH_PROGRESS */
+#ifdef WITH_SCALE
+      case LO_SCALE:
+        dialog = DIALOG_FL_VALUE_SLIDER;
+        dvalslider = 1;
+        break;
       case LO_VALUE:
         initval = optarg;
         break;
@@ -263,57 +374,16 @@ int main(int argc, char **argv)
       case LO_STEP:
         stepval = optarg;
         break;
-      case LO_HTML:
-        dialog = DIALOG_HTML;
-        html = optarg;
-        dhtml = 1;
-        break;
-      case LO_WARNING:
-        dialog = DIALOG_ALERT;
-        dalert = 1;
-        break;
-      case LO_QUESTION:
-        dialog = DIALOG_FL_CHOICE;
-        dchoice = 1;
-        break;
-      case LO_FILE:
-        dialog = DIALOG_FL_FILE_CHOOSER;
-        dfilechooser = 1;
-        break;
-      case LO_DIRECTORY:
-        dialog = DIALOG_FL_DIR_CHOOSER;
-        ddirchoser = 1;
-        break;
-      case LO_NATIVE:
-        native = true;
-        break;
-      case LO_ENTRY:
-        dialog = DIALOG_FL_INPUT;
-        dinput = 1;
-        break;
-      case LO_PASSWORD:
-        dialog = DIALOG_FL_PASSWORD;
-        dpassword = 1;
-        break;
-      case LO_COLOR:
-        dialog = DIALOG_FL_COLOR;
-        dcolor = 1;
-        break;
-      case LO_PROGRESS:
-        dialog = DIALOG_FL_PROGRESS;
-        dprogress = 1;
-        break;
-      case LO_AUTO_CLOSE:
-        autoclose = 1;
-        break;
-      case LO_SCALE:
-        dialog = DIALOG_FL_VALUE_SLIDER;
-        dvalslider = 1;
-        break;
+#endif  /* WITH_SCALE */
+#ifdef WITH_CALENDAR
       case LO_CALENDAR:
         dialog = DIALOG_FL_CALENDAR;
         dcalendar = 1;
         break;
+      case LO_FORMAT:
+        fmt = std::string(optarg);
+        break;
+#endif  /* WITH_CALENDAR */
       default:
         P_ERRX("See `" << argv[0] << " --help' for available commands");
     }
@@ -324,30 +394,44 @@ int main(int argc, char **argv)
     P_ERR("two or more dialog options specified");
   }
 
+#ifdef WITH_FILE
   if (native && (dialog != DIALOG_FL_FILE_CHOOSER && dialog != DIALOG_FL_DIR_CHOOSER)) {
     P_ERR("--native can only be used with --file or --directory");
   }
+#endif
 
   if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL)) {
     P_ERR("--yes-label/--no-label/--alt-label can only be used with --question");
   }
 
+#ifdef WITH_PROGRESS
   if (autoclose && dialog != DIALOG_FL_PROGRESS) {
     P_ERR("--auto-close can only be used with --progress");
   }
-
   if (dont_close && dialog != DIALOG_FL_PROGRESS) {
     P_ERR("--no-close can only be used with --progress");
   }
+#endif  /* WITH_PROGRESS */
 
+#ifdef WITH_SCALE
+  if (dialog != DIALOG_FL_VALUE_SLIDER &&
+      (minval != NULL || maxval != NULL || stepval != NULL || initval != NULL)) {
+    P_ERR("--value/--min-value/--max-value/--step can only be used with --scale");
+  }
+#endif  /* WITH_SCALE */
+
+#ifdef WITH_CALENDAR
   if (fmt != "" && dialog != DIALOG_FL_CALENDAR) {
     P_ERR("--format can only be used with --calendar");
   }
+#endif
 
+#ifdef WITH_HTML
   /* keep fltk's '@' symbols only enabled for HTML viewer */
   if (dialog != DIALOG_HTML) {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
+#endif  /* WITH_HTML */
 
   if (strcmp("gtk", scheme) == 0) {
     scheme = "gtk+";
@@ -373,6 +457,7 @@ int main(int argc, char **argv)
       return dialog_fl_message(msg, title, ALERT);
     case DIALOG_FL_CHOICE:
       return dialog_fl_choice(msg, title, but_yes, but_no, but_alt);
+#ifdef WITH_FILE
     case DIALOG_FL_FILE_CHOOSER:
       if (native) {
         return dialog_fl_native_file_chooser(title, FILE_CHOOSER);
@@ -385,20 +470,35 @@ int main(int argc, char **argv)
       } else {
         return dialog_fl_dir_chooser(title);
       }
+#endif  /* WITH_FILE */
+#ifdef WITH_ENTRY
     case DIALOG_FL_INPUT:
       return dialog_fl_input(msg, title);
+#endif
+#ifdef WITH_HTML
     case DIALOG_HTML:
       return dialog_html_viewer(html);
+#endif
+#ifdef WITH_PASSWORD
     case DIALOG_FL_PASSWORD:
       return dialog_fl_password(msg, title);
+#endif
+#ifdef WITH_COLOR
     case DIALOG_FL_COLOR:
       return dialog_fl_color(title);
+#endif
+#ifdef WITH_PROGRESS
     case DIALOG_FL_PROGRESS:
       return dialog_fl_progress(msg, title, autoclose, dont_close);
+#endif
+#ifdef WITH_SCALE
     case DIALOG_FL_VALUE_SLIDER:
       return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
+#endif
+#ifdef WITH_CALENDAR
     case DIALOG_FL_CALENDAR:
       return dialog_fl_calendar(title, fmt);
+#endif
   }
 }
 

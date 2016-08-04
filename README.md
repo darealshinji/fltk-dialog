@@ -9,3 +9,8 @@ Note: the Makefile will automatically download and compile FLTK.
 
 Minimum build dependency is `libx11-dev`.
 For better looking fonts it's recommended to install `libxft-dev` too.
+
+Configuration:
+You can disable certain features, see `Makefile` for details.
+You can write your settings in a `config.mak` file.
+This file will automatically be included to override the default settings.
