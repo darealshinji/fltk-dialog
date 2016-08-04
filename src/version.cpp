@@ -30,10 +30,22 @@
 #include <string.h>  /* strcmp */
 
 
-/* get the version strings from the linked in static or
- * the runtime library without leading zeros */
 std::string get_fltk_version()
 {
+#ifdef FLTK_VERSION
+
+  std::string version = FLTK_VERSION;
+#ifdef REVISION
+  std::string revision = REVISION;
+  return version + " (SVN r" + revision + ")";
+#else
+  return version;
+#endif
+
+#else  /* FLTK_VERSION */
+
+  /* get the version strings from the linked in static or
+   * the runtime library without leading zeros */
   std::stringstream ss;
   std::string ver, maj, min1, min2, pat1, pat2;
   int api = Fl::api_version();
@@ -47,6 +59,8 @@ std::string get_fltk_version()
   if (strcmp(min1.c_str(), "0") == 0) { min1 = ""; }
   if (strcmp(pat1.c_str(), "0") == 0) { pat1 = ""; }
   return maj + "." + min1 + min2 + "." + pat1 + pat2;
+
+#endif  /* FLTK_VERSION */
 }
 
 void print_fltk_version()

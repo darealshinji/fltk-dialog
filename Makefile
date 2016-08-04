@@ -2,15 +2,34 @@ ifneq ($(wildcard config.mak),)
 include config.mak
 endif
 
+# config
+LOCAL_JPEG  ?= 1
+LOCAL_PNG   ?= 1
+LOCAL_ZLIB  ?= 1
+STATIC_FLTK ?= 1
+
 fltk = fltk-1.3
-OPT = -Os
+OPT ?= -Os
 
-CXXFLAGS += $(OPT) -Wall -Wextra -Isrc -I$(fltk)
-CXXFLAGS += $(shell $(fltk)/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
-CXXFLAGS += -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
-fltk_CXXFLAGS := $(OPT) -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+common_CXXFLAGS := $(OPT) -Wall -Wextra \
+ -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 \
+ -ffunction-sections -fdata-sections
 
-def_LDFLAGS := -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed
+LDFLAGS += \
+ -s -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
+
+CXXFLAGS += $(common_CXXFLAGS) -Isrc -I$(fltk) \
+ $(shell $(fltk)/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
+
+ifeq ($(STATIC_FLTK),1)
+CXXFLAGS += \
+ -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
+ -DREVISION=\"$(shell cat $(fltk)/revision)\"
+endif
+
+fltk_CXXFLAGS := $(common_CXXFLAGS) \
+ -Wno-unused-parameter -Wno-missing-field-initializers
+
 LIBS = $(shell $(fltk)/fltk-config --ldflags --use-images) -lm
 
 fltk_config = \
@@ -18,8 +37,7 @@ fltk_config = \
  --disable-shared \
  --disable-debug \
  --disable-gl \
- --enable-threads \
- $(NULL)
+ --enable-threads
 ifeq ($(LOCAL_JPEG),1)
 fltk_config += --enable-localjpeg
 endif
@@ -61,17 +79,14 @@ clobber: mostlyclean
 $(OBJS): $(fltk)/lib/libfltk.a
 
 $(BIN): $(OBJS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(def_LDFLAGS) $(LIBS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 $(fltk):
-	if svn --version 2>/dev/null >/dev/null; then \
-  svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $@; \
-else \
-  git clone --depth 1 "https://github.com/darealshinji/fltk-1.3" $@; \
-fi
+	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $@; \
+  LANG=C svn info $@ | grep '^Revision:' | cut -d' ' -f2 > $@/revision
 
 $(fltk)/fltk-config: $(fltk)
-	test -x $@ || (cd $(fltk) && NOCONFIGURE=1 ./autogen.sh && \
+	test -x $@ || (cd $< && NOCONFIGURE=1 ./autogen.sh && \
   CXXFLAGS="$(fltk_CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
   ./configure $(fltk_config))
 
