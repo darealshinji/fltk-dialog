@@ -52,7 +52,7 @@ int dialog_fl_dir_chooser(char *dir_chooser_title);
 #define FILE_CHOOSER 0
 #define DIR_CHOOSER 1
 int dialog_fl_native_file_chooser(char *fnfc_title,
-                                  int   fnfc_dir=FILE_CHOOSER);
+                                  int   fnfc_dir);
 
 /* html.cpp */
 int dialog_html_viewer(const char *file);
@@ -75,8 +75,8 @@ int dialog_fl_password(const char *password_msg,
 /* progress.cpp */
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
-                             bool  autoclose=false,
-                             bool  dont_close=false);
+                             bool  autoclose,
+                             bool  dont_close);
 
 /* slider.cpp */
 int dialog_fl_value_slider(const char *slider_msg,
