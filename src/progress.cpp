@@ -66,8 +66,8 @@ static void dont_close_cb(Fl_Widget*)
  */
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
-                             int   autoclose,
-                             int   dont_close)
+                             bool  autoclose,
+                             bool  dont_close)
 {
   Fl_Box *box;
   Fl_Button *but = NULL;
@@ -109,7 +109,7 @@ int dialog_fl_progress(const char *progress_msg,
 
   int boxh = textlines*textheight + bord*2;
 
-  if (autoclose == 0) {
+  if (!autoclose) {
     winh = boxh+barh+buth+bord*2+5;
   } else {
     winh = boxh+barh+bord+5;
@@ -118,7 +118,7 @@ int dialog_fl_progress(const char *progress_msg,
   prog_win = new Fl_Window(winw, winh);
   prog_win->label(progress_title);
   prog_win->begin();
-  if (dont_close == 1) {
+  if (dont_close) {
     prog_win->callback(dont_close_cb);
   } else {
     prog_win->callback(prog_exit1_cb);
@@ -139,7 +139,7 @@ int dialog_fl_progress(const char *progress_msg,
   prog_bar->value(0);
   prog_bar->label("0%");
 
-  if (autoclose == 0) {
+  if (!autoclose) {
     /* close button */
     but = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
                         butw, buth, fl_close);
@@ -165,9 +165,9 @@ int dialog_fl_progress(const char *progress_msg,
         prog_bar->label(percent_label);  /* update progress bar's label */
         Fl::check();  /* update the screen */
         if (percent == 100) {
-          if (autoclose == 0) {
+          if (!autoclose) {
             but->activate();
-            if (dont_close == 1) {
+            if (dont_close) {
               /* re-enable window's close button */
               prog_win->callback(prog_exit1_cb);
             }

@@ -75,8 +75,8 @@ int dialog_fl_password(const char *password_msg,
 /* progress.cpp */
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
-                             int   autoclose=0,
-                             int   dont_close=0);
+                             bool  autoclose=false,
+                             bool  dont_close=false);
 
 /* slider.cpp */
 int dialog_fl_value_slider(const char *slider_msg,

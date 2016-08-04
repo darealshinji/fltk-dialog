@@ -150,9 +150,9 @@ int main(int argc, char **argv)
   int opt = 0;
   int long_index = 0;
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
-  int native = 0;
-  int autoclose = 0;
-  int dont_close = 0;
+  bool native = false;
+  bool autoclose = false;
+  bool dont_close = false;
 
   /* using these to check if two or more dialog options were specified */
   int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dhtml,
@@ -178,14 +178,10 @@ int main(int argc, char **argv)
   }
 
   for (int i = 1; i < argc; ++i) {
-    if ((strcmp("--help", argv[i]) == 0) ||
-        (strcmp("-h", argv[i]) == 0))
-    {
+    if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0) {
       print_usage(argv[0]);
       return 0;
-    } else if ((strcmp("--version", argv[i]) == 0) ||
-               (strcmp("-v", argv[i]) == 0))
-    {
+    } else if (strcmp("--version", argv[i]) == 0 || strcmp("-v", argv[i]) == 0) {
       print_fltk_version();
       return 0;
     }
@@ -289,7 +285,7 @@ int main(int argc, char **argv)
         ddirchoser = 1;
         break;
       case LO_NATIVE:
-        native = 1;
+        native = true;
         break;
       case LO_ENTRY:
         dialog = DIALOG_FL_INPUT;
@@ -324,32 +320,27 @@ int main(int argc, char **argv)
   }
 
   if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser +
-       dhtml + dinput + dpassword + dcolor + dprogress + dvalslider) >= 2)
-  {
+       dhtml + dinput + dpassword + dcolor + dprogress + dvalslider) >= 2) {
     P_ERR("two or more dialog options specified");
   }
 
-  if ((native == 1) && ((dialog != DIALOG_FL_FILE_CHOOSER) &&
-                        (dialog != DIALOG_FL_DIR_CHOOSER)))
-  {
+  if (native && (dialog != DIALOG_FL_FILE_CHOOSER && dialog != DIALOG_FL_DIR_CHOOSER)) {
     P_ERR("--native can only be used with --file or --directory");
   }
 
-  if ((dialog != DIALOG_FL_CHOICE) &&
-      ((but_yes != NULL) || (but_no != NULL) || (but_alt != NULL)))
-  {
+  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL)) {
     P_ERR("--yes-label/--no-label/--alt-label can only be used with --question");
   }
 
-  if ((autoclose == 1) && (dialog != DIALOG_FL_PROGRESS)) {
+  if (autoclose && dialog != DIALOG_FL_PROGRESS) {
     P_ERR("--auto-close can only be used with --progress");
   }
 
-  if ((dont_close == 1) && (dialog != DIALOG_FL_PROGRESS)) {
+  if (dont_close && dialog != DIALOG_FL_PROGRESS) {
     P_ERR("--no-close can only be used with --progress");
   }
 
-  if ((fmt != "") && (dialog != DIALOG_FL_CALENDAR)) {
+  if (fmt != "" && dialog != DIALOG_FL_CALENDAR) {
     P_ERR("--format can only be used with --calendar");
   }
 
@@ -365,11 +356,8 @@ int main(int argc, char **argv)
   }
   if (strcmp("default", scheme) == 0) {
     Fl::scheme(scheme_default);
-  } else if ((strcmp("none", scheme) == 0) ||
-             (strcmp("gtk+", scheme) == 0) ||
-             (strcmp("gleam", scheme) == 0) ||
-             (strcmp("plastic", scheme) == 0))
-  {
+  } else if (strcmp("none", scheme) == 0 || strcmp("gtk+", scheme) == 0 ||
+             strcmp("gleam", scheme) == 0 || strcmp("plastic", scheme) == 0) {
     Fl::scheme(scheme);
   } else {
     P_ERRX("\"" << scheme << "\" is not a valid scheme!\n"\
@@ -379,48 +367,36 @@ int main(int argc, char **argv)
   switch (dialog) {
     case DIALOG_ABOUT:
       return about();
-
     case DIALOG_FL_MESSAGE:
       return dialog_fl_message(msg, title, MESSAGE);
-
     case DIALOG_ALERT:
       return dialog_fl_message(msg, title, ALERT);
-
     case DIALOG_FL_CHOICE:
       return dialog_fl_choice(msg, title, but_yes, but_no, but_alt);
-
     case DIALOG_FL_FILE_CHOOSER:
-      if (native == 1) {
+      if (native) {
         return dialog_fl_native_file_chooser(title, FILE_CHOOSER);
       } else {
         return dialog_fl_file_chooser(title);
       }
-
     case DIALOG_FL_DIR_CHOOSER:
-      if (native == 1) {
+      if (native) {
         return dialog_fl_native_file_chooser(title, DIR_CHOOSER);
       } else {
         return dialog_fl_dir_chooser(title);
       }
-
     case DIALOG_FL_INPUT:
       return dialog_fl_input(msg, title);
-
     case DIALOG_HTML:
       return dialog_html_viewer(html);
-
     case DIALOG_FL_PASSWORD:
       return dialog_fl_password(msg, title);
-
     case DIALOG_FL_COLOR:
       return dialog_fl_color(title);
-
     case DIALOG_FL_PROGRESS:
       return dialog_fl_progress(msg, title, autoclose, dont_close);
-
     case DIALOG_FL_VALUE_SLIDER:
       return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
-
     case DIALOG_FL_CALENDAR:
       return dialog_fl_calendar(title, fmt);
   }
