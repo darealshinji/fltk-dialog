@@ -121,8 +121,7 @@ void print_usage(char *prog)
   "\n"
   "Progress options:\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
-  "  --no-close                 Block the window's close button until 100% has\n"
-  "                             been reached\n"
+  "  --no-cancel                Hide cancel button\n"
 #endif  /* WITH_PROGRESS */
 #ifdef WITH_CALENDAR
   "\n"
@@ -187,7 +186,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_PROGRESS
   bool autoclose = false;
-  bool dont_close = false;
+  bool hide_cancel = false;
 #endif
 
   /* using these to check if two or more dialog options were specified */
@@ -256,7 +255,7 @@ int main(int argc, char **argv)
 #ifdef WITH_PROGRESS
     { "progress",   no_argument,       0, LO_PROGRESS   },
     { "auto-close", no_argument,       0, LO_AUTO_CLOSE },
-    { "no-close",   no_argument,       0, LO_NO_CLOSE   },
+    { "no-cancel",  no_argument,       0, LO_NO_CANCEL  },
 #endif  /* WITH_PROGRESS */
 #ifdef WITH_SCALE
     { "scale",      no_argument,       0, LO_SCALE      },
@@ -353,8 +352,8 @@ int main(int argc, char **argv)
       case LO_AUTO_CLOSE:
         autoclose = 1;
         break;
-      case LO_NO_CLOSE:
-        dont_close=1;
+      case LO_NO_CANCEL:
+        hide_cancel = true;
         break;
 #endif  /* WITH_PROGRESS */
 #ifdef WITH_SCALE
@@ -408,8 +407,8 @@ int main(int argc, char **argv)
   if (autoclose && dialog != DIALOG_FL_PROGRESS) {
     P_ERR("--auto-close can only be used with --progress");
   }
-  if (dont_close && dialog != DIALOG_FL_PROGRESS) {
-    P_ERR("--no-close can only be used with --progress");
+  if (hide_cancel && dialog != DIALOG_FL_PROGRESS) {
+    P_ERR("--no-cancel can only be used with --progress");
   }
 #endif  /* WITH_PROGRESS */
 
@@ -489,7 +488,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_PROGRESS
     case DIALOG_FL_PROGRESS:
-      return dialog_fl_progress(msg, title, autoclose, dont_close);
+      return dialog_fl_progress(msg, title, autoclose, hide_cancel);
 #endif
 #ifdef WITH_SCALE
     case DIALOG_FL_VALUE_SLIDER:

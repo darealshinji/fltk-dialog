@@ -89,7 +89,7 @@ int dialog_fl_password(const char *password_msg,
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
                              bool  autoclose,
-                             bool  dont_close);
+                             bool  hide_cancel);
 #endif  /* WITH_PROGRESS */
 
 /* slider.cpp */

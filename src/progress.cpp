@@ -56,21 +56,17 @@ static void prog_exit1_cb(Fl_Widget*)
   exit(1);
 }
 
-static void dont_close_cb(Fl_Widget*)
-{
-  return;  /* block the window's close button */
-}
-
 /* run a test:
  * (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
  */
 int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
                              bool  autoclose,
-                             bool  dont_close)
+                             bool  hide_cancel)
 {
   Fl_Box *box;
-  Fl_Button *but = NULL;
+  Fl_Button *but_ok = NULL;
+  Fl_Button *but_cancel = NULL;
 
   int winw = 320;
   int winh = 0;
@@ -80,6 +76,8 @@ int dialog_fl_progress(const char *progress_msg,
   int textlines = 1;
   int butw = 100;
   int buth = 26;
+  int but_right = winw-butw-bord;
+  int but_left = winw-butw*2-bord*2;
 
   std::string s, line, linesubstr;
   int percent = 0;
@@ -101,7 +99,7 @@ int dialog_fl_progress(const char *progress_msg,
   }
 
   /* check for input data */
-  if (isatty(STDIN_FILENO)) {
+  if (isatty(STDIN_FILENO) == 1) {
     s = "Error: no input data receiving";
     dialog_fl_message(s.c_str(), progress_title, ALERT);
     return 1;
@@ -118,18 +116,13 @@ int dialog_fl_progress(const char *progress_msg,
   prog_win = new Fl_Window(winw, winh);
   prog_win->label(progress_title);
   prog_win->begin();
-  if (dont_close) {
-    prog_win->callback(dont_close_cb);
-  } else {
-    prog_win->callback(prog_exit1_cb);
-  }
+  prog_win->callback(prog_exit1_cb);
 
   /* message text */
   box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   box->box(FL_NO_BOX);
   box->align(FL_ALIGN_RIGHT);
 
-  /* create the progress bar */
   prog_bar = new Fl_Progress(bord, boxh, winw-bord*2, barh);
   prog_bar->minimum(0);
   prog_bar->maximum(100);
@@ -140,11 +133,15 @@ int dialog_fl_progress(const char *progress_msg,
   prog_bar->label("0%");
 
   if (!autoclose) {
-    /* close button */
-    but = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
-                        butw, buth, fl_close);
-    but->deactivate();
-    but->callback(prog_exit0_cb);
+    int but_ok_x = but_right;
+    if (!hide_cancel) {
+      but_cancel = new Fl_Button(but_right, boxh+textheight+buth, butw, buth, fl_cancel);
+      but_cancel->callback(prog_exit1_cb);
+      but_ok_x = but_left;
+    }
+    but_ok = new Fl_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
+    but_ok->deactivate();
+    but_ok->callback(prog_exit0_cb);
   }
 
   prog_win->end();
@@ -166,11 +163,8 @@ int dialog_fl_progress(const char *progress_msg,
         Fl::check();  /* update the screen */
         if (percent == 100) {
           if (!autoclose) {
-            but->activate();
-            if (dont_close) {
-              /* re-enable window's close button */
-              prog_win->callback(prog_exit1_cb);
-            }
+            but_ok->activate();
+            if (!hide_cancel) but_cancel->deactivate();
           } else {
             prog_win->remove(prog_bar);
             delete prog_bar;
