@@ -42,18 +42,21 @@
 Fl_Window *prog_win;
 Fl_Progress *prog_bar;
 
-static void prog_exit0_cb(Fl_Widget*)
+static void progress_exit(int ret)
 {
   prog_win->remove(prog_bar);
   delete prog_bar;
-  exit(0);
+  exit(ret);
 }
 
-static void prog_exit1_cb(Fl_Widget*)
+static void progress_exit0_cb(Fl_Widget*)
 {
-  prog_win->remove(prog_bar);
-  delete prog_bar;
-  exit(1);
+  progress_exit(0);
+}
+
+static void progress_exit1_cb(Fl_Widget*)
+{
+  progress_exit(1);
 }
 
 /* run a test:
@@ -116,7 +119,7 @@ int dialog_fl_progress(const char *progress_msg,
   prog_win = new Fl_Window(winw, winh);
   prog_win->label(progress_title);
   prog_win->begin();
-  prog_win->callback(prog_exit1_cb);
+  prog_win->callback(progress_exit1_cb);
 
   /* message text */
   box = new Fl_Box(0, 0, bord, boxh, s.c_str());
@@ -136,12 +139,12 @@ int dialog_fl_progress(const char *progress_msg,
     int but_ok_x = but_right;
     if (!hide_cancel) {
       but_cancel = new Fl_Button(but_right, boxh+textheight+buth, butw, buth, fl_cancel);
-      but_cancel->callback(prog_exit1_cb);
+      but_cancel->callback(progress_exit1_cb);
       but_ok_x = but_left;
     }
     but_ok = new Fl_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
     but_ok->deactivate();
-    but_ok->callback(prog_exit0_cb);
+    but_ok->callback(progress_exit0_cb);
   }
 
   prog_win->end();
@@ -166,9 +169,7 @@ int dialog_fl_progress(const char *progress_msg,
             but_ok->activate();
             if (!hide_cancel) but_cancel->deactivate();
           } else {
-            prog_win->remove(prog_bar);
-            delete prog_bar;
-            exit(0);
+            progress_exit(0);
           }
         }
       }
