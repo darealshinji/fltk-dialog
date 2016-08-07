@@ -102,6 +102,13 @@ int dialog_fl_value_slider(const char *slider_msg,
                                  char *slider_val);
 #endif  /* WITH_SCALE */
 
+/* textinfo.cpp */
+#ifdef WITH_TEXTINFO
+int dialog_textinfo(char *textinfo_title,
+                    bool autoscroll,
+                    std::string checkbox);
+#endif  /* WITH_TEXTINFO */
+
 /* translate.cpp */
 std::string &repstr(      std::string &s,
                     const std::string &from,

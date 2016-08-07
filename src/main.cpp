@@ -101,6 +101,9 @@ void print_usage(char *prog)
 #ifdef WITH_HTML
   "  --html=FILE                Display HTML viewer\n"
 #endif
+#ifdef WITH_TEXTINFO
+  "  --text-info                Display text information dialog\n"
+#endif
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
   "                             gleam, plastic or simple; default is gtk+\n"
@@ -154,6 +157,12 @@ void print_usage(char *prog)
   "  --step=VALUE               Set step size\n"
   "                             VALUE can be float point or integer\n"
 #endif  /* WITH_SCALE */
+#ifdef WITH_TEXTINFO
+  "\n"
+  "Text information options:\n"
+  "  --checkbox=TEXT            Enable an \"I read and agree\" checkbox\n"
+  "  --auto-scroll              Always scroll to the bottom of the text\n"
+#endif
     << std::endl;
 }
 
@@ -188,12 +197,16 @@ int main(int argc, char **argv)
   bool autoclose = false;
   bool hide_cancel = false;
 #endif
+#ifdef WITH_TEXTINFO
+  std::string checkbox = "";
+  bool autoscroll = false;
+#endif
 
   /* using these to check if two or more dialog options were specified */
   int dabout, dalert, dcalendar, dchoice, dfilechooser, ddirchoser, dhtml,
-    dinput, dpassword, dcolor, dprogress, dvalslider;
+    dinput, dpassword, dcolor, dprogress, dvalslider, dtextinfo;
   dabout = dalert = dcalendar = dchoice = dfilechooser = ddirchoser = dhtml =
-    dinput = dpassword = dcolor = dprogress = dvalslider = 0;
+    dinput = dpassword = dcolor = dprogress = dvalslider = dtextinfo = 0;
 
 #ifdef WITH_ICON
   /* set global default icon for all windows */
@@ -225,49 +238,54 @@ int main(int argc, char **argv)
   }
 
   static struct option long_options[] = {
-    { "about",      no_argument,       0, LO_ABOUT      },
-    { "no-escape",  no_argument,       0, LO_NO_ESCAPE  },
-    { "scheme",     required_argument, 0, LO_SCHEME     },
-    { "text",       required_argument, 0, LO_TEXT       },
-    { "title",      required_argument, 0, LO_TITLE      },
-    { "yes-label",  required_argument, 0, LO_YES_LABEL  },
-    { "no-label",   required_argument, 0, LO_NO_LABEL   },
-    { "alt-label",  required_argument, 0, LO_ALT_LABEL  },
+    { "about",       no_argument,       0, LO_ABOUT       },
+    { "no-escape",   no_argument,       0, LO_NO_ESCAPE   },
+    { "scheme",      required_argument, 0, LO_SCHEME      },
+    { "text",        required_argument, 0, LO_TEXT        },
+    { "title",       required_argument, 0, LO_TITLE       },
+    { "yes-label",   required_argument, 0, LO_YES_LABEL   },
+    { "no-label",    required_argument, 0, LO_NO_LABEL    },
+    { "alt-label",   required_argument, 0, LO_ALT_LABEL   },
 #ifdef WITH_HTML
-    { "html",       required_argument, 0, LO_HTML       },
+    { "html",        required_argument, 0, LO_HTML        },
 #endif
-    { "warning",    no_argument,       0, LO_WARNING    },
-    { "question",   no_argument,       0, LO_QUESTION   },
+    { "warning",     no_argument,       0, LO_WARNING     },
+    { "question",    no_argument,       0, LO_QUESTION    },
 #ifdef WITH_FILE
-    { "file",       no_argument,       0, LO_FILE       },
-    { "directory",  no_argument,       0, LO_DIRECTORY  },
-    { "native",     no_argument,       0, LO_NATIVE     },
+    { "file",        no_argument,       0, LO_FILE        },
+    { "directory",   no_argument,       0, LO_DIRECTORY   },
+    { "native",      no_argument,       0, LO_NATIVE      },
 #endif  /* WITH_FILE */
 #ifdef WITH_ENTRY
-    { "entry",      no_argument,       0, LO_ENTRY      },
+    { "entry",       no_argument,       0, LO_ENTRY       },
 #endif
 #ifdef WITH_PASSWORD
-    { "password",   no_argument,       0, LO_PASSWORD   },
+    { "password",    no_argument,       0, LO_PASSWORD    },
 #endif
 #ifdef WITH_COLOR
-    { "color",      no_argument,       0, LO_COLOR      },
+    { "color",       no_argument,       0, LO_COLOR       },
 #endif
 #ifdef WITH_PROGRESS
-    { "progress",   no_argument,       0, LO_PROGRESS   },
-    { "auto-close", no_argument,       0, LO_AUTO_CLOSE },
-    { "no-cancel",  no_argument,       0, LO_NO_CANCEL  },
+    { "progress",    no_argument,       0, LO_PROGRESS    },
+    { "auto-close",  no_argument,       0, LO_AUTO_CLOSE  },
+    { "no-cancel",   no_argument,       0, LO_NO_CANCEL   },
 #endif  /* WITH_PROGRESS */
 #ifdef WITH_SCALE
-    { "scale",      no_argument,       0, LO_SCALE      },
-    { "value",      required_argument, 0, LO_VALUE      },
-    { "min-value",  required_argument, 0, LO_MIN_VALUE  },
-    { "max-value",  required_argument, 0, LO_MAX_VALUE  },
-    { "step",       required_argument, 0, LO_STEP       },
+    { "scale",       no_argument,       0, LO_SCALE       },
+    { "value",       required_argument, 0, LO_VALUE       },
+    { "min-value",   required_argument, 0, LO_MIN_VALUE   },
+    { "max-value",   required_argument, 0, LO_MAX_VALUE   },
+    { "step",        required_argument, 0, LO_STEP        },
 #endif  /* WITH_SCALE */
 #ifdef WITH_CALENDAR
-    { "calendar",   no_argument,       0, LO_CALENDAR   },
-    { "format",     required_argument, 0, LO_FORMAT     },
-#endif
+    { "calendar",    no_argument,       0, LO_CALENDAR    },
+    { "format",      required_argument, 0, LO_FORMAT      },
+#endif  /* WITH_CALENDAR */
+#ifdef WITH_TEXTINFO
+    { "text-info",   no_argument,       0, LO_TEXT_INFO   },
+    { "auto-scroll", no_argument,       0, LO_AUTO_SCROLL },
+    { "checkbox",    required_argument, 0, LO_CHECKBOX    },
+#endif  /* WITH_TEXTINFO */
     { 0, 0, 0, 0 }
   };
 
@@ -383,13 +401,25 @@ int main(int argc, char **argv)
         fmt = std::string(optarg);
         break;
 #endif  /* WITH_CALENDAR */
+#ifdef WITH_TEXTINFO
+      case LO_TEXT_INFO:
+        dialog = DIALOG_TEXTINFO;
+        dtextinfo = 1;
+        break;
+      case LO_AUTO_SCROLL:
+        autoscroll = true;
+        break;
+      case LO_CHECKBOX:
+        checkbox = std::string(optarg);
+        break;
+#endif  /* WITH_TEXTINFO */
       default:
         P_ERRX("See `" << argv[0] << " --help' for available commands");
     }
   }
 
-  if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser +
-       dhtml + dinput + dpassword + dcolor + dprogress + dvalslider) >= 2) {
+  if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser + dhtml +
+       dinput + dpassword + dcolor + dprogress + dvalslider + dtextinfo) >= 2) {
     P_ERR("two or more dialog options specified");
   }
 
@@ -422,6 +452,12 @@ int main(int argc, char **argv)
 #ifdef WITH_CALENDAR
   if (fmt != "" && dialog != DIALOG_FL_CALENDAR) {
     P_ERR("--format can only be used with --calendar");
+  }
+#endif
+
+#ifdef WITH_TEXTINFO
+  if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != "")) {
+    P_ERR("--auto-scroll/--checkbox can only be used with --text-info");
   }
 #endif
 
@@ -497,6 +533,10 @@ int main(int argc, char **argv)
 #ifdef WITH_CALENDAR
     case DIALOG_FL_CALENDAR:
       return dialog_fl_calendar(title, fmt);
+#endif
+#ifdef WITH_TEXTINFO
+    case DIALOG_TEXTINFO:
+      return dialog_textinfo(title, autoscroll, checkbox);
 #endif
   }
 }

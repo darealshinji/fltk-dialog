@@ -30,6 +30,7 @@ WITH_HTML     ?= yes
 WITH_PASSWORD ?= yes
 WITH_PROGRESS ?= yes
 WITH_SCALE    ?= yes
+WITH_TEXTINFO ?= yes
 
 # checkout directory for FLTK
 fltk = fltk-1.3
@@ -89,6 +90,10 @@ endif
 ifneq ($(WITH_SCALE),no)
 CXXFLAGS += -DWITH_SCALE
 OBJS += src/slider.o
+endif
+ifneq ($(WITH_TEXTINFO),no)
+CXXFLAGS += -DWITH_TEXTINFO
+OBJS += src/textinfo.o
 endif
 
 fltk_CXXFLAGS := $(common_CXXFLAGS) \
