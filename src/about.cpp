@@ -54,8 +54,8 @@ static void about_hide_cb(Fl_Widget *w)
 static void about_close_cb(Fl_Widget*)
 {
   delete about_pixmap;
-  delete license_buffer;
   delete license_display;
+  delete license_buffer;
   exit(0);
 }
 
@@ -94,8 +94,7 @@ int about()
   box->image(about_pixmap);
   but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
   but_lic->callback(about_but_lic_cb);
-  but_close = new Fl_Button(winw-butw-bord, winh-buth-bord,
-                            butw, buth, fl_close);
+  but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
   but_close->callback(about_close_cb);
   win->end();
   win->show();
@@ -206,13 +205,12 @@ void license()
     "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n"
     "USA.\n"
   );
-  but_close = new Fl_Button((winw-butw)/2, winh-buth-bord,
-                            butw, buth, fl_close);
+  but_close = new Fl_Button((winw-butw)/2, winh-buth-bord, butw, buth, fl_close);
   but_close->callback(about_hide_cb);
   win->end();
   win->show();
   Fl::run();
-  delete license_buffer;
   delete license_display;
+  delete license_buffer;
 }
 
