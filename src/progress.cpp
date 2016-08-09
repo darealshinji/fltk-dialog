@@ -116,13 +116,10 @@ int dialog_fl_progress(const char *progress_msg,
     winh = boxh+barh+bord+5;
   }
 
-  prog_win = new Fl_Window(winw, winh);
-  prog_win->label(progress_title);
+  prog_win = new Fl_Window(winw, winh, progress_title);
+  box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   prog_win->begin();
   prog_win->callback(progress_exit1_cb);
-
-  /* message text */
-  box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   box->box(FL_NO_BOX);
   box->align(FL_ALIGN_RIGHT);
 
@@ -176,6 +173,9 @@ int dialog_fl_progress(const char *progress_msg,
     }
   }
 
-  return Fl::run();
+  int ret = Fl::run();
+  prog_win->remove(prog_bar);
+  delete prog_bar;
+  return ret;
 }
 

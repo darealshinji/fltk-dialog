@@ -74,25 +74,25 @@ int dialog_fl_dir_chooser(char* dir_chooser_title)
 int dialog_fl_native_file_chooser(char *fnfc_title,
                                   int   fnfc_dir)
 {
-  Fl_Native_File_Chooser fnfc;
+  Fl_Native_File_Chooser *fnfc = NULL;
   char *fnfc_def_title = NULL;
   int ret = 0;
 
   if (fnfc_title == NULL) {
     if (fnfc_dir == DIR_CHOOSER) {
-      fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
+      fnfc->type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
       fnfc_def_title = (char *)"Select a directory";
     } else {
-      fnfc.type(Fl_Native_File_Chooser::BROWSE_FILE);
+      fnfc->type(Fl_Native_File_Chooser::BROWSE_FILE);
       fnfc_def_title = (char *)"Select a file";
     }
     fnfc_title = fnfc_def_title;
   }
 
-  fnfc.title(fnfc_title);
+  fnfc->title(fnfc_title);
 
-  if (fnfc.show() == 0) {
-    std::cout << fnfc.filename() << std::endl;
+  if (fnfc->show() == 0) {
+    std::cout << fnfc->filename() << std::endl;
   } else {
     ret = 1;
   }

@@ -34,29 +34,21 @@
 #include <stdlib.h>  /* exit */
 #include <unistd.h>  /* isatty */
 
-Fl_Window *ti_win;
 Fl_Multi_Browser *ti_browser;
 Fl_Button *ti_but_cancel = NULL;
 Fl_Button *ti_but_ok = NULL;
-Fl_Check_Button *ti_checkbutton;
 bool ti_checkbutton_set = false;
-
-static void textinfo_exit(int ret)
-{
-  delete ti_checkbutton;
-  delete ti_browser;
-  delete ti_win;
-  exit(ret);
-}
 
 static void textinfo_exit0_cb(Fl_Widget*)
 {
-  textinfo_exit(0);
+  delete ti_browser;
+  exit(0);
 }
 
 static void textinfo_exit1_cb(Fl_Widget*)
 {
-  textinfo_exit(1);
+  delete ti_browser;
+  exit(1);
 }
 
 static void ti_checkbutton_cb(Fl_Widget*)
@@ -72,6 +64,9 @@ static void ti_checkbutton_cb(Fl_Widget*)
 
 int dialog_textinfo(char *textinfo_title, bool autoscroll, std::string checkbox)
 {
+  Fl_Window *win;
+  Fl_Check_Button *checkbutton;
+
   std::string line;
   int linecount = 0;
   int bord = 10;
@@ -86,38 +81,37 @@ int dialog_textinfo(char *textinfo_title, bool autoscroll, std::string checkbox)
     textinfo_title = (char *)"FLTK text info window";
   }
 
-  ti_win = new Fl_Window(winw, winh, textinfo_title);
+  win = new Fl_Window(winw, winh, textinfo_title);
   ti_browser = new Fl_Multi_Browser(bord, bord, browser_w, browser_h);
-  ti_win->begin();
-  ti_win->resizable(ti_browser);
+  win->begin();
+  win->resizable(ti_browser);
 
   if (checkbox == "") {
-    ti_win->callback(textinfo_exit0_cb);  /* exit(0) */
-    ti_but_ok = new Fl_Button(winw-butw-bord, browser_h+bord*2,
-                           butw, buth, fl_close);
+    win->callback(textinfo_exit0_cb);  /* exit(0) */
+    ti_but_ok = new Fl_Button(winw-butw-bord, browser_h+bord*2, butw, buth, fl_close);
     ti_but_ok->callback(textinfo_exit0_cb);
   } else {
     checkbox = " " + checkbox;
-    ti_win->callback(textinfo_exit1_cb);  /* exit(1) */
-    ti_checkbutton = new Fl_Check_Button(bord, browser_h+bord, ti_browser->w(), buth,
-                                         checkbox.c_str());
-    ti_checkbutton->callback(ti_checkbutton_cb);
+    win->callback(textinfo_exit1_cb);  /* exit(1) */
+    checkbutton = new Fl_Check_Button(bord, browser_h+bord, ti_browser->w(), buth,
+                                      checkbox.c_str());
+    checkbutton->callback(ti_checkbutton_cb);
     ti_but_cancel = new Fl_Button(winw-butw-bord, browser_h+buth+bord*2,
-                               butw, buth, fl_cancel);
+                                  butw, buth, fl_cancel);
     ti_but_cancel->callback(textinfo_exit1_cb);
     ti_but_ok = new Fl_Button(winw-butw*2-bord*2, browser_h+buth+bord*2,
-                           butw, buth, fl_ok);
+                              butw, buth, fl_ok);
     ti_but_ok->deactivate();
     ti_but_ok->callback(textinfo_exit0_cb);
   }
 
-  ti_win->show();
+  win->show();
 
   if (isatty(STDIN_FILENO) == 1) {
     line = "error: no input";
     ti_browser->add(line.c_str());
   } else {
-    ti_win->wait_for_expose();
+    win->wait_for_expose();
     Fl::flush();
     for (/**/; std::getline(std::cin, line); /**/) {
       ti_browser->add(line.c_str());
@@ -130,7 +124,7 @@ int dialog_textinfo(char *textinfo_title, bool autoscroll, std::string checkbox)
   }
 
   int ret = Fl::run();
-  textinfo_exit(ret);
+  delete ti_browser;
   return ret;
 }
 

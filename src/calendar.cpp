@@ -46,6 +46,8 @@ char formattedDate[255];
 
 char *getFormattedDate(int y, int m, int d, char *fmt)
 {
+  /* based on strptime(3) example code */
+
   struct tm tm;
   char buf[255];
   char date[31];
@@ -73,6 +75,10 @@ static void calendar_cancel_cb(Fl_Widget*)
 int dialog_fl_calendar(       char *calendar_title,
                        std::string  fmt)
 {
+  Fl_Window *win;
+  Fl_Return_Button *but_ok;
+  Fl_Button *but_cancel;
+
   int winw = 250;
   int calh = winw;
   int bord = 10;
@@ -109,18 +115,16 @@ int dialog_fl_calendar(       char *calendar_title,
     fmt = repstr(fmt, "u", "%u");   /* day of the week, Monday being 1 (7) */
   }
 
-  Fl_Window win(winw, winh, calendar_title);
+  win = new Fl_Window(winw, winh, calendar_title);
   cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
-  win.begin();
-  win.callback(calendar_cancel_cb);  /* exit(1) */
-  Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
-                                                  calh, butw, buth, fl_ok);
+  win->begin();
+  win->callback(calendar_cancel_cb);  /* exit(1) */
+  but_ok = new Fl_Return_Button(winw-butw*2-bord*2, calh, butw, buth, fl_ok);
   but_ok->callback(calendar_ok_cb);
-  Fl_Button *but_cancel = new Fl_Button(winw-butw-bord, calh,
-                                        butw, buth, fl_cancel);
+  but_cancel = new Fl_Button(winw-butw-bord, calh, butw, buth, fl_cancel);
   but_cancel->callback(calendar_cancel_cb);
-  win.end();
-  win.show();
+  win->end();
+  win->show();
 
   ret = Fl::run();
   y = cal->year();

@@ -53,11 +53,3 @@ enum longOpts {
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
 
-/* djcj: I find this easier than using extra print-error functions */
-#define P_ERR(x) \
- std::cerr << argv[0] << ": " << x << std::endl; \
- return 1
-#define P_ERRX(x) \
- std::cerr << x << std::endl; \
- return 1
-

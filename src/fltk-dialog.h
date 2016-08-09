@@ -90,7 +90,7 @@ int dialog_fl_progress(const char *progress_msg,
                              char *progress_title,
                              bool  autoclose,
                              bool  hide_cancel);
-#endif  /* WITH_PROGRESS */
+#endif
 
 /* slider.cpp */
 #ifdef WITH_SCALE
@@ -100,14 +100,14 @@ int dialog_fl_value_slider(const char *slider_msg,
                                  char *slider_max,
                                  char *slider_step,
                                  char *slider_val);
-#endif  /* WITH_SCALE */
+#endif
 
 /* textinfo.cpp */
 #ifdef WITH_TEXTINFO
-int dialog_textinfo(char *textinfo_title,
-                    bool autoscroll,
-                    std::string checkbox);
-#endif  /* WITH_TEXTINFO */
+int dialog_textinfo(       char *textinfo_title,
+                           bool  autoscroll,
+                    std::string  checkbox);
+#endif
 
 /* translate.cpp */
 std::string &repstr(      std::string &s,

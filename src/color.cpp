@@ -33,7 +33,7 @@
 
 int dialog_fl_color(char *color_title)
 {
-  double r,g,b; r=g=b = 1;
+  double r=1, g=1, b=1;
 
   if (color_title == NULL) {
     color_title = (char *)"FLTK color chooser";
@@ -43,7 +43,7 @@ int dialog_fl_color(char *color_title)
     size_t colr = round(255*r);
     size_t colg = round(255*g);
     size_t colb = round(255*b);
-    double h,s,v; h=s=v = 0;
+    double h=0, s=0, v=0;
     Fl_Color_Chooser::rgb2hsv(r,g,b, h,s,v);
 
     std::cout << std::fixed << std::setprecision(3)

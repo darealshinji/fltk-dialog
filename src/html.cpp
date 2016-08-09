@@ -28,7 +28,7 @@
 
 int dialog_html_viewer(const char *file)
 {
-  Fl_Help_Dialog *viewer = new Fl_Help_Dialog;
+  Fl_Help_Dialog *viewer = new Fl_Help_Dialog();
   viewer->load(file);
   viewer->show();
   int ret = Fl::run();

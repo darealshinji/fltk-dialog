@@ -67,6 +67,11 @@ int dialog_fl_value_slider(const char *slider_msg,
                                  char *slider_step,
                                  char *slider_val)
 {
+  Fl_Window *win;
+  Fl_Box *box;
+  Fl_Return_Button *but_ok;
+  Fl_Button *but_cancel;
+
   std::string s;
   int winw = 320;
   int slidh = 30;
@@ -103,12 +108,10 @@ int dialog_fl_value_slider(const char *slider_msg,
 
   int boxh = textlines*textheight + bord*2;
 
-  Fl_Window *win = new Fl_Window(winw, boxh+slidh+bord*3+textheight,
-                                 slider_title);
+  win = new Fl_Window(winw, boxh+slidh+bord*3+textheight, slider_title);
+  box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   win->begin();
   win->callback(slider_cancel_cb);  /* exit(1) */
-
-  Fl_Box *box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   box->box(FL_NO_BOX);
   box->align(FL_ALIGN_RIGHT);
 
@@ -122,13 +125,11 @@ int dialog_fl_value_slider(const char *slider_msg,
   slider->value(slidval_round);
   slider->callback(slider_cb);
 
-  Fl_Return_Button *but_ok = new Fl_Return_Button(winw-butw*2-bord*2,
-                                                  boxh+textheight+buth,
-                                                  butw, buth, fl_ok);
+  but_ok = new Fl_Return_Button(winw-butw*2-bord*2, boxh+textheight+buth,
+                                butw, buth, fl_ok);
   but_ok->callback(slider_ok_cb);
-  Fl_Button *but_cancel = new Fl_Button(winw-butw-bord,
-                                        boxh+textheight+buth,
-                                        butw, buth, fl_cancel);
+  but_cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
+                             butw, buth, fl_cancel);
   but_cancel->callback(slider_cancel_cb);
 
   win->end();
