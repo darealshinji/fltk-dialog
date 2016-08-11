@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2016, djcj <djcj@gmx.de>
+Copyright (c) 2016  djcj <djcj@gmx.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,9 @@ SOFTWARE.
 
 
 
-fltk.xpm, icon.xpm:
+fltk.xpm, icon_old.xpm:
 
-Copyright (c) 1998-2016 by Bill Spitzak and others.
+Copyright (c) 1998-2016  Bill Spitzak and others.
 
 The FLTK library and included programs are provided under the terms of the
 GNU Library General Public License (LGPL) with the following exceptions:
@@ -70,7 +70,7 @@ statement can be included in user documentation to satisfy this requirement:
 
 Flek/*:
 
-Copyright (c) 1999-2000 by the Flek development team.
+Copyright (c) 1999-2000  the Flek development team.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -87,3 +87,28 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 USA.
 
+
+
+icon.svg, icon.xpm:
+
+The MIT License (MIT)
+
+Copyright (c) 2016  Haiku, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
