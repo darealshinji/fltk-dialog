@@ -22,7 +22,7 @@ SOFTWARE.
 
 
 
-fltk.xpm, icon_old.xpm:
+src/fltk.xpm, src/icon_old.xpm:
 
 Copyright (c) 1998-2016  Bill Spitzak and others.
 
@@ -68,7 +68,7 @@ statement can be included in user documentation to satisfy this requirement:
 
 
 
-Flek/*:
+src/Flek/*:
 
 Copyright (c) 1999-2000  the Flek development team.
 
@@ -89,7 +89,7 @@ USA.
 
 
 
-icon.svg, icon.xpm:
+src/icon.png, src/icon.xpm:
 
 The MIT License (MIT)
 
