@@ -24,18 +24,20 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
-#include <FL/Fl_Pixmap.H>
-#include <FL/Fl_RGB_Image.H>
+#ifdef WITH_DEFAULT_ICON
+#  include <FL/Fl_Pixmap.H>
+#  include <FL/Fl_RGB_Image.H>
+#endif
 
 #include <iostream>  /* std::cout, std::cerr, std::endl */
-#include <string>    /* std::string, c_str */
+#include <string>    /* std::string */
 #include <getopt.h>  /* getopt_long_only */
 #include <stdlib.h>  /* exit */
 #include <string.h>  /* strcmp */
 
 #include "fltk-dialog.h"
 #include "main.h"
-#ifdef WITH_ICON
+#ifdef WITH_DEFAULT_ICON
 #  include "icon.xpm"
 #endif
 
@@ -103,6 +105,10 @@ void print_usage(char *prog)
 #endif
 #ifdef WITH_TEXTINFO
   "  --text-info                Display text information dialog\n"
+#endif
+#ifdef WITH_WINDOW_ICON
+  "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
+  "                             jpg png pnm xpm"
 #endif
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
@@ -187,6 +193,9 @@ int main(int argc, char **argv)
 #ifdef WITH_HTML
   const char *html = NULL;
 #endif
+#ifdef WITH_WINDOW_ICON
+  std::string window_icon = "";
+#endif
   int opt = 0;
   int long_index = 0;
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
@@ -207,7 +216,7 @@ int main(int argc, char **argv)
   int dhtml=0, dinput=0, dpassword=0, dcolor=0, dprogress=0, dvalslider=0;
   int dtextinfo=0;
 
-#ifdef WITH_ICON
+#ifdef WITH_DEFAULT_ICON
   /* set global default icon for all windows */
   Fl_Pixmap win_pixmap(icon_xpm);
   Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
@@ -284,6 +293,9 @@ int main(int argc, char **argv)
     { "text-info",   no_argument,       0, LO_TEXT_INFO   },
     { "auto-scroll", no_argument,       0, LO_AUTO_SCROLL },
     { "checkbox",    required_argument, 0, LO_CHECKBOX    },
+#endif
+#ifdef WITH_WINDOW_ICON
+    { "window-icon", required_argument, 0, LO_WINDOW_ICON },
 #endif
     { 0, 0, 0, 0 }
   };
@@ -412,6 +424,11 @@ int main(int argc, char **argv)
         checkbox = std::string(optarg);
         break;
 #endif
+#ifdef WITH_WINDOW_ICON
+      case LO_WINDOW_ICON:
+        window_icon = std::string(optarg);
+        break;
+#endif
       default:
         std::cerr << "See `" << argv[0] << " --help' for available commands"
           << std::endl;
@@ -500,6 +517,12 @@ int main(int argc, char **argv)
       << "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
   }
+
+#ifdef WITH_WINDOW_ICON
+  if (window_icon != "") {
+    set_window_icon(window_icon);
+  }
+#endif
 
   switch (dialog) {
     case DIALOG_ABOUT:

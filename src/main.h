@@ -47,6 +47,7 @@ enum longOpts {
   LO_TITLE,
   LO_VALUE,
   LO_WARNING,
+  LO_WINDOW_ICON,
   LO_YES_LABEL
 };
 

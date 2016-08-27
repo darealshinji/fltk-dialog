@@ -19,7 +19,7 @@ STATIC_FLTK   ?= yes
 
 # set to "no" if you don't want an embedded FLKT
 # icon to appear in taskbar and windows
-WITH_ICON     ?= yes
+WITH_DEFAULT_ICON ?= yes
 
 # set to "no" to disable certain features
 WITH_CALENDAR ?= yes
@@ -31,6 +31,7 @@ WITH_PASSWORD ?= yes
 WITH_PROGRESS ?= yes
 WITH_SCALE    ?= yes
 WITH_TEXTINFO ?= yes
+WITH_WINDOW_ICON ?= yes
 
 # checkout directory for FLTK
 fltk = fltk-1.3
@@ -56,8 +57,8 @@ CXXFLAGS += \
  -DREVISION=\"$(shell cat $(fltk)/revision)\"
 endif
 
-ifneq ($(WITH_ICON),no)
-CXXFLAGS += -DWITH_ICON
+ifneq ($(WITH_DEFAULT_ICON),no)
+CXXFLAGS += -DWITH_DEFAULT_ICON
 endif
 ifneq ($(WITH_CALENDAR),no)
 CXXFLAGS += -DWITH_CALENDAR
@@ -94,6 +95,10 @@ endif
 ifneq ($(WITH_TEXTINFO),no)
 CXXFLAGS += -DWITH_TEXTINFO
 OBJS += src/textinfo.o
+endif
+ifneq ($(WITH_WINDOW_ICON),no)
+CXXFLAGS += -DWITH_WINDOW_ICON
+OBJS += src/window_icon.o
 endif
 
 fltk_CXXFLAGS := $(common_CXXFLAGS) \
@@ -155,5 +160,5 @@ $(fltk)/fltk-config: $(fltk)
 $(fltk)/lib/libfltk.a: $(fltk)/fltk-config
 	$(MAKE) -C $(fltk)
 
-src/about.o src/html.o src/main.o: CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 

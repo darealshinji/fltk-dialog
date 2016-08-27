@@ -109,6 +109,11 @@ int dialog_textinfo(       char *textinfo_title,
                     std::string  checkbox);
 #endif
 
+#ifdef WITH_WINDOW_ICON
+/* window_icon.cpp */
+void set_window_icon(std::string file);
+#endif
+
 /* translate.cpp */
 std::string &repstr(      std::string &s,
                     const std::string &from,
