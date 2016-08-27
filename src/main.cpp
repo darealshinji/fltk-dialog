@@ -33,7 +33,6 @@
 #include <string>    /* std::string */
 #include <getopt.h>  /* getopt_long_only */
 #include <stdlib.h>  /* exit */
-#include <string.h>  /* strcmp (used in macro STREQ) */
 
 #include "fltk-dialog.h"
 #include "main.h"
