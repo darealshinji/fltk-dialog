@@ -27,20 +27,18 @@
 #include <string>    /* std::string, c_str, substr, */
 #include <iostream>  /* std::cout, std::endl */
 #include <sstream>   /* std::stringstream, str */
-#include <string.h>  /* strcmp */
 
 
 std::string get_fltk_version()
 {
 #ifdef FLTK_VERSION
 
-  std::string version = FLTK_VERSION;
 #ifdef REVISION
-  std::string revision = REVISION;
-  return version + " (SVN r" + revision + ")";
+#  define PRINT_VERSION FLTK_VERSION " (SVN r" REVISION ")"
 #else
-  return version;
+#  define PRINT_VERSION FLTK_VERSION
 #endif
+  return PRINT_VERSION;
 
 #else  /* FLTK_VERSION */
 
@@ -56,8 +54,12 @@ std::string get_fltk_version()
   min2 = ver.substr(2,1);
   pat1 = ver.substr(3,1);
   pat2 = ver.substr(4,1);
-  if (strcmp(min1.c_str(), "0") == 0) { min1 = ""; }
-  if (strcmp(pat1.c_str(), "0") == 0) { pat1 = ""; }
+  if (min1 == "0") {
+    min1 = "";
+  }
+  if (pat1 == "0") {
+    pat1 = "";
+  }
   return maj + "." + min1 + min2 + "." + pat1 + pat2;
 
 #endif  /* FLTK_VERSION */
@@ -65,6 +67,10 @@ std::string get_fltk_version()
 
 void print_fltk_version()
 {
+#ifdef PRINT_VERSION
+  std::cout << "using FLTK version " PRINT_VERSION << std::endl;
+#else
   std::cout << "using FLTK version " << get_fltk_version() << std::endl;
+#endif
 }
 

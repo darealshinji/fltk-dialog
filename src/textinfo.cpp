@@ -32,7 +32,9 @@
 #include <string>    /* std::string, std::getline, c_str */
 #include <iostream>  /* std::cin */
 #include <stdlib.h>  /* exit */
-#include <unistd.h>  /* isatty */
+
+#include "fltk-dialog.h"
+
 
 Fl_Multi_Browser *ti_browser;
 Fl_Button *ti_but_cancel = NULL;
@@ -107,7 +109,7 @@ int dialog_textinfo(char *textinfo_title, bool autoscroll, std::string checkbox)
 
   win->show();
 
-  if (isatty(STDIN_FILENO) == 1) {
+  if (STDIN) {
     line = "error: no input";
     ti_browser->add(line.c_str());
   } else {

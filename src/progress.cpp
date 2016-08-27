@@ -34,7 +34,6 @@
 #include <stdio.h>   /* sprintf */
 #include <stdlib.h>  /* exit, atoi */
 #include <string.h>  /* strlen */
-#include <unistd.h>  /* isatty */
 
 #include "fltk-dialog.h"
 
@@ -102,7 +101,7 @@ int dialog_fl_progress(const char *progress_msg,
   }
 
   /* check for input data */
-  if (isatty(STDIN_FILENO) == 1) {
+  if (STDIN) {
     s = "Error: no input data receiving";
     dialog_fl_message(s.c_str(), progress_title, ALERT);
     return 1;

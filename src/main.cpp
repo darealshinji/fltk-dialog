@@ -33,7 +33,7 @@
 #include <string>    /* std::string */
 #include <getopt.h>  /* getopt_long_only */
 #include <stdlib.h>  /* exit */
-#include <string.h>  /* strcmp */
+#include <string.h>  /* strcmp (used in macro STREQ) */
 
 #include "fltk-dialog.h"
 #include "main.h"
@@ -236,10 +236,10 @@ int main(int argc, char **argv)
   }
 
   for (int i = 1; i < argc; ++i) {
-    if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0) {
+    if (STREQ("--help", argv[i]) || STREQ("-h", argv[i])) {
       print_usage(argv[0]);
       return 0;
-    } else if (strcmp("--version", argv[i]) == 0 || strcmp("-v", argv[i]) == 0) {
+    } else if (STREQ("--version", argv[i]) || STREQ("-v", argv[i])) {
       print_fltk_version();
       return 0;
     }
@@ -502,15 +502,15 @@ int main(int argc, char **argv)
   }
 #endif
 
-  if (strcmp("gtk", scheme) == 0) {
+  if (STREQ("gtk", scheme)) {
     scheme = "gtk+";
-  } else if (strcmp("simple", scheme) == 0) {
+  } else if (STREQ("simple", scheme)) {
     scheme = "none";
   }
-  if (strcmp("default", scheme) == 0) {
+  if (STREQ("default", scheme)) {
     Fl::scheme(scheme_default);
-  } else if (strcmp("none", scheme) == 0 || strcmp("gtk+", scheme) == 0 ||
-             strcmp("gleam", scheme) == 0 || strcmp("plastic", scheme) == 0) {
+  } else if (STREQ("none", scheme) || STREQ("gtk+", scheme) ||
+             STREQ("gleam", scheme) || STREQ("plastic", scheme)) {
     Fl::scheme(scheme);
   } else {
     std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"

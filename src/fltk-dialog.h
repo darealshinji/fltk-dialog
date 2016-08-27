@@ -26,7 +26,13 @@
 #define FLTK_DIALOG_H
 
 #include <FL/Fl.H>
-#include <string>  /* std::string */
+#include <string>    /* std::string */
+#include <unistd.h>  /* isatty */
+
+
+#define STREQ(x, y) (strcmp(x, y) == 0)
+#define STDIN (isatty(STDIN_FILENO) == 1)
+
 
 /* about.cpp */
 void license(void);

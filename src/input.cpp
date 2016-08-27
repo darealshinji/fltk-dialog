@@ -51,8 +51,7 @@ int dialog_fl_input(const char *input_msg,
   if (const char *input_label = fl_input("%s", NULL, s.c_str())) {
     std::cout << input_label << std::endl;
     return 0;
-  } else {
-    return 1;
   }
+  return 1;
 }
 

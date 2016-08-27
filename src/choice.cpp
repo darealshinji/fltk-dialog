@@ -58,11 +58,8 @@ int dialog_fl_choice(const char *choice_msg,
 
   fl_message_title(choice_title);
 
-  int ret = fl_choice("%s", choice_but_no, choice_but_yes, choice_but_alt, s.c_str());
-  if (ret == 0) {
-    ret = 1;
-  } else if (ret == 1) {
-    ret = 0;
+  if (fl_choice("%s", choice_but_no, choice_but_yes, choice_but_alt, s.c_str())) {
+    return 0;
   }
-  return ret;
+  return 1;
 }
