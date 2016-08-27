@@ -58,6 +58,9 @@ std::string get_ext(std::string input, unsigned int n=4)
   return input;
 }
 
+/* use as macro since the type of win_icon remains undefined
+ * until we figured out the filetype
+ */
 #define SET_ICON Fl_Window::default_icon(&win_icon)
 
 void set_window_icon(std::string file)
