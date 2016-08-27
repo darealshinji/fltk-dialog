@@ -86,7 +86,7 @@ int about()
     "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
     "The calendar widget is copyright \xc2\xa9 1999-2000\n"
     "by the Flek development team."
-#ifdef WITH_ICON
+#ifdef WITH_DEFAULT_ICON
     "\nThe application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
 #endif
     /**/;
@@ -211,7 +211,7 @@ void license()
     "License along with this library; if not, write to the Free Software\n"
     "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n"
     "USA.\n"
-#ifdef WITH_ICON
+#ifdef WITH_DEFAULT_ICON
     "\n"
     "\n"
     "\n"
