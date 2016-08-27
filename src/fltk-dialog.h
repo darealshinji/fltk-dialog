@@ -27,6 +27,7 @@
 
 #include <FL/Fl.H>
 #include <string>    /* std::string */
+#include <string.h>  /* strcmp */
 #include <unistd.h>  /* isatty */
 
 
