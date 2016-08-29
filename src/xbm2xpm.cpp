@@ -45,13 +45,11 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <fstream>
-#include <bitset>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <fstream>   /* std::ofstream, open, close */
+#include <string>    /* std::string */
+#include <stdio.h>   /* fopen, fgets, fclose, sscanf */
+#include <stdlib.h>  /* rand, srand */
+#include <string.h>  /* strncmp */
 
 
 std::ofstream tmp_xpm;
@@ -80,7 +78,7 @@ void getBits(const T &t)
 char *xbm2xpm(const char *input)
 {
   FILE *f;
-  unsigned char	*ptr;
+  unsigned char *ptr;
 
   if ((f = fopen(input, "rb")) == NULL) {
     return NULL;
