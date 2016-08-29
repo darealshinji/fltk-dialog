@@ -22,10 +22,6 @@
  * SOFTWARE.
  */
 
-/* TO DO:
- * figure out how to convert Fl_XBM_Image to Fl_RGB_Image
- */
-
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_BMP_Image.H>
@@ -33,13 +29,15 @@
 #include <FL/Fl_JPEG_Image.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_PNM_Image.H>
-/* #include <FL/Fl_XBM_Image.H> */
 #include <FL/Fl_XPM_Image.H>
 #include <FL/Fl_RGB_Image.H>
 
 #include <string>    /* std::string, c_str */
 #include <algorithm> /* std::transform */
 #include <locale>    /* std::tolower */
+#include <stdio.h>   /* remove */
+
+#include "fltk-dialog.h"
 
 
 struct to_lower {
@@ -66,6 +64,7 @@ std::string get_ext(std::string input, unsigned int n=4)
 void set_window_icon(std::string file)
 {
   const char *file_c = file.c_str();
+
   if (get_ext(file) == ".png") {
     Fl_PNG_Image win_icon(file_c);
     SET_ICON;
@@ -73,11 +72,19 @@ void set_window_icon(std::string file)
     Fl_XPM_Image xpm_icon(file_c);
     Fl_RGB_Image win_icon(&xpm_icon, Fl_Color(0));
     SET_ICON;
-/*
   } else if (get_ext(file) == ".xbm") {
-    Fl_XBM_Image win_icon(file_c);
-    SET_ICON;
- */
+    /* Fl_XBM_Image return a bitmap which Fl_RGB_Image
+     * can't handle, so instead we simply convert the
+     * XBitmap file into a temporary pixmap file and read
+     * its content with Fl_XPM_Image.
+     */
+    char *xpm_file = xbm2xpm(file_c);
+    if (xpm_file != NULL) {
+      Fl_XPM_Image xpm_icon(xpm_file);
+      remove(xpm_file);
+      Fl_RGB_Image win_icon(&xpm_icon, Fl_Color(0));
+      SET_ICON;
+    }
   } else if (get_ext(file) == ".jpg" || get_ext(file, 5) == ".jpeg") {
     Fl_JPEG_Image win_icon(file_c);
     SET_ICON;

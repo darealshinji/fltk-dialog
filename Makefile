@@ -98,7 +98,7 @@ OBJS += src/textinfo.o
 endif
 ifneq ($(WITH_WINDOW_ICON),no)
 CXXFLAGS += -DWITH_WINDOW_ICON
-OBJS += src/window_icon.o
+OBJS += src/window_icon.o src/xbm2xpm.o
 endif
 
 fltk_CXXFLAGS := $(common_CXXFLAGS) \

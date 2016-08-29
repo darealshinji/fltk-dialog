@@ -119,6 +119,9 @@ int dialog_textinfo(       char *textinfo_title,
 #ifdef WITH_WINDOW_ICON
 /* window_icon.cpp */
 void set_window_icon(std::string file);
+
+/* xbm2xpm.cpp */
+char *xbm2xpm(const char *input);
 #endif
 
 /* translate.cpp */

@@ -107,7 +107,7 @@ void print_usage(char *prog)
 #endif
 #ifdef WITH_WINDOW_ICON
   "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
-  "                             jpg png pnm xpm"
+  "                             jpg png pnm xbm xpm"
 #endif
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
