@@ -2,6 +2,7 @@
 enum dialogTypes {
   DIALOG_ABOUT,
   DIALOG_ALERT,
+  DIALOG_DND,
   DIALOG_HTML,
   DIALOG_TEXTINFO,
   DIALOG_FL_CALENDAR,
@@ -26,6 +27,7 @@ enum longOpts {
   LO_CHECKBOX,
   LO_COLOR,
   LO_DIRECTORY,
+  LO_DND,
   LO_ENTRY,
   LO_FILE,
   LO_FORMAT,

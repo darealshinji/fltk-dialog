@@ -57,6 +57,12 @@ int dialog_fl_choice(const char *choice_msg,
 int dialog_fl_color(char *color_title);
 #endif
 
+/* dnd.cpp */
+#ifdef WITH_DND
+int dialog_dnd(char *dnd_label,
+               char *dnd_title);
+#endif
+
 /* file.cpp */
 #ifdef WITH_FILE
 int dialog_fl_file_chooser(char *file_chooser_title);
@@ -116,11 +122,13 @@ int dialog_textinfo(       char *textinfo_title,
                     std::string  checkbox);
 #endif
 
-#ifdef WITH_WINDOW_ICON
 /* window_icon.cpp */
+#ifdef WITH_WINDOW_ICON
 void set_window_icon(std::string file);
+#endif
 
 /* xbm2xpm.cpp */
+#ifdef WITH_WINDOW_ICON
 char *xbm2xpm(const char *input);
 #endif
 

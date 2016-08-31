@@ -24,6 +24,7 @@ WITH_DEFAULT_ICON ?= yes
 # set to "no" to disable certain features
 WITH_CALENDAR ?= yes
 WITH_COLOR    ?= yes
+WITH_DND      ?= yes
 WITH_ENTRY    ?= yes
 WITH_FILE     ?= yes
 WITH_HTML     ?= yes
@@ -67,6 +68,10 @@ endif
 ifneq ($(WITH_COLOR),no)
 CXXFLAGS += -DWITH_COLOR
 OBJS += src/color.o
+endif
+ifneq ($(WITH_DND),no)
+CXXFLAGS += -DWITH_DND
+OBJS += src/dnd.o
 endif
 ifneq ($(WITH_ENTRY),no)
 CXXFLAGS += -DWITH_ENTRY

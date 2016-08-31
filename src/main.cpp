@@ -35,7 +35,7 @@
 #include <stdlib.h>  /* exit */
 
 #include "fltk-dialog.h"
-#include "main.h"
+#include "main.hpp"
 #ifdef WITH_DEFAULT_ICON
 #  include "icon.xpm"
 #endif
@@ -77,6 +77,9 @@ void print_usage(char *prog)
   "  --title=TITLE              Set the dialog title\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
+#ifdef WITH_DND
+  "  --dnd                      Display drag-n-drop box\n"
+#endif
 #ifdef WITH_FILE
   "  --file                     Display file selection dialog\n"
   "  --directory                Display directory selection dialog\n"
@@ -195,8 +198,6 @@ int main(int argc, char **argv)
 #ifdef WITH_WINDOW_ICON
   std::string window_icon = "";
 #endif
-  int opt = 0;
-  int long_index = 0;
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
 #ifdef WITH_FILE
   bool native = false;
@@ -211,9 +212,9 @@ int main(int argc, char **argv)
 #endif
 
   /* using these to check if two or more dialog options were specified */
-  int dabout=0, dalert=0, dcalendar=0, dchoice=0, dfilechooser=0, ddirchoser=0;
-  int dhtml=0, dinput=0, dpassword=0, dcolor=0, dprogress=0, dvalslider=0;
-  int dtextinfo=0;
+  int dabout=0, dalert=0, dcalendar=0, dchoice=0, ddirchoser=0, ddnd=0;
+  int dfilechooser=0, dhtml=0, dinput=0, dpassword=0, dcolor=0, dprogress=0;
+  int dvalslider=0, dtextinfo=0;
 
 #ifdef WITH_DEFAULT_ICON
   /* set global default icon for all windows */
@@ -253,6 +254,9 @@ int main(int argc, char **argv)
     { "yes-label",   required_argument, 0, LO_YES_LABEL   },
     { "no-label",    required_argument, 0, LO_NO_LABEL    },
     { "alt-label",   required_argument, 0, LO_ALT_LABEL   },
+#ifdef WITH_DND
+    { "dnd",         no_argument,       0, LO_DND         },
+#endif
 #ifdef WITH_HTML
     { "html",        required_argument, 0, LO_HTML        },
 #endif
@@ -299,6 +303,8 @@ int main(int argc, char **argv)
     { 0, 0, 0, 0 }
   };
 
+  int opt = -1;
+  int long_index = 0;
   while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index)) != -1) {
     switch (opt) {
       case LO_ABOUT:
@@ -326,6 +332,12 @@ int main(int argc, char **argv)
       case LO_ALT_LABEL:
         but_alt = optarg;
         break;
+#ifdef WITH_DND
+      case LO_DND:
+        dialog = DIALOG_DND;
+        ddnd = 1;
+        break;
+#endif
 #ifdef WITH_HTML
       case LO_HTML:
         dialog = DIALOG_HTML;
@@ -435,7 +447,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dabout + dalert + dcalendar + dchoice + dfilechooser + ddirchoser + dhtml +
+  if ((dabout + dalert + dcalendar + dchoice + ddirchoser + ddnd + dfilechooser + dhtml +
        dinput + dpassword + dcolor + dprogress + dvalslider + dtextinfo) >= 2) {
     std::cerr << argv[0] << ": "
       << "two or more dialog options specified" << std::endl;
@@ -532,6 +544,10 @@ int main(int argc, char **argv)
       return dialog_fl_message(msg, title, ALERT);
     case DIALOG_FL_CHOICE:
       return dialog_fl_choice(msg, title, but_yes, but_no, but_alt);
+#ifdef WITH_DND
+    case DIALOG_DND:
+      return dialog_dnd(msg, title);
+#endif
 #ifdef WITH_FILE
     case DIALOG_FL_FILE_CHOOSER:
       if (native) {
