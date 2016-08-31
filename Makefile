@@ -42,15 +42,15 @@ OBJS = $(addprefix src/,about.o choice.o message.o translate.o version.o main.o)
 
 OPT ?= -Os
 
-common_CXXFLAGS := $(OPT) -Wall -Wextra \
+common_CFLAGS := $(OPT) -Wall -Wextra \
  -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 \
  -ffunction-sections -fdata-sections
 
 LDFLAGS += \
  -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
 
-CXXFLAGS += $(common_CXXFLAGS) -Isrc -I$(fltk) \
- $(shell $(fltk)/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
+CXXFLAGS += $(common_CFLAGS) -Isrc -I$(fltk)/build -I$(fltk) \
+ $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 
 ifneq ($(STATIC_FLTK),no)
 CXXFLAGS += \
@@ -106,41 +106,57 @@ CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS += src/window_icon.o src/xbm2xpm.o
 endif
 
-fltk_CXXFLAGS := $(common_CXXFLAGS) \
- -Wno-unused-parameter -Wno-missing-field-initializers
+fltk_CFLAGS := $(common_CFLAGS) \
+  -Wno-unused-parameter -Wno-missing-field-initializers
 
-LIBS = $(shell $(fltk)/fltk-config --ldflags --use-images) -lm
+cmake_config = \
+  -DCMAKE_BUILD_TYPE="None" \
+  -DCMAKE_CXX_FLAGS="$(fltk_CFLAGS)" \
+  -DCMAKE_C_FLAGS="$(fltk_CFLAGS)" \
+  -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)" \
+  -DOPTION_USE_GL="OFF" \
+  -DOPTION_OPTIM="$(OPT)"
 
-fltk_config = \
- --enable-static \
- --disable-shared \
- --disable-debug \
- --disable-gl \
- --enable-threads
-ifneq ($(LOCAL_JPEG),no)
-fltk_config += --enable-localjpeg
-endif
-ifneq ($(LOCAL_PNG),no)
-fltk_config += --enable-localpng
-endif
-ifneq ($(LOCAL_ZLIB),no)
-fltk_config += --enable-localzlib
+LIBS = $(fltk)/build/lib/libfltk_images.a
+
+ifeq ($(LOCAL_JPEG),yes)
+cmake_config += -DOPTION_USE_SYSTEM_LIBJPEG="OFF"
+LIBS += $(fltk)/build/lib/libfltk_jpeg.a
+else
+LIBS += -ljpeg
 endif
 
-define CLEAN
-	-rm -f $(BIN) src/*.o src/Flek/*.o
-	[ ! -f $(fltk)/Makefile ] || $(MAKE) -C $(fltk) $@
-endef
+ifeq ($(LOCAL_PNG),yes)
+cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="OFF"
+LIBS += $(fltk)/build/lib/libfltk_png.a
+else
+LIBS += -lpng
+endif
+
+ifeq ($(LOCAL_ZLIB),yes)
+cmake_config += -DOPTION_USE_SYSTEM_ZLIB="OFF"
+LIBS += $(fltk)/build/lib/libfltk_z.a
+else
+LIBS += -lz
+endif
+
+LIBS += $(fltk)/build/lib/libfltk.a \
+ $(shell $(fltk)/build/fltk-config --use-images --ldflags)
+
+ifeq ($(V),1)
+cmake_config += -DCMAKE_VERBOSE_MAKEFILE="ON"
+else
+silent = @
+endif
 
 
 all: $(BIN)
 
-clean:
-	$(CLEAN)
+clean: mostlyclean
+	[ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
 
-distclean:
-	$(CLEAN)
-	-rm -rf $(fltk)/autom4te.cache
+distclean: mostlyclean
+	-rm -rf $(fltk)/build
 
 mostlyclean:
 	-rm -f $(BIN) src/*.o src/Flek/*.o
@@ -148,22 +164,28 @@ mostlyclean:
 clobber: mostlyclean
 	-rm -rf $(fltk)
 
-$(OBJS): $(fltk)/lib/libfltk.a
+$(OBJS): $(fltk)/build/lib/libfltk.a
 
 $(BIN): $(OBJS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
+	@echo "Linking CXX executable $@"
+	$(silent)$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
+
+.cpp.o:
+	@echo "Building CXX object $@"
+	$(silent)$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(fltk):
 	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $@; \
   LANG=C svn info $@ | grep '^Revision:' | cut -d' ' -f2 > $@/revision
 
-$(fltk)/fltk-config: $(fltk)
-	test -x $@ || (cd $< && NOCONFIGURE=1 ./autogen.sh && \
-  CXXFLAGS="$(fltk_CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-  ./configure $(fltk_config))
+$(fltk)/build/Makefile: $(fltk)
+	mkdir -p $(fltk)/build
+	cd $(fltk)/build && cmake .. $(cmake_config)
 
-$(fltk)/lib/libfltk.a: $(fltk)/fltk-config
-	$(MAKE) -C $(fltk)
+$(fltk)/build/fltk-config: $(fltk)/build/lib/libfltk.a
+
+$(fltk)/build/lib/libfltk.a: $(fltk)/build/Makefile
+	$(MAKE) -C $(fltk)/build
 
 src/about.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 
