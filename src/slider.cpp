@@ -37,7 +37,7 @@
 #include <stdlib.h>  /* exit, atof */
 #include <string.h>  /* strlen */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 Fl_Value_Slider *slider;

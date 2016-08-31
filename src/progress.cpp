@@ -35,7 +35,7 @@
 #include <stdlib.h>  /* exit, atoi */
 #include <string.h>  /* strlen */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 Fl_Window *prog_win;

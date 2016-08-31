@@ -34,7 +34,7 @@
 #include <getopt.h>  /* getopt_long_only */
 #include <stdlib.h>  /* exit */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 #include "main.hpp"
 #ifdef WITH_DEFAULT_ICON
 #  include "icon.xpm"

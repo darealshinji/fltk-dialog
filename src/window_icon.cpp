@@ -37,7 +37,7 @@
 #include <locale>    /* std::tolower */
 #include <stdio.h>   /* remove */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 struct to_lower {

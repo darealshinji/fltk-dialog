@@ -28,7 +28,7 @@
 #include <iostream>  /* std::cout, std::endl */
 #include <string>    /* std::string, c_str */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 int dialog_fl_input(const char *input_msg,

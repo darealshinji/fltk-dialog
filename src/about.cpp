@@ -34,7 +34,7 @@
 #include <stdlib.h>  /* exit */
 
 #include "fltk.xpm"
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 Fl_Pixmap *about_pixmap;

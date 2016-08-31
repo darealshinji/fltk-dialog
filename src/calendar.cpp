@@ -36,7 +36,7 @@
 #include <time.h>    /* strptime, strftime */
 
 #include "Flek/Fl_Calendar.H"
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 Fl_Calendar *cal;

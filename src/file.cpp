@@ -29,7 +29,7 @@
 #include <iostream>    /* std::cout, std::endl */
 #include <sys/stat.h>  /* stat */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 int dialog_fl_file_chooser(char *file_chooser_title)

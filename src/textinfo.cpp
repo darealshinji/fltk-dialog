@@ -33,7 +33,7 @@
 #include <iostream>  /* std::cin */
 #include <stdlib.h>  /* exit */
 
-#include "fltk-dialog.h"
+#include "fltk-dialog.hpp"
 
 
 Fl_Multi_Browser *ti_browser;
