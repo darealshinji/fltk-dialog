@@ -25,8 +25,8 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 
-#include <iostream>  /* std::cout */
 
+static void dnd_callback(const char *items);
 
 class dnd_box : public Fl_Box
 {
@@ -47,7 +47,7 @@ class dnd_box : public Fl_Box
           ret = 1;
           break;
         case FL_PASTE:
-          std::cout << Fl::event_text();
+          dnd_callback(Fl::event_text());
           ret = 1;
           break;
       }
