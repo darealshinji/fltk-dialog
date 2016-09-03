@@ -29,13 +29,14 @@
 #include <FL/Fl_JPEG_Image.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_PNM_Image.H>
+#include <FL/Fl_XBM_Image.H>
 #include <FL/Fl_XPM_Image.H>
 #include <FL/Fl_RGB_Image.H>
+#include <FL/Fl_Image_Surface.H>
 
 #include <string>    /* std::string, c_str */
 #include <algorithm> /* std::transform */
 #include <locale>    /* std::tolower */
-#include <stdio.h>   /* remove */
 
 #include "fltk-dialog.hpp"
 
@@ -56,50 +57,53 @@ std::string get_ext(std::string input, unsigned int n=4)
   return input;
 }
 
-/* use as macro since the type of win_icon remains undefined
- * until we figured out the filetype
- */
-#define SET_ICON Fl_Window::default_icon(&win_icon)
-
 void set_window_icon(std::string file)
 {
   const char *file_c = file.c_str();
 
-  if (get_ext(file) == ".png") {
-    Fl_PNG_Image win_icon(file_c);
-    SET_ICON;
-  } else if (get_ext(file) == ".xpm") {
-    Fl_XPM_Image xpm_icon(file_c);
-    Fl_RGB_Image win_icon(&xpm_icon, Fl_Color(0));
-    SET_ICON;
-  } else if (get_ext(file) == ".xbm") {
-    /* Fl_XBM_Image return a bitmap which Fl_RGB_Image
-     * can't handle, so instead we simply convert the
-     * XBitmap file into a temporary pixmap file and read
-     * its content with Fl_XPM_Image.
-     */
-    char *xpm_file = xbm2xpm(file_c);
-    if (xpm_file != NULL) {
-      Fl_XPM_Image xpm_icon(xpm_file);
-      remove(xpm_file);
-      Fl_RGB_Image win_icon(&xpm_icon, Fl_Color(0));
-      SET_ICON;
-    }
-  } else if (get_ext(file) == ".jpg" || get_ext(file, 5) == ".jpeg") {
-    Fl_JPEG_Image win_icon(file_c);
-    SET_ICON;
-  } else if (get_ext(file) == ".bmp") {
-    Fl_BMP_Image win_icon(file_c);
-    SET_ICON;
-  } else if (get_ext(file) == ".gif") {
-    Fl_GIF_Image gif_icon(file_c);
-    Fl_RGB_Image win_icon(&gif_icon, Fl_Color(0));
-    SET_ICON;
-  } else if (get_ext(file) == ".pnm") {
-    Fl_PNM_Image win_icon(file_c);
-    SET_ICON;
+  if (get_ext(file) == ".png")
+  {
+    Fl_PNG_Image in(file_c);
+    Fl_Window::default_icon(&in);
+  }
+  else if (get_ext(file) == ".xpm")
+  {
+    Fl_XPM_Image in(file_c);
+    Fl_RGB_Image rgb(&in, Fl_Color(0));
+    Fl_Window::default_icon(&rgb);
+  }
+  else if (get_ext(file) == ".xbm")
+  {
+    Fl_XBM_Image in(file_c);
+    Fl_Image_Surface surf(in.w(), in.h());
+    surf.set_current();
+    fl_color(FL_WHITE);
+    fl_rectf(0,0, in.w(), in.h());
+    fl_color(FL_BLACK);
+    in.draw(0,0);
+    Fl_RGB_Image *rgb = surf.image();
+    Fl_Window::default_icon(rgb);
+  }
+  else if (get_ext(file) == ".jpg" || get_ext(file, 5) == ".jpeg")
+  {
+    Fl_JPEG_Image in(file_c);
+    Fl_Window::default_icon(&in);
+  }
+  else if (get_ext(file) == ".bmp")
+  {
+    Fl_BMP_Image in(file_c);
+    Fl_Window::default_icon(&in);
+  }
+  else if (get_ext(file) == ".gif")
+  {
+    Fl_GIF_Image in(file_c);
+    Fl_RGB_Image rgb(&in, Fl_Color(0));
+    Fl_Window::default_icon(&rgb);
+  }
+  else if (get_ext(file) == ".pnm")
+  {
+    Fl_PNM_Image in(file_c);
+    Fl_Window::default_icon(&in);
   }
 }
-
-#undef SET_ICON
 

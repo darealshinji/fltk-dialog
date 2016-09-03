@@ -103,7 +103,7 @@ OBJS += src/textinfo.o
 endif
 ifneq ($(WITH_WINDOW_ICON),no)
 CXXFLAGS += -DWITH_WINDOW_ICON
-OBJS += src/window_icon.o src/xbm2xpm.o
+OBJS += src/window_icon.o
 endif
 
 fltk_CFLAGS := $(common_CFLAGS) \
