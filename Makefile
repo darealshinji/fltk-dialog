@@ -2,11 +2,11 @@ ifneq ($(wildcard config.mak),)
 include config.mak
 endif
 
-# set to "no" if you want to link
+# set to "yes" if you want to link
 # against system libraries
-LOCAL_JPEG    ?= yes
-LOCAL_PNG     ?= yes
-LOCAL_ZLIB    ?= yes
+SYSTEM_JPEG ?= no
+SYSTEM_PNG  ?= no
+SYSTEM_ZLIB ?= no
 
 # yes: FLTK version string will be set statically;
 #   don't use this on shared libraries!
@@ -15,7 +15,7 @@ LOCAL_ZLIB    ?= yes
 #   linked FLTK too, but makes more sense on shared libs
 # TODO: actually use the system libs or build shared
 #   libs if disabled
-STATIC_FLTK   ?= yes
+#STATIC_FLTK   ?= yes
 
 # set to "no" if you don't want an embedded FLKT
 # icon to appear in taskbar and windows
@@ -34,6 +34,8 @@ WITH_PROGRESS ?= yes
 WITH_SCALE    ?= yes
 WITH_TEXTINFO ?= yes
 WITH_WINDOW_ICON ?= yes
+
+DYNAMIC_NOTIFY ?= yes
 
 # checkout directory for FLTK
 fltk = fltk-1.3
@@ -56,11 +58,11 @@ LDFLAGS += \
 CXXFLAGS += $(common_CFLAGS) -Isrc -I$(fltk)/build -I$(fltk) \
  $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 
-ifneq ($(STATIC_FLTK),no)
-CXXFLAGS += \
- -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
- -DREVISION=\"$(shell cat $(fltk)/revision)\"
-endif
+#ifneq ($(STATIC_FLTK),no)
+#CXXFLAGS += \
+# -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
+# -DREVISION=\"$(shell cat $(fltk)/revision)\"
+#endif
 
 ifneq ($(WITH_DEFAULT_ICON),no)
 CXXFLAGS += -DWITH_DEFAULT_ICON
@@ -138,28 +140,28 @@ cmake_config = \
 
 LIBS += $(fltk)/build/lib/libfltk_images.a
 
-ifeq ($(LOCAL_JPEG),yes)
+ifneq ($(SYSTEM_JPEG),no)
+LIBS += -ljpeg
+else
 cmake_config += -DOPTION_USE_SYSTEM_LIBJPEG="OFF"
 LIBS += $(fltk)/build/lib/libfltk_jpeg.a
-else
-LIBS += -ljpeg
 endif
 
-ifeq ($(LOCAL_PNG),yes)
+ifneq ($(SYSTEM_PNG),no)
+LIBS += -lpng
+else
 libpng_a = libpng16/build/libpng.a
 cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="ON" \
  -DHAVE_LIBPNG_PNG_H="$(CURDIR)/libpng16/build/png.h" \
  -DLIB_png="$(CURDIR)/$(libpng_a)"
 LIBS += $(libpng_a)
-else
-LIBS += -lpng
 endif
 
-ifeq ($(LOCAL_ZLIB),yes)
+ifneq ($(SYSTEM_ZLIB),no)
+LIBS += -lz
+else
 cmake_config += -DOPTION_USE_SYSTEM_ZLIB="OFF"
 LIBS += $(fltk)/build/lib/libfltk_z.a
-else
-LIBS += -lz
 endif
 
 LIBS += $(fltk)/build/lib/libfltk.a \
@@ -172,20 +174,28 @@ silent = @
 endif
 
 
+
 all: $(BIN)
+
+configure: checkout-sources
+	autoconf
+
+checkout-sources: libpng16 $(fltk)
 
 clean: mostlyclean
 	[ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
 	[ ! -f libpng16/build/Makefile ] || $(MAKE) -C libpng16/build clean
 
 distclean: mostlyclean
-	-rm -rf $(fltk)/build libpng16/build
+	-rm -rf $(fltk)/build libpng16/build autom4te.cache
+	-rm -f config.mak config.log config.status
 
 mostlyclean:
 	-rm -f $(BIN) src/*.o src/Flek/*.o
 
 clobber: mostlyclean
-	-rm -rf $(fltk) libpng16
+	-rm -rf $(fltk) libpng16 autom4te.cache
+	-rm -f configure config.mak config.log config.status
 	-rm -f $(libpng_tarball)
 
 $(OBJS): $(libpng_a) $(fltk)/build/lib/libfltk.a
@@ -198,13 +208,14 @@ $(BIN): $(OBJS)
 	@echo "Building CXX object $@"
 	$(silent)$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(libpng_tarball):
-	wget "https://sourceforge.net/projects/libpng/files/libpng16/$(libpng_version)/$(libpng_tarball)"
-
-libpng16: $(libpng_tarball)
-	tar xf $< && \
-  mv libpng-$(libpng_version) $@ && \
-  rm -f $(libpng_tarball)
+libpng16: libpng16/checkout_stamp
+libpng16/checkout_stamp:
+	rm -rf `dirname $@` $(libpng_tarball) && \
+  wget "https://sourceforge.net/projects/libpng/files/libpng16/$(libpng_version)/$(libpng_tarball)" && \
+  tar xf $(libpng_tarball) && \
+  mv libpng-$(libpng_version) `dirname $@` && \
+  rm -f $(libpng_tarball) && \
+  touch $@
 
 $(fltk):
 	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $@; \

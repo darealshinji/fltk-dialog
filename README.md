@@ -11,6 +11,6 @@ Minimum build dependencies are `libx11-dev` and `cmake`.
 For better looking fonts it's recommended to install `libxft-dev` too.
 
 Configuration:
-You can disable certain features, see `Makefile` for details.
-You can write your settings in a `config.mak` file.
-This file will automatically be included to override the default settings.
+Run `autoconf` and see `./configure --help` for available options.
+This is optional, you can skip this step and run `make` directly.
+
