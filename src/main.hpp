@@ -1,3 +1,6 @@
+#ifndef FLTK_DIALOG_MAIN_HPP
+#define FLTK_DIALOG_MAIN_HPP
+
 /* dialog types */
 enum dialogTypes {
   DIALOG_ABOUT,
@@ -59,4 +62,6 @@ enum longOpts {
 
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
+
+#endif  /* !FLTK_DIALOG_MAIN_HPP */
 

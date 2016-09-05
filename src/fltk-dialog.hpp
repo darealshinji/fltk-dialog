@@ -22,17 +22,14 @@
  * SOFTWARE.
  */
 
-#ifndef FLTK_DIALOG_H
-#define FLTK_DIALOG_H
+#ifndef FLTK_DIALOG_HPP
+#define FLTK_DIALOG_HPP
 
 #include <FL/Fl.H>
 #include <string>    /* std::string */
 #include <string.h>  /* strcmp */
-#include <unistd.h>  /* isatty */
-
 
 #define STREQ(x, y) (strcmp(x, y) == 0)
-#define STDIN (isatty(STDIN_FILENO) == 1)
 
 
 /* about.cpp */
@@ -151,5 +148,5 @@ std::string translate(const char *inputText);
 void print_fltk_version(void);
 std::string get_fltk_version(void);
 
-#endif  /* !FLTK_DIALOG_H */
+#endif  /* !FLTK_DIALOG_HPP */
 

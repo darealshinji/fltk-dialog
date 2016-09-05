@@ -35,6 +35,7 @@
 #include <stdlib.h>  /* exit, atoi */
 #include <string.h>  /* strlen */
 
+#include "readstdio.hpp"  /* READSTDIO macros */
 #include "fltk-dialog.hpp"
 
 
@@ -101,7 +102,8 @@ int dialog_fl_progress(const char *progress_msg,
   }
 
   /* check for input data */
-  if (STDIN) {
+  INIT_READSTDIO;
+  if (!READSTDIO) {
     s = "Error: no input data receiving";
     dialog_fl_message(s.c_str(), progress_title, ALERT);
     return 1;

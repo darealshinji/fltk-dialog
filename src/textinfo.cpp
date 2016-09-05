@@ -33,7 +33,7 @@
 #include <iostream>  /* std::cin */
 #include <stdlib.h>  /* exit */
 
-#include "fltk-dialog.hpp"
+#include "readstdio.hpp"  /* READSTDIO macros */
 
 
 Fl_Multi_Browser *ti_browser;
@@ -109,7 +109,8 @@ int dialog_textinfo(char *textinfo_title, bool autoscroll, std::string checkbox)
 
   win->show();
 
-  if (STDIN) {
+  INIT_READSTDIO;
+  if (!READSTDIO) {
     line = "error: no input";
     ti_browser->add(line.c_str());
   } else {
