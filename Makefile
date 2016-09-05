@@ -28,6 +28,7 @@ WITH_DND      ?= yes
 WITH_ENTRY    ?= yes
 WITH_FILE     ?= yes
 WITH_HTML     ?= yes
+WITH_NOTIFY   ?= yes
 WITH_PASSWORD ?= yes
 WITH_PROGRESS ?= yes
 WITH_SCALE    ?= yes
@@ -85,6 +86,11 @@ ifneq ($(WITH_HTML),no)
 CXXFLAGS += -DWITH_HTML
 OBJS += src/html.o
 endif
+ifneq ($(WITH_NOTIFY),no)
+CXXFLAGS += -DWITH_NOTIFY
+CXXFLAGS += $(shell pkg-config --cflags libnotify)
+OBJS += src/notify.o
+endif
 ifneq ($(WITH_PASSWORD),no)
 CXXFLAGS += -DWITH_PASSWORD
 OBJS += src/password.o
@@ -106,6 +112,16 @@ CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS += src/window_icon.o
 endif
 
+ifneq ($(WITH_NOTIFY),no)
+ifneq ($(DYNAMIC_NOTIFY),no)
+CXXFLAGS += -DDYNAMIC_NOTIFY
+LIBS += -ldl
+else
+LIBS += $(shell pkg-config --libs libnotify)
+endif
+endif
+
+
 fltk_CFLAGS := $(common_CFLAGS) \
   -Wno-unused-parameter -Wno-missing-field-initializers
 
@@ -117,7 +133,7 @@ cmake_config = \
   -DOPTION_USE_GL="OFF" \
   -DOPTION_OPTIM="$(OPT)"
 
-LIBS = $(fltk)/build/lib/libfltk_images.a
+LIBS += $(fltk)/build/lib/libfltk_images.a
 
 ifeq ($(LOCAL_JPEG),yes)
 cmake_config += -DOPTION_USE_SYSTEM_LIBJPEG="OFF"

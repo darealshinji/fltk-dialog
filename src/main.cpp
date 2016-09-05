@@ -108,6 +108,9 @@ void print_usage(char *prog)
 #ifdef WITH_TEXTINFO
   "  --text-info                Display text information dialog\n"
 #endif
+#ifdef WITH_NOTIFY
+  "  --notification             Display notification\n"
+#endif
 #ifdef WITH_WINDOW_ICON
   "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
   "                             jpg png pnm xbm xpm"
@@ -171,6 +174,13 @@ void print_usage(char *prog)
   "  --checkbox=TEXT            Enable an \"I read and agree\" checkbox\n"
   "  --auto-scroll              Always scroll to the bottom of the text\n"
 #endif
+#ifdef WITH_NOTIFY
+  "\n"
+  "Notification options:\n"
+  "  --timout=SECONDS           Set the timeout value for the notification\n"
+  "                             in seconds\n"
+  "  --notify-icon=PATH         Set the icon for the notification box\n"
+#endif
     << std::endl;
 }
 
@@ -199,6 +209,10 @@ int main(int argc, char **argv)
   std::string window_icon = "";
 #endif
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
+#ifdef WITH_NOTIFY
+  const char *notify_timeout = NULL;
+  std::string notify_icon = "";
+#endif
 #ifdef WITH_FILE
   bool native = false;
 #endif
@@ -213,8 +227,8 @@ int main(int argc, char **argv)
 
   /* using these to check if two or more dialog options were specified */
   int dabout=0, dalert=0, dcalendar=0, dchoice=0, ddirchoser=0, ddnd=0;
-  int dfilechooser=0, dhtml=0, dinput=0, dpassword=0, dcolor=0, dprogress=0;
-  int dvalslider=0, dtextinfo=0;
+  int dfilechooser=0, dhtml=0, dinput=0, dpassword=0, dcolor=0, dnotify=0;
+  int dprogress=0, dvalslider=0, dtextinfo=0;
 
 #ifdef WITH_DEFAULT_ICON
   /* set global default icon for all windows */
@@ -275,6 +289,11 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_COLOR
     { "color",       no_argument,       0, LO_COLOR       },
+#endif
+#ifdef WITH_NOTIFY
+    { "notification",no_argument,       0, LO_NOTIFY      },
+    { "timeout",     required_argument, 0, LO_TIMEOUT     },
+    { "notify-icon", required_argument, 0, LO_NOTIFY_ICON },
 #endif
 #ifdef WITH_PROGRESS
     { "progress",    no_argument,       0, LO_PROGRESS    },
@@ -384,6 +403,18 @@ int main(int argc, char **argv)
         dcolor = 1;
         break;
 #endif
+#ifdef WITH_NOTIFY
+      case LO_NOTIFY:
+        dialog = DIALOG_NOTIFY;
+        dnotify = 1;
+        break;
+      case LO_TIMEOUT:
+        notify_timeout = optarg;
+        break;
+      case LO_NOTIFY_ICON:
+        notify_icon = std::string(optarg);
+        break;
+#endif
 #ifdef WITH_PROGRESS
       case LO_PROGRESS:
         dialog = DIALOG_FL_PROGRESS;
@@ -448,9 +479,15 @@ int main(int argc, char **argv)
   }
 
   if ((dabout + dalert + dcalendar + dchoice + ddirchoser + ddnd + dfilechooser + dhtml +
-       dinput + dpassword + dcolor + dprogress + dvalslider + dtextinfo) >= 2) {
+       dinput + dpassword + dcolor + dnotify + dprogress + dvalslider + dtextinfo) >= 2) {
     std::cerr << argv[0] << ": "
       << "two or more dialog options specified" << std::endl;
+    return 1;
+  }
+
+  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL)) {
+    std::cerr << argv[0] << ": "
+      << "--yes-label/--no-label/--alt-label can only be used with --question" << std::endl;
     return 1;
   }
 
@@ -462,11 +499,18 @@ int main(int argc, char **argv)
   }
 #endif
 
-  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL)) {
+#ifdef WITH_NOTIFY
+  if (notify_timeout != NULL && dialog != DIALOG_NOTIFY) {
     std::cerr << argv[0] << ": "
-      << "--yes-label/--no-label/--alt-label can only be used with --question" << std::endl;
+      << "--timeout can only be used with --notification" << std::endl;
     return 1;
   }
+  if (notify_icon != "" && dialog != DIALOG_NOTIFY) {
+    std::cerr << argv[0] << ": "
+      << "--notify-icon can only be used with --notification" << std::endl;
+    return 1;
+  }
+#endif
 
 #ifdef WITH_PROGRESS
   if (autoclose && dialog != DIALOG_FL_PROGRESS) {
@@ -577,6 +621,10 @@ int main(int argc, char **argv)
 #ifdef WITH_COLOR
     case DIALOG_FL_COLOR:
       return dialog_fl_color(title);
+#endif
+#ifdef WITH_NOTIFY
+    case DIALOG_NOTIFY:
+      return dialog_notify(argv[0], notify_timeout, msg, title, notify_icon);
 #endif
 #ifdef WITH_PROGRESS
     case DIALOG_FL_PROGRESS:

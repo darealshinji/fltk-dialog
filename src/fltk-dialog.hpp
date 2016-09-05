@@ -91,6 +91,15 @@ int dialog_fl_message(const char *message_msg,
                             char *message_title,
                             int   type=MESSAGE);
 
+/* notify.cpp */
+#ifdef WITH_NOTIFY
+int dialog_notify(const char *appname,
+                  const char *notify_timeout,
+                  const char *notify_msg,
+                  const char *notify_title,
+                  std::string notify_icon);
+#endif
+
 /* password.cpp */
 #ifdef WITH_PASSWORD
 int dialog_fl_password(const char *password_msg,
