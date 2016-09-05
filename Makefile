@@ -38,6 +38,9 @@ WITH_WINDOW_ICON ?= yes
 # checkout directory for FLTK
 fltk = fltk-1.3
 
+libpng_version = 1.6.25
+libpng_tarball = libpng-$(libpng_version).tar.xz
+
 BIN = fltk-dialog
 OBJS = $(addprefix src/,about.o choice.o message.o translate.o version.o main.o)
 
@@ -143,8 +146,11 @@ LIBS += -ljpeg
 endif
 
 ifeq ($(LOCAL_PNG),yes)
-cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="OFF"
-LIBS += $(fltk)/build/lib/libfltk_png.a
+libpng_a = libpng16/build/libpng.a
+cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="ON" \
+ -DHAVE_LIBPNG_PNG_H="$(CURDIR)/libpng16/build/png.h" \
+ -DLIB_png="$(CURDIR)/$(libpng_a)"
+LIBS += $(libpng_a)
 else
 LIBS += -lpng
 endif
@@ -160,7 +166,7 @@ LIBS += $(fltk)/build/lib/libfltk.a \
  $(shell $(fltk)/build/fltk-config --use-images --ldflags)
 
 ifeq ($(V),1)
-cmake_config += -DCMAKE_VERBOSE_MAKEFILE="ON"
+cmake_vebose = -DCMAKE_VERBOSE_MAKEFILE="ON"
 else
 silent = @
 endif
@@ -170,17 +176,19 @@ all: $(BIN)
 
 clean: mostlyclean
 	[ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
+	[ ! -f libpng16/build/Makefile ] || $(MAKE) -C libpng16/build clean
 
 distclean: mostlyclean
-	-rm -rf $(fltk)/build
+	-rm -rf $(fltk)/build libpng16/build
 
 mostlyclean:
 	-rm -f $(BIN) src/*.o src/Flek/*.o
 
 clobber: mostlyclean
-	-rm -rf $(fltk)
+	-rm -rf $(fltk) libpng16
+	-rm -f $(libpng_tarball)
 
-$(OBJS): $(fltk)/build/lib/libfltk.a
+$(OBJS): $(libpng_a) $(fltk)/build/lib/libfltk.a
 
 $(BIN): $(OBJS)
 	@echo "Linking CXX executable $@"
@@ -190,17 +198,39 @@ $(BIN): $(OBJS)
 	@echo "Building CXX object $@"
 	$(silent)$(CXX) $(CXXFLAGS) -c -o $@ $<
 
+$(libpng_tarball):
+	wget "https://sourceforge.net/projects/libpng/files/libpng16/$(libpng_version)/$(libpng_tarball)"
+
+libpng16: $(libpng_tarball)
+	tar xf $< && \
+  mv libpng-$(libpng_version) $@ && \
+  rm -f $(libpng_tarball)
+
 $(fltk):
 	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $@; \
   LANG=C svn info $@ | grep '^Revision:' | cut -d' ' -f2 > $@/revision
 
 $(fltk)/build/Makefile: $(fltk)
 	mkdir -p $(fltk)/build
-	cd $(fltk)/build && cmake .. $(cmake_config)
+	cd $(fltk)/build && cmake .. $(cmake_config) $(cmake_vebose)
+
+libpng16/build/Makefile: libpng16
+	mkdir -p libpng16/build
+	cd libpng16/build && cmake .. $(cmake_vebose) \
+  -DCMAKE_BUILD_TYPE="None" \
+  -DCMAKE_CXX_FLAGS="$(common_CFLAGS)" \
+  -DCMAKE_C_FLAGS="$(common_CFLAGS)" \
+  -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)" \
+  -DPNG_DEBUG="OFF" \
+  -DPNG_SHARED="OFF" \
+  -DPNG_STATIC="ON"
 
 $(fltk)/build/fltk-config: $(fltk)/build/lib/libfltk.a
 
-$(fltk)/build/lib/libfltk.a: $(fltk)/build/Makefile
+libpng16/build/libpng.a: libpng16/build/Makefile
+	$(MAKE) -C libpng16/build
+
+$(fltk)/build/lib/libfltk.a: $(libpng16_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
 
 src/about.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
