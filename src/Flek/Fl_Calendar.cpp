@@ -57,11 +57,10 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
                              (h/6)*(i/7) + y,
                              (w/7),
                              (h/6));
-    days[i]->down_box (FL_THIN_DOWN_BOX);
     days[i]->labelsize (10);
-    days[i]->box (FL_THIN_UP_BOX);
-    days[i]->color (52);
-    days[i]->callback ((Fl_Callback*)&fl_calendar_button_cb, (void *)this);
+    days[i]->down_box (FL_FLAT_BOX);
+    days[i]->box (FL_FLAT_BOX);
+    days[i]->color (color());
   }
 }
 
@@ -98,25 +97,50 @@ Fl_Calendar_Base::update ()
   int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
+  char t[8];
 
+  int dipm_month;  /* previous month */
+  int dipm_year;   /* year of previous month */
+  if (month () == JANUARY) {
+    dipm_month = DECEMBER;
+    dipm_year = leap_year (year () - 1);
+  } else {
+    dipm_month = month () - 1;
+    dipm_year = leap_year (year ());
+  }
+  int dipm = days_in_month (dipm_month, dipm_year);
+
+  /* last days of previous month */
   for (i = 0; i < dow; i++) {
-    days[i]->hide ();
-    //days[i]->box (FL_NO_BOX);
-  }
-
-  for (i = (dim+dow); i < (6*7); i++) {
-    days[i]->hide ();
-    //days[i]->box (FL_NO_BOX);
-  }
-
-  for (i = dow; i < (dim+dow); i++) {
-    char t[8];
-    sprintf (t, "%d", (i-dow+1));
+    sprintf (t, "%d", (i-dow+dipm+1));
     days[i]->label (strdup(t));
+    days[i]->down_box (FL_FLAT_BOX);
+    days[i]->box (FL_FLAT_BOX);
+    days[i]->color (color());
+    days[i]->show ();
+  }
+
+  /* current month */
+  for (i = dow; i < (dim+dow); i++) {
+    sprintf (t, "%d", (i+1-dow));
+    days[i]->label (strdup(t));
+    days[i]->down_box (FL_THIN_DOWN_BOX);
+    days[i]->box (FL_THIN_UP_BOX);
     days[i]->color (52);
     if ((i-dow+1) == day ()) {
       days[i]->color (selection_color());
     }
+    days[i]->callback ((Fl_Callback*)&fl_calendar_button_cb, (void *)this);
+    days[i]->show ();
+  }
+
+  /* first days of next month */
+  for (i = (dim+dow); i < (6*7); i++) {
+    sprintf (t, "%d", (i+1-dow-dim));
+    days[i]->label (strdup(t));
+    days[i]->down_box (FL_FLAT_BOX);
+    days[i]->box (FL_FLAT_BOX);
+    days[i]->color (color());
     days[i]->show ();
   }
 }
@@ -129,8 +153,6 @@ Fl_Calendar_Base::day_button (int i)
   }
   return 0;
 }
-
-
 
 static void
 fl_calendar_prv_month_cb (Fl_Button *, void *b) {
@@ -282,15 +304,6 @@ void Fl_Calendar::csize (int cx, int cy, int cw, int ch)
 void
 Fl_Calendar::update ()
 {
-  int dow = day_of_week (year (), month (), 0);
-  int dim = days_in_month (month (), leap_year (year ()));
-
-  for (int i = dow; i < (dim+dow); i++) {
-    char t[8];
-    sprintf (t, "%d", (i-dow+1));
-    days[i]->label (strdup(t));
-  }
-
   char tmp[32];
   sprintf (tmp, "%.3s %d", month_name[month ()-1], year ());
   Fl_Calendar_Base::update ();
