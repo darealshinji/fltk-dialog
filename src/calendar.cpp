@@ -120,10 +120,10 @@ int dialog_fl_calendar(       char *calendar_title,
   }
 
   win = new Fl_Window(winw, winh, calendar_title);
+  cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
   win->begin();
   win->callback(calendar_cancel_cb);  /* exit(1) */
   {
-    cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
     but_ok = new Fl_Return_Button(winw-butw*2-bord*2, calh, butw, buth, fl_ok);
     but_ok->callback(calendar_ok_cb);
     but_cancel = new Fl_Button(winw-butw-bord, calh, butw, buth, fl_cancel);
