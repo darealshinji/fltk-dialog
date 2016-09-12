@@ -33,67 +33,87 @@
 #include <libnotify/notify.h>
 
 
-int dialog_notify(const char *appname,
-                  const char *notify_timeout,
-                  const char *notify_msg,
-                  const char *notify_title,
-                  std::string notify_icon)
+int dialog_notify(const char  *appname,
+                  const char  *notify_timeout,
+                  const char  *notify_msg,
+                  const char  *notify_title,
+                  std::string  notify_icon)
 {
-  if (notify_msg == NULL) {
+  int timeout = 5;
+  const char *notify_icon_c = notify_icon.c_str();
+  NotifyNotification *n;
+
+  if (notify_msg == NULL)
+  {
     notify_msg = "This is a notification message";
   }
-  if (notify_title == NULL) {
+
+  if (notify_title == NULL)
+  {
     notify_title = "Notification";
   }
 
-  int timeout = -1;
-  if (notify_timeout != NULL) {
+  if (notify_timeout != NULL)
+  {
     timeout = atoi(notify_timeout);
   }
-  if (timeout <= 1 || timeout > 30) {
-    timeout = 5;
+
+  if (timeout < 1)
+  {
+    std::cerr << "error: timeout shorter than 1 second: " << timeout
+      << std::endl;
+    return 1;
   }
 
-  const char *notify_icon_c = notify_icon.c_str();
-  NotifyNotification *n;
+  if (timeout > 30)
+  {
+    std::cerr << "error: timeout longer than 30 seconds: " << timeout
+      << std::endl;
+    return 1;
+  }
 
 #ifdef DYNAMIC_NOTIFY
   /* dlopen() libnotify */
 
   void *handle;
 
-  gboolean (*notify_init_t)(const char*);
-  gboolean (*notify_is_initted_t)(void);
-  NotifyNotification* (*notify_notification_new_t)(const char*, const char*, const char*);
-  void (*notify_notification_set_timeout_t)(NotifyNotification*, gint);
-  gboolean (*notify_notification_show_t)(NotifyNotification*, GError**);
+  gboolean (*dl_notify_init)(const char*);
+  gboolean (*dl_notify_is_initted)(void);
+  NotifyNotification* (*dl_notify_notification_new)(const char*, const char*, const char*);
+  void (*dl_notify_notification_set_timeout)(NotifyNotification*, gint);
+  gboolean (*dl_notify_notification_show)(NotifyNotification*, GError**);
+  void (*dl_notify_uninit)(void);
 
   char *error;
 
   handle = dlopen("libnotify.so.4", RTLD_LAZY);
-  if (!handle) {
-    std::cerr << "error: cannot open library: "
-      << dlerror() << std::endl;
+  if (!handle)
+  {
+    std::cerr << "error: cannot open library: " << dlerror() << std::endl;
     return 1;
   }
   dlerror();
 
-  *(void **)(&notify_init_t) =
+  *(void **)(&dl_notify_init) =
     dlsym(handle, "notify_init");
 
-  *(void **)(&notify_is_initted_t) =
+  *(void **)(&dl_notify_is_initted) =
     dlsym(handle, "notify_is_initted");
 
-  *(void **)(&notify_notification_new_t) =
+  *(void **)(&dl_notify_notification_new) =
     dlsym(handle, "notify_notification_new");
 
-  *(void **)(&notify_notification_set_timeout_t) =
+  *(void **)(&dl_notify_notification_set_timeout) =
     dlsym(handle, "notify_notification_set_timeout");
 
-  *(void **)(&notify_notification_show_t) =
+  *(void **)(&dl_notify_notification_show) =
     dlsym(handle, "notify_notification_show");
 
-  if ((error = dlerror()) != NULL)  {
+  *(void **)(&dl_notify_uninit) =
+    dlsym(handle, "notify_uninit");
+
+  if ((error = dlerror()) != NULL)
+  {
     std::cerr << "error: cannot load symbol: " << error << std::endl;
     return 1;
   }
@@ -101,31 +121,40 @@ int dialog_notify(const char *appname,
 #else  /* DYNAMIC_NOTIFY */
 
 /* use shared or static library symbols */
-# define notify_init_t notify_init
-# define notify_is_initted_t notify_is_initted
-# define notify_notification_new_t notify_notification_new
-# define notify_notification_set_timeout_t notify_notification_set_timeout
-# define notify_notification_show_t notify_notification_show
+#  define dl_notify_init notify_init
+#  define dl_notify_is_initted notify_is_initted
+#  define dl_notify_notification_new notify_notification_new
+#  define dl_notify_notification_set_timeout notify_notification_set_timeout
+#  define dl_notify_notification_show notify_notification_show
+#  define dl_notify_uninit notify_uninit
 
 #endif  /* DYNAMIC_NOTIFY */
 
-  (*notify_init_t)(appname);
-  if (!(*notify_is_initted_t)()) {
+  (*dl_notify_init)(appname);
+
+  if (!(*dl_notify_is_initted)())
+  {
     std::cerr << "error: notify_init()" << std::endl;
-    return 1;
-  }
-
-  n = (*notify_notification_new_t)(notify_title, notify_msg, notify_icon_c);
-  (*notify_notification_set_timeout_t)(n, timeout*1000);
-
-  if (!(*notify_notification_show_t)(n, NULL)) {
-    std::cerr << "error: notify_notification_show()" << std::endl;
 #ifdef DYNAMIC_NOTIFY
     dlclose(handle);
 #endif
     return 1;
   }
 
+  n = (*dl_notify_notification_new)(notify_title, notify_msg, notify_icon_c);
+  (*dl_notify_notification_set_timeout)(n, timeout*1000);
+
+  if (!(*dl_notify_notification_show)(n, NULL))
+  {
+    std::cerr << "error: notify_notification_show()" << std::endl;
+    (*dl_notify_uninit)();
+#ifdef DYNAMIC_NOTIFY
+    dlclose(handle);
+#endif
+    return 1;
+  }
+
+  (*dl_notify_uninit)();
 #ifdef DYNAMIC_NOTIFY
   dlclose(handle);
 #endif
