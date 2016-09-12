@@ -187,8 +187,8 @@ void print_usage(char *prog)
 #ifdef WITH_NOTIFY
   "\n"
   "Notification options:\n"
-  "  --timout=SECONDS           Set the timeout value for the notification\n"
-  "                             in seconds\n"
+  "  --timout=SECONDS           Set the timeout value for the notification in\n"
+  "                             seconds (may be ignored by your notification daemon)\n"
   "  --notify-icon=PATH         Set the icon for the notification box\n"
 #endif
 
