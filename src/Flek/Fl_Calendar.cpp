@@ -101,10 +101,12 @@ Fl_Calendar_Base::update ()
 
   for (i = 0; i < dow; i++) {
     days[i]->hide ();
+    //days[i]->box (FL_NO_BOX);
   }
 
   for (i = (dim+dow); i < (6*7); i++) {
     days[i]->hide ();
+    //days[i]->box (FL_NO_BOX);
   }
 
   for (i = dow; i < (dim+dow); i++) {
@@ -280,7 +282,7 @@ void Fl_Calendar::csize (int cx, int cy, int cw, int ch)
 void
 Fl_Calendar::update ()
 {
-  int dow = day_of_week (year (), month (), 1);
+  int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
 
   for (int i = dow; i < (dim+dow); i++) {
