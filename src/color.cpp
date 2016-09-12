@@ -33,33 +33,46 @@
 
 int dialog_fl_color(char *color_title)
 {
-  double r=1, g=1, b=1;
+  double r = 1;
+  double g = 1;
+  double b = 1;
 
-  if (color_title == NULL) {
+  if (color_title == NULL)
+  {
     color_title = (char *)"FLTK color chooser";
   }
 
-  if (fl_color_chooser(color_title, r,g,b, 1)) {
-    size_t colr = round(255*r);
-    size_t colg = round(255*g);
-    size_t colb = round(255*b);
-    double h=0, s=0, v=0;
+  if (fl_color_chooser(color_title, r,g,b, 1))
+  {
+    size_t colr = round(255 * r);
+    size_t colg = round(255 * g);
+    size_t colb = round(255 * b);
+
+    double h = 0;
+    double s = 0;
+    double v = 0;
+
     Fl_Color_Chooser::rgb2hsv(r,g,b, h,s,v);
 
-    std::cout << std::fixed << std::setprecision(3)
+    std::cout
       /* RGB values [0.000-1.000] */
-      << r << " " << g << " " << b << "|"
+      << std::fixed << std::setprecision(3)
+      << r << " " << g << " " << b
+      << "|"
       /* RGB values [0-255] */
-      << colr << " " << colg << " " << colb << "|"
+      << colr << " " << colg << " " << colb
+      << "|"
       /* HTML hex value */
       << "#" << std::setfill('0') << std::setw(2) << std::hex
-      << colr << colg << colb << "|"
+      << colr << colg << colb
+      << "|"
       /* HSV values */
-      << h << " " << s << " " << v << std::endl;
+      << h << " " << s << " " << v
+      << std::endl;
 
     return 0;
-  } else {
-    return 1;
   }
+
+  return 1;
 }
 

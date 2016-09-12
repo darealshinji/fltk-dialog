@@ -30,8 +30,10 @@ std::string &repstr(      std::string &s,
                     const std::string &from,
                     const std::string &to)
 {
-  if(!from.empty()) {
-    for(size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size()) {
+  if (!from.empty())
+  {
+    for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
+    {
       s.replace(pos, from.size(), to);
     }
   }

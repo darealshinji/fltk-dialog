@@ -86,65 +86,77 @@ int dialog_fl_progress(const char *progress_msg,
   int percent = 0;
   char percent_label[5];
 
-  if (progress_msg == NULL) {
+  if (progress_msg == NULL)
+  {
     s = "Simple FLTK progress bar";
-  } else {
+  }
+  else
+  {
     s = translate(progress_msg);
-    for (size_t i = 0; i < strlen(progress_msg); i++) {
-      if (progress_msg[i] == '\n') {
+    for (size_t i = 0; i < strlen(progress_msg); i++)
+    {
+      if (progress_msg[i] == '\n')
+      {
         textlines++;
       }
     }
   }
 
-  if (progress_title == NULL) {
+  if (progress_title == NULL)
+  {
     progress_title = (char *)"FLTK progress window";
   }
 
   /* check for input data */
   INIT_READSTDIO;
-  if (!READSTDIO) {
+  if (!READSTDIO)
+  {
     s = "Error: no input data receiving";
     dialog_fl_message(s.c_str(), progress_title, ALERT);
     return 1;
   }
 
   int boxh = textlines*textheight + bord*2;
-
-  if (!autoclose) {
+  if (!autoclose)
+  {
     winh = boxh+barh+buth+bord*2+5;
-  } else {
+  }
+  else
+  {
     winh = boxh+barh+bord+5;
   }
 
   prog_win = new Fl_Window(winw, winh, progress_title);
-  box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   prog_win->begin();
   prog_win->callback(progress_exit1_cb);
-  box->box(FL_NO_BOX);
-  box->align(FL_ALIGN_RIGHT);
+  {
+    box = new Fl_Box(0, 0, bord, boxh, s.c_str());
+    box->box(FL_NO_BOX);
+    box->align(FL_ALIGN_RIGHT);
 
-  prog_bar = new Fl_Progress(bord, boxh, winw-bord*2, barh);
-  prog_bar->minimum(0);
-  prog_bar->maximum(100);
-  prog_bar->color(0x88888800);  /* background color */
-  prog_bar->selection_color(0x4444ff00);  /* progress bar color */
-  prog_bar->labelcolor(FL_WHITE);  /* percent text color */
-  prog_bar->value(0);
-  prog_bar->label("0%");
+    prog_bar = new Fl_Progress(bord, boxh, winw-bord*2, barh);
+    prog_bar->minimum(0);
+    prog_bar->maximum(100);
+    prog_bar->color(0x88888800);  /* background color */
+    prog_bar->selection_color(0x4444ff00);  /* progress bar color */
+    prog_bar->labelcolor(FL_WHITE);  /* percent text color */
+    prog_bar->value(0);
+    prog_bar->label("0%");
 
-  if (!autoclose) {
-    int but_ok_x = but_right;
-    if (!hide_cancel) {
-      but_cancel = new Fl_Button(but_right, boxh+textheight+buth, butw, buth, fl_cancel);
-      but_cancel->callback(progress_exit1_cb);
-      but_ok_x = but_left;
+    if (!autoclose)
+    {
+      int but_ok_x = but_right;
+      if (!hide_cancel)
+      {
+        but_cancel = new Fl_Button(but_right, boxh+textheight+buth, butw, buth, fl_cancel);
+        but_cancel->callback(progress_exit1_cb);
+        but_ok_x = but_left;
+      }
+      but_ok = new Fl_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
+      but_ok->deactivate();
+      but_ok->callback(progress_exit0_cb);
     }
-    but_ok = new Fl_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
-    but_ok->deactivate();
-    but_ok->callback(progress_exit0_cb);
   }
-
   prog_win->end();
   prog_win->show();
 
@@ -153,20 +165,32 @@ int dialog_fl_progress(const char *progress_msg,
   Fl::flush();
 
   /* get stdin line by line */
-  for (/**/; std::getline(std::cin, line); /**/) {
-    if (line.compare(0,1,"#") != 0) {  /* ignore lines beginning with a '#' */
+  for (/**/; std::getline(std::cin, line); /**/)
+  {
+    /* ignore lines beginning with a '#' */
+    if (line.compare(0, 1, "#") != 0)
+    {
       linesubstr = line.substr(0,3);
       percent = atoi(linesubstr.c_str());
-      if (percent >= 0 && percent <= 100) {
+      if (percent >= 0 && percent <= 100)
+      {
         prog_bar->value(percent);  /* update progress bar */
         sprintf(percent_label, "%d%%", percent);
         prog_bar->label(percent_label);  /* update progress bar's label */
         Fl::check();  /* update the screen */
-        if (percent == 100) {
-          if (!autoclose) {
+
+        if (percent == 100)
+        {
+          if (!autoclose)
+          {
             but_ok->activate();
-            if (!hide_cancel) but_cancel->deactivate();
-          } else {
+            if (!hide_cancel)
+            {
+              but_cancel->deactivate();
+            }
+          }
+          else
+          {
             progress_exit(0);
           }
         }

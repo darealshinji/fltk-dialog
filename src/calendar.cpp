@@ -88,13 +88,17 @@ int dialog_fl_calendar(       char *calendar_title,
   int ret, y, m, d;
   char *fmtc, *date_formatted;
 
-  if (calendar_title == NULL) {
+  if (calendar_title == NULL)
+  {
     calendar_title = (char *)"FLTK calendar";
   }
 
-  if (fmt == "") {
+  if (fmt == "")
+  {
     fmt = "%Y-%m-%d";
-  } else {
+  }
+  else
+  {
     /* glibc date formats
      * example date: 2006-01-08 */
     fmt = repstr(fmt, "%", "%%");   /* literal %; add first! */
@@ -116,23 +120,27 @@ int dialog_fl_calendar(       char *calendar_title,
   }
 
   win = new Fl_Window(winw, winh, calendar_title);
-  cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
   win->begin();
   win->callback(calendar_cancel_cb);  /* exit(1) */
-  but_ok = new Fl_Return_Button(winw-butw*2-bord*2, calh, butw, buth, fl_ok);
-  but_ok->callback(calendar_ok_cb);
-  but_cancel = new Fl_Button(winw-butw-bord, calh, butw, buth, fl_cancel);
-  but_cancel->callback(calendar_cancel_cb);
+  {
+    cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
+    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, calh, butw, buth, fl_ok);
+    but_ok->callback(calendar_ok_cb);
+    but_cancel = new Fl_Button(winw-butw-bord, calh, butw, buth, fl_cancel);
+    but_cancel->callback(calendar_cancel_cb);
+  }
   win->end();
   win->show();
 
   ret = Fl::run();
+
   y = cal->year();
   m = cal->month();
   d = cal->day();
   fmtc = (char *)fmt.c_str();
   date_formatted = getFormattedDate(y, m, d, fmtc);
   std::cout << date_formatted << std::endl;
+
   delete cal;
   return ret;
 }

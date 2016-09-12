@@ -36,23 +36,31 @@ int dialog_fl_message(const char *message_msg,
 {
   std::string s;
 
-  if (message_msg == NULL) {
+  if (message_msg == NULL)
+  {
     s = "no message";
-  } else {
+  }
+  else
+  {
     s = translate(message_msg);
   }
 
-  if (message_title == NULL) {
+  if (message_title == NULL)
+  {
     message_title = (char *)"FLTK message box";
   }
 
   fl_message_title(message_title);
 
-  if (type == ALERT) {
+  if (type == ALERT)
+  {
     fl_alert("%s", s.c_str());
-  } else {
+  }
+  else
+  {
     fl_message("%s", s.c_str());
   }
+
   return 0;
 }
 

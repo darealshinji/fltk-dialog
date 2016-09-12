@@ -38,7 +38,8 @@ class dnd_box : public Fl_Box
 
     virtual ~dnd_box() { }
 
-    int handle(int event) {
+    int handle(int event)
+    {
       int ret = Fl_Box::handle(event);
       switch (event) {
         case FL_DND_ENTER:

@@ -35,23 +35,30 @@ int dialog_fl_password(const char *password_msg,
                              char *password_title)
 {
   std::string s;
+  const char *password_label;
 
-  if (password_msg == NULL) {
+  if (password_msg == NULL)
+  {
     s = "Enter a password:";
-  } else {
+  }
+  else
+  {
     s = translate(password_msg);
   }
 
-  if (password_title == NULL) {
+  if (password_title == NULL)
+  {
     password_title = (char *)"FLTK password dialog";
   }
 
   fl_message_title(password_title);
 
-  if (const char *password_label = fl_password("%s", NULL, s.c_str())) {
+  if ((password_label = fl_password("%s", NULL, s.c_str())))
+  {
     std::cout << password_label << std::endl;
     return 0;
   }
+
   return 1;
 }
 

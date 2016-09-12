@@ -42,8 +42,10 @@ static void dnd_callback(const char *items)
   const char *ch;
   static char newtext[128];
 
-  for (ch = items; *ch != '\0'; ch++) {
-    if (*ch == '\n') {
+  for (ch = items; *ch != '\0'; ch++)
+  {
+    if (*ch == '\n')
+    {
       dnd_count_val++;
     }
   }
@@ -51,6 +53,7 @@ static void dnd_callback(const char *items)
   sprintf(newtext, "%d", dnd_count_val);
   dnd_count->label(newtext);
   dnd_window->redraw();
+
   std::cout << items;
 }
 
@@ -74,38 +77,41 @@ int dialog_dnd(char *dnd_label,
   int buth = 26;
   int textw = 110 + bord;
 
-  if (dnd_label == NULL) {
+  if (dnd_label == NULL)
+  {
     dnd_label = (char *)"drop stuff here";
   }
-  if (dnd_title == NULL) {
+
+  if (dnd_title == NULL)
+  {
     dnd_title = (char *)"FLTK Drag & Drop";
   }
 
   dnd_window = new Fl_Window(winw, winh, dnd_title);
+  dnd_window->begin();
   dnd_window->callback(dnd_exit_cb);
+  {
+    box = new dnd_box(bord, bord, winw-bord*2, winh-buth-bord*3, dnd_label);
+    box->box(FL_ENGRAVED_FRAME);
+    g = new Fl_Group(bord, winh-buth-bord*3, winw-bord*2, buth+bord*2);
+    {
+      text = new Fl_Box(bord, winh-buth-bord, textw, buth);
+      text->label("Items dropped:");
+      text->box(FL_NO_BOX);
+      text->align(FL_ALIGN_CENTER);
 
-  box = new dnd_box(bord, bord, winw-bord*2, winh-buth-bord*3, dnd_label);
-  box->box(FL_ENGRAVED_FRAME);
+      /* the dnd_count widget has the same size and position as the
+       * text widget, but its label text is placed right to it */
+      dnd_count = new Fl_Box(bord, winh-buth-bord, textw, buth);
+      dnd_count->label("0");
+      dnd_count->box(FL_NO_BOX);
+      dnd_count->align(FL_ALIGN_RIGHT);
 
-  g = new Fl_Group(bord, winh-buth-bord*3, winw-bord*2, buth+bord*2);
-
-  text = new Fl_Box(bord, winh-buth-bord, textw, buth);
-  text->label("Items dropped:");
-  text->box(FL_NO_BOX);
-  text->align(FL_ALIGN_CENTER);
-
-  /* the dnd_count widget has the same size and position as the
-   * text widget, but its label text is placed right to it */
-  dnd_count = new Fl_Box(bord, winh-buth-bord, textw, buth);
-  dnd_count->label("0");
-  dnd_count->box(FL_NO_BOX);
-  dnd_count->align(FL_ALIGN_RIGHT);
-
-  but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
-  but_close->callback(dnd_exit_cb);
-
-  g->end();
-
+      but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
+      but_close->callback(dnd_exit_cb);
+    }
+    g->end();
+  }
   dnd_window->end();
   dnd_window->show();
 

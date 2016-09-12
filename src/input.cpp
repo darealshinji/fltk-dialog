@@ -36,22 +36,28 @@ int dialog_fl_input(const char *input_msg,
 {
   std::string s;
 
-  if (input_msg == NULL) {
+  if (input_msg == NULL)
+  {
     s = "Enter some text:";
-  } else {
+  }
+  else
+  {
     s = translate(input_msg);
   }
 
-  if (input_title == NULL) {
+  if (input_title == NULL)
+  {
     input_title = (char *)"FLTK input dialog";
   }
 
   fl_message_title(input_title);
 
-  if (const char *input_label = fl_input("%s", NULL, s.c_str())) {
+  if (const char *input_label = fl_input("%s", NULL, s.c_str()))
+  {
     std::cout << input_label << std::endl;
     return 0;
   }
+
   return 1;
 }
 

@@ -42,14 +42,16 @@
 
 
 struct to_lower {
-  int operator() (int ch) {
+  int operator() (int ch)
+  {
     return std::tolower(ch);
   }
 };
 
 std::string get_ext(std::string input, unsigned int n=4)
 {
-  if (input.std::string::size() <= n) {
+  if (input.std::string::size() <= n)
+  {
     return "";
   }
   input = input.std::string::substr(input.std::string::size() - n);

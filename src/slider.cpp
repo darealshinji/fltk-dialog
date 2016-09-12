@@ -86,52 +86,74 @@ int dialog_fl_value_slider(const char *slider_msg,
   double step = 1;
   double val = min;
 
-  if (slider_msg == NULL) {
+  if (slider_msg == NULL)
+  {
     s = "Simple FLTK scaler";
-  } else {
+  }
+  else
+  {
     s = translate(slider_msg);
-    for (size_t i = 0; i < strlen(slider_msg); i++) {
-      if (slider_msg[i] == '\n') {
+    for (size_t i = 0; i < strlen(slider_msg); i++)
+    {
+      if (slider_msg[i] == '\n')
+      {
         textlines++;
       }
     }
   }
 
-  if (slider_title == NULL) {
+  if (slider_title == NULL)
+  {
     slider_title = (char *)"FLTK slider window";
   }
 
-  if (slider_min  != NULL) { min = atof(slider_min); }
-  if (slider_max  != NULL) { max = atof(slider_max); }
-  if (slider_step != NULL) { step = atof(slider_step); }
-  if (slider_val  != NULL) { val = atof(slider_val); }
+  if (slider_min != NULL)
+  {
+    min = atof(slider_min);
+  }
+
+  if (slider_max != NULL)
+  {
+    max = atof(slider_max);
+  }
+
+  if (slider_step != NULL)
+  {
+    step = atof(slider_step);
+  }
+
+  if (slider_val != NULL)
+  {
+    val = atof(slider_val);
+  }
 
   int boxh = textlines*textheight + bord*2;
 
   win = new Fl_Window(winw, boxh+slidh+bord*3+textheight, slider_title);
-  box = new Fl_Box(0, 0, bord, boxh, s.c_str());
   win->begin();
   win->callback(slider_cancel_cb);  /* exit(1) */
-  box->box(FL_NO_BOX);
-  box->align(FL_ALIGN_RIGHT);
+  {
+    box = new Fl_Box(0, 0, bord, boxh, s.c_str());
+    box->box(FL_NO_BOX);
+    box->align(FL_ALIGN_RIGHT);
 
-  slider = new Fl_Value_Slider(bord, boxh, winw-bord*2, slidh, NULL);
-  slider->type(FL_HOR_NICE_SLIDER);
-  slider->box(FL_FLAT_BOX);
-  slider->minimum(min);
-  slider->maximum(max);
-  slider->step(step);
-  slidval_round = slider->round(val);
-  slider->value(slidval_round);
-  slider->callback(slider_cb);
+    slider = new Fl_Value_Slider(bord, boxh, winw-bord*2, slidh, NULL);
+    slider->type(FL_HOR_NICE_SLIDER);
+    slider->box(FL_FLAT_BOX);
+    slider->minimum(min);
+    slider->maximum(max);
+    slider->step(step);
+    slidval_round = slider->round(val);
+    slider->value(slidval_round);
+    slider->callback(slider_cb);
 
-  but_ok = new Fl_Return_Button(winw-butw*2-bord*2, boxh+textheight+buth,
-                                butw, buth, fl_ok);
-  but_ok->callback(slider_ok_cb);
-  but_cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
-                             butw, buth, fl_cancel);
-  but_cancel->callback(slider_cancel_cb);
-
+    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, boxh+textheight+buth,
+                                  butw, buth, fl_ok);
+    but_ok->callback(slider_ok_cb);
+    but_cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
+                               butw, buth, fl_cancel);
+    but_cancel->callback(slider_cancel_cb);
+  }
   win->end();
   win->show();
 

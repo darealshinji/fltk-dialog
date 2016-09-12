@@ -91,41 +91,29 @@ int about()
 #endif
     /**/;
   const char *about_text_c = about_text.c_str();
+  about_pixmap = new Fl_Pixmap(fltk_xpm);
 
   win = new Fl_Window(winw, winh, "About FLTK dialog");
-  box = new Fl_Box(bord, bord, winw-bord*2, winh-buth-bord*3, about_text_c);
-  about_pixmap = new Fl_Pixmap(fltk_xpm);
   win->begin();
   win->callback(about_close_cb);  /* exit(0) */
-  box->box(FL_UP_BOX);
-  box->image(about_pixmap);
-  but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
-  but_lic->callback(about_but_lic_cb);
-  but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
-  but_close->callback(about_close_cb);
+  {
+    box = new Fl_Box(bord, bord, winw-bord*2, winh-buth-bord*3, about_text_c);
+    box->box(FL_UP_BOX);
+    box->image(about_pixmap);
+    but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
+    but_lic->callback(about_but_lic_cb);
+    but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
+    but_close->callback(about_close_cb);
+  }
   win->end();
   win->show();
+
   int ret = Fl::run();
   delete about_pixmap;
   return ret;
 }
 
-void license()
-{
-  Fl_Window *win;
-  Fl_Button *but_close;
-
-  int winw = 600;
-  int winh = 540;
-  int bord = 10;
-  int butw = 100;
-  int buth = 26;
-
-  win = new Fl_Window(winw, winh, "Terms and Conditions");
-  license_buffer = new Fl_Text_Buffer();
-  license_display = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);
-  license_display->buffer(license_buffer);
-  license_buffer->text(
+const char *license_buffer_text =
     /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' LICENSE */
     "The MIT License (MIT)\n"
     "\n"
@@ -237,11 +225,32 @@ void license()
     "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
     "SOFTWARE.\n"
 #endif  /* WITH_ICON */
-  );
-  but_close = new Fl_Button((winw-butw)/2, winh-buth-bord, butw, buth, fl_close);
-  but_close->callback(about_hide_cb);
+    /**/;
+
+void license()
+{
+  Fl_Window *win;
+  Fl_Button *but_close;
+
+  int winw = 600;
+  int winh = 540;
+  int bord = 10;
+  int butw = 100;
+  int buth = 26;
+
+  win = new Fl_Window(winw, winh, "Terms and Conditions");
+  win->begin();
+  {
+    license_buffer = new Fl_Text_Buffer();
+    license_display = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);
+    license_display->buffer(license_buffer);
+    license_buffer->text(license_buffer_text);
+    but_close = new Fl_Button((winw-butw)/2, winh-buth-bord, butw, buth, fl_close);
+    but_close->callback(about_hide_cb);
+  }
   win->end();
   win->show();
+
   Fl::run();
   delete license_display;
   delete license_buffer;

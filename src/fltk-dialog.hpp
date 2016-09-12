@@ -90,11 +90,11 @@ int dialog_fl_message(const char *message_msg,
 
 /* notify.cpp */
 #ifdef WITH_NOTIFY
-int dialog_notify(const char *appname,
-                  const char *notify_timeout,
-                  const char *notify_msg,
-                  const char *notify_title,
-                  std::string notify_icon);
+int dialog_notify(const char  *appname,
+                  const char  *notify_timeout,
+                  const char  *notify_msg,
+                  const char  *notify_title,
+                  std::string  notify_icon);
 #endif
 
 /* password.cpp */

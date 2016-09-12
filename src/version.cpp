@@ -46,6 +46,7 @@ std::string get_fltk_version()
    * the runtime library without leading zeros */
   std::stringstream ss;
   std::string ver, maj, min1, min2, pat1, pat2;
+
   int api = Fl::api_version();
   ss << api;
   ver  = ss.str();
@@ -54,12 +55,17 @@ std::string get_fltk_version()
   min2 = ver.substr(2,1);
   pat1 = ver.substr(3,1);
   pat2 = ver.substr(4,1);
-  if (min1 == "0") {
+
+  if (min1 == "0")
+  {
     min1 = "";
   }
-  if (pat1 == "0") {
+
+  if (pat1 == "0")
+  {
     pat1 = "";
   }
+
   return maj + "." + min1 + min2 + "." + pat1 + pat2;
 
 #endif  /* FLTK_VERSION */

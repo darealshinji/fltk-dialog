@@ -60,8 +60,5 @@ enum longOpts {
   LO_YES_LABEL
 };
 
-/* don't use fltk's '@' symbols */
-static int use_symbols = 0;
-
 #endif  /* !FLTK_DIALOG_MAIN_HPP */
 

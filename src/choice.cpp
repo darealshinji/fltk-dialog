@@ -38,28 +38,36 @@ int dialog_fl_choice(const char *choice_msg,
 {
   std::string s;
 
-  if (choice_msg == NULL) {
+  if (choice_msg == NULL)
+  {
     s = "Do you want to proceed?";
-  } else {
+  }
+  else
+  {
     s = translate(choice_msg);
   }
 
-  if (choice_title == NULL) {
+  if (choice_title == NULL)
+  {
     choice_title = (char *)"FLTK yes/no choice";
   }
 
-  if (choice_but_yes == NULL) {
+  if (choice_but_yes == NULL)
+  {
     choice_but_yes = (char *)"Yes";
   }
 
-  if (choice_but_no == NULL) {
+  if (choice_but_no == NULL)
+  {
     choice_but_no = (char *)"No";
   }
 
   fl_message_title(choice_title);
 
-  if (fl_choice("%s", choice_but_no, choice_but_yes, choice_but_alt, s.c_str())) {
+  if (fl_choice("%s", choice_but_no, choice_but_yes, choice_but_alt, s.c_str()))
+  {
     return 0;
   }
+
   return 1;
 }

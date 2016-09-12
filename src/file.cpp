@@ -36,15 +36,18 @@ int dialog_fl_file_chooser(char *file_chooser_title)
 {
   struct stat s;
 
-  if (file_chooser_title == NULL) {
+  if (file_chooser_title == NULL)
+  {
     file_chooser_title = (char *)"Select a file";
   }
 
   char *file = fl_file_chooser(file_chooser_title, "*", NULL);
 
-  if (!((stat(file, &s) == 0) && (s.st_mode &S_IFREG))) {
+  if (!((stat(file, &s) == 0) && (s.st_mode &S_IFREG)))
+  {
     return 1;
   }
+
   std::cout << file << std::endl;
   return 0;
 }
@@ -53,16 +56,20 @@ int dialog_fl_dir_chooser(char* dir_chooser_title)
 {
   struct stat s;
 
-  if (dir_chooser_title == NULL) {
+  if (dir_chooser_title == NULL)
+  {
     dir_chooser_title = (char *)"Select a directory";
   }
 
   char *dir = fl_dir_chooser(dir_chooser_title, NULL);
 
-  if (!((stat(dir, &s) == 0) && (s.st_mode &S_IFDIR))) {
+  if (!((stat(dir, &s) == 0) && (s.st_mode &S_IFDIR)))
+  {
     return 1;
   }
+
   std::cout << dir << std::endl;
+
   return 0;
 }
 
@@ -72,11 +79,15 @@ int dialog_fl_native_file_chooser(char *fnfc_title,
   Fl_Native_File_Chooser fnfc;
   char *fnfc_def_title = NULL;
 
-  if (fnfc_title == NULL) {
-    if (fnfc_dir == DIR_CHOOSER) {
+  if (fnfc_title == NULL)
+  {
+    if (fnfc_dir == DIR_CHOOSER)
+    {
       fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
       fnfc_def_title = (char *)"Select a directory";
-    } else {
+    }
+    else
+    {
       fnfc.type(Fl_Native_File_Chooser::BROWSE_FILE);
       fnfc_def_title = (char *)"Select a file";
     }
@@ -85,9 +96,11 @@ int dialog_fl_native_file_chooser(char *fnfc_title,
 
   fnfc.title(fnfc_title);
 
-  if (fnfc.show()) {
+  if (fnfc.show())
+  {
     return 1;
   }
+
   std::cout << fnfc.filename() << std::endl;
   return 0;
 }

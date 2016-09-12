@@ -41,6 +41,9 @@
 #endif
 
 
+/* don't use fltk's '@' symbols */
+static int use_symbols = 0;
+
 /* global FLTK callback for drawing all label text */
 void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
 {
@@ -58,7 +61,8 @@ void measure_cb(const Fl_Label *o, int &w, int &h)
 
 static int esc_handler(int event)
 {
-  if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape) {
+  if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape)
+  {
     return 1; /* ignore Escape key */
   }
   return 0;
@@ -124,6 +128,7 @@ void print_usage(char *prog)
   "  --no-label=TEXT            Sets the label of the No button\n"
   "  --alt-label=TEXT           Adds a third button and sets its label;\n"
   "                             exit code is 2\n"
+
 #ifdef WITH_FILE
   "\n"
   "File/directory selection options:\n"
@@ -131,12 +136,14 @@ void print_usage(char *prog)
   "                             chooser (GTK) if available, otherwise\n"
   "                             fall back to FLTK's own version\n"
 #endif
+
 #ifdef WITH_PROGRESS
   "\n"
   "Progress options:\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --no-cancel                Hide cancel button\n"
 #endif
+
 #ifdef WITH_CALENDAR
   "\n"
   "Calendar options:\n"
@@ -159,6 +166,7 @@ void print_usage(char *prog)
   "                             b  month name (Jan)\n"
   "                             u  day of the week, Monday being 1 (7)\n"
 #endif
+
 #ifdef WITH_SCALE
   "\n"
   "Scale options:\n"
@@ -168,12 +176,14 @@ void print_usage(char *prog)
   "  --step=VALUE               Set step size\n"
   "                             VALUE can be float point or integer\n"
 #endif
+
 #ifdef WITH_TEXTINFO
   "\n"
   "Text information options:\n"
   "  --checkbox=TEXT            Enable an \"I read and agree\" checkbox\n"
   "  --auto-scroll              Always scroll to the bottom of the text\n"
 #endif
+
 #ifdef WITH_NOTIFY
   "\n"
   "Notification options:\n"
@@ -181,6 +191,7 @@ void print_usage(char *prog)
   "                             in seconds\n"
   "  --notify-icon=PATH         Set the icon for the notification box\n"
 #endif
+
     << std::endl;
 }
 
@@ -191,44 +202,65 @@ int main(int argc, char **argv)
   char *but_yes = NULL;
   char *but_no = NULL;
   char *but_alt = NULL;
+  const char *scheme = "default";
+  const char *scheme_default = "gtk+";
+  int dialog = DIALOG_FL_MESSAGE;  /* default message type */
+
 #ifdef WITH_SCALE
   char *minval = NULL;
   char *maxval = NULL;
   char *stepval = NULL;
   char *initval = NULL;
 #endif
+
 #ifdef WITH_CALENDAR
   std::string fmt = "";
 #endif
-  const char *scheme = "default";
-  const char *scheme_default = "gtk+";
+
 #ifdef WITH_HTML
   const char *html = NULL;
 #endif
+
 #ifdef WITH_WINDOW_ICON
   std::string window_icon = "";
 #endif
-  int dialog = DIALOG_FL_MESSAGE;  /* default message type */
+
 #ifdef WITH_NOTIFY
   const char *notify_timeout = NULL;
   std::string notify_icon = "";
 #endif
+
 #ifdef WITH_FILE
   bool native = false;
 #endif
+
 #ifdef WITH_PROGRESS
   bool autoclose = false;
   bool hide_cancel = false;
 #endif
+
 #ifdef WITH_TEXTINFO
   std::string checkbox = "";
   bool autoscroll = false;
 #endif
 
-  /* using these to check if two or more dialog options were specified */
-  int dabout=0, dalert=0, dcalendar=0, dchoice=0, ddirchoser=0, ddnd=0;
-  int dfilechooser=0, dhtml=0, dinput=0, dpassword=0, dcolor=0, dnotify=0;
-  int dprogress=0, dvalslider=0, dtextinfo=0;
+  /* using these to check if two or
+   * more dialog options were specified */
+  int dabout = 0;
+  int dalert = 0;
+  int dcalendar = 0;
+  int dchoice = 0;
+  int ddirchoser = 0;
+  int ddnd = 0;
+  int dfilechooser = 0;
+  int dhtml = 0;
+  int dinput = 0;
+  int dpassword = 0;
+  int dcolor = 0;
+  int dnotify = 0;
+  int dprogress = 0;
+  int dvalslider = 0;
+  int dtextinfo = 0;
 
 #ifdef WITH_DEFAULT_ICON
   /* set global default icon for all windows */
@@ -242,24 +274,30 @@ int main(int argc, char **argv)
 
   /* run "About" dialog if invoked
    * without command line options */
-  if (argc < 2) {
+  if (argc < 2)
+  {
     /* disable fltk's '@' symbols */
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
     Fl::scheme(scheme_default);
     return about();
   }
 
-  for (int i = 1; i < argc; ++i) {
-    if (STREQ("--help", argv[i]) || STREQ("-h", argv[i])) {
+  for (int i = 1; i < argc; ++i)
+  {
+    if (STREQ("--help", argv[i]) || STREQ("-h", argv[i]))
+    {
       print_usage(argv[0]);
       return 0;
-    } else if (STREQ("--version", argv[i]) || STREQ("-v", argv[i])) {
+    }
+    else if (STREQ("--version", argv[i]) || STREQ("-v", argv[i]))
+    {
       print_fltk_version();
       return 0;
     }
   }
 
-  static struct option long_options[] = {
+  static struct option long_options[] =
+  {
     { "about",       no_argument,       0, LO_ABOUT       },
     { "no-escape",   no_argument,       0, LO_NO_ESCAPE   },
     { "scheme",      required_argument, 0, LO_SCHEME      },
@@ -268,38 +306,48 @@ int main(int argc, char **argv)
     { "yes-label",   required_argument, 0, LO_YES_LABEL   },
     { "no-label",    required_argument, 0, LO_NO_LABEL    },
     { "alt-label",   required_argument, 0, LO_ALT_LABEL   },
+
 #ifdef WITH_DND
     { "dnd",         no_argument,       0, LO_DND         },
 #endif
+
 #ifdef WITH_HTML
     { "html",        required_argument, 0, LO_HTML        },
 #endif
+
     { "warning",     no_argument,       0, LO_WARNING     },
     { "question",    no_argument,       0, LO_QUESTION    },
+
 #ifdef WITH_FILE
     { "file",        no_argument,       0, LO_FILE        },
     { "directory",   no_argument,       0, LO_DIRECTORY   },
     { "native",      no_argument,       0, LO_NATIVE      },
 #endif
+
 #ifdef WITH_ENTRY
     { "entry",       no_argument,       0, LO_ENTRY       },
 #endif
+
 #ifdef WITH_PASSWORD
     { "password",    no_argument,       0, LO_PASSWORD    },
 #endif
+
 #ifdef WITH_COLOR
     { "color",       no_argument,       0, LO_COLOR       },
 #endif
+
 #ifdef WITH_NOTIFY
     { "notification",no_argument,       0, LO_NOTIFY      },
     { "timeout",     required_argument, 0, LO_TIMEOUT     },
     { "notify-icon", required_argument, 0, LO_NOTIFY_ICON },
 #endif
+
 #ifdef WITH_PROGRESS
     { "progress",    no_argument,       0, LO_PROGRESS    },
     { "auto-close",  no_argument,       0, LO_AUTO_CLOSE  },
     { "no-cancel",   no_argument,       0, LO_NO_CANCEL   },
 #endif
+
 #ifdef WITH_SCALE
     { "scale",       no_argument,       0, LO_SCALE       },
     { "value",       required_argument, 0, LO_VALUE       },
@@ -307,25 +355,31 @@ int main(int argc, char **argv)
     { "max-value",   required_argument, 0, LO_MAX_VALUE   },
     { "step",        required_argument, 0, LO_STEP        },
 #endif
+
 #ifdef WITH_CALENDAR
     { "calendar",    no_argument,       0, LO_CALENDAR    },
     { "format",      required_argument, 0, LO_FORMAT      },
 #endif
+
 #ifdef WITH_TEXTINFO
     { "text-info",   no_argument,       0, LO_TEXT_INFO   },
     { "auto-scroll", no_argument,       0, LO_AUTO_SCROLL },
     { "checkbox",    required_argument, 0, LO_CHECKBOX    },
 #endif
+
 #ifdef WITH_WINDOW_ICON
     { "window-icon", required_argument, 0, LO_WINDOW_ICON },
 #endif
+
     { 0, 0, 0, 0 }
   };
 
   int opt = -1;
   int long_index = 0;
-  while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index)) != -1) {
-    switch (opt) {
+  while ((opt = getopt_long_only(argc, argv, "", long_options, &long_index)) != -1)
+  {
+    switch (opt)
+    {
       case LO_ABOUT:
         dialog = DIALOG_ABOUT;
         dabout = 1;
@@ -478,21 +532,28 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dabout + dalert + dcalendar + dchoice + ddirchoser + ddnd + dfilechooser + dhtml +
-       dinput + dpassword + dcolor + dnotify + dprogress + dvalslider + dtextinfo) >= 2) {
+  if ((dabout + dalert + dcalendar + dchoice + ddirchoser + ddnd +
+       dfilechooser + dhtml + dinput + dpassword + dcolor + dnotify +
+       dprogress + dvalslider + dtextinfo) >= 2)
+  {
     std::cerr << argv[0] << ": "
       << "two or more dialog options specified" << std::endl;
     return 1;
   }
 
-  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL)) {
+  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL ||
+                                     but_alt != NULL))
+  {
     std::cerr << argv[0] << ": "
-      << "--yes-label/--no-label/--alt-label can only be used with --question" << std::endl;
+      << "--yes-label/--no-label/--alt-label can only be used with --question"
+      << std::endl;
     return 1;
   }
 
 #ifdef WITH_FILE
-  if (native && (dialog != DIALOG_FL_FILE_CHOOSER && dialog != DIALOG_FL_DIR_CHOOSER)) {
+  if (native && (dialog != DIALOG_FL_FILE_CHOOSER &&
+                 dialog != DIALOG_FL_DIR_CHOOSER))
+  {
     std::cerr << argv[0] << ": "
       << "--native can only be used with --file or --directory" << std::endl;
     return 1;
@@ -500,12 +561,15 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_NOTIFY
-  if (notify_timeout != NULL && dialog != DIALOG_NOTIFY) {
+  if (notify_timeout != NULL && dialog != DIALOG_NOTIFY)
+  {
     std::cerr << argv[0] << ": "
       << "--timeout can only be used with --notification" << std::endl;
     return 1;
   }
-  if (notify_icon != "" && dialog != DIALOG_NOTIFY) {
+
+  if (notify_icon != "" && dialog != DIALOG_NOTIFY)
+  {
     std::cerr << argv[0] << ": "
       << "--notify-icon can only be used with --notification" << std::endl;
     return 1;
@@ -513,12 +577,15 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
-  if (autoclose && dialog != DIALOG_FL_PROGRESS) {
+  if (autoclose && dialog != DIALOG_FL_PROGRESS)
+  {
     std::cerr << argv[0] << ": "
       << "--auto-close can only be used with --progress" << std::endl;
     return 1;
   }
-  if (hide_cancel && dialog != DIALOG_FL_PROGRESS) {
+
+  if (hide_cancel && dialog != DIALOG_FL_PROGRESS)
+  {
     std::cerr << argv[0] << ": "
       << "--no-cancel can only be used with --progress" << std::endl;
     return 1;
@@ -526,16 +593,19 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_SCALE
-  if (dialog != DIALOG_FL_VALUE_SLIDER &&
-      (minval != NULL || maxval != NULL || stepval != NULL || initval != NULL)) {
+  if (dialog != DIALOG_FL_VALUE_SLIDER && (minval != NULL || maxval != NULL ||
+                                           stepval != NULL || initval != NULL))
+  {
     std::cerr << argv[0] << ": "
-      << "--value/--min-value/--max-value/--step can only be used with --scale" << std::endl;
+      << "--value/--min-value/--max-value/--step can only be used with --scale"
+      << std::endl;
     return 1;
   }
 #endif
 
 #ifdef WITH_CALENDAR
-  if (fmt != "" && dialog != DIALOG_FL_CALENDAR) {
+  if (fmt != "" && dialog != DIALOG_FL_CALENDAR)
+  {
     std::cerr << argv[0] << ": "
       << "--format can only be used with --calendar" << std::endl;
     return 1;
@@ -543,43 +613,58 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_TEXTINFO
-  if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != "")) {
+  if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != ""))
+  {
     std::cerr << argv[0] << ": "
-      << "--auto-scroll/--checkbox can only be used with --text-info" << std::endl;
+      << "--auto-scroll/--checkbox can only be used with --text-info"
+      << std::endl;
     return 1;
   }
 #endif
 
 #ifdef WITH_HTML
   /* keep fltk's '@' symbols only enabled for HTML viewer */
-  if (dialog != DIALOG_HTML) {
+  if (dialog != DIALOG_HTML)
+  {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
 #endif
 
-  if (STREQ("gtk", scheme)) {
+  if (STREQ("gtk", scheme))
+  {
     scheme = "gtk+";
-  } else if (STREQ("simple", scheme)) {
+  }
+  else if (STREQ("simple", scheme))
+  {
     scheme = "none";
   }
-  if (STREQ("default", scheme)) {
+
+  if (STREQ("default", scheme))
+  {
     Fl::scheme(scheme_default);
-  } else if (STREQ("none", scheme) || STREQ("gtk+", scheme) ||
-             STREQ("gleam", scheme) || STREQ("plastic", scheme)) {
+  }
+  else if (STREQ("none", scheme) || STREQ("gtk+", scheme) ||
+           STREQ("gleam", scheme) || STREQ("plastic", scheme))
+  {
     Fl::scheme(scheme);
-  } else {
+  }
+  else
+  {
     std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
-      << "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
+      << "Available schemes are: default gtk+ gleam plastic simple"
+      << std::endl;
     return 1;
   }
 
 #ifdef WITH_WINDOW_ICON
-  if (window_icon != "") {
+  if (window_icon != "")
+  {
     set_window_icon(window_icon);
   }
 #endif
 
-  switch (dialog) {
+  switch (dialog)
+  {
     case DIALOG_ABOUT:
       return about();
     case DIALOG_FL_MESSAGE:
@@ -588,56 +673,74 @@ int main(int argc, char **argv)
       return dialog_fl_message(msg, title, ALERT);
     case DIALOG_FL_CHOICE:
       return dialog_fl_choice(msg, title, but_yes, but_no, but_alt);
+
 #ifdef WITH_DND
     case DIALOG_DND:
       return dialog_dnd(msg, title);
 #endif
+
 #ifdef WITH_FILE
     case DIALOG_FL_FILE_CHOOSER:
-      if (native) {
+      if (native)
+      {
         return dialog_fl_native_file_chooser(title, FILE_CHOOSER);
-      } else {
+      }
+      else
+      {
         return dialog_fl_file_chooser(title);
       }
     case DIALOG_FL_DIR_CHOOSER:
-      if (native) {
+      if (native)
+      {
         return dialog_fl_native_file_chooser(title, DIR_CHOOSER);
-      } else {
+      }
+      else
+      {
         return dialog_fl_dir_chooser(title);
       }
-#endif
+#endif  /* WITH_FILE */
+
 #ifdef WITH_ENTRY
     case DIALOG_FL_INPUT:
       return dialog_fl_input(msg, title);
 #endif
+
 #ifdef WITH_HTML
     case DIALOG_HTML:
       return dialog_html_viewer(html);
 #endif
+
 #ifdef WITH_PASSWORD
     case DIALOG_FL_PASSWORD:
       return dialog_fl_password(msg, title);
 #endif
+
 #ifdef WITH_COLOR
     case DIALOG_FL_COLOR:
       return dialog_fl_color(title);
 #endif
+
 #ifdef WITH_NOTIFY
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], notify_timeout, msg, title, notify_icon);
 #endif
+
 #ifdef WITH_PROGRESS
     case DIALOG_FL_PROGRESS:
       return dialog_fl_progress(msg, title, autoclose, hide_cancel);
 #endif
+
 #ifdef WITH_SCALE
     case DIALOG_FL_VALUE_SLIDER:
-      return dialog_fl_value_slider(msg, title, minval, maxval, stepval, initval);
+      return dialog_fl_value_slider(msg, title, minval, maxval,
+                                    stepval, initval);
 #endif
+
 #ifdef WITH_CALENDAR
     case DIALOG_FL_CALENDAR:
       return dialog_fl_calendar(title, fmt);
 #endif
+
 #ifdef WITH_TEXTINFO
     case DIALOG_TEXTINFO:
       return dialog_textinfo(title, autoscroll, checkbox);
