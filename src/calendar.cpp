@@ -79,12 +79,13 @@ int dialog_fl_calendar(       char *calendar_title,
   Fl_Return_Button *but_ok;
   Fl_Button *but_cancel;
 
-  int winw = 250;
-  int calh = winw;
   int bord = 10;
-  int butw = 110;  /* instead of 100; it's symmetrical */
+  int cal_unit = 32;
+  int winw = cal_unit*7+bord*2;  /* 244 */
+  int winh = winw+cal_unit+bord; /* 286 */
   int buth = 26;
-  int winh = calh+buth+bord;
+  int butw = winw/2-(bord*3)/2;  /* 107 */
+
   int ret, y, m, d;
   char *fmtc, *date_formatted;
 
@@ -120,13 +121,13 @@ int dialog_fl_calendar(       char *calendar_title,
   }
 
   win = new Fl_Window(winw, winh, calendar_title);
-  cal = new Fl_Calendar(bord, bord, winw-bord*2, calh-bord*2);
+  cal = new Fl_Calendar(bord, bord, winw-bord*2, winw-bord*2);
   win->begin();
   win->callback(calendar_cancel_cb);  /* exit(1) */
   {
-    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, calh, butw, buth, fl_ok);
+    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, winw, butw, buth, fl_ok);
     but_ok->callback(calendar_ok_cb);
-    but_cancel = new Fl_Button(winw-butw-bord, calh, butw, buth, fl_cancel);
+    but_cancel = new Fl_Button(winw-butw-bord, winw, butw, buth, fl_cancel);
     but_cancel->callback(calendar_cancel_cb);
   }
   win->end();

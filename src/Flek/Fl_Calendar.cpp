@@ -30,6 +30,8 @@
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Repeat_Button.H>
 
+int calendar_labelsize = 12;
+
 static void fl_calendar_button_cb (Fl_Button *a, void *b)
 {
   long j = 0;
@@ -57,7 +59,7 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
                              (h/6)*(i/7) + y,
                              (w/7),
                              (h/6));
-    days[i]->labelsize (10);
+    days[i]->labelsize (calendar_labelsize);
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
@@ -216,7 +218,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                               (w/7) + wxi,
                               ((h - title_height)/7));
     weekdays[i]->box (FL_THIN_UP_BOX);
-    weekdays[i]->labelsize (10);
+    weekdays[i]->labelsize (calendar_labelsize);
     weekdays[i]->color (52);
   }
 
@@ -231,35 +233,35 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   prv_year = new Fl_Repeat_Button ((x - of + w - (int)(w/7) * 4), y,
                                    (w/7), (h/8), "Y-");
   prv_year->box (FL_THIN_UP_BOX);
-  prv_year->labelsize (10);
+  prv_year->labelsize (calendar_labelsize);
   prv_year->down_box (FL_THIN_DOWN_BOX);
   prv_year->callback ((Fl_Callback*)&fl_calendar_prv_year_cb, (void *)this);
 
   prv_month = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 3, y,
                                     (w/7), (h/8), "M-");
   prv_month->box (FL_THIN_UP_BOX);
-  prv_month->labelsize (10);
+  prv_month->labelsize (calendar_labelsize);
   prv_month->down_box (FL_THIN_DOWN_BOX);
   prv_month->callback ((Fl_Callback*)&fl_calendar_prv_month_cb, (void *)this);
 
   nxt_month = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 2, y,
                                     (w/7), (h/8), "M+");
   nxt_month->box (FL_THIN_UP_BOX);
-  nxt_month->labelsize (10);
+  nxt_month->labelsize (calendar_labelsize);
   nxt_month->down_box (FL_THIN_DOWN_BOX);
   nxt_month->callback ((Fl_Callback*)&fl_calendar_nxt_month_cb, (void *)this);
 
   nxt_year = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 1, y,
                                    (w/7) + of, (h/8), "Y+");
   nxt_year->box (FL_THIN_UP_BOX);
-  nxt_year->labelsize (10);
+  nxt_year->labelsize (calendar_labelsize);
   nxt_year->down_box (FL_THIN_DOWN_BOX);
   nxt_year->callback ((Fl_Callback*)&fl_calendar_nxt_year_cb, (void *)this);
 
   caption = new Fl_Box (x, y, (w/7)*3 + oi, (h/8));
   caption->box (FL_THIN_UP_BOX);
   caption->labelfont (FL_HELVETICA_BOLD);
-  caption->labelsize (10);
+  caption->labelsize (calendar_labelsize);
 
   Fl_Calendar_Base::csize (x, y + title_height + (h - title_height) / 7,
                            w, h - title_height - (h - title_height) / 7);
