@@ -178,7 +178,8 @@ class Fl_Calendar : public Fl_Calendar_Base
  protected:
 
   Fl_Box * weekdays[7];
-  Fl_Box * caption;
+  Fl_Box * caption_m;
+  Fl_Box * caption_y;
   Fl_Repeat_Button * nxt_month;
   Fl_Repeat_Button * prv_month;
   Fl_Repeat_Button * nxt_year;

@@ -80,9 +80,10 @@ int dialog_fl_calendar(       char *calendar_title,
   Fl_Button *but_cancel;
 
   int bord = 10;
-  int cal_unit = 32;
-  int winw = cal_unit*7+bord*2;  /* 244 */
-  int winh = winw+cal_unit+bord; /* 286 */
+  int calu = 32;
+  int calw = calu*7;             /* 224; make sure it's divisible by 7 */
+  int winw = calw+bord*2;        /* 244 */
+  int winh = winw+calu+bord/2;   /* 281 */
   int buth = 26;
   int butw = winw/2-(bord*3)/2;  /* 107 */
 
@@ -121,11 +122,11 @@ int dialog_fl_calendar(       char *calendar_title,
   }
 
   win = new Fl_Window(winw, winh, calendar_title);
-  cal = new Fl_Calendar(bord, bord, winw-bord*2, winw-bord*2);
+  cal = new Fl_Calendar(bord, bord, calw, calw);
   win->begin();
   win->callback(calendar_cancel_cb);  /* exit(1) */
   {
-    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, winw, butw, buth, fl_ok);
+    but_ok = new Fl_Return_Button(calw-butw*2, winw, butw, buth, fl_ok);
     but_ok->callback(calendar_ok_cb);
     but_cancel = new Fl_Button(winw-butw-bord, winw, butw, buth, fl_cancel);
     but_cancel->callback(calendar_cancel_cb);

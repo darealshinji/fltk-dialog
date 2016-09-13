@@ -193,8 +193,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
 
   /**
    * If the Calendar width isn't divisible by 7 there will be a gap
-   * on the right or left side.
-   * So we will distribute this extra space between Sunday and Saturday
+   * on the right or left side, so we will distribute this extra space.
    */
   int oi = (w-(7*(int)(w/7)))/2;
   int of = (w-(7*(int)(w/7))) - oi;
@@ -219,7 +218,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                               ((h - title_height)/7));
     weekdays[i]->box (FL_THIN_UP_BOX);
     weekdays[i]->labelsize (calendar_labelsize);
-    weekdays[i]->color (52);
+    weekdays[i]->color (color());
   }
 
   weekdays[MONDAY]->label ("Mo");
@@ -230,89 +229,92 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   weekdays[SATURDAY]->label ("Sa");
   weekdays[SUNDAY]->label ("Su");
 
-  prv_year = new Fl_Repeat_Button ((x - of + w - (int)(w/7) * 4), y,
-                                   (w/7), (h/8), "Y-");
-  prv_year->box (FL_THIN_UP_BOX);
-  prv_year->labelsize (calendar_labelsize);
-  prv_year->down_box (FL_THIN_DOWN_BOX);
-  prv_year->callback ((Fl_Callback*)&fl_calendar_prv_year_cb, (void *)this);
+  /*  « MONTH »  */
 
-  prv_month = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 3, y,
-                                    (w/7), (h/8), "M-");
-  prv_month->box (FL_THIN_UP_BOX);
+  prv_month = new Fl_Repeat_Button (x,  /* x - of + w - w */
+                                    y,
+                                    w/14,
+                                    h/8,
+                                    "\xc2\xab");  /* http://www.utf8-chartable.de/ */
+  prv_month->box (FL_FLAT_BOX);
+  prv_month->down_box (FL_FLAT_BOX);
   prv_month->labelsize (calendar_labelsize);
-  prv_month->down_box (FL_THIN_DOWN_BOX);
   prv_month->callback ((Fl_Callback*)&fl_calendar_prv_month_cb, (void *)this);
 
-  nxt_month = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 2, y,
-                                    (w/7), (h/8), "M+");
-  nxt_month->box (FL_THIN_UP_BOX);
+  caption_m = new Fl_Box (x + (w/14),  /* x - of + w - (w/7)*6 - (w/14) */
+                          y,
+                          (w/7)*3,
+                          h/8);
+  caption_m->box (FL_FLAT_BOX);  /* FL_THIN_UP_BOX */
+  caption_m->labelfont (FL_HELVETICA_BOLD);
+  caption_m->labelsize (calendar_labelsize);
+
+  nxt_month = new Fl_Repeat_Button (x + (w/2),  /* x - of + w - (w/14)*7 */
+                                    y,
+                                    w/14,
+                                    h/8,
+                                    "\xc2\xbb");
+  nxt_month->box (FL_FLAT_BOX);
+  nxt_month->down_box (FL_FLAT_BOX);
   nxt_month->labelsize (calendar_labelsize);
-  nxt_month->down_box (FL_THIN_DOWN_BOX);
   nxt_month->callback ((Fl_Callback*)&fl_calendar_nxt_month_cb, (void *)this);
 
-  nxt_year = new Fl_Repeat_Button (x - of + w - (int)(w/7) * 1, y,
-                                   (w/7) + of, (h/8), "Y+");
-  nxt_year->box (FL_THIN_UP_BOX);
-  nxt_year->labelsize (calendar_labelsize);
-  nxt_year->down_box (FL_THIN_DOWN_BOX);
-  nxt_year->callback ((Fl_Callback*)&fl_calendar_nxt_year_cb, (void *)this);
+  /*  « YEAR »  */
 
-  caption = new Fl_Box (x, y, (w/7)*3 + oi, (h/8));
-  caption->box (FL_THIN_UP_BOX);
-  caption->labelfont (FL_HELVETICA_BOLD);
-  caption->labelsize (calendar_labelsize);
+  prv_year = new Fl_Repeat_Button (x + (w/14)*9,  /* x - of + w - (w/14)*5 */
+                                   y,
+                                   w/14,
+                                   h/8,
+                                   "\xc2\xab");
+  prv_year->box (FL_FLAT_BOX);
+  prv_year->down_box (FL_FLAT_BOX);
+  prv_year->labelsize (calendar_labelsize);
+  prv_year->callback ((Fl_Callback*)&fl_calendar_prv_year_cb, (void *)this);
+
+  caption_y = new Fl_Box (x + (w/7)*5,  /* x - of + w - (w/14)*3 - (w/14) */
+                          y,
+                          (w/14)*3,
+                          h/8);
+  caption_y->box (FL_FLAT_BOX);
+  caption_y->labelfont (FL_HELVETICA_BOLD);
+  caption_y->labelsize (calendar_labelsize);
+
+  nxt_year = new Fl_Repeat_Button (x + (w/14)*13,  /* x - of + w - (w/14) */
+                                   y,
+                                   w/14,
+                                   h/8,
+                                   "\xc2\xbb");
+  nxt_year->box (FL_FLAT_BOX);
+  nxt_year->down_box (FL_FLAT_BOX);
+  nxt_year->labelsize (calendar_labelsize);
+  nxt_year->callback ((Fl_Callback*)&fl_calendar_nxt_year_cb, (void *)this);
 
   Fl_Calendar_Base::csize (x, y + title_height + (h - title_height) / 7,
                            w, h - title_height - (h - title_height) / 7);
   update ();
 }
 
-void Fl_Calendar::csize (int cx, int cy, int cw, int ch)
-{
-  int oi = (cw-(7*(int)(cw/7)))/2;
-  int of = (cw-(7*(int)(cw/7))) - oi;
-  int xi, wxi;
-
-  for (int i = 0; i < 7; i++) {
-    if (i == 0) {
-      xi = 0;
-    } else {
-      xi = oi;
-    }
-    if (i == 0) {
-      wxi = oi;
-    } else if (i == 6) {
-      wxi = of;
-    } else {
-      wxi = 0;
-    }
-
-    weekdays[i] = new Fl_Box ((cw/7)*(i%7) + cx + xi,
-                              (ch/8)*((i/7)+1) + cy,
-                              (cw/7) + wxi,
-                              (ch/8));
-  }
-
-  prv_month->resize (cx + (cw/10), cy, (cw/10), (ch/8));
-  nxt_month->resize (cx + (cw/10)*8, cy, (cw/10), (ch/8));
-  prv_year->resize (cx, cy, (cw/10), (ch/8));
-  nxt_year->resize (cx + (cw/10)*9, cy, (cw/10), (ch/8));
-  caption->resize (cx + (cw/10)*2, cy, (cw/10)*6, (ch/8));
-
-  Fl_Calendar_Base::csize (cx, cy + (2*ch/8), cw, (6*ch/8));
-}
-
 void
 Fl_Calendar::update ()
 {
-  char tmp[32];
-  sprintf (tmp, "%.3s %d", month_name[month ()-1], year ());
+  char tmp_m[32];
+  char tmp_y[32];
+
+  sprintf (tmp_m, "%s", month_name[month ()-1]);
+  sprintf (tmp_y, "%d", year ());
+
   Fl_Calendar_Base::update ();
-  if (caption->label ()) {
-    free ((void *) caption->label ());
+
+  if (caption_m->label ()) {
+    free ((void *) caption_m->label ());
   }
-  caption->label (strdup(tmp));
+  caption_m->label (strdup(tmp_m));
+
+  if (caption_y->label ()) {
+    free ((void *) caption_y->label ());
+  }
+  caption_y->label (strdup(tmp_y));
+
   redraw ();
 }
 
