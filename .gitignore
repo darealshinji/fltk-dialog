@@ -1,6 +1,13 @@
 /fltk-1.3/
+/libpng16/
+
 /fltk-dialog
 /config.mak
+
+/autom4te.cache/
+/config.log
+/config.status
+/configure
 
 *.o
 a.out

@@ -79,6 +79,7 @@ int about()
     "Using FLTK version " + getver + "\n"
     "http://www.fltk.org\n"
     "\n"
+    /* http://www.utf8-chartable.de/ */
     "Copyright \xc2\xa9 2016 djcj <djcj@gmx.de>\n"
     "https://github.com/darealshinji/fltk-dialog\n"
     "\n"
