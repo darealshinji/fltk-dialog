@@ -25,9 +25,6 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 
-
-static void dnd_callback(const char *items);
-
 class dnd_box : public Fl_Box
 {
   public:
@@ -38,21 +35,6 @@ class dnd_box : public Fl_Box
 
     virtual ~dnd_box() { }
 
-    int handle(int event)
-    {
-      int ret = Fl_Box::handle(event);
-      switch (event) {
-        case FL_DND_ENTER:
-        case FL_DND_DRAG:
-        case FL_DND_RELEASE:
-          ret = 1;
-          break;
-        case FL_PASTE:
-          dnd_callback(Fl::event_text());
-          ret = 1;
-          break;
-      }
-      return ret;
-    }
+    int handle(int event);
 };
 

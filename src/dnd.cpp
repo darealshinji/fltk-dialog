@@ -37,6 +37,11 @@ Fl_Window *dnd_window;
 Fl_Box *dnd_count;
 int dnd_count_val = 0;
 
+static void dnd_exit_cb(Fl_Widget*)
+{
+  exit(0);
+}
+
 static void dnd_callback(const char *items)
 {
   const char *ch;
@@ -57,9 +62,21 @@ static void dnd_callback(const char *items)
   std::cout << items;
 }
 
-static void dnd_exit_cb(Fl_Widget*)
+int dnd_box::handle(int event)
 {
-  exit(0);
+  int ret = Fl_Box::handle(event);
+  switch (event) {
+    case FL_DND_ENTER:
+    case FL_DND_DRAG:
+    case FL_DND_RELEASE:
+      ret = 1;
+      break;
+    case FL_PASTE:
+      dnd_callback(Fl::event_text());
+      ret = 1;
+      break;
+  }
+  return ret;
 }
 
 int dialog_dnd(char *dnd_label,
