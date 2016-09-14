@@ -22,17 +22,17 @@ SYSTEM_ZLIB ?= no
 WITH_DEFAULT_ICON ?= yes
 
 # set to "no" to disable certain features
-WITH_CALENDAR ?= yes
-WITH_COLOR    ?= yes
-WITH_DND      ?= yes
-WITH_ENTRY    ?= yes
-WITH_FILE     ?= yes
-WITH_HTML     ?= yes
-WITH_NOTIFY   ?= yes
-WITH_PASSWORD ?= yes
-WITH_PROGRESS ?= yes
-WITH_SCALE    ?= yes
-WITH_TEXTINFO ?= yes
+WITH_CALENDAR    ?= yes
+WITH_COLOR       ?= yes
+WITH_DND         ?= yes
+WITH_ENTRY       ?= yes
+WITH_FILE        ?= yes
+WITH_HTML        ?= yes
+WITH_NOTIFY      ?= yes
+WITH_PASSWORD    ?= yes
+WITH_PROGRESS    ?= yes
+WITH_SCALE       ?= yes
+WITH_TEXTINFO    ?= yes
 WITH_WINDOW_ICON ?= yes
 
 DYNAMIC_NOTIFY ?= yes
