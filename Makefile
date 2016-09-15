@@ -189,6 +189,7 @@ clean: mostlyclean
 distclean: mostlyclean
 	-rm -rf $(fltk)/build libpng16/build autom4te.cache
 	-rm -f config.mak config.log config.status
+	-rm -f src/fltk.xpm
 
 mostlyclean:
 	-rm -f $(BIN) src/*.o src/Flek/*.o
@@ -243,6 +244,13 @@ libpng16/build/libpng.a: libpng16/build/Makefile
 
 $(fltk)/build/lib/libfltk.a: $(libpng16_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
+
+$(fltk)/fltk.xpm: $(fltk)
+
+src/about.cpp: src/fltk.xpm
+
+src/fltk.xpm: $(fltk)/fltk.xpm
+	sed 's/static char/static const char/' $< > $@
 
 src/about.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 

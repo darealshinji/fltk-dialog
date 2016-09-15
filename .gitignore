@@ -3,6 +3,7 @@
 
 /fltk-dialog
 /config.mak
+/src/fltk.xpm
 
 /autom4te.cache/
 /config.log
