@@ -147,12 +147,14 @@ AS_IF([test "x$ac_cv_header_sys_time_h" != "xyes" \
   ])
 ])
 
+static_fltk="yes"
+
 
 # substitute variables
 AC_SUBST([SYSTEM_JPEG], [$use_system_jpeg])
 AC_SUBST([SYSTEM_PNG], [$use_system_png])
 AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
-dnl AC_SUBST([STATIC_FLTK], [$static_fltk])
+AC_SUBST([STATIC_FLTK], [$static_fltk])
 AC_SUBST([WITH_DEFAULT_ICON], [$default_icon])
 AC_SUBST([WITH_CALENDAR], [$use_calendar])
 AC_SUBST([WITH_COLOR], [$use_color])

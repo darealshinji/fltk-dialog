@@ -15,7 +15,7 @@ SYSTEM_ZLIB ?= no
 #   linked FLTK too, but makes more sense on shared libs
 # TODO: actually use the system libs or build shared
 #   libs if disabled
-#STATIC_FLTK   ?= yes
+STATIC_FLTK ?= yes
 
 # set to "no" if you don't want an embedded FLKT
 # icon to appear in taskbar and windows
@@ -58,11 +58,11 @@ LDFLAGS += \
 CXXFLAGS += $(common_CFLAGS) -Isrc -I$(fltk)/build -I$(fltk) \
  $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 
-#ifneq ($(STATIC_FLTK),no)
-#CXXFLAGS += \
-# -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
-# -DREVISION=\"$(shell cat $(fltk)/revision)\"
-#endif
+ifneq ($(STATIC_FLTK),no)
+CXXFLAGS += \
+ -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
+ -DREVISION=\"$(shell cat $(fltk)/revision)\"
+endif
 
 ifneq ($(WITH_DEFAULT_ICON),no)
 CXXFLAGS += -DWITH_DEFAULT_ICON

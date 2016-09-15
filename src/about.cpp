@@ -66,7 +66,7 @@ int about()
   Fl_Button *but_lic, *but_close;
 
   int winw = 450;
-  int winh = 420;
+  int winh = 460;
   int bord = 10;
   int butw = 100;
   int buth = 26;
@@ -85,8 +85,10 @@ int about()
     "\n"
     "The FLTK library and logo are\n"
     "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
-    "The calendar widget is copyright \xc2\xa9 1999-2000\n"
-    "by the Flek development team."
+    "\n"
+    "The calendar widget is copyright \xc2\xa9 1999-2000 by\n"
+    "the Flek development team and\n"
+    "copyright \xc2\xa9 2016 by djcj <djcj@gmx.de>\n"
 #ifdef WITH_DEFAULT_ICON
     "\nThe application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
 #endif
@@ -184,7 +186,8 @@ const char *license_buffer_text =
     "\n"
     "\n"
     "\n"
-    "Copyright (c) 1999-2000  the Flek development team.\n"
+    "Copyright (c) 1999-2000  the Flek development team\n"
+    "Copyright (c) 2016  djcj <djcj@gmx.de>\n"
     "\n"
     "This library is free software; you can redistribute it and/or\n"
     "modify it under the terms of the GNU Library General Public\n"
