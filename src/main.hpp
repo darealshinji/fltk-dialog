@@ -2,7 +2,8 @@
 #define FLTK_DIALOG_MAIN_HPP
 
 /* dialog types */
-enum dialogTypes {
+enum dialogTypes
+{
   DIALOG_ABOUT,
   DIALOG_ALERT,
   DIALOG_DND,
@@ -22,7 +23,8 @@ enum dialogTypes {
 };
 
 /* getopt long_options */
-enum longOpts {
+enum longOpts
+{
   LO_ABOUT,
   LO_ALT_LABEL,
   LO_AUTO_CLOSE,

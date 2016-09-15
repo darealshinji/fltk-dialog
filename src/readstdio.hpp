@@ -8,7 +8,8 @@
 /**
  * usage:
  *  INIT_READSTDIO;
- *  if (!READSTDIO) {
+ *  if (!READSTDIO)
+ *  {
  *    fputs("error: no input data receiving");
  *    exit(1);
  *  }

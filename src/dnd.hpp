@@ -30,8 +30,7 @@ class dnd_box : public Fl_Box
   public:
 
     dnd_box(int X, int Y, int W, int H, const char *L=0)
-        : Fl_Box(X, Y, W, H, L) {
-    }
+      : Fl_Box(X, Y, W, H, L) { }
 
     virtual ~dnd_box() { }
 
