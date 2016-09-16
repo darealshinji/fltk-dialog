@@ -33,7 +33,7 @@
 #include <iostream>  /* std::cin */
 #include <stdlib.h>  /* exit */
 
-#include "readstdio.hpp"  /* READSTDIO macros */
+#include "readstdio.h"  /* READSTDIO */
 
 
 Fl_Multi_Browser *ti_browser;
@@ -120,13 +120,9 @@ int dialog_textinfo(       char *textinfo_title,
   }
   win->show();
 
-  INIT_READSTDIO;
-  if (!READSTDIO)
-  {
-    line = "error: no input";
-    ti_browser->add(line.c_str());
-  }
-  else
+  READSTDIO(stdin);
+
+  if (stdin)
   {
     win->wait_for_expose();
     Fl::flush();
@@ -140,6 +136,16 @@ int dialog_textinfo(       char *textinfo_title,
       }
       Fl::check();
     }
+  }
+  else if (stdin == -1)
+  {
+    line = "error: select()";
+    ti_browser->add(line.c_str());
+  }
+  else
+  {
+    line = "error: no input";
+    ti_browser->add(line.c_str());
   }
 
   int ret = Fl::run();
