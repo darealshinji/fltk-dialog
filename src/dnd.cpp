@@ -31,6 +31,7 @@
 #include <stdio.h>   /* sprintf */
 
 #include "dnd.hpp"
+#include "fltk-dialog.hpp"
 
 
 Fl_Window *dnd_window;
@@ -79,8 +80,7 @@ int dnd_box::handle(int event)
   return ret;
 }
 
-int dialog_dnd(char *dnd_label,
-               char *dnd_title)
+int dialog_dnd()
 {
   dnd_box *box;
   Fl_Group *g;
@@ -94,21 +94,21 @@ int dialog_dnd(char *dnd_label,
   int buth = 26;
   int textw = 110 + bord;
 
-  if (dnd_label == NULL)
+  if (msg == NULL)
   {
-    dnd_label = (char *)"drop stuff here";
+    msg = (char *)"drop stuff here";
   }
 
-  if (dnd_title == NULL)
+  if (title == NULL)
   {
-    dnd_title = (char *)"FLTK Drag & Drop";
+    title = (char *)"FLTK Drag & Drop";
   }
 
-  dnd_window = new Fl_Window(winw, winh, dnd_title);
+  dnd_window = new Fl_Window(winw, winh, title);
   dnd_window->begin();
   dnd_window->callback(dnd_exit_cb);
   {
-    box = new dnd_box(bord, bord, winw-bord*2, winh-buth-bord*3, dnd_label);
+    box = new dnd_box(bord, bord, winw-bord*2, winh-buth-bord*3, msg);
     box->box(FL_ENGRAVED_FRAME);
     g = new Fl_Group(bord, winh-buth-bord*3, winw-bord*2, buth+bord*2);
     {

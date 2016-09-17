@@ -30,19 +30,21 @@
 #include <ios>       /* std::hex */
 #include <math.h>    /* round */
 
+#include "fltk-dialog.hpp"
 
-int dialog_fl_color(char *color_title)
+
+int dialog_fl_color()
 {
   double r = 1;
   double g = 1;
   double b = 1;
 
-  if (color_title == NULL)
+  if (title == NULL)
   {
-    color_title = (char *)"FLTK color chooser";
+    title = (char *)"FLTK color chooser";
   }
 
-  if (fl_color_chooser(color_title, r,g,b, 1))
+  if (fl_color_chooser(title, r,g,b, 1))
   {
     size_t colr = round(255 * r);
     size_t colg = round(255 * g);

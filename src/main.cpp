@@ -42,6 +42,9 @@
 #endif
 
 
+const char *title = NULL;
+const char *msg = NULL;
+
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
 
@@ -206,8 +209,6 @@ void print_usage(char *prog)
 
 int main(int argc, char **argv)
 {
-  char *msg = NULL;
-  char *title = NULL;
   const char *but_yes = NULL;
   const char *but_no = NULL;
   const char *but_alt = NULL;
@@ -731,41 +732,41 @@ int main(int argc, char **argv)
     case DIALOG_ABOUT:
       return about();
     case DIALOG_FL_MESSAGE:
-      return dialog_fl_message(msg, title, MESSAGE);
+      return dialog_fl_message(MESSAGE);
     case DIALOG_ALERT:
-      return dialog_fl_message(msg, title, ALERT);
+      return dialog_fl_message(ALERT);
     case DIALOG_FL_CHOICE:
-      return dialog_fl_choice(msg, title, but_yes, but_no, but_alt);
+      return dialog_fl_choice(but_yes, but_no, but_alt);
 
 #ifdef WITH_DND
     case DIALOG_DND:
-      return dialog_dnd(msg, title);
+      return dialog_dnd();
 #endif
 
 #ifdef WITH_FILE
     case DIALOG_FL_FILE_CHOOSER:
       if (native)
       {
-        return dialog_fl_native_file_chooser(title, FILE_CHOOSER);
+        return dialog_fl_native_file_chooser(FILE_CHOOSER);
       }
       else
       {
-        return dialog_fl_file_chooser(title);
+        return dialog_fl_file_chooser();
       }
     case DIALOG_FL_DIR_CHOOSER:
       if (native)
       {
-        return dialog_fl_native_file_chooser(title, DIR_CHOOSER);
+        return dialog_fl_native_file_chooser(DIR_CHOOSER);
       }
       else
       {
-        return dialog_fl_dir_chooser(title);
+        return dialog_fl_dir_chooser();
       }
 #endif  /* WITH_FILE */
 
 #ifdef WITH_ENTRY
     case DIALOG_FL_INPUT:
-      return dialog_fl_input(msg, title);
+      return dialog_fl_input();
 #endif
 
 #ifdef WITH_HTML
@@ -775,43 +776,42 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PASSWORD
     case DIALOG_FL_PASSWORD:
-      return dialog_fl_password(msg, title);
+      return dialog_fl_password();
 #endif
 
 #ifdef WITH_COLOR
     case DIALOG_FL_COLOR:
-      return dialog_fl_color(title);
+      return dialog_fl_color();
 #endif
 
 #ifdef WITH_NOTIFY
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], notify_timeout, msg, title, notify_icon);
+      return dialog_notify(argv[0], notify_timeout, notify_icon);
 #endif
 
 #ifdef WITH_PROGRESS
     case DIALOG_FL_PROGRESS:
-      return dialog_fl_progress(msg, title, autoclose, hide_cancel);
+      return dialog_fl_progress(autoclose, hide_cancel);
 #endif
 
 #ifdef WITH_SCALE
     case DIALOG_FL_VALUE_SLIDER:
-      return dialog_fl_value_slider(msg, title, minval, maxval,
-                                    stepval, initval);
+      return dialog_fl_value_slider(minval, maxval, stepval, initval);
 #endif
 
 #ifdef WITH_RADIOLIST
     case DIALOG_FL_RADIO_ROUND_BUTTON:
-      return dialog_fl_radio_round_button(radiolist_options, title);
+      return dialog_fl_radio_round_button(radiolist_options);
 #endif
 
 #ifdef WITH_CALENDAR
     case DIALOG_FL_CALENDAR:
-      return dialog_fl_calendar(title, fmt);
+      return dialog_fl_calendar(fmt);
 #endif
 
 #ifdef WITH_TEXTINFO
     case DIALOG_TEXTINFO:
-      return dialog_textinfo(title, autoscroll, checkbox);
+      return dialog_textinfo(autoscroll, checkbox);
 #endif
   }
 }

@@ -34,6 +34,7 @@
 #include <stdlib.h>  /* exit */
 
 #include "readstdio.h"  /* READSTDIO */
+#include "fltk-dialog.hpp"
 
 
 Fl_Multi_Browser *ti_browser;
@@ -67,9 +68,8 @@ static void ti_checkbutton_cb(Fl_Widget*)
   }
 }
 
-int dialog_textinfo(       char *textinfo_title,
-                           bool  autoscroll,
-                    std::string  checkbox)
+int dialog_textinfo(       bool autoscroll,
+                    std::string checkbox)
 {
   Fl_Window *win;
   Fl_Check_Button *checkbutton;
@@ -84,12 +84,12 @@ int dialog_textinfo(       char *textinfo_title,
   int browser_w = winw-bord*2;
   int browser_h = (checkbox == "") ? winh-buth-bord*3 : winh-buth*2-bord*3;
 
-  if (textinfo_title == NULL)
+  if (title == NULL)
   {
-    textinfo_title = (char *)"FLTK text info window";
+    title = (char *)"FLTK text info window";
   }
 
-  win = new Fl_Window(winw, winh, textinfo_title);
+  win = new Fl_Window(winw, winh, title);
   win->begin();
   {
     ti_browser = new Fl_Multi_Browser(bord, bord, browser_w, browser_h);

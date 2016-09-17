@@ -34,7 +34,8 @@
 #include <string.h>  /* strlen */
 #include <vector>    /* std::vector */
 
-#include "split.hpp"  /* split */
+#include "split.hpp"
+#include "fltk-dialog.hpp"
 
 
 Fl_Button *radiolist_but_ok;
@@ -62,8 +63,7 @@ static void rb_callback(Fl_Widget *w)
   radiolist_return = w->label();
 }
 
-int dialog_fl_radio_round_button(std::string  radiolist_options,
-                                  const char *radiolist_title)
+int dialog_fl_radio_round_button(std::string radiolist_options)
 {
   Fl_Window *w;
   Fl_Button *but_cancel;
@@ -84,9 +84,9 @@ int dialog_fl_radio_round_button(std::string  radiolist_options,
 
   Fl_Radio_Round_Button *rb[rbcount];
 
-  if (radiolist_title == NULL)
+  if (title == NULL)
   {
-    radiolist_title = (char *)"Select an option";
+    title = (char *)"Select an option";
   }
 
   int bord = 10;
@@ -96,7 +96,7 @@ int dialog_fl_radio_round_button(std::string  radiolist_options,
   int winw = 420;
   int winh = radh * rbcount + buth + bord*3;
 
-  w = new Fl_Window(winw, winh, radiolist_title);
+  w = new Fl_Window(winw, winh, title);
   w->begin();
   w->callback(rb_exit1_cb);
   {

@@ -32,16 +32,16 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_file_chooser(char *file_chooser_title)
+int dialog_fl_file_chooser()
 {
   struct stat s;
 
-  if (file_chooser_title == NULL)
+  if (title == NULL)
   {
-    file_chooser_title = (char *)"Select a file";
+    title = (char *)"Select a file";
   }
 
-  char *file = fl_file_chooser(file_chooser_title, "*", NULL);
+  char *file = fl_file_chooser(title, "*", NULL);
 
   if (!((stat(file, &s) == 0) && (s.st_mode &S_IFREG)))
   {
@@ -52,16 +52,16 @@ int dialog_fl_file_chooser(char *file_chooser_title)
   return 0;
 }
 
-int dialog_fl_dir_chooser(char* dir_chooser_title)
+int dialog_fl_dir_chooser()
 {
   struct stat s;
 
-  if (dir_chooser_title == NULL)
+  if (title == NULL)
   {
-    dir_chooser_title = (char *)"Select a directory";
+    title = (char *)"Select a directory";
   }
 
-  char *dir = fl_dir_chooser(dir_chooser_title, NULL);
+  char *dir = fl_dir_chooser(title, NULL);
 
   if (!((stat(dir, &s) == 0) && (s.st_mode &S_IFDIR)))
   {
@@ -73,13 +73,12 @@ int dialog_fl_dir_chooser(char* dir_chooser_title)
   return 0;
 }
 
-int dialog_fl_native_file_chooser(char *fnfc_title,
-                                  int   fnfc_dir)
+int dialog_fl_native_file_chooser(int fnfc_dir)
 {
   Fl_Native_File_Chooser fnfc;
   char *fnfc_def_title = NULL;
 
-  if (fnfc_title == NULL)
+  if (title == NULL)
   {
     if (fnfc_dir == DIR_CHOOSER)
     {
@@ -91,10 +90,10 @@ int dialog_fl_native_file_chooser(char *fnfc_title,
       fnfc.type(Fl_Native_File_Chooser::BROWSE_FILE);
       fnfc_def_title = (char *)"Select a file";
     }
-    fnfc_title = fnfc_def_title;
+    title = fnfc_def_title;
   }
 
-  fnfc.title(fnfc_title);
+  fnfc.title(title);
 
   if (fnfc.show())
   {

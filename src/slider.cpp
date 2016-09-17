@@ -60,12 +60,10 @@ static void slider_cancel_cb(Fl_Widget*)
   exit(1);
 }
 
-int dialog_fl_value_slider(const char *slider_msg,
-                                 char *slider_title,
-                                 char *slider_min,
-                                 char *slider_max,
-                                 char *slider_step,
-                                 char *slider_val)
+int dialog_fl_value_slider(char *slider_min,
+                           char *slider_max,
+                           char *slider_step,
+                           char *slider_val)
 {
   Fl_Window *win;
   Fl_Box *box;
@@ -86,25 +84,25 @@ int dialog_fl_value_slider(const char *slider_msg,
   double step = 1;
   double val = min;
 
-  if (slider_msg == NULL)
+  if (msg == NULL)
   {
     s = "Simple FLTK scaler";
   }
   else
   {
-    s = translate(slider_msg);
-    for (size_t i = 0; i < strlen(slider_msg); i++)
+    s = translate(msg);
+    for (size_t i = 0; i < strlen(msg); i++)
     {
-      if (slider_msg[i] == '\n')
+      if (msg[i] == '\n')
       {
         textlines++;
       }
     }
   }
 
-  if (slider_title == NULL)
+  if (title == NULL)
   {
-    slider_title = (char *)"FLTK slider window";
+    title = (char *)"FLTK slider window";
   }
 
   if (slider_min != NULL)
@@ -129,7 +127,7 @@ int dialog_fl_value_slider(const char *slider_msg,
 
   int boxh = textlines*textheight + bord*2;
 
-  win = new Fl_Window(winw, boxh+slidh+bord*3+textheight, slider_title);
+  win = new Fl_Window(winw, boxh+slidh+bord*3+textheight, title);
   win->begin();
   win->callback(slider_cancel_cb);  /* exit(1) */
   {

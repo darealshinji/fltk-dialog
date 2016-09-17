@@ -31,26 +31,25 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_input(const char *input_msg,
-                          char *input_title)
+int dialog_fl_input()
 {
   std::string s;
 
-  if (input_msg == NULL)
+  if (msg == NULL)
   {
     s = "Enter some text:";
   }
   else
   {
-    s = translate(input_msg);
+    s = translate(msg);
   }
 
-  if (input_title == NULL)
+  if (title == NULL)
   {
-    input_title = (char *)"FLTK input dialog";
+    title = (char *)"FLTK input dialog";
   }
 
-  fl_message_title(input_title);
+  fl_message_title(title);
 
   if (const char *input_label = fl_input("%s", NULL, s.c_str()))
   {

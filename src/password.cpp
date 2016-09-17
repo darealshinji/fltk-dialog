@@ -31,27 +31,26 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_password(const char *password_msg,
-                             char *password_title)
+int dialog_fl_password()
 {
   std::string s;
   const char *password_label;
 
-  if (password_msg == NULL)
+  if (msg == NULL)
   {
     s = "Enter a password:";
   }
   else
   {
-    s = translate(password_msg);
+    s = translate(msg);
   }
 
-  if (password_title == NULL)
+  if (title == NULL)
   {
-    password_title = (char *)"FLTK password dialog";
+    title = (char *)"FLTK password dialog";
   }
 
-  fl_message_title(password_title);
+  fl_message_title(title);
 
   if ((password_label = fl_password("%s", NULL, s.c_str())))
   {

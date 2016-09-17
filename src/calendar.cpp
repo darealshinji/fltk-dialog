@@ -53,8 +53,7 @@ static void calendar_cancel_cb(Fl_Widget*)
   exit(1);
 }
 
-int dialog_fl_calendar(       char *calendar_title,
-                       std::string  fmt)
+int dialog_fl_calendar(std::string fmt)
 {
   Fl_Window *win;
   Fl_Return_Button *but_ok;
@@ -73,9 +72,9 @@ int dialog_fl_calendar(       char *calendar_title,
   char tmp[31];
   char date[255];
 
-  if (calendar_title == NULL)
+  if (title == NULL)
   {
-    calendar_title = (char *)"FLTK calendar";
+    title = (char *)"FLTK calendar";
   }
 
   if (fmt == "")
@@ -106,7 +105,7 @@ int dialog_fl_calendar(       char *calendar_title,
     fmt = repstr(fmt, "u", "%u");   /* day of the week, Monday being 1 (7) */
   }
 
-  win = new Fl_Window(winw, winh, calendar_title);
+  win = new Fl_Window(winw, winh, title);
   calendar = new Fl_Calendar(bord, bord, calw, calw);
   win->begin();
   win->callback(calendar_cancel_cb);  /* exit(1) */

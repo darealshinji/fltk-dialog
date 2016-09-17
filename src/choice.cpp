@@ -30,26 +30,24 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_choice(const char *choice_msg,
-                           char *choice_title,
-                     const char *choice_but_yes,
+int dialog_fl_choice(const char *choice_but_yes,
                      const char *choice_but_no,
                      const char *choice_but_alt)
 {
   std::string s;
 
-  if (choice_msg == NULL)
+  if (msg == NULL)
   {
     s = "Do you want to proceed?";
   }
   else
   {
-    s = translate(choice_msg);
+    s = translate(msg);
   }
 
-  if (choice_title == NULL)
+  if (title == NULL)
   {
-    choice_title = (char *)"FLTK yes/no choice";
+    title = (char *)"FLTK yes/no choice";
   }
 
   if (choice_but_yes == NULL)
@@ -62,7 +60,7 @@ int dialog_fl_choice(const char *choice_msg,
     choice_but_no = (char *)"No";
   }
 
-  fl_message_title(choice_title);
+  fl_message_title(title);
 
   if (fl_choice("%s", choice_but_no, choice_but_yes, choice_but_alt, s.c_str()))
   {

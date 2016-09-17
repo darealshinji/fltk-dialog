@@ -31,26 +31,25 @@
 #endif
 
 #include <libnotify/notify.h>
+#include "fltk-dialog.hpp"
 
 
 int dialog_notify(const char  *appname,
                   const char  *notify_timeout,
-                  const char  *notify_msg,
-                  const char  *notify_title,
                   std::string  notify_icon)
 {
   int timeout = 5;
   const char *notify_icon_c = notify_icon.c_str();
   NotifyNotification *n;
 
-  if (notify_msg == NULL)
+  if (msg == NULL)
   {
-    notify_msg = "This is a notification message";
+    msg = "This is a notification message";
   }
 
-  if (notify_title == NULL)
+  if (title == NULL)
   {
-    notify_title = "Notification";
+    title = "Notification";
   }
 
   if (notify_timeout != NULL)
@@ -141,7 +140,7 @@ int dialog_notify(const char  *appname,
     return 1;
   }
 
-  n = (*dl_notify_notification_new)(notify_title, notify_msg, notify_icon_c);
+  n = (*dl_notify_notification_new)(title, msg, notify_icon_c);
   (*dl_notify_notification_set_timeout)(n, timeout*1000);
 
   if (!(*dl_notify_notification_show)(n, NULL))

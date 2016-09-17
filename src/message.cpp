@@ -30,27 +30,25 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_message(const char *message_msg,
-                            char *message_title,
-                            int   type)
+int dialog_fl_message(int type)
 {
   std::string s;
 
-  if (message_msg == NULL)
+  if (msg == NULL)
   {
     s = "no message";
   }
   else
   {
-    s = translate(message_msg);
+    s = translate(msg);
   }
 
-  if (message_title == NULL)
+  if (title == NULL)
   {
-    message_title = (char *)"FLTK message box";
+    title = (char *)"FLTK message box";
   }
 
-  fl_message_title(message_title);
+  fl_message_title(title);
 
   if (type == ALERT)
   {
