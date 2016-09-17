@@ -80,6 +80,9 @@ void print_usage(char *prog)
   "  --about                    About FLTK dialog\n"
   "  --text=TEXT                Set the dialog text\n"
   "  --title=TITLE              Set the dialog title\n"
+  "  --ok-label=TEXT            Set the OK button text\n"
+  "  --cancel-label=TEXT        Set the CANCEL button text\n"
+  "  --close-label=TEXT         Set the CLOSE button text\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
 #ifdef WITH_DND
@@ -205,9 +208,9 @@ int main(int argc, char **argv)
 {
   char *msg = NULL;
   char *title = NULL;
-  char *but_yes = NULL;
-  char *but_no = NULL;
-  char *but_alt = NULL;
+  const char *but_yes = NULL;
+  const char *but_no = NULL;
+  const char *but_alt = NULL;
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
@@ -314,6 +317,9 @@ int main(int argc, char **argv)
     { "scheme",      required_argument, 0, LO_SCHEME      },
     { "text",        required_argument, 0, LO_TEXT        },
     { "title",       required_argument, 0, LO_TITLE       },
+    { "ok-label",    required_argument, 0, LO_OK_LABEL    },
+    { "close-label", required_argument, 0, LO_CLOSE_LABEL },
+    { "cancel-label",required_argument, 0, LO_CANCEL_LABEL},
     { "yes-label",   required_argument, 0, LO_YES_LABEL   },
     { "no-label",    required_argument, 0, LO_NO_LABEL    },
     { "alt-label",   required_argument, 0, LO_ALT_LABEL   },
@@ -411,14 +417,49 @@ int main(int argc, char **argv)
       case LO_TITLE:
         title = optarg;
         break;
+      case LO_OK_LABEL:
+        if (!STREQ(optarg, ""))
+        {
+          fl_ok = optarg;
+        }
+        break;
+      case LO_CLOSE_LABEL:
+        if (!STREQ(optarg, ""))
+        {
+          fl_close = optarg;
+        }
+        break;
+      case LO_CANCEL_LABEL:
+        if (!STREQ(optarg, ""))
+        {
+          fl_cancel = optarg;
+        }
+        break;
       case LO_YES_LABEL:
-        but_yes = optarg;
+        if (STREQ(optarg, ""))
+        {
+          but_yes = fl_yes;
+        }
+        else
+        {
+          but_yes = optarg;
+        }
         break;
       case LO_NO_LABEL:
-        but_no = optarg;
+        if (!STREQ(optarg, ""))
+        {
+          but_no = fl_no;
+        }
+        else
+        {
+          but_no = optarg;
+        }
         break;
       case LO_ALT_LABEL:
-        but_alt = optarg;
+        if (!STREQ(optarg, ""))
+        {
+          but_alt = optarg;
+        }
         break;
 #ifdef WITH_DND
       case LO_DND:

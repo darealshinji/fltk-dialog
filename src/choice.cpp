@@ -32,9 +32,9 @@
 
 int dialog_fl_choice(const char *choice_msg,
                            char *choice_title,
-                           char *choice_but_yes,
-                           char *choice_but_no,
-                           char *choice_but_alt)
+                     const char *choice_but_yes,
+                     const char *choice_but_no,
+                     const char *choice_but_alt)
 {
   std::string s;
 
