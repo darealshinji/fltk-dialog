@@ -85,26 +85,24 @@ int dialog_fl_calendar(std::string format)
   {
     /* glibc date formats
      * example date: 2006-01-08 */
-# define REP(a, b)  format = repstr(format, a, b)
-    REP("\\n", "\n"); /* newline */
-    REP("\\t", "\t"); /* tab */
-    REP("%", "%%");   /* literal % */
-    REP("d", "%-d");  /* day (8) */
-    REP("D", "%d");   /* day (08) */
-    REP("m", "%-m");  /* month (1) */
-    REP("M", "%m");   /* month (01) */
-    REP("y", "%y");   /* year (06) */
-    REP("Y", "%Y");   /* year (2006) */
-    REP("j", "%-j");  /* day of the year (8) */
-    REP("J", "%j");   /* day of the year (008) */
-    REP("W", "%A");   /* weekday name (Sunday) */
-    REP("w", "%a");   /* weekday name (Sun) */
-    REP("n", "%-V");  /* ISO 8601 week number (1) */
-    REP("N", "%V");   /* ISO 8601 week number (01) */
-    REP("B", "%B");   /* month name (January) */
-    REP("b", "%b");   /* month name (Jan) */
-    REP("u", "%u");   /* day of the week, Monday being 1 (7) */
-# undef REP
+    repstr("\\n", "\n",  format);  /* newline */
+    repstr("\\t", "\t",  format);  /* tab */
+    repstr("%",   "%%",  format);  /* literal % */
+    repstr("d",   "%-d", format);  /* day (8) */
+    repstr("D",   "%d",  format);  /* day (08) */
+    repstr("m",   "%-m", format);  /* month (1) */
+    repstr("M",   "%m",  format);  /* month (01) */
+    repstr("y",   "%y",  format);  /* year (06) */
+    repstr("Y",   "%Y",  format);  /* year (2006) */
+    repstr("j",   "%-j", format);  /* day of the year (8) */
+    repstr("J",   "%j",  format);  /* day of the year (008) */
+    repstr("W",   "%A",  format);  /* weekday name (Sunday) */
+    repstr("w",   "%a",  format);  /* weekday name (Sun) */
+    repstr("n",   "%-V", format);  /* ISO 8601 week number (1) */
+    repstr("N",   "%V",  format);  /* ISO 8601 week number (01) */
+    repstr("B",   "%B",  format);  /* month name (January) */
+    repstr("b",   "%b",  format);  /* month name (Jan) */
+    repstr("u",   "%u",  format);  /* day of the week, Monday being 1 (7) */
   }
 
   win = new Fl_Window(winw, winh, title);

@@ -25,9 +25,9 @@
 #include <string>  /* std::string, npos, size, find, replace */
 
 
-std::string &repstr(      std::string &s,
-                    const std::string &from,
-                    const std::string &to)
+void repstr(const std::string &from,
+            const std::string &to,
+                  std::string &s)
 {
   if (!from.empty())
   {
@@ -36,7 +36,6 @@ std::string &repstr(      std::string &s,
       s.replace(pos, from.size(), to);
     }
   }
-  return s;
 }
 
 /* translate \n (\\n) and \t (\\t) characters given through
@@ -45,8 +44,8 @@ std::string &repstr(      std::string &s,
 std::string translate(const char *inputText)
 {
   std::string s(inputText);
-  s = repstr(s, "\\n", "\n");
-  s = repstr(s, "\\t", "\t");
+  repstr("\\n", "\n", s);
+  repstr("\\t", "\t", s);
   return s;
 }
 

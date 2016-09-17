@@ -126,9 +126,9 @@ void set_window_icon(std::string file);
 #endif
 
 /* translate.cpp */
-std::string &repstr(      std::string &s,
-                    const std::string &from,
-                    const std::string &to);
+void repstr(const std::string &from,
+            const std::string &to,
+                  std::string &s);
 std::string translate(const char *inputText);
 
 /* version.cpp */
