@@ -85,24 +85,26 @@ int dialog_fl_calendar(std::string format)
   {
     /* glibc date formats
      * example date: 2006-01-08 */
-    format = repstr(format, "\\n", "\n"); /* newline */
-    format = repstr(format, "\\t", "\t"); /* tab */
-    format = repstr(format, "%", "%%");   /* literal % */
-    format = repstr(format, "d", "%-d");  /* day (8) */
-    format = repstr(format, "D", "%d");   /* day (08) */
-    format = repstr(format, "m", "%-m");  /* month (1) */
-    format = repstr(format, "M", "%m");   /* month (01) */
-    format = repstr(format, "y", "%y");   /* year (06) */
-    format = repstr(format, "Y", "%Y");   /* year (2006) */
-    format = repstr(format, "j", "%-j");  /* day of the year (8) */
-    format = repstr(format, "J", "%j");   /* day of the year (008) */
-    format = repstr(format, "W", "%A");   /* weekday name (Sunday) */
-    format = repstr(format, "w", "%a");   /* weekday name (Sun) */
-    format = repstr(format, "n", "%-V");  /* ISO 8601 week number (1) */
-    format = repstr(format, "N", "%V");   /* ISO 8601 week number (01) */
-    format = repstr(format, "B", "%B");   /* month name (January) */
-    format = repstr(format, "b", "%b");   /* month name (Jan) */
-    format = repstr(format, "u", "%u");   /* day of the week, Monday being 1 (7) */
+# define REP(a, b)  format = repstr(format, a, b)
+    REP("\\n", "\n"); /* newline */
+    REP("\\t", "\t"); /* tab */
+    REP("%", "%%");   /* literal % */
+    REP("d", "%-d");  /* day (8) */
+    REP("D", "%d");   /* day (08) */
+    REP("m", "%-m");  /* month (1) */
+    REP("M", "%m");   /* month (01) */
+    REP("y", "%y");   /* year (06) */
+    REP("Y", "%Y");   /* year (2006) */
+    REP("j", "%-j");  /* day of the year (8) */
+    REP("J", "%j");   /* day of the year (008) */
+    REP("W", "%A");   /* weekday name (Sunday) */
+    REP("w", "%a");   /* weekday name (Sun) */
+    REP("n", "%-V");  /* ISO 8601 week number (1) */
+    REP("N", "%V");   /* ISO 8601 week number (01) */
+    REP("B", "%B");   /* month name (January) */
+    REP("b", "%b");   /* month name (Jan) */
+    REP("u", "%u");   /* day of the week, Monday being 1 (7) */
+# undef REP
   }
 
   win = new Fl_Window(winw, winh, title);
