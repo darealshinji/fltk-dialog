@@ -41,7 +41,7 @@ int about(void);
 
 /* calendar.cpp */
 #ifdef WITH_CALENDAR
-int dialog_fl_calendar(std::string fmt);
+int dialog_fl_calendar(std::string format);
 #endif
 
 /* choice.cpp */

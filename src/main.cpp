@@ -224,7 +224,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_CALENDAR
-  std::string fmt = "";
+  std::string format = "";
 #endif
 
 #ifdef WITH_HTML
@@ -569,7 +569,7 @@ int main(int argc, char **argv)
         dcalendar = 1;
         break;
       case LO_FORMAT:
-        fmt = std::string(optarg);
+        format = std::string(optarg);
         break;
 #endif
 #ifdef WITH_TEXTINFO
@@ -668,7 +668,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_CALENDAR
-  if (fmt != "" && dialog != DIALOG_FL_CALENDAR)
+  if (format != "" && dialog != DIALOG_FL_CALENDAR)
   {
     std::cerr << argv[0] << ": "
       << "--format can only be used with --calendar" << std::endl;
@@ -806,7 +806,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CALENDAR
     case DIALOG_FL_CALENDAR:
-      return dialog_fl_calendar(fmt);
+      return dialog_fl_calendar(format);
 #endif
 
 #ifdef WITH_TEXTINFO

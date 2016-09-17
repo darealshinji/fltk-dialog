@@ -34,7 +34,7 @@
 int dialog_fl_password()
 {
   std::string s;
-  const char *password_label;
+  const char *entered;
 
   if (msg == NULL)
   {
@@ -52,9 +52,9 @@ int dialog_fl_password()
 
   fl_message_title(title);
 
-  if ((password_label = fl_password("%s", NULL, s.c_str())))
+  if ((entered = fl_password("%s", NULL, s.c_str())))
   {
-    std::cout << password_label << std::endl;
+    std::cout << entered << std::endl;
     return 0;
   }
 

@@ -34,6 +34,7 @@
 int dialog_fl_input()
 {
   std::string s;
+  const char *entered;
 
   if (msg == NULL)
   {
@@ -51,9 +52,9 @@ int dialog_fl_input()
 
   fl_message_title(title);
 
-  if (const char *input_label = fl_input("%s", NULL, s.c_str()))
+  if ((entered = fl_input("%s", NULL, s.c_str())))
   {
-    std::cout << input_label << std::endl;
+    std::cout << entered << std::endl;
     return 0;
   }
 
