@@ -22,31 +22,24 @@
  * SOFTWARE.
  */
 
-#include <string>  /* std::string, npos, size, find, replace */
+#include <string>  /* std::string, find, npos, substr, lenth */
+#include <vector>  /* std::vector, push_back */
 
-
-std::string &repstr(      std::string &s,
-                    const std::string &from,
-                    const std::string &to)
+void split(const std::string &s, char c, std::vector<std::string> &v)
 {
-  if (!from.empty())
+  size_t i = 0;
+  size_t j = s.find(c);
+
+  while (j != std::string::npos)
   {
-    for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
+    v.push_back(s.substr(i, j-i));
+    i = ++j;
+    j = s.find(c, j);
+
+    if (j == std::string::npos)
     {
-      s.replace(pos, from.size(), to);
+      v.push_back(s.substr(i, s.length()));
     }
   }
-  return s;
-}
-
-/* translate \n (\\n) and \t (\\t) characters given through
- * command line arguments to real printf characters, ignoring
- * other occurences of \ (\\) */
-std::string translate(const char *inputText)
-{
-  std::string s(inputText);
-  s = repstr(s, "\\n", "\n");
-  s = repstr(s, "\\t", "\t");
-  return s;
 }
 

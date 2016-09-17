@@ -23,6 +23,7 @@
  */
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
 #ifdef WITH_DEFAULT_ICON
 #  include <FL/Fl_Pixmap.H>
@@ -105,6 +106,9 @@ void print_usage(char *prog)
 #endif
 #ifdef WITH_SCALE
   "  --scale                    Display scale dialog\n"
+#endif
+#ifdef WITH_RADIOLIST
+  "  --radiolist=OPT1|OPT2[..]  Display a radio button list\n"
 #endif
 #ifdef WITH_HTML
   "  --html=FILE                Display HTML viewer\n"
@@ -232,6 +236,10 @@ int main(int argc, char **argv)
   std::string notify_icon = "";
 #endif
 
+#ifdef WITH_RADIOLIST
+  std::string radiolist_options = "";
+#endif
+
 #ifdef WITH_FILE
   bool native = false;
 #endif
@@ -261,6 +269,7 @@ int main(int argc, char **argv)
   int dcolor = 0;
   int dnotify = 0;
   int dprogress = 0;
+  int dradiolist = 0;
   int dvalslider = 0;
   int dtextinfo = 0;
 
@@ -356,6 +365,10 @@ int main(int argc, char **argv)
     { "min-value",   required_argument, 0, LO_MIN_VALUE   },
     { "max-value",   required_argument, 0, LO_MAX_VALUE   },
     { "step",        required_argument, 0, LO_STEP        },
+#endif
+
+#ifdef WITH_RADIOLIST
+    { "radiolist",   required_argument, 0, LO_RADIOLIST   },
 #endif
 
 #ifdef WITH_CALENDAR
@@ -501,6 +514,13 @@ int main(int argc, char **argv)
         stepval = optarg;
         break;
 #endif
+#ifdef WITH_RADIOLIST
+      case LO_RADIOLIST:
+        dialog = DIALOG_FL_RADIO_ROUND_BUTTON;
+        radiolist_options = std::string(optarg);
+        dradiolist = 1;
+        break;
+#endif
 #ifdef WITH_CALENDAR
       case LO_CALENDAR:
         dialog = DIALOG_FL_CALENDAR;
@@ -536,7 +556,7 @@ int main(int argc, char **argv)
 
   if ((dabout + dalert + dcalendar + dchoice + ddirchoser + ddnd +
        dfilechooser + dhtml + dinput + dpassword + dcolor + dnotify +
-       dprogress + dvalslider + dtextinfo) >= 2)
+       dprogress + dradiolist + dvalslider + dtextinfo) >= 2)
   {
     std::cerr << argv[0] << ": "
       << "two or more dialog options specified" << std::endl;
@@ -736,6 +756,11 @@ int main(int argc, char **argv)
     case DIALOG_FL_VALUE_SLIDER:
       return dialog_fl_value_slider(msg, title, minval, maxval,
                                     stepval, initval);
+#endif
+
+#ifdef WITH_RADIOLIST
+    case DIALOG_FL_RADIO_ROUND_BUTTON:
+      return dialog_fl_radio_round_button(radiolist_options, title);
 #endif
 
 #ifdef WITH_CALENDAR

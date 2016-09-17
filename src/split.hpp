@@ -22,31 +22,13 @@
  * SOFTWARE.
  */
 
-#include <string>  /* std::string, npos, size, find, replace */
+#ifndef FLTK_DIALOG_SPLIT_HPP
+#define FLTK_DIALOG_SPLIT_HPP
 
+#include <string>
+#include <vector>
 
-std::string &repstr(      std::string &s,
-                    const std::string &from,
-                    const std::string &to)
-{
-  if (!from.empty())
-  {
-    for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
-    {
-      s.replace(pos, from.size(), to);
-    }
-  }
-  return s;
-}
+void split(const std::string &s, char c, std::vector<std::string> &v);
 
-/* translate \n (\\n) and \t (\\t) characters given through
- * command line arguments to real printf characters, ignoring
- * other occurences of \ (\\) */
-std::string translate(const char *inputText)
-{
-  std::string s(inputText);
-  s = repstr(s, "\\n", "\n");
-  s = repstr(s, "\\t", "\t");
-  return s;
-}
+#endif  /* !FLTK_DIALOG_SPLIT_HPP */
 

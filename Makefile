@@ -31,6 +31,7 @@ WITH_HTML        ?= yes
 WITH_NOTIFY      ?= yes
 WITH_PASSWORD    ?= yes
 WITH_PROGRESS    ?= yes
+WITH_RADIOLIST   ?= yes
 WITH_SCALE       ?= yes
 WITH_TEXTINFO    ?= yes
 WITH_WINDOW_ICON ?= yes
@@ -103,6 +104,10 @@ endif
 ifneq ($(WITH_PROGRESS),no)
 CXXFLAGS += -DWITH_PROGRESS
 OBJS += src/progress.o
+endif
+ifneq ($(WITH_RADIOLIST),no)
+CXXFLAGS += -DWITH_RADIOLIST
+OBJS += src/radiolist.o src/split.o
 endif
 ifneq ($(WITH_SCALE),no)
 CXXFLAGS += -DWITH_SCALE

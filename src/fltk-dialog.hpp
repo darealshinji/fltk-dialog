@@ -128,14 +128,15 @@ int dialog_textinfo(       char *textinfo_title,
                     std::string  checkbox);
 #endif
 
+/* radiolist.cpp */
+#ifdef WITH_RADIOLIST
+int dialog_fl_radio_round_button(std::string  radiolist_options,
+                                  const char *radiolist_title);
+#endif
+
 /* window_icon.cpp */
 #ifdef WITH_WINDOW_ICON
 void set_window_icon(std::string file);
-#endif
-
-/* xbm2xpm.cpp */
-#ifdef WITH_WINDOW_ICON
-char *xbm2xpm(const char *input);
 #endif
 
 /* translate.cpp */
