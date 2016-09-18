@@ -32,9 +32,7 @@
 #include <iostream>  /* std::cout, std::endl */
 #include <sstream>   /* std::stringstream, str */
 #include <vector>    /* std::vector */
-#include <stdio.h>   /* printf, sprintf */
 #include <stdlib.h>  /* exit, atoi */
-#include <string.h>  /* strlen */
 
 #include "split.hpp"
 #include "fltk-dialog.hpp"

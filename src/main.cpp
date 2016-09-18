@@ -117,7 +117,7 @@ void print_usage(char *prog)
   "  --checklist=OPT1[|..]      Display a check button list\n"
 #endif
 #ifdef WITH_RADIOLIST
-  "  --radiolist=OPT1|OPT2[..]  Display a radio button list\n"
+  "  --radiolist=OPT1|OPT2[|..] Display a radio button list\n"
 #endif
 #ifdef WITH_HTML
   "  --html=FILE                Display HTML viewer\n"
