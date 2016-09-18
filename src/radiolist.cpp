@@ -28,7 +28,7 @@
 #include <FL/Fl_Radio_Round_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <string>    /* std::string */
+#include <string>    /* std::string, size */
 #include <iostream>  /* std::cout, std::cerr, std::endl */
 #include <stdlib.h>  /* exit */
 #include <string.h>  /* strlen */
@@ -78,7 +78,9 @@ int dialog_fl_radio_round_button(std::string radiolist_options)
 
   if (rbcount < 1)
   {
-    std::cerr << "error: need two or more options" << std::endl;
+    title = (char *)"error: radiolist";
+    msg = (char *)"Two or more options required!";
+    dialog_fl_message(ALERT);
     exit(1);
   }
 
