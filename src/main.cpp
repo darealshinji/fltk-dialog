@@ -113,6 +113,9 @@ void print_usage(char *prog)
 #ifdef WITH_SCALE
   "  --scale                    Display scale dialog\n"
 #endif
+#ifdef WITH_CHECKLIST
+  "  --checklist=OPT1[|..]      Display a check button list\n"
+#endif
 #ifdef WITH_RADIOLIST
   "  --radiolist=OPT1|OPT2[..]  Display a radio button list\n"
 #endif
@@ -240,6 +243,10 @@ int main(int argc, char **argv)
   std::string notify_icon = "";
 #endif
 
+#ifdef WITH_CHECKLIST
+  std::string checklist_options = "";
+#endif
+
 #ifdef WITH_RADIOLIST
   std::string radiolist_options = "";
 #endif
@@ -273,6 +280,7 @@ int main(int argc, char **argv)
   int dcolor = 0;
   int dnotify = 0;
   int dprogress = 0;
+  int dchecklist = 0;
   int dradiolist = 0;
   int dvalslider = 0;
   int dtextinfo = 0;
@@ -372,6 +380,10 @@ int main(int argc, char **argv)
     { "min-value",   required_argument, 0, LO_MIN_VALUE   },
     { "max-value",   required_argument, 0, LO_MAX_VALUE   },
     { "step",        required_argument, 0, LO_STEP        },
+#endif
+
+#ifdef WITH_CHECKLIST
+    { "checklist",   required_argument, 0, LO_CHECKLIST   },
 #endif
 
 #ifdef WITH_RADIOLIST
@@ -556,6 +568,13 @@ int main(int argc, char **argv)
         stepval = optarg;
         break;
 #endif
+#ifdef WITH_CHECKLIST
+      case LO_CHECKLIST:
+        dialog = DIALOG_FL_CHECK_BUTTON;
+        checklist_options = std::string(optarg);
+        dchecklist = 1;
+        break;
+#endif
 #ifdef WITH_RADIOLIST
       case LO_RADIOLIST:
         dialog = DIALOG_FL_RADIO_ROUND_BUTTON;
@@ -596,7 +615,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dabout + dalert + dcalendar + dchoice + ddirchoser + ddnd +
+  if ((dabout + dalert + dcalendar + dchecklist + dchoice + ddirchoser + ddnd +
        dfilechooser + dhtml + dinput + dpassword + dcolor + dnotify +
        dprogress + dradiolist + dvalslider + dtextinfo) >= 2)
   {
@@ -797,6 +816,11 @@ int main(int argc, char **argv)
 #ifdef WITH_SCALE
     case DIALOG_FL_VALUE_SLIDER:
       return dialog_fl_value_slider(minval, maxval, stepval, initval);
+#endif
+
+#ifdef WITH_CHECKLIST
+    case DIALOG_FL_CHECK_BUTTON:
+      return dialog_fl_check_button(checklist_options);
 #endif
 
 #ifdef WITH_RADIOLIST

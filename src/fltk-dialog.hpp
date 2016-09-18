@@ -44,6 +44,11 @@ int about(void);
 int dialog_fl_calendar(std::string format);
 #endif
 
+/* checklist.cpp */
+#ifdef WITH_CHECKLIST
+int dialog_fl_check_button(std::string checklist_options);
+#endif
+
 /* choice.cpp */
 int dialog_fl_choice(const char *choice_but_yes,
                      const char *choice_but_no,

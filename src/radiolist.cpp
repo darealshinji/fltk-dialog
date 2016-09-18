@@ -28,11 +28,11 @@
 #include <FL/Fl_Radio_Round_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <string>    /* std::string, size */
-#include <iostream>  /* std::cout, std::cerr, std::endl */
+#include <string>    /* std::string, size, c_str */
+#include <iostream>  /* std::cout, std::endl */
+#include <vector>    /* std::vector */
 #include <stdlib.h>  /* exit */
 #include <string.h>  /* strlen */
-#include <vector>    /* std::vector */
 
 #include "split.hpp"
 #include "fltk-dialog.hpp"

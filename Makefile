@@ -23,6 +23,7 @@ WITH_DEFAULT_ICON ?= yes
 
 # set to "no" to disable certain features
 WITH_CALENDAR    ?= yes
+WITH_CHECKLIST   ?= yes
 WITH_COLOR       ?= yes
 WITH_DND         ?= yes
 WITH_ENTRY       ?= yes
@@ -72,6 +73,10 @@ ifneq ($(WITH_CALENDAR),no)
 CXXFLAGS += -DWITH_CALENDAR
 OBJS += src/calendar.o src/Flek/FDate.o src/Flek/Fl_Calendar.o
 endif
+ifneq ($(WITH_CHECKLIST),no)
+CXXFLAGS += -DWITH_CHECKLIST
+OBJS += src/checklist.o src/split.o
+endif
 ifneq ($(WITH_COLOR),no)
 CXXFLAGS += -DWITH_COLOR
 OBJS += src/color.o
@@ -107,7 +112,10 @@ OBJS += src/progress.o
 endif
 ifneq ($(WITH_RADIOLIST),no)
 CXXFLAGS += -DWITH_RADIOLIST
-OBJS += src/radiolist.o src/split.o
+OBJS += src/radiolist.o
+ifeq ($(WITH_CHECKLIST),no)
+OBJS += src/split.o
+endif
 endif
 ifneq ($(WITH_SCALE),no)
 CXXFLAGS += -DWITH_SCALE
