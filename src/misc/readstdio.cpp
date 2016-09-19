@@ -22,12 +22,7 @@
  * SOFTWARE.
  */
 
-/* convenience macro to check for stdin using select();
- * READSTDIO(x) initialises int x and sets the return value of select()
- */
-
-#ifndef FLTK_DIALOG_READSTDIO_H
-#define FLTK_DIALOG_READSTDIO_H
+/* check if stdin returns any data */
 
 #if _POSIX_C_SOURCE >= 200112L
 # include <sys/select.h>
@@ -35,41 +30,20 @@
 # include <sys/time.h>
 # include <sys/types.h>
 #endif
-#include <unistd.h>  /* STDIN_FILENO */
+#include <unistd.h>
 
-/*
-// usage example:
-int main(int argc, char **argv)
+/* #define READSTDIO(x)  fd_set readfds; _readstdio(readfds, x)
+ */
+
+void _readstdio(fd_set readfds, int &isStdio)
 {
-  READSTDIO(has_stdinput);
+  FD_ZERO(&readfds);
+  FD_SET(STDIN_FILENO, &readfds);
+  struct timeval timeout;
 
-  if (has_stdinput == -1)
-  {
-    printf("error: select()\n");
-    exit(1);
-  }
-  else if (has_stdinput)
-  {
-    printf("input received\n");
-  }
-  else
-  {
-    printf("error: no input data receiving\n");
-    exit(1);
-  }
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 0;
 
-  exit(0);
+  isStdio = select(1, &readfds, NULL, NULL, &timeout);
 }
-*/
-
-#define READSTDIO(x) \
-  fd_set readfds; \
-  FD_ZERO(&readfds); \
-  FD_SET(STDIN_FILENO, &readfds); \
-  struct timeval timeout; \
-  timeout.tv_sec = 0; \
-  timeout.tv_usec = 0; \
-  int x = select(1, &readfds, NULL, NULL, &timeout)
-
-#endif  /* !FLTK_DIALOG_READSTDIO_H */
 

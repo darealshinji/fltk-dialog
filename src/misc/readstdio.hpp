@@ -22,18 +22,19 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/Fl_Box.H>
+#ifndef FLTK_DIALOG_READSTDIO_H
+#define FLTK_DIALOG_READSTDIO_H
 
-class dnd_box : public Fl_Box
-{
-  public:
+#if _POSIX_C_SOURCE >= 200112L
+# include <sys/select.h>
+#else
+# include <sys/types.h>
+#endif
 
-    dnd_box(int X, int Y, int W, int H, const char *L=0)
-      : Fl_Box(X, Y, W, H, L) { }
+/* READSTDIO(int x); */
+#define READSTDIO(x)  fd_set readfds; _readstdio(readfds, x)
 
-    virtual ~dnd_box() { }
+void _readstdio(fd_set readfds, int &isStdio);
 
-    int handle(int event);
-};
+#endif  /* !FLTK_DIALOG_READSTDIO_H */
 

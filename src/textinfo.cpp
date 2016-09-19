@@ -33,8 +33,8 @@
 #include <iostream>  /* std::cin */
 #include <stdlib.h>  /* exit */
 
-#include "readstdio.h"  /* READSTDIO */
 #include "fltk-dialog.hpp"
+#include "misc/readstdio.hpp"
 
 
 Fl_Multi_Browser *ti_browser;
@@ -120,6 +120,7 @@ int dialog_textinfo(       bool autoscroll,
   }
   win->show();
 
+  int stdin;
   READSTDIO(stdin);
 
   if (stdin)

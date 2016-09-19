@@ -35,8 +35,8 @@
 #include <stdlib.h>  /* exit, atoi */
 #include <string.h>  /* strlen */
 
-#include "readstdio.h"  /* READSTDIO */
 #include "fltk-dialog.hpp"
+#include "misc/readstdio.hpp"
 
 
 Fl_Window *prog_win;
@@ -105,6 +105,7 @@ int dialog_fl_progress(bool autoclose,
     title = (char *)"FLTK progress window";
   }
 
+  int stdin;
   READSTDIO(stdin);
 
   if (stdin == -1)

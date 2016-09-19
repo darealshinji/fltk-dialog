@@ -24,15 +24,27 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_close */
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Window.H>
 
 #include <iostream>  /* std::cout */
 #include <stdio.h>   /* sprintf */
 
-#include "dnd.hpp"
 #include "fltk-dialog.hpp"
 
+
+class dnd_box : public Fl_Box
+{
+  public:
+
+    dnd_box(int X, int Y, int W, int H, const char *L=0)
+      : Fl_Box(X, Y, W, H, L) { }
+
+    virtual ~dnd_box() { }
+
+    int handle(int event);
+};
 
 Fl_Window *dnd_window;
 Fl_Box *dnd_count;

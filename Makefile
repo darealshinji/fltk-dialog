@@ -46,7 +46,7 @@ libpng_version = 1.6.25
 libpng_tarball = libpng-$(libpng_version).tar.xz
 
 BIN = fltk-dialog
-OBJS = $(addprefix src/,about.o choice.o message.o translate.o version.o main.o)
+OBJS = $(addprefix src/,about.o choice.o message.o misc/translate.o version.o main.o)
 
 OPT ?= -Os
 
@@ -75,7 +75,8 @@ OBJS += src/calendar.o src/Flek/FDate.o src/Flek/Fl_Calendar.o
 endif
 ifneq ($(WITH_CHECKLIST),no)
 CXXFLAGS += -DWITH_CHECKLIST
-OBJS += src/checklist.o src/split.o
+OBJS += src/checklist.o
+HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_COLOR),no)
 CXXFLAGS += -DWITH_COLOR
@@ -109,13 +110,12 @@ endif
 ifneq ($(WITH_PROGRESS),no)
 CXXFLAGS += -DWITH_PROGRESS
 OBJS += src/progress.o
+HAVE_READSTDIO = yes
 endif
 ifneq ($(WITH_RADIOLIST),no)
 CXXFLAGS += -DWITH_RADIOLIST
 OBJS += src/radiolist.o
-ifeq ($(WITH_CHECKLIST),no)
-OBJS += src/split.o
-endif
+HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_SCALE),no)
 CXXFLAGS += -DWITH_SCALE
@@ -124,10 +124,18 @@ endif
 ifneq ($(WITH_TEXTINFO),no)
 CXXFLAGS += -DWITH_TEXTINFO
 OBJS += src/textinfo.o
+HAVE_READSTDIO = yes
 endif
 ifneq ($(WITH_WINDOW_ICON),no)
 CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS += src/window_icon.o
+endif
+
+ifneq ($(HAVE_SPLIT),no)
+OBJS += src/misc/split.o
+endif
+ifneq ($(HAVE_READSTDIO),no)
+OBJS += src/misc/readstdio.o
 endif
 
 ifneq ($(WITH_NOTIFY),no)
