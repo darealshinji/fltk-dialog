@@ -34,8 +34,8 @@
 #include <stdlib.h>  /* exit */
 #include <string.h>  /* strlen */
 
-#include "split.hpp"
 #include "fltk-dialog.hpp"
+#include "misc/split.hpp"
 
 
 Fl_Button *radiolist_but_ok;
@@ -68,11 +68,17 @@ int dialog_fl_radio_round_button(std::string radiolist_options)
   Fl_Window *w;
   Fl_Button *but_cancel;
   std::vector<std::string> v;
+  int empty_lines = 0;
   int rbcount = 0;
 
   split(radiolist_options, '|', v);
   for (size_t i = 0; i < v.size(); ++i)
   {
+    if (v[i] == "")
+    {
+      empty_lines++;
+    }
+
     rbcount++;
   }
 
@@ -96,16 +102,25 @@ int dialog_fl_radio_round_button(std::string radiolist_options)
   int buth = 26;
   int radh = 30;
   int winw = 420;
-  int winh = radh * rbcount + buth + bord*3;
+  int winh = radh * (rbcount - empty_lines) + buth + bord*3;
 
   w = new Fl_Window(winw, winh, title);
   w->begin();
   w->callback(rb_exit1_cb);
   {
-    for (int i = 0; i < rbcount; i++)
+    int j = 0;
+    for (int i = 0; i < rbcount; ++i)
     {
-      rb[i] = new Fl_Radio_Round_Button(bord, bord+i*radh, winw-bord*2, radh, v[i].c_str());
-      rb[i]->callback(rb_callback);
+      if (v[i] == "")
+      {
+        --j;
+      }
+      else
+      {
+        rb[i] = new Fl_Radio_Round_Button(bord, bord+j*radh, winw-bord*2, radh, v[i].c_str());
+        rb[i]->callback(rb_callback);
+      }
+      ++j;
     }
 
     radiolist_but_ok = new Fl_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
