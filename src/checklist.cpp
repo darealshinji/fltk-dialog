@@ -37,10 +37,27 @@
 #include "split.hpp"
 #include "fltk-dialog.hpp"
 
+
 Fl_Button *checklist_but_ok;
+
+/* vector returning a '|' separated list of all
+ * options that have been checked by the user */
 std::vector<std::string> checklist_v;
+
+/* set entries true/false on selecting check button */
 bool checklist_checked[128];
-int cbcount = 0;
+
+int check_button_count = 0;
+
+
+/* int to std::string */
+std::string itostr(int i)
+{
+  std::stringstream ss;
+  ss << i;
+  std::string str = ss.str();
+  return str;
+}
 
 static void cb_callback(Fl_Widget *w, void *p)
 {
@@ -63,7 +80,7 @@ static void cb_exit0_cb(Fl_Widget *w)
   (void) w;
   std::string list;
 
-  for (int i = 0; i < cbcount; i++)
+  for (int i = 0; i < check_button_count; i++)
   {
     if (checklist_checked[i])
     {
@@ -71,8 +88,10 @@ static void cb_exit0_cb(Fl_Widget *w)
     }
   }
 
-  int len = list.length() - 1;  /* strip trailing "|" */
+  /* strip trailing "|" */
+  int len = list.length() - 1;
   std::cout << list.substr(0, len) << std::endl;
+
   exit(0);
 }
 
@@ -85,23 +104,18 @@ int dialog_fl_check_button(std::string checklist_options)
 {
   Fl_Window *w;
   Fl_Button *but_cancel;
-  std::vector<std::string> vn;
-  std::stringstream ss;
+  std::vector<std::string> v;  /* used by rb[i]->callback() */
 
-  /* TODO: don't run split() twice */
   split(checklist_options, '|', checklist_v);
-  split(checklist_options, '|', vn);
+
   for (size_t i = 0; i < checklist_v.size(); ++i)
   {
-    cbcount++;
-    /* used by rb[i]->callback() */
-    ss << i;
-    vn[i] = ss.str();
+    v.push_back(itostr(i));
     checklist_checked[i] = false;
-    ss.str(std::string());  /* clear */
+    check_button_count++;
   }
 
-  Fl_Check_Button *rb[cbcount];
+  Fl_Check_Button *rb[check_button_count];
 
   if (title == NULL)
   {
@@ -113,16 +127,16 @@ int dialog_fl_check_button(std::string checklist_options)
   int buth = 26;
   int chkh = 30;
   int winw = 420;
-  int winh = chkh * cbcount + buth + bord*3;
+  int winh = chkh * check_button_count + buth + bord*3;
 
   w = new Fl_Window(winw, winh, title);
   w->begin();
   w->callback(cb_exit1_cb);
   {
-    for (int i = 0; i < cbcount; i++)
+    for (int i = 0; i < check_button_count; i++)
     {
       rb[i] = new Fl_Check_Button(bord, bord+i*chkh, winw-bord*2, chkh, checklist_v[i].c_str());
-      rb[i]->callback(cb_callback, (char *)vn[i].c_str());
+      rb[i]->callback(cb_callback, (char *)v[i].c_str());
     }
 
     checklist_but_ok = new Fl_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
