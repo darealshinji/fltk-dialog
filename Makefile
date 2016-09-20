@@ -66,6 +66,10 @@ CXXFLAGS += \
  -DREVISION=\"$(shell cat $(fltk)/revision)\"
 endif
 
+HAVE_SPLIT = no
+HAVE_ITOSTR = no
+HAVE_READSTDIO = no
+
 ifneq ($(WITH_DEFAULT_ICON),no)
 CXXFLAGS += -DWITH_DEFAULT_ICON
 endif
@@ -77,6 +81,7 @@ ifneq ($(WITH_CHECKLIST),no)
 CXXFLAGS += -DWITH_CHECKLIST
 OBJS += src/checklist.o
 HAVE_SPLIT = yes
+HAVE_ITOSTR = yes
 endif
 ifneq ($(WITH_COLOR),no)
 CXXFLAGS += -DWITH_COLOR
@@ -116,6 +121,7 @@ ifneq ($(WITH_RADIOLIST),no)
 CXXFLAGS += -DWITH_RADIOLIST
 OBJS += src/radiolist.o
 HAVE_SPLIT = yes
+HAVE_ITOSTR = yes
 endif
 ifneq ($(WITH_SCALE),no)
 CXXFLAGS += -DWITH_SCALE
@@ -131,6 +137,9 @@ CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS += src/window_icon.o
 endif
 
+ifneq ($(HAVE_ITOSTR),no)
+OBJS += src/misc/itostr.o
+endif
 ifneq ($(HAVE_SPLIT),no)
 OBJS += src/misc/split.o
 endif
@@ -212,7 +221,7 @@ distclean: mostlyclean
 	-rm -f config.mak config.log config.status
 
 mostlyclean:
-	-rm -f $(BIN) src/*.o src/Flek/*.o
+	-rm -f $(BIN) src/*.o src/Flek/*.o src/misc/*.o
 
 clobber: mostlyclean
 	-rm -rf $(fltk) libpng16 autom4te.cache

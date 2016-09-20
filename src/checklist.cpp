@@ -30,34 +30,18 @@
 
 #include <string>    /* std::string, size, length, substr, c_str */
 #include <iostream>  /* std::cout, std::endl */
-#include <sstream>   /* std::stringstream, str */
 #include <vector>    /* std::vector */
 #include <stdlib.h>  /* exit, atoi */
 
 #include "fltk-dialog.hpp"
+#include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
 Fl_Button *checklist_but_ok;
-
-/* vector returning a '|' separated list of all
- * options that have been checked by the user */
-std::vector<std::string> checklist_v;
-
-/* set entries true/false on selecting check button */
-bool checklist_checked[255];
-
+bool checklist_checked[1024];
 int check_button_count = 0;
-
-
-/* int to std::string */
-std::string itostr(int i)
-{
-  std::stringstream ss;
-  ss << i;
-  std::string str = ss.str();
-  return str;
-}
+std::vector<std::string> checklist_v;
 
 static void cb_callback(Fl_Widget *w, void *p)
 {
@@ -84,7 +68,11 @@ static void cb_exit0_cb(Fl_Widget *w)
   {
     if (checklist_checked[i])
     {
-      list += checklist_v[i] + "|";
+      list += "TRUE|";
+    }
+    else
+    {
+      list += "FALSE|";
     }
   }
 
@@ -105,17 +93,11 @@ int dialog_fl_check_button(std::string checklist_options)
   Fl_Window *w;
   Fl_Button *but_cancel;
   std::vector<std::string> v;
-  int empty_lines = 0;
 
   split(checklist_options, '|', checklist_v);
 
   for (size_t i = 0; i < checklist_v.size(); ++i)
   {
-    if (checklist_v[i] == "")
-    {
-      empty_lines++;
-    }
-
     v.push_back(itostr(i));
     checklist_checked[i] = false;
     check_button_count++;
@@ -133,25 +115,16 @@ int dialog_fl_check_button(std::string checklist_options)
   int buth = 26;
   int chkh = 30;
   int winw = 420;
-  int winh = chkh * (check_button_count - empty_lines) + buth + bord*3;
+  int winh = chkh * check_button_count + buth + bord*3;
 
   w = new Fl_Window(winw, winh, title);
   w->begin();
   w->callback(cb_exit1_cb);
   {
-    int j = 0;
     for (int i = 0; i < check_button_count; ++i)
     {
-      if (checklist_v[i] == "")
-      {
-        --j;
-      }
-      else
-      {
-        rb[i] = new Fl_Check_Button(bord, bord+j*chkh, winw-bord*2, chkh, checklist_v[i].c_str());
-        rb[i]->callback(cb_callback, (char *)v[i].c_str());
-      }
-      ++j;
+      rb[i] = new Fl_Check_Button(bord, bord+i*chkh, winw-bord*2, chkh, checklist_v[i].c_str());
+      rb[i]->callback(cb_callback, (char *)v[i].c_str());
     }
 
     checklist_but_ok = new Fl_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
