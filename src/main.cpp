@@ -72,6 +72,13 @@ static int esc_handler(int event)
   return 0;
 }
 
+int use_only_with(char *self, std::string a, std::string b)
+{
+  std::cerr << self << ": " << a << " can only be used with " << b << "\n"
+    "See `" << self << " --help' for more information" << std::endl;
+  return 1;
+}
+
 void print_usage(char *prog)
 {
   std::cout << "Usage:\n"
@@ -328,89 +335,89 @@ int main(int argc, char **argv)
 
   static struct option long_options[] =
   {
-    { "about",       no_argument,       0, LO_ABOUT       },
-    { "no-escape",   no_argument,       0, LO_NO_ESCAPE   },
-    { "scheme",      required_argument, 0, LO_SCHEME      },
-    { "text",        required_argument, 0, LO_TEXT        },
-    { "title",       required_argument, 0, LO_TITLE       },
-    { "ok-label",    required_argument, 0, LO_OK_LABEL    },
-    { "close-label", required_argument, 0, LO_CLOSE_LABEL },
-    { "cancel-label",required_argument, 0, LO_CANCEL_LABEL},
-    { "yes-label",   required_argument, 0, LO_YES_LABEL   },
-    { "no-label",    required_argument, 0, LO_NO_LABEL    },
-    { "alt-label",   required_argument, 0, LO_ALT_LABEL   },
+    { "about",           no_argument,        0,  LO_ABOUT           },
+    { "no-escape",       no_argument,        0,  LO_NO_ESCAPE       },
+    { "scheme",          required_argument,  0,  LO_SCHEME          },
+    { "text",            required_argument,  0,  LO_TEXT            },
+    { "title",           required_argument,  0,  LO_TITLE           },
+    { "ok-label",        required_argument,  0,  LO_OK_LABEL        },
+    { "close-label",     required_argument,  0,  LO_CLOSE_LABEL     },
+    { "cancel-label",    required_argument,  0,  LO_CANCEL_LABEL    },
+    { "yes-label",       required_argument,  0,  LO_YES_LABEL       },
+    { "no-label",        required_argument,  0,  LO_NO_LABEL        },
+    { "alt-label",       required_argument,  0,  LO_ALT_LABEL       },
 
 #ifdef WITH_DND
-    { "dnd",         no_argument,       0, LO_DND         },
+    { "dnd",             no_argument,        0,  LO_DND             },
 #endif
 
 #ifdef WITH_HTML
-    { "html",        required_argument, 0, LO_HTML        },
+    { "html",            required_argument,  0,  LO_HTML            },
 #endif
 
-    { "warning",     no_argument,       0, LO_WARNING     },
-    { "question",    no_argument,       0, LO_QUESTION    },
+    { "warning",         no_argument,        0,  LO_WARNING         },
+    { "question",        no_argument,        0,  LO_QUESTION        },
 
 #ifdef WITH_FILE
-    { "file",        no_argument,       0, LO_FILE        },
-    { "directory",   no_argument,       0, LO_DIRECTORY   },
-    { "native",      no_argument,       0, LO_NATIVE      },
+    { "file",            no_argument,        0,  LO_FILE            },
+    { "directory",       no_argument,        0,  LO_DIRECTORY       },
+    { "native",          no_argument,        0,  LO_NATIVE          },
 #endif
 
 #ifdef WITH_ENTRY
-    { "entry",       no_argument,       0, LO_ENTRY       },
+    { "entry",           no_argument,        0,  LO_ENTRY           },
 #endif
 
 #ifdef WITH_PASSWORD
-    { "password",    no_argument,       0, LO_PASSWORD    },
+    { "password",        no_argument,        0,  LO_PASSWORD        },
 #endif
 
 #ifdef WITH_COLOR
-    { "color",       no_argument,       0, LO_COLOR       },
+    { "color",           no_argument,        0,  LO_COLOR           },
 #endif
 
 #ifdef WITH_NOTIFY
-    { "notification",no_argument,       0, LO_NOTIFY      },
-    { "timeout",     required_argument, 0, LO_TIMEOUT     },
-    { "notify-icon", required_argument, 0, LO_NOTIFY_ICON },
+    { "notification",    no_argument,        0,  LO_NOTIFY          },
+    { "timeout",         required_argument,  0,  LO_TIMEOUT         },
+    { "notify-icon",     required_argument,  0,  LO_NOTIFY_ICON     },
 #endif
 
 #ifdef WITH_PROGRESS
-    { "progress",    no_argument,       0, LO_PROGRESS    },
-    { "auto-close",  no_argument,       0, LO_AUTO_CLOSE  },
-    { "no-cancel",   no_argument,       0, LO_NO_CANCEL   },
+    { "progress",        no_argument,        0,  LO_PROGRESS        },
+    { "auto-close",      no_argument,        0,  LO_AUTO_CLOSE      },
+    { "no-cancel",       no_argument,        0,  LO_NO_CANCEL       },
 #endif
 
 #ifdef WITH_SCALE
-    { "scale",       no_argument,       0, LO_SCALE       },
-    { "value",       required_argument, 0, LO_VALUE       },
-    { "min-value",   required_argument, 0, LO_MIN_VALUE   },
-    { "max-value",   required_argument, 0, LO_MAX_VALUE   },
-    { "step",        required_argument, 0, LO_STEP        },
+    { "scale",           no_argument,        0,  LO_SCALE           },
+    { "value",           required_argument,  0,  LO_VALUE           },
+    { "min-value",       required_argument,  0,  LO_MIN_VALUE       },
+    { "max-value",       required_argument,  0,  LO_MAX_VALUE       },
+    { "step",            required_argument,  0,  LO_STEP            },
 #endif
 
 #ifdef WITH_CHECKLIST
-    { "checklist",   required_argument, 0, LO_CHECKLIST   },
+    { "checklist",       required_argument,  0,  LO_CHECKLIST       },
 #endif
 
 #ifdef WITH_RADIOLIST
-    { "radiolist",   required_argument, 0, LO_RADIOLIST   },
-    {"return-number",no_argument,       0, LO_RETURN_NUM  },
+    { "radiolist",       required_argument,  0,  LO_RADIOLIST       },
+    { "return-number",   no_argument,        0,  LO_RETURN_NUMBER   },
 #endif
 
 #ifdef WITH_CALENDAR
-    { "calendar",    no_argument,       0, LO_CALENDAR    },
-    { "format",      required_argument, 0, LO_FORMAT      },
+    { "calendar",        no_argument,        0,  LO_CALENDAR        },
+    { "format",          required_argument,  0,  LO_FORMAT          },
 #endif
 
 #ifdef WITH_TEXTINFO
-    { "text-info",   no_argument,       0, LO_TEXT_INFO   },
-    { "auto-scroll", no_argument,       0, LO_AUTO_SCROLL },
-    { "checkbox",    required_argument, 0, LO_CHECKBOX    },
+    { "text-info",       no_argument,        0,  LO_TEXT_INFO       },
+    { "auto-scroll",     no_argument,        0,  LO_AUTO_SCROLL     },
+    { "checkbox",        required_argument,  0,  LO_CHECKBOX        },
 #endif
 
 #ifdef WITH_WINDOW_ICON
-    { "window-icon", required_argument, 0, LO_WINDOW_ICON },
+    { "window-icon",     required_argument,  0,  LO_WINDOW_ICON     },
 #endif
 
     { 0, 0, 0, 0 }
@@ -589,7 +596,7 @@ int main(int argc, char **argv)
         radiolist_options = std::string(optarg);
         dradiolist = 1;
         break;
-      case LO_RETURN_NUM:
+      case LO_RETURN_NUMBER:
         return_number = true;
         break;
 #endif
@@ -638,51 +645,38 @@ int main(int argc, char **argv)
   if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL ||
                                      but_alt != NULL))
   {
-    std::cerr << argv[0] << ": "
-      << "--yes-label/--no-label/--alt-label can only be used with --question"
-      << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--yes-label/--no-label/--alt-label", "--question");
   }
 
 #ifdef WITH_FILE
   if (native && (dialog != DIALOG_FL_FILE_CHOOSER &&
                  dialog != DIALOG_FL_DIR_CHOOSER))
   {
-    std::cerr << argv[0] << ": "
-      << "--native can only be used with --file or --directory" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--native", "--file or --directory");
   }
 #endif
 
 #ifdef WITH_NOTIFY
   if (notify_timeout != NULL && dialog != DIALOG_NOTIFY)
   {
-    std::cerr << argv[0] << ": "
-      << "--timeout can only be used with --notification" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--timeout", "--notification");
   }
 
   if (notify_icon != "" && dialog != DIALOG_NOTIFY)
   {
-    std::cerr << argv[0] << ": "
-      << "--notify-icon can only be used with --notification" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--notify-icon", "--notification");
   }
 #endif
 
 #ifdef WITH_PROGRESS
   if (autoclose && dialog != DIALOG_FL_PROGRESS)
   {
-    std::cerr << argv[0] << ": "
-      << "--auto-close can only be used with --progress" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--auto-close", "--progress");
   }
 
   if (hide_cancel && dialog != DIALOG_FL_PROGRESS)
   {
-    std::cerr << argv[0] << ": "
-      << "--no-cancel can only be used with --progress" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--no-cancel", "--progress");
   }
 #endif
 
@@ -690,38 +684,28 @@ int main(int argc, char **argv)
   if (dialog != DIALOG_FL_VALUE_SLIDER && (minval != NULL || maxval != NULL ||
                                            stepval != NULL || initval != NULL))
   {
-    std::cerr << argv[0] << ": "
-      << "--value/--min-value/--max-value/--step can only be used with --scale"
-      << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
 #endif
 
 #ifdef WITH_RADIOLIST
   if (return_number && dialog != DIALOG_FL_RADIO_ROUND_BUTTON)
   {
-    std::cerr << argv[0] << ": "
-      << "--return-number can only be used with --radiolist" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--return-number", "--radiolist");
   }
 #endif
 
 #ifdef WITH_CALENDAR
   if (format != "" && dialog != DIALOG_FL_CALENDAR)
   {
-    std::cerr << argv[0] << ": "
-      << "--format can only be used with --calendar" << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--format", "--calendar");
   }
 #endif
 
 #ifdef WITH_TEXTINFO
   if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != ""))
   {
-    std::cerr << argv[0] << ": "
-      << "--auto-scroll/--checkbox can only be used with --text-info"
-      << std::endl;
-    return 1;
+    return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
   }
 #endif
 
