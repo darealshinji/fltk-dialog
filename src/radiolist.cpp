@@ -35,12 +35,14 @@
 #include <string.h>  /* strlen */
 
 #include "fltk-dialog.hpp"
+#include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
 Fl_Button *radiolist_but_ok;
 const char *radiolist_return = NULL;
 bool radiolist_but_ok_activated = false;
+std::vector<std::string> radiolist_v;
 
 static void rb_exit0_cb(Fl_Widget*)
 {
@@ -53,32 +55,32 @@ static void rb_exit1_cb(Fl_Widget*)
   exit(1);
 }
 
-static void rb_callback(Fl_Widget *w)
+static void rb_callback(Fl_Widget *w, void *p)
 {
+  (void) w;
+
   if (!radiolist_but_ok_activated)
   {
     radiolist_but_ok_activated = true;
     radiolist_but_ok->activate();
   }
-  radiolist_return = w->label();
+
+  radiolist_return = (char *)p;
 }
 
-int dialog_fl_radio_round_button(std::string radiolist_options)
+int dialog_fl_radio_round_button(std::string radiolist_options,
+                                        bool return_number)
 {
   Fl_Window *w;
   Fl_Button *but_cancel;
   std::vector<std::string> v;
-  int empty_lines = 0;
   int rbcount = 0;
 
-  split(radiolist_options, '|', v);
-  for (size_t i = 0; i < v.size(); ++i)
-  {
-    if (v[i] == "")
-    {
-      empty_lines++;
-    }
+  split(radiolist_options, '|', radiolist_v);
 
+  for (size_t i = 0; i < radiolist_v.size(); ++i)
+  {
+    v.push_back(itostr(i+1));
     rbcount++;
   }
 
@@ -102,25 +104,27 @@ int dialog_fl_radio_round_button(std::string radiolist_options)
   int buth = 26;
   int radh = 30;
   int winw = 420;
-  int winh = radh * (rbcount - empty_lines) + buth + bord*3;
+  int winh = radh * rbcount + buth + bord*3;
 
   w = new Fl_Window(winw, winh, title);
   w->begin();
   w->callback(rb_exit1_cb);
   {
-    int j = 0;
     for (int i = 0; i < rbcount; ++i)
     {
-      if (v[i] == "")
+      char *p = NULL;
+
+      rb[i] = new Fl_Radio_Round_Button(bord, bord+i*radh, winw-bord*2, radh, radiolist_v[i].c_str());
+
+      if (return_number)
       {
-        --j;
+        p = (char *)v[i].c_str();
       }
       else
       {
-        rb[i] = new Fl_Radio_Round_Button(bord, bord+j*radh, winw-bord*2, radh, v[i].c_str());
-        rb[i]->callback(rb_callback);
+        p = (char *)rb[i]->label();
       }
-      ++j;
+      rb[i]->callback(rb_callback, (char *)p);
     }
 
     radiolist_but_ok = new Fl_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);

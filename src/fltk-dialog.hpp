@@ -46,7 +46,6 @@ int dialog_fl_calendar(std::string format);
 
 /* checklist.cpp */
 #ifdef WITH_CHECKLIST
-std::string itostr(int i);  /* int to std::string */
 int dialog_fl_check_button(std::string checklist_options);
 #endif
 
@@ -123,7 +122,8 @@ int dialog_textinfo(       bool autoscroll,
 
 /* radiolist.cpp */
 #ifdef WITH_RADIOLIST
-int dialog_fl_radio_round_button(std::string radiolist_options);
+int dialog_fl_radio_round_button(std::string radiolist_options,
+                                        bool return_number);
 #endif
 
 /* window_icon.cpp */

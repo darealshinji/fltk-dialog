@@ -157,6 +157,12 @@ void print_usage(char *prog)
   "  --no-cancel                Hide cancel button\n"
 #endif
 
+#ifdef WITH_RADIOLIST
+  "\n"
+  "Radiolist options:\n"
+  "  --return-number            Return selected entry number instead of label text\n"
+#endif
+
 #ifdef WITH_CALENDAR
   "\n"
   "Calendar options:\n"
@@ -249,6 +255,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_RADIOLIST
   std::string radiolist_options = "";
+  bool return_number = false;
 #endif
 
 #ifdef WITH_FILE
@@ -388,6 +395,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_RADIOLIST
     { "radiolist",   required_argument, 0, LO_RADIOLIST   },
+    {"return-number",no_argument,       0, LO_RETURN_NUM  },
 #endif
 
 #ifdef WITH_CALENDAR
@@ -581,6 +589,9 @@ int main(int argc, char **argv)
         radiolist_options = std::string(optarg);
         dradiolist = 1;
         break;
+      case LO_RETURN_NUM:
+        return_number = true;
+        break;
 #endif
 #ifdef WITH_CALENDAR
       case LO_CALENDAR:
@@ -682,6 +693,15 @@ int main(int argc, char **argv)
     std::cerr << argv[0] << ": "
       << "--value/--min-value/--max-value/--step can only be used with --scale"
       << std::endl;
+    return 1;
+  }
+#endif
+
+#ifdef WITH_RADIOLIST
+  if (return_number && dialog != DIALOG_FL_RADIO_ROUND_BUTTON)
+  {
+    std::cerr << argv[0] << ": "
+      << "--return-number can only be used with --radiolist" << std::endl;
     return 1;
   }
 #endif
@@ -825,7 +845,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_RADIOLIST
     case DIALOG_FL_RADIO_ROUND_BUTTON:
-      return dialog_fl_radio_round_button(radiolist_options);
+      return dialog_fl_radio_round_button(radiolist_options, return_number);
 #endif
 
 #ifdef WITH_CALENDAR
