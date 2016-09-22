@@ -26,6 +26,7 @@ WITH_CALENDAR    ?= yes
 WITH_CHECKLIST   ?= yes
 WITH_COLOR       ?= yes
 WITH_DND         ?= yes
+WITH_DROPDOWN    ?= yes
 WITH_ENTRY       ?= yes
 WITH_FILE        ?= yes
 WITH_HTML        ?= yes
@@ -91,6 +92,11 @@ endif
 ifneq ($(WITH_DND),no)
 CXXFLAGS += -DWITH_DND
 OBJS += src/dnd.o
+endif
+ifneq ($(WITH_DROPDOWN),no)
+CXXFLAGS += -DWITH_DROPDOWN
+OBJS += src/dropdown.o
+HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_ENTRY),no)
 CXXFLAGS += -DWITH_ENTRY

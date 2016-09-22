@@ -6,6 +6,7 @@ enum dialogTypes
 {
   DIALOG_ABOUT,
   DIALOG_ALERT,
+  DIALOG_DROPDOWN,
   DIALOG_DND,
   DIALOG_HTML,
   DIALOG_NOTIFY,
@@ -39,6 +40,7 @@ enum longOpts
   LO_COLOR,
   LO_DIRECTORY,
   LO_DND,
+  LO_DROPDOWN,
   LO_ENTRY,
   LO_FILE,
   LO_FORMAT,

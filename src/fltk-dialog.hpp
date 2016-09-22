@@ -31,6 +31,7 @@
 
 
 #define STREQ(x, y) (strcmp(x, y) == 0)
+#define DEFAULT_DELIMITER '|'
 
 extern const char *title;
 extern const char *msg;
@@ -62,6 +63,12 @@ int dialog_fl_color(void);
 /* dnd.cpp */
 #ifdef WITH_DND
 int dialog_dnd(void);
+#endif
+
+/* dropdown.cpp */
+#ifdef WITH_DROPDOWN
+int dialog_dropdown(std::string dropdown_list,
+                           bool return_number);
 #endif
 
 /* file.cpp */

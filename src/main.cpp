@@ -126,6 +126,9 @@ void print_usage(char *prog)
 #ifdef WITH_RADIOLIST
   "  --radiolist=OPT1|OPT2[|..] Display a radio button list\n"
 #endif
+#ifdef WITH_DROPDOWN
+  "  --dropdown=OPT1|OPT2[|..]  Display a dropdown menu\n"
+#endif
 #ifdef WITH_HTML
   "  --html=FILE                Display HTML viewer\n"
 #endif
@@ -164,9 +167,18 @@ void print_usage(char *prog)
   "  --no-cancel                Hide cancel button\n"
 #endif
 
-#ifdef WITH_RADIOLIST
+#if defined(WITH_RADIOLIST) && !defined(WITH_DROPDOWN)
   "\n"
   "Radiolist options:\n"
+#elif !defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
+  "\n"
+  "Dropdown options:\n"
+#elif defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
+  "\n"
+  "Radiolist/dropdown options:\n"
+#endif
+
+#if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
   "  --return-number            Return selected entry number instead of label text\n"
 #endif
 
@@ -262,6 +274,13 @@ int main(int argc, char **argv)
 
 #ifdef WITH_RADIOLIST
   std::string radiolist_options = "";
+#endif
+
+#ifdef WITH_DROPDOWN
+  std::string dropdown_options = "";
+#endif
+
+#if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
   bool return_number = false;
 #endif
 
@@ -287,6 +306,7 @@ int main(int argc, char **argv)
   int dchoice = 0;
   int ddirchoser = 0;
   int ddnd = 0;
+  int ddropdown = 0;
   int dfilechooser = 0;
   int dhtml = 0;
   int dinput = 0;
@@ -402,6 +422,13 @@ int main(int argc, char **argv)
 
 #ifdef WITH_RADIOLIST
     { "radiolist",       required_argument,  0,  LO_RADIOLIST       },
+#endif
+
+#ifdef WITH_DROPDOWN
+    { "dropdown",        required_argument,  0,  LO_DROPDOWN        },
+#endif
+
+#if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
     { "return-number",   no_argument,        0,  LO_RETURN_NUMBER   },
 #endif
 
@@ -596,6 +623,15 @@ int main(int argc, char **argv)
         radiolist_options = std::string(optarg);
         dradiolist = 1;
         break;
+#endif
+#ifdef WITH_DROPDOWN
+      case LO_DROPDOWN:
+        dialog = DIALOG_DROPDOWN;
+        dropdown_options = std::string(optarg);
+        ddropdown = 1;
+        break;
+#endif
+#if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
       case LO_RETURN_NUMBER:
         return_number = true;
         break;
@@ -634,7 +670,7 @@ int main(int argc, char **argv)
   }
 
   if ((dabout + dalert + dcalendar + dchecklist + dchoice + ddirchoser + ddnd +
-       dfilechooser + dhtml + dinput + dpassword + dcolor + dnotify +
+       ddropdown + dfilechooser + dhtml + dinput + dpassword + dcolor + dnotify +
        dprogress + dradiolist + dvalslider + dtextinfo) >= 2)
   {
     std::cerr << argv[0] << ": "
@@ -688,10 +724,11 @@ int main(int argc, char **argv)
   }
 #endif
 
-#ifdef WITH_RADIOLIST
-  if (return_number && dialog != DIALOG_FL_RADIO_ROUND_BUTTON)
+#if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
+  if (return_number && (dialog != DIALOG_FL_RADIO_ROUND_BUTTON &&
+                        dialog != DIALOG_DROPDOWN))
   {
-    return use_only_with(argv[0], "--return-number", "--radiolist");
+    return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
   }
 #endif
 
@@ -830,6 +867,11 @@ int main(int argc, char **argv)
 #ifdef WITH_RADIOLIST
     case DIALOG_FL_RADIO_ROUND_BUTTON:
       return dialog_fl_radio_round_button(radiolist_options, return_number);
+#endif
+
+#ifdef WITH_DROPDOWN
+    case DIALOG_DROPDOWN:
+      return dialog_dropdown(dropdown_options, return_number);
 #endif
 
 #ifdef WITH_CALENDAR

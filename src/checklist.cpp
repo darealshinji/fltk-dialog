@@ -94,7 +94,7 @@ int dialog_fl_check_button(std::string checklist_options)
   Fl_Button *but_cancel;
   std::vector<std::string> v;
 
-  split(checklist_options, '|', checklist_v);
+  split(checklist_options, DEFAULT_DELIMITER, checklist_v);
 
   for (size_t i = 0; i < checklist_v.size(); ++i)
   {
