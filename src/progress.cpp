@@ -110,15 +110,13 @@ int dialog_fl_progress(bool autoclose,
 
   if (stdin == -1)
   {
-    s = "error: select()";
-    msg = s.c_str();
+    msg = (char *)"ERROR: select()";
     dialog_fl_message(ALERT);
     return 1;
   }
   else if (!stdin)
   {
-    s = "error: no input data receiving";
-    msg = s.c_str();
+    msg = (char *)"ERROR: no input data receiving";
     dialog_fl_message(ALERT);
     return 1;
   }

@@ -29,11 +29,13 @@ static void dropdown_exit0_cb(Fl_Widget *w, long cb_return_number)
     std::cout << (item + 1) << std::endl;
   }
 
+  delete dropdown_entries;
   exit(0);
 }
 
 static void dropdown_exit1_cb(Fl_Widget*)
 {
+  delete dropdown_entries;
   exit(1);
 }
 
@@ -52,7 +54,7 @@ int dialog_dropdown(std::string dropdown_list,
 
   if (msg == NULL)
   {
-    s = "Select an option";
+    msg = (char *)"Select an option";
   }
 
   int boxh = textheight + bord*2;
@@ -65,18 +67,42 @@ int dialog_dropdown(std::string dropdown_list,
   split(dropdown_list, DEFAULT_DELIMITER, dropdown_v);
 
   size_t dropdown_size = dropdown_v.size();
+
+  if (dropdown_size <= 1)
+  {
+    msg = (char *)"ERROR: need at least 2 entries";
+    dialog_fl_message(ALERT);
+    return 1;
+  }
+
   Fl_Menu_Item dropdown_menu_items[dropdown_size];
 
-  for (size_t i = 0; i < dropdown_size; ++i)
+  for (size_t i = 0; i <= dropdown_size; ++i)
   {
-    dropdown_menu_items[i].text = dropdown_v[i].c_str();
+    if (i < dropdown_size)
+    {
+      if (dropdown_v[i] == "")
+      {
+        dropdown_menu_items[i].text = (char *)"<EMPTY>";
+      }
+      else
+      {
+        dropdown_menu_items[i].text = dropdown_v[i].c_str();
+      }
+    }
+    else
+    {
+      /* { 0,0,0,0,0,0,0,0,0 } */
+      dropdown_menu_items[i].text = 0;
+    }
+
     dropdown_menu_items[i].shortcut_ = 0;
     dropdown_menu_items[i].callback_ = 0;
     dropdown_menu_items[i].user_data_ = 0;
     dropdown_menu_items[i].flags = 0;
-    dropdown_menu_items[i].labeltype_ = FL_NORMAL_LABEL;
+    dropdown_menu_items[i].labeltype_ = (i == dropdown_size) ? 0 : FL_NORMAL_LABEL;
     dropdown_menu_items[i].labelfont_ = 0;
-    dropdown_menu_items[i].labelsize_ = 14;
+    dropdown_menu_items[i].labelsize_ = (i == dropdown_size) ? 0 : 14;
     dropdown_menu_items[i].labelcolor_ = 0;
   }
 
@@ -97,7 +123,7 @@ int dialog_dropdown(std::string dropdown_list,
                                       butw, buth, fl_cancel);
     cancel->callback(dropdown_exit1_cb);
 
-    dropdown_entries = new Fl_Choice(bord, boxh, winw-bord*2, droph, s.c_str());
+    dropdown_entries = new Fl_Choice(bord, boxh, winw-bord*2, droph, msg);
     dropdown_entries->down_box(FL_BORDER_BOX);
     dropdown_entries->align(FL_ALIGN_TOP_LEFT);
     dropdown_entries->menu(dropdown_menu_items);
