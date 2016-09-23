@@ -15,18 +15,22 @@
 Fl_Choice *dropdown_entries;
 std::vector<std::string> dropdown_v;
 
-static void dropdown_exit0_cb(Fl_Widget *w, long cb_return_number)
+static void dropdown_exit0_cb(Fl_Widget*)
 {
-  (void) w;
   int item = dropdown_entries->value();
 
-  if (cb_return_number == 0)
+ /* a bit stupid, but I couldn't find a way to set this as a
+  * callback parameter, so instead dropdown_return_number
+  * is set to anything but NULL when the command line
+  * option '--return-number' is given
+  */
+  if (dropdown_return_number != NULL)
   {
-    std::cout << dropdown_v[item] << std::endl;
+    std::cout << (item + 1) << std::endl;
   }
   else
   {
-    std::cout << (item + 1) << std::endl;
+    std::cout << dropdown_v[item] << std::endl;
   }
 
   delete dropdown_entries;
@@ -39,8 +43,7 @@ static void dropdown_exit1_cb(Fl_Widget*)
   exit(1);
 }
 
-int dialog_dropdown(std::string dropdown_list,
-                           bool return_number)
+int dialog_dropdown(std::string dropdown_list)
 {
   std::string s;
   int winw = 320;
@@ -106,18 +109,13 @@ int dialog_dropdown(std::string dropdown_list,
     dropdown_menu_items[i].labelcolor_ = 0;
   }
 
-  if (return_number)
-  {
-    cb_return_number = 1;
-  }
-
   Fl_Window *w = new Fl_Window(winw, boxh+droph+bord*3+textheight, title);
   w->begin();
   w->callback(dropdown_exit1_cb);
   {
     Fl_Button *ok = new Fl_Button(winw-butw*2-bord*2, boxh+textheight+buth,
                                   butw, buth, fl_ok);
-    ok->callback(dropdown_exit0_cb, cb_return_number);
+    ok->callback(dropdown_exit0_cb);
 
     Fl_Button *cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
                                       butw, buth, fl_cancel);

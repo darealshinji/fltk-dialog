@@ -35,6 +35,7 @@
 
 extern const char *title;
 extern const char *msg;
+extern const char *dropdown_return_number;
 
 /* about.cpp */
 void license(void);
@@ -67,8 +68,7 @@ int dialog_dnd(void);
 
 /* dropdown.cpp */
 #ifdef WITH_DROPDOWN
-int dialog_dropdown(std::string dropdown_list,
-                           bool return_number);
+int dialog_dropdown(std::string dropdown_list);
 #endif
 
 /* file.cpp */

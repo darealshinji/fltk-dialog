@@ -44,6 +44,7 @@
 
 const char *title = NULL;
 const char *msg = NULL;
+const char *dropdown_return_number = NULL;
 
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
@@ -634,6 +635,7 @@ int main(int argc, char **argv)
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
       case LO_RETURN_NUMBER:
         return_number = true;
+        dropdown_return_number = (char *)"y";
         break;
 #endif
 #ifdef WITH_CALENDAR
@@ -871,7 +873,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_DROPDOWN
     case DIALOG_DROPDOWN:
-      return dialog_dropdown(dropdown_options, return_number);
+      return dialog_dropdown(dropdown_options);
 #endif
 
 #ifdef WITH_CALENDAR
