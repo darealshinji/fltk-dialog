@@ -66,20 +66,20 @@ int dialog_dropdown(std::string dropdown_list)
 
   split(dropdown_list, DEFAULT_DELIMITER, dropdown_v);
 
-  size_t dropdown_size = dropdown_v.size();
+  size_t count = dropdown_v.size();
 
-  if (dropdown_size <= 1)
+  if (count <= 1)
   {
     msg = (char *)"ERROR: need at least 2 entries";
     dialog_fl_message(ALERT);
     return 1;
   }
 
-  Fl_Menu_Item dropdown_menu_items[dropdown_size];
+  Fl_Menu_Item dropdown_menu_items[count];
 
-  for (size_t i = 0; i <= dropdown_size; ++i)
+  for (size_t i = 0; i <= count; ++i)
   {
-    if (i < dropdown_size)
+    if (i < count)
     {
       if (dropdown_v[i] == "")
       {
@@ -100,9 +100,9 @@ int dialog_dropdown(std::string dropdown_list)
     dropdown_menu_items[i].callback_ = 0;
     dropdown_menu_items[i].user_data_ = 0;
     dropdown_menu_items[i].flags = 0;
-    dropdown_menu_items[i].labeltype_ = (i == dropdown_size) ? 0 : FL_NORMAL_LABEL;
+    dropdown_menu_items[i].labeltype_ = (i == count) ? 0 : FL_NORMAL_LABEL;
     dropdown_menu_items[i].labelfont_ = 0;
-    dropdown_menu_items[i].labelsize_ = (i == dropdown_size) ? 0 : 14;
+    dropdown_menu_items[i].labelsize_ = (i == count) ? 0 : 14;
     dropdown_menu_items[i].labelcolor_ = 0;
   }
 
