@@ -25,7 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_close */
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
 #include <iostream>  /* std::cout */
@@ -46,8 +46,8 @@ class dnd_box : public Fl_Box
     int handle(int event);
 };
 
-Fl_Window *dnd_window;
-Fl_Box *dnd_count;
+Fl_Window *dnd_win;
+Fl_Box    *dnd_count;
 int dnd_count_val = 0;
 
 static void dnd_exit_cb(Fl_Widget*)
@@ -70,7 +70,7 @@ static void dnd_callback(const char *items)
 
   sprintf(newtext, "%d", dnd_count_val);
   dnd_count->label(newtext);
-  dnd_window->redraw();
+  dnd_win->redraw();
 
   std::cout << items;
 }
@@ -94,10 +94,10 @@ int dnd_box::handle(int event)
 
 int dialog_dnd()
 {
-  dnd_box *box;
-  Fl_Group *g;
-  Fl_Box *text;
-  Fl_Button *but_close;
+  dnd_box          *box;
+  Fl_Group         *g;
+  Fl_Box           *text;
+  Fl_Return_Button *but_close;
 
   int bord = 10;
   int winw = 400;
@@ -116,9 +116,8 @@ int dialog_dnd()
     title = (char *)"FLTK Drag & Drop";
   }
 
-  dnd_window = new Fl_Window(winw, winh, title);
-  dnd_window->begin();
-  dnd_window->callback(dnd_exit_cb);
+  dnd_win = new Fl_Window(winw, winh, title);
+  dnd_win->callback(dnd_exit_cb);
   {
     box = new dnd_box(bord, bord, winw-bord*2, winh-buth-bord*3, msg);
     box->box(FL_ENGRAVED_FRAME);
@@ -136,13 +135,13 @@ int dialog_dnd()
       dnd_count->box(FL_NO_BOX);
       dnd_count->align(FL_ALIGN_RIGHT);
 
-      but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
+      but_close = new Fl_Return_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
       but_close->callback(dnd_exit_cb);
     }
     g->end();
   }
-  dnd_window->end();
-  dnd_window->show();
+  dnd_win->end();
+  dnd_win->show();
 
   return Fl::run();
 }

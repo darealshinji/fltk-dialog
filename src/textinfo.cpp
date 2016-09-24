@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel, fl_close */
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Multi_Browser.H>
 #include <FL/Fl_Check_Button.H>
@@ -38,8 +39,8 @@
 
 
 Fl_Multi_Browser *ti_browser;
-Fl_Button *ti_but_cancel = NULL;
-Fl_Button *ti_but_ok = NULL;
+Fl_Return_Button *ti_but_ok = NULL;
+Fl_Button        *ti_but_cancel = NULL;
 bool ti_checkbutton_set = false;
 
 static void textinfo_exit0_cb(Fl_Widget*)
@@ -90,7 +91,6 @@ int dialog_textinfo(       bool autoscroll,
   }
 
   win = new Fl_Window(winw, winh, title);
-  win->begin();
   {
     ti_browser = new Fl_Multi_Browser(bord, bord, browser_w, browser_h);
     win->resizable(ti_browser);
@@ -98,8 +98,8 @@ int dialog_textinfo(       bool autoscroll,
     if (checkbox == "")
     {
       win->callback(textinfo_exit0_cb);  /* exit(0) */
-      ti_but_ok = new Fl_Button(winw-butw-bord, browser_h+bord*2,
-                                butw, buth, fl_close);
+      ti_but_ok = new Fl_Return_Button(winw-butw-bord, browser_h+bord*2,
+                                       butw, buth, fl_close);
       ti_but_ok->callback(textinfo_exit0_cb);
     }
     else
@@ -112,8 +112,8 @@ int dialog_textinfo(       bool autoscroll,
       ti_but_cancel = new Fl_Button(winw-butw-bord, browser_h+buth+bord*2,
                                     butw, buth, fl_cancel);
       ti_but_cancel->callback(textinfo_exit1_cb);
-      ti_but_ok = new Fl_Button(winw-butw*2-bord*2, browser_h+buth+bord*2,
-                                butw, buth, fl_ok);
+      ti_but_ok = new Fl_Return_Button(winw-butw*2-bord*2, browser_h+buth+bord*2,
+                                       butw, buth, fl_ok);
       ti_but_ok->deactivate();
       ti_but_ok->callback(textinfo_exit0_cb);
     }

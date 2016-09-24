@@ -55,9 +55,9 @@ static void calendar_cancel_cb(Fl_Widget*)
 
 int dialog_fl_calendar(std::string format)
 {
-  Fl_Window *win;
+  Fl_Window        *win;
   Fl_Return_Button *but_ok;
-  Fl_Button *but_cancel;
+  Fl_Button        *but_cancel;
 
   int bord = 10;
   int calu = 32;
@@ -107,7 +107,6 @@ int dialog_fl_calendar(std::string format)
 
   win = new Fl_Window(winw, winh, title);
   calendar = new Fl_Calendar(bord, bord, calw, calw);
-  win->begin();
   win->callback(calendar_cancel_cb);  /* exit(1) */
   {
     but_ok = new Fl_Return_Button(calw-butw*2, winw, butw, buth, fl_ok);

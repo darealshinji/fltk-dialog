@@ -65,10 +65,10 @@ int dialog_fl_value_slider(char *slider_min,
                            char *slider_step,
                            char *slider_val)
 {
-  Fl_Window *win;
-  Fl_Box *box;
+  Fl_Window        *win;
+  Fl_Box           *box;
   Fl_Return_Button *but_ok;
-  Fl_Button *but_cancel;
+  Fl_Button        *but_cancel;
 
   std::string s;
   int winw = 320;
@@ -128,7 +128,6 @@ int dialog_fl_value_slider(char *slider_min,
   int boxh = textlines*textheight + bord*2;
 
   win = new Fl_Window(winw, boxh+slidh+bord*3+textheight, title);
-  win->begin();
   win->callback(slider_cancel_cb);  /* exit(1) */
   {
     box = new Fl_Box(0, 0, bord, boxh, s.c_str());

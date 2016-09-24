@@ -24,6 +24,8 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Image_Surface.H>
+
 #include <FL/Fl_BMP_Image.H>
 #include <FL/Fl_GIF_Image.H>
 #include <FL/Fl_JPEG_Image.H>
@@ -32,7 +34,6 @@
 #include <FL/Fl_XBM_Image.H>
 #include <FL/Fl_XPM_Image.H>
 #include <FL/Fl_RGB_Image.H>
-#include <FL/Fl_Image_Surface.H>
 
 #include <string>    /* std::string, c_str */
 #include <algorithm> /* std::transform */

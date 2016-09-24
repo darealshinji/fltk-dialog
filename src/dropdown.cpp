@@ -1,6 +1,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Window.H>
 
@@ -45,6 +46,10 @@ static void dropdown_exit1_cb(Fl_Widget*)
 
 int dialog_dropdown(std::string dropdown_list)
 {
+  Fl_Window        *win;
+  Fl_Return_Button *but_ok;
+  Fl_Button        *but_cancel;
+
   int winw = 320;
   int droph = 30;
   int bord = 10;
@@ -106,25 +111,22 @@ int dialog_dropdown(std::string dropdown_list)
     dropdown_menu_items[i].labelcolor_ = 0;
   }
 
-  Fl_Window *w = new Fl_Window(winw, boxh+droph+bord*3+textheight, title);
-  w->begin();
-  w->callback(dropdown_exit1_cb);
+  win = new Fl_Window(winw, boxh+droph+bord*3+textheight, title);
+  win->callback(dropdown_exit1_cb);
   {
-    Fl_Button *ok = new Fl_Button(winw-butw*2-bord*2, boxh+textheight+buth,
-                                  butw, buth, fl_ok);
-    ok->callback(dropdown_exit0_cb);
+    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, boxh+textheight+buth, butw, buth, fl_ok);
+    but_ok->callback(dropdown_exit0_cb);
 
-    Fl_Button *cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth,
-                                      butw, buth, fl_cancel);
-    cancel->callback(dropdown_exit1_cb);
+    but_cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth, butw, buth, fl_cancel);
+    but_cancel->callback(dropdown_exit1_cb);
 
     dropdown_entries = new Fl_Choice(bord, boxh, winw-bord*2, droph, msg);
     dropdown_entries->down_box(FL_BORDER_BOX);
     dropdown_entries->align(FL_ALIGN_TOP_LEFT);
     dropdown_entries->menu(dropdown_menu_items);
   }
-  w->end();
-  w->show();
+  win->end();
+  win->show();
 
   return Fl::run();
 }

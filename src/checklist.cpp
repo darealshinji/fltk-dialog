@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Window.H>
 
@@ -38,7 +39,7 @@
 #include "misc/split.hpp"
 
 
-Fl_Button *checklist_but_ok;
+Fl_Return_Button *checklist_but_ok;
 bool checklist_checked[1024];
 int check_button_count = 0;
 std::vector<std::string> checklist_v;
@@ -90,7 +91,7 @@ static void cb_exit1_cb(Fl_Widget*)
 
 int dialog_fl_check_button(std::string checklist_options)
 {
-  Fl_Window *w;
+  Fl_Window *win;
   Fl_Button *but_cancel;
   std::vector<std::string> v;
 
@@ -117,9 +118,8 @@ int dialog_fl_check_button(std::string checklist_options)
   int winw = 420;
   int winh = chkh * check_button_count + buth + bord*3;
 
-  w = new Fl_Window(winw, winh, title);
-  w->begin();
-  w->callback(cb_exit1_cb);
+  win = new Fl_Window(winw, winh, title);
+  win->callback(cb_exit1_cb);
   {
     for (int i = 0; i < check_button_count; ++i)
     {
@@ -127,14 +127,14 @@ int dialog_fl_check_button(std::string checklist_options)
       rb[i]->callback(cb_callback, (char *)v[i].c_str());
     }
 
-    checklist_but_ok = new Fl_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
+    checklist_but_ok = new Fl_Return_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
     checklist_but_ok->callback(cb_exit0_cb);
 
     but_cancel = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_cancel);
     but_cancel->callback(cb_exit1_cb);
   }
-  w->end();
-  w->show();
+  win->end();
+  win->show();
 
   return Fl::run();
 }

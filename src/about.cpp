@@ -23,10 +23,11 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/fl_ask.H>  /* fl_close */
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Text_Display.H>
 
@@ -37,11 +38,11 @@
 #include "fltk-dialog.hpp"
 
 
-Fl_Pixmap *about_pixmap;
-Fl_Text_Buffer *license_buffer;
+Fl_Pixmap       *about_pixmap;
+Fl_Text_Buffer  *license_buffer;
 Fl_Text_Display *license_display;
 
-static void about_but_lic_cb(Fl_Widget*)
+static void about_but_license_cb(Fl_Widget*)
 {
   license();
 }
@@ -61,9 +62,10 @@ static void about_close_cb(Fl_Widget*)
 
 int about()
 {
-  Fl_Window *win;
-  Fl_Box    *box;
-  Fl_Button *but_lic, *but_close;
+  Fl_Window        *win;
+  Fl_Box           *box;
+  Fl_Button        *but_license;
+  Fl_Return_Button *but_close;
 
   int winw = 450;
   int winh = 460;
@@ -97,15 +99,16 @@ int about()
   about_pixmap = new Fl_Pixmap(fltk_xpm);
 
   win = new Fl_Window(winw, winh, "About FLTK dialog");
-  win->begin();
   win->callback(about_close_cb);  /* exit(0) */
   {
     box = new Fl_Box(bord, bord, winw-bord*2, winh-buth-bord*3, about_text_c);
     box->box(FL_UP_BOX);
     box->image(about_pixmap);
-    but_lic = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
-    but_lic->callback(about_but_lic_cb);
-    but_close = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
+
+    but_license = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
+    but_license->callback(about_but_license_cb);
+
+    but_close = new Fl_Return_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
     but_close->callback(about_close_cb);
   }
   win->end();
@@ -243,7 +246,6 @@ void license()
   int buth = 26;
 
   win = new Fl_Window(winw, winh, "Terms and Conditions");
-  win->begin();
   {
     license_buffer = new Fl_Text_Buffer();
     license_display = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);

@@ -27,6 +27,7 @@
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
 #include <string>    /* std::string, std::getline, c_str, compare, substr */
@@ -39,7 +40,7 @@
 #include "misc/readstdio.hpp"
 
 
-Fl_Window *prog_win;
+Fl_Window   *prog_win;
 Fl_Progress *prog_bar;
 
 static void progress_exit(int ret)
@@ -65,9 +66,9 @@ static void progress_exit1_cb(Fl_Widget*)
 int dialog_fl_progress(bool autoclose,
                        bool hide_cancel)
 {
-  Fl_Box *box;
-  Fl_Button *but_ok = NULL;
-  Fl_Button *but_cancel = NULL;
+  Fl_Box           *box;
+  Fl_Return_Button *but_ok = NULL;
+  Fl_Button        *but_cancel = NULL;
 
   int winw = 320;
   int winh = 0;
@@ -132,7 +133,6 @@ int dialog_fl_progress(bool autoclose,
   }
 
   prog_win = new Fl_Window(winw, winh, title);
-  prog_win->begin();
   prog_win->callback(progress_exit1_cb);
   {
     box = new Fl_Box(0, 0, bord, boxh, s.c_str());
@@ -157,7 +157,7 @@ int dialog_fl_progress(bool autoclose,
         but_cancel->callback(progress_exit1_cb);
         but_ok_x = but_left;
       }
-      but_ok = new Fl_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
+      but_ok = new Fl_Return_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
       but_ok->deactivate();
       but_ok->callback(progress_exit0_cb);
     }
