@@ -94,6 +94,7 @@ void print_usage(char *prog)
   "  --ok-label=TEXT            Set the OK button text\n"
   "  --cancel-label=TEXT        Set the CANCEL button text\n"
   "  --close-label=TEXT         Set the CLOSE button text\n"
+  "  --message                  Display message dialog\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
 #ifdef WITH_DND
@@ -359,6 +360,7 @@ int main(int argc, char **argv)
     { "html",            required_argument,  0,  LO_HTML            },
 #endif
 
+    { "message",         no_argument,        0,  LO_MESSAGE         },
     { "warning",         no_argument,        0,  LO_WARNING         },
     { "question",        no_argument,        0,  LO_QUESTION        },
 
@@ -513,6 +515,10 @@ int main(int argc, char **argv)
         dialog_count++;
         break;
 #endif
+      case LO_MESSAGE:
+        dialog = DIALOG_FL_MESSAGE;
+        dialog_count++;
+        break;
       case LO_WARNING:
         dialog = DIALOG_ALERT;
         dialog_count++;

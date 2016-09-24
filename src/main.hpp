@@ -45,6 +45,7 @@ enum longOpts
   LO_FILE,
   LO_FORMAT,
   LO_HTML,
+  LO_MESSAGE,
   LO_MAX_VALUE,
   LO_MIN_VALUE,
   LO_NATIVE,
