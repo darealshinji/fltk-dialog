@@ -61,6 +61,11 @@ int dialog_fl_choice(const char *choice_but_yes,
 int dialog_fl_color(void);
 #endif
 
+/* date.cpp */
+#ifdef WITH_DATE
+int dialog_fdate(std::string format);
+#endif
+
 /* dnd.cpp */
 #ifdef WITH_DND
 int dialog_dnd(void);
@@ -138,7 +143,13 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
 void set_window_icon(std::string file);
 #endif
 
-/* translate.cpp */
+/* misc/print_date.cpp */
+void print_date(std::string format,
+                        int y,
+                        int m,
+                        int d);
+
+/* misc/translate.cpp */
 void repstr(const std::string &from,
             const std::string &to,
                   std::string &s);

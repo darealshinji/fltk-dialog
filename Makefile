@@ -25,6 +25,7 @@ WITH_DEFAULT_ICON ?= yes
 WITH_CALENDAR    ?= yes
 WITH_CHECKLIST   ?= yes
 WITH_COLOR       ?= yes
+WITH_DATE        ?= yes
 WITH_DND         ?= yes
 WITH_DROPDOWN    ?= yes
 WITH_ENTRY       ?= yes
@@ -68,16 +69,18 @@ CXXFLAGS += \
  -DREVISION=\"$(shell cat $(fltk)/revision)\"
 endif
 
-HAVE_SPLIT = no
 HAVE_ITOSTR = no
+HAVE_PRINT_DATE = no
 HAVE_READSTDIO = no
+HAVE_SPLIT = no
 
 ifneq ($(WITH_DEFAULT_ICON),no)
 CXXFLAGS += -DWITH_DEFAULT_ICON
 endif
 ifneq ($(WITH_CALENDAR),no)
 CXXFLAGS += -DWITH_CALENDAR
-OBJS += src/calendar.o src/Flek/FDate.o src/Flek/Fl_Calendar.o
+OBJS += src/calendar.o src/Flek/Fl_Calendar.o
+HAVE_PRINT_DATE = yes
 endif
 ifneq ($(WITH_CHECKLIST),no)
 CXXFLAGS += -DWITH_CHECKLIST
@@ -88,6 +91,11 @@ endif
 ifneq ($(WITH_COLOR),no)
 CXXFLAGS += -DWITH_COLOR
 OBJS += src/color.o
+endif
+ifneq ($(WITH_DATE),no)
+CXXFLAGS += -DWITH_DATE
+OBJS += src/date.o
+HAVE_PRINT_DATE = yes
 endif
 ifneq ($(WITH_DND),no)
 CXXFLAGS += -DWITH_DND
@@ -147,11 +155,14 @@ endif
 ifneq ($(HAVE_ITOSTR),no)
 OBJS += src/misc/itostr.o
 endif
-ifneq ($(HAVE_SPLIT),no)
-OBJS += src/misc/split.o
+ifneq ($(HAVE_PRINT_DATE),no)
+OBJS += src/misc/print_date.o src/Flek/FDate.o
 endif
 ifneq ($(HAVE_READSTDIO),no)
 OBJS += src/misc/readstdio.o
+endif
+ifneq ($(HAVE_SPLIT),no)
+OBJS += src/misc/split.o
 endif
 
 ifneq ($(WITH_NOTIFY),no)

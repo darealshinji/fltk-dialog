@@ -29,11 +29,8 @@
 #include <FL/Fl_Window.H>
 
 #include <iostream>  /* std::cout, std::endl */
-#include <string>    /* std::string, c_str */
-#include <stdio.h>   /* sprintf */
+#include <string>    /* std::string */
 #include <stdlib.h>  /* exit */
-#include <string.h>  /* memset, strncpy */
-#include <time.h>    /* strptime, strftime */
 
 #include "Flek/Fl_Calendar.H"
 #include "fltk-dialog.hpp"
@@ -67,46 +64,16 @@ int dialog_fl_calendar(std::string format)
   int buth = 26;
   int butw = winw/2-(bord*3)/2;  /* 107 */
 
-  struct tm time;
   int ret;
-  char tmp[31];
-  char date[255];
 
   if (title == NULL)
   {
     title = (char *)"FLTK calendar";
   }
 
-  if (format == "")
-  {
-    format = "%Y-%m-%d";
-  }
-  else
-  {
-    /* glibc date formats
-     * example date: 2006-01-08 */
-    repstr("\\n", "\n",  format);  /* newline */
-    repstr("\\t", "\t",  format);  /* tab */
-    repstr("%",   "%%",  format);  /* literal % */
-    repstr("d",   "%-d", format);  /* day (8) */
-    repstr("D",   "%d",  format);  /* day (08) */
-    repstr("m",   "%-m", format);  /* month (1) */
-    repstr("M",   "%m",  format);  /* month (01) */
-    repstr("y",   "%y",  format);  /* year (06) */
-    repstr("Y",   "%Y",  format);  /* year (2006) */
-    repstr("j",   "%-j", format);  /* day of the year (8) */
-    repstr("J",   "%j",  format);  /* day of the year (008) */
-    repstr("W",   "%A",  format);  /* weekday name (Sunday) */
-    repstr("w",   "%a",  format);  /* weekday name (Sun) */
-    repstr("n",   "%-V", format);  /* ISO 8601 week number (1) */
-    repstr("N",   "%V",  format);  /* ISO 8601 week number (01) */
-    repstr("B",   "%B",  format);  /* month name (January) */
-    repstr("b",   "%b",  format);  /* month name (Jan) */
-    repstr("u",   "%u",  format);  /* day of the week, Monday being 1 (7) */
-  }
-
   win = new Fl_Window(winw, winh, title);
   calendar = new Fl_Calendar(bord, bord, calw, calw);
+  win->begin();  /* don't remove! */
   win->callback(calendar_cancel_cb);  /* exit(1) */
   {
     but_ok = new Fl_Return_Button(calw-butw*2, winw, butw, buth, fl_ok);
@@ -118,13 +85,7 @@ int dialog_fl_calendar(std::string format)
   win->show();
 
   ret = Fl::run();
-
-  sprintf(tmp, "%d-%d-%d", calendar->year(), calendar->month(), calendar->day());
-  memset(&time, 0, sizeof(struct tm));
-  strptime(tmp, "%Y-%m-%d", &time);
-  strftime(date, sizeof(date), format.c_str(), &time);
-
-  std::cout << date << std::endl;
+  print_date(format, calendar->year(), calendar->month(), calendar->day());
 
   delete calendar;
   return ret;

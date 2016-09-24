@@ -116,6 +116,9 @@ void print_usage(char *prog)
 #ifdef WITH_CALENDAR
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
 #endif
+#ifdef WITH_DATE
+  "  --date                     Display date dialog; returns date as Y-M-D\n"
+#endif
 #ifdef WITH_COLOR
   "  --color                    Display color selection dialog\n"
 #endif
@@ -179,14 +182,21 @@ void print_usage(char *prog)
   "\n"
   "Radiolist/dropdown options:\n"
 #endif
-
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
   "  --return-number            Return selected entry number instead of label text\n"
 #endif
 
-#ifdef WITH_CALENDAR
+#if defined(WITH_CALENDAR) && !defined(WITH_DATE)
   "\n"
   "Calendar options:\n"
+#elif !defined(WITH_CALENDAR) && defined(WITH_DATE)
+  "\n"
+  "Date options:\n"
+#elif defined(WITH_CALENDAR) && defined(WITH_DATE)
+  "\n"
+  "Calendar/date options:\n"
+#endif
+#if defined(WITH_CALENDAR) || defined(WITH_DATE)
   "  --format=FORMAT            Set a custom output format\n"
   "                             Interpreted sequences for FORMAT are:\n"
   "                             (using the date 2006-01-08)\n"
@@ -253,7 +263,7 @@ int main(int argc, char **argv)
   char *initval = NULL;
 #endif
 
-#ifdef WITH_CALENDAR
+#if defined(WITH_CALENDAR) || defined(WITH_DATE)
   std::string format = "";
 #endif
 
@@ -418,8 +428,15 @@ int main(int argc, char **argv)
     { "return-number",   no_argument,        0,  LO_RETURN_NUMBER   },
 #endif
 
+#ifdef WITH_DATE
+    { "date",            no_argument,        0,  LO_DATE            },
+#endif
+
 #ifdef WITH_CALENDAR
     { "calendar",        no_argument,        0,  LO_CALENDAR        },
+#endif
+
+#if defined(WITH_CALENDAR) || defined(WITH_DATE)
     { "format",          required_argument,  0,  LO_FORMAT          },
 #endif
 
@@ -632,6 +649,14 @@ int main(int argc, char **argv)
         dialog = DIALOG_FL_CALENDAR;
         dialog_count++;
         break;
+#endif
+#ifdef WITH_DATE
+      case LO_DATE:
+        dialog = DIALOG_FDATE;
+        dialog_count++;
+        break;
+#endif
+#if defined(WITH_CALENDAR) || defined(WITH_DATE)
       case LO_FORMAT:
         format = std::string(optarg);
         break;
@@ -717,14 +742,31 @@ int main(int argc, char **argv)
   if (return_number && (dialog != DIALOG_FL_RADIO_ROUND_BUTTON &&
                         dialog != DIALOG_DROPDOWN))
   {
-    return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
+    return use_only_with(argv[0], "--return-number",
+#  if defined(WITH_RADIOLIST) && !defined(WITH_DROPDOWN)
+                         "--radiolist"
+#  elif !defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
+                         "--dropdown"
+#  elif defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
+                         "--radiolist or --dropdown"
+#  endif
+                         );
   }
 #endif
 
-#ifdef WITH_CALENDAR
-  if (format != "" && dialog != DIALOG_FL_CALENDAR)
+#if defined(WITH_CALENDAR) || defined(WITH_DATE)
+  if (format != "" && (dialog != DIALOG_FL_CALENDAR &&
+                       dialog != DIALOG_FDATE))
   {
-    return use_only_with(argv[0], "--format", "--calendar");
+    return use_only_with(argv[0], "--format",
+#  if defined(WITH_CALENDAR) && !defined(WITH_DATE)
+                         "--calendar"
+#  elif !defined(WITH_CALENDAR) && defined(WITH_DATE)
+                         "--date"
+#  elif defined(WITH_CALENDAR) && defined(WITH_DATE)
+                         "--calendar or --date"
+#  endif
+                         );
   }
 #endif
 
@@ -735,9 +777,9 @@ int main(int argc, char **argv)
   }
 #endif
 
-#ifdef WITH_HTML
-  /* keep fltk's '@' symbols only enabled for HTML viewer */
-  if (dialog != DIALOG_HTML)
+#if defined(WITH_HTML) || defined(WITH_DATE)
+  /* keep fltk's '@' symbols enabled for HTML and FDate dialogs */
+  if (dialog != DIALOG_HTML && dialog != DIALOG_FDATE)
   {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
@@ -866,6 +908,11 @@ int main(int argc, char **argv)
 #ifdef WITH_CALENDAR
     case DIALOG_FL_CALENDAR:
       return dialog_fl_calendar(format);
+#endif
+
+#ifdef WITH_DATE
+    case DIALOG_FDATE:
+      return dialog_fdate(format);
 #endif
 
 #ifdef WITH_TEXTINFO
