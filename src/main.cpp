@@ -299,26 +299,9 @@ int main(int argc, char **argv)
   bool autoscroll = false;
 #endif
 
-  /* using these to check if two or
-   * more dialog options were specified */
-  int dabout = 0;
-  int dalert = 0;
-  int dcalendar = 0;
-  int dchoice = 0;
-  int ddirchoser = 0;
-  int ddnd = 0;
-  int ddropdown = 0;
-  int dfilechooser = 0;
-  int dhtml = 0;
-  int dinput = 0;
-  int dpassword = 0;
-  int dcolor = 0;
-  int dnotify = 0;
-  int dprogress = 0;
-  int dchecklist = 0;
-  int dradiolist = 0;
-  int dvalslider = 0;
-  int dtextinfo = 0;
+  /* used to check if two or more dialog
+   * options were specified */
+  int dialog_count = 0;
 
 #ifdef WITH_DEFAULT_ICON
   /* set global default icon for all windows */
@@ -459,7 +442,7 @@ int main(int argc, char **argv)
     {
       case LO_ABOUT:
         dialog = DIALOG_ABOUT;
-        dabout = 1;
+        dialog_count++;
         break;
       case LO_NO_ESCAPE:
         Fl::add_handler(esc_handler);
@@ -520,32 +503,32 @@ int main(int argc, char **argv)
 #ifdef WITH_DND
       case LO_DND:
         dialog = DIALOG_DND;
-        ddnd = 1;
+        dialog_count++;
         break;
 #endif
 #ifdef WITH_HTML
       case LO_HTML:
         dialog = DIALOG_HTML;
         html = optarg;
-        dhtml = 1;
+        dialog_count++;
         break;
 #endif
       case LO_WARNING:
         dialog = DIALOG_ALERT;
-        dalert = 1;
+        dialog_count++;
         break;
       case LO_QUESTION:
         dialog = DIALOG_FL_CHOICE;
-        dchoice = 1;
+        dialog_count++;
         break;
 #ifdef WITH_FILE
       case LO_FILE:
         dialog = DIALOG_FL_FILE_CHOOSER;
-        dfilechooser = 1;
+        dialog_count++;
         break;
       case LO_DIRECTORY:
         dialog = DIALOG_FL_DIR_CHOOSER;
-        ddirchoser = 1;
+        dialog_count++;
         break;
       case LO_NATIVE:
         native = true;
@@ -554,25 +537,25 @@ int main(int argc, char **argv)
 #ifdef WITH_ENTRY
       case LO_ENTRY:
         dialog = DIALOG_FL_INPUT;
-        dinput = 1;
+        dialog_count++;
         break;
 #endif
 #ifdef WITH_PASSWORD
       case LO_PASSWORD:
         dialog = DIALOG_FL_PASSWORD;
-        dpassword = 1;
+        dialog_count++;
         break;
 #endif
 #ifdef WITH_COLOR
       case LO_COLOR:
         dialog = DIALOG_FL_COLOR;
-        dcolor = 1;
+        dialog_count++;
         break;
 #endif
 #ifdef WITH_NOTIFY
       case LO_NOTIFY:
         dialog = DIALOG_NOTIFY;
-        dnotify = 1;
+        dialog_count++;
         break;
       case LO_TIMEOUT:
         notify_timeout = optarg;
@@ -584,10 +567,10 @@ int main(int argc, char **argv)
 #ifdef WITH_PROGRESS
       case LO_PROGRESS:
         dialog = DIALOG_FL_PROGRESS;
-        dprogress = 1;
+        dialog_count++;
         break;
       case LO_AUTO_CLOSE:
-        autoclose = 1;
+        dialog_count++;
         break;
       case LO_NO_CANCEL:
         hide_cancel = true;
@@ -596,7 +579,7 @@ int main(int argc, char **argv)
 #ifdef WITH_SCALE
       case LO_SCALE:
         dialog = DIALOG_FL_VALUE_SLIDER;
-        dvalslider = 1;
+        dialog_count++;
         break;
       case LO_VALUE:
         initval = optarg;
@@ -615,33 +598,33 @@ int main(int argc, char **argv)
       case LO_CHECKLIST:
         dialog = DIALOG_FL_CHECK_BUTTON;
         checklist_options = std::string(optarg);
-        dchecklist = 1;
+        dialog_count++;
         break;
 #endif
 #ifdef WITH_RADIOLIST
       case LO_RADIOLIST:
         dialog = DIALOG_FL_RADIO_ROUND_BUTTON;
         radiolist_options = std::string(optarg);
-        dradiolist = 1;
+        dialog_count++;
         break;
 #endif
 #ifdef WITH_DROPDOWN
       case LO_DROPDOWN:
         dialog = DIALOG_DROPDOWN;
         dropdown_options = std::string(optarg);
-        ddropdown = 1;
+        dialog_count++;
         break;
 #endif
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
       case LO_RETURN_NUMBER:
         return_number = true;
-        dropdown_return_number = (char *)"y";
+        dropdown_return_number = (char *)"y";  /* can be anything but NULL */
         break;
 #endif
 #ifdef WITH_CALENDAR
       case LO_CALENDAR:
         dialog = DIALOG_FL_CALENDAR;
-        dcalendar = 1;
+        dialog_count++;
         break;
       case LO_FORMAT:
         format = std::string(optarg);
@@ -650,7 +633,7 @@ int main(int argc, char **argv)
 #ifdef WITH_TEXTINFO
       case LO_TEXT_INFO:
         dialog = DIALOG_TEXTINFO;
-        dtextinfo = 1;
+        dialog_count++;
         break;
       case LO_AUTO_SCROLL:
         autoscroll = true;
@@ -671,9 +654,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if ((dabout + dalert + dcalendar + dchecklist + dchoice + ddirchoser + ddnd +
-       ddropdown + dfilechooser + dhtml + dinput + dpassword + dcolor + dnotify +
-       dprogress + dradiolist + dvalslider + dtextinfo) >= 2)
+  if (dialog_count++ >= 2)
   {
     std::cerr << argv[0] << ": "
       << "two or more dialog options specified" << std::endl;
