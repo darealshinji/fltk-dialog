@@ -30,6 +30,5 @@ std::string itostr(int i)
 {
   std::stringstream ss;
   ss << i;
-  std::string str = ss.str();
-  return str;
+  return ss.str();
 }
