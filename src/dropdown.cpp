@@ -45,15 +45,12 @@ static void dropdown_exit1_cb(Fl_Widget*)
 
 int dialog_dropdown(std::string dropdown_list)
 {
-  std::string s;
   int winw = 320;
   int droph = 30;
   int bord = 10;
   int textheight = 18;
   int butw = 100;
   int buth = 26;
-
-  long cb_return_number = 0;
 
   if (msg == NULL)
   {
