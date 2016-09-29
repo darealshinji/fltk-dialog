@@ -30,6 +30,7 @@ WITH_DND         ?= yes
 WITH_DROPDOWN    ?= yes
 WITH_ENTRY       ?= yes
 WITH_FILE        ?= yes
+WITH_FONT        ?= yes
 WITH_HTML        ?= yes
 WITH_NOTIFY      ?= yes
 WITH_PASSWORD    ?= yes
@@ -113,6 +114,10 @@ endif
 ifneq ($(WITH_FILE),no)
 CXXFLAGS += -DWITH_FILE
 OBJS += src/file.o
+endif
+ifneq ($(WITH_FONT),no)
+CXXFLAGS += -DWITH_FONT
+OBJS += src/font.o
 endif
 ifneq ($(WITH_HTML),no)
 CXXFLAGS += -DWITH_HTML
@@ -294,5 +299,5 @@ $(libpng_a): $(libpng)/build/Makefile
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
 
-src/about.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/font.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 

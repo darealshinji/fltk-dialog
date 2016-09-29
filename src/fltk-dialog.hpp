@@ -33,9 +33,14 @@
 #define STREQ(x, y) (strcmp(x, y) == 0)
 #define DEFAULT_DELIMITER '|'
 
+#define BUTW 100  /* default button width */
+#define BUTH 26   /* default button height */
+#define BORD 10   /* default border size */
+
 extern const char *title;
 extern const char *msg;
 extern const char *dropdown_return_number;
+extern bool resizable;
 
 /* about.cpp */
 void license(void);
@@ -84,6 +89,11 @@ int dialog_fl_dir_chooser(void);
 #define DIR_CHOOSER 1
 int dialog_fl_native_file_chooser(int fnfc_dir);
 #endif  /* WITH_FILE */
+
+/* font.cpp */
+#ifdef WITH_FONT
+int dialog_font(void);
+#endif
 
 /* html.cpp */
 #ifdef WITH_HTML

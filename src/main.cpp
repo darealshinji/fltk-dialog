@@ -42,9 +42,31 @@
 #endif
 
 
+#if defined(WITH_RADIOLIST) && !defined(WITH_DROPDOWN)
+#  define RADIOLIST_DROPDOWN_OPTIONS "Radiolist"
+#  define RADIOLIST_DROPDOWN_ARGS "--radiolist"
+#elif !defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
+#  define RADIOLIST_DROPDOWN_OPTIONS "Dropdown"
+#  define RADIOLIST_DROPDOWN_ARGS "--dropdown"
+#elif defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
+#  define RADIOLIST_DROPDOWN_OPTIONS "Radiolist/dropdown"
+#  define RADIOLIST_DROPDOWN_ARGS "--radiolist or --dropdown"
+#endif
+#if defined(WITH_CALENDAR) && !defined(WITH_DATE)
+#  define CALENDAR_DATE_OPTIONS "Calendar"
+#  define CALENDAR_DATE_ARGS "--calendar"
+#elif !defined(WITH_CALENDAR) && defined(WITH_DATE)
+#  define CALENDAR_DATE_OPTIONS "Date"
+#  define CALENDAR_DATE_ARGS "--date"
+#elif defined(WITH_CALENDAR) && defined(WITH_DATE)
+#  define CALENDAR_DATE_OPTIONS "Calendar/date"
+#  define CALENDAR_DATE_ARGS "--calendar or --date"
+#endif
+
 const char *title = NULL;
 const char *msg = NULL;
 const char *dropdown_return_number = NULL;
+bool resizable = false;
 
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
@@ -143,6 +165,9 @@ void print_usage(char *prog)
 #ifdef WITH_NOTIFY
   "  --notification             Display notification\n"
 #endif
+#ifdef WITH_FONT
+  "  --font                     Display font selection dialog\n"
+#endif
 #ifdef WITH_WINDOW_ICON
   "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
   "                             jpg png pnm xbm xpm"
@@ -172,31 +197,15 @@ void print_usage(char *prog)
   "  --no-cancel                Hide cancel button\n"
 #endif
 
-#if defined(WITH_RADIOLIST) && !defined(WITH_DROPDOWN)
-  "\n"
-  "Radiolist options:\n"
-#elif !defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
-  "\n"
-  "Dropdown options:\n"
-#elif defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
-  "\n"
-  "Radiolist/dropdown options:\n"
-#endif
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
+  "\n"
+  RADIOLIST_DROPDOWN_OPTIONS " options:\n"
   "  --return-number            Return selected entry number instead of label text\n"
 #endif
 
-#if defined(WITH_CALENDAR) && !defined(WITH_DATE)
-  "\n"
-  "Calendar options:\n"
-#elif !defined(WITH_CALENDAR) && defined(WITH_DATE)
-  "\n"
-  "Date options:\n"
-#elif defined(WITH_CALENDAR) && defined(WITH_DATE)
-  "\n"
-  "Calendar/date options:\n"
-#endif
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
+  "\n"
+  CALENDAR_DATE_OPTIONS " options:\n"
   "  --format=FORMAT            Set a custom output format\n"
   "                             Interpreted sequences for FORMAT are:\n"
   "                             (using the date 2006-01-08)\n"
@@ -240,7 +249,7 @@ void print_usage(char *prog)
   "\n"
   "Notification options:\n"
   "  --timout=SECONDS           Set the timeout value for the notification in\n"
-  "                             seconds (may be ignored by your notification daemon)\n"
+  "                             seconds (may be ignored by some desktop environments)\n"
   "  --notify-icon=PATH         Set the icon for the notification box\n"
 #endif
 
@@ -434,6 +443,10 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CALENDAR
     { "calendar",        no_argument,        0,  LO_CALENDAR        },
+#endif
+
+#ifdef WITH_FONT
+    { "font",            no_argument,        0,  LO_FONT            },
 #endif
 
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
@@ -673,6 +686,12 @@ int main(int argc, char **argv)
         checkbox = std::string(optarg);
         break;
 #endif
+#ifdef WITH_FONT
+      case LO_FONT:
+        dialog = DIALOG_FONT;
+        dialog_count++;
+        break;
+#endif
 #ifdef WITH_WINDOW_ICON
       case LO_WINDOW_ICON:
         window_icon = std::string(optarg);
@@ -742,15 +761,7 @@ int main(int argc, char **argv)
   if (return_number && (dialog != DIALOG_FL_RADIO_ROUND_BUTTON &&
                         dialog != DIALOG_DROPDOWN))
   {
-    return use_only_with(argv[0], "--return-number",
-#  if defined(WITH_RADIOLIST) && !defined(WITH_DROPDOWN)
-                         "--radiolist"
-#  elif !defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
-                         "--dropdown"
-#  elif defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
-                         "--radiolist or --dropdown"
-#  endif
-                         );
+    return use_only_with(argv[0], "--return-number", RADIOLIST_DROPDOWN_ARGS);
   }
 #endif
 
@@ -758,15 +769,7 @@ int main(int argc, char **argv)
   if (format != "" && (dialog != DIALOG_FL_CALENDAR &&
                        dialog != DIALOG_FDATE))
   {
-    return use_only_with(argv[0], "--format",
-#  if defined(WITH_CALENDAR) && !defined(WITH_DATE)
-                         "--calendar"
-#  elif !defined(WITH_CALENDAR) && defined(WITH_DATE)
-                         "--date"
-#  elif defined(WITH_CALENDAR) && defined(WITH_DATE)
-                         "--calendar or --date"
-#  endif
-                         );
+    return use_only_with(argv[0], "--format", CALENDAR_DATE_ARGS);
   }
 #endif
 
@@ -913,6 +916,11 @@ int main(int argc, char **argv)
 #ifdef WITH_DATE
     case DIALOG_FDATE:
       return dialog_fdate(format);
+#endif
+
+#ifdef WITH_FONT
+    case DIALOG_FONT:
+      return dialog_font();
 #endif
 
 #ifdef WITH_TEXTINFO
