@@ -179,6 +179,34 @@ int dialog_fl_progress(bool autoclose,
       percent = atoi(linesubstr.c_str());
       if (percent >= 0 && percent <= 100)
       {
+       /*
+        if (percent >= 0 && percent < 25)
+        {
+          prog_bar->color(0x4444ff00);
+          prog_bar->selection_color(0x88888800);
+          prog_bar->value(percent*4);
+        }
+        else if (percent >= 25 && percent < 50)
+        {
+          prog_bar->color(0x88888800);
+          prog_bar->selection_color(0x4444ff00);
+          prog_bar->value((percent-25)*4);
+        }
+        else if (percent >= 50 && percent < 75)
+        {
+          prog_bar->color(0x4444ff00);
+          prog_bar->selection_color(0x88888800);
+          prog_bar->value((percent-50)*4);
+        }
+        else if (percent >= 75 && percent <= 100)
+        {
+          prog_bar->color(0x88888800);
+          prog_bar->selection_color(0x4444ff00);
+          prog_bar->value((percent-75)*4);
+        }
+        prog_bar->label("");
+        */
+
         prog_bar->value(percent);  /* update progress bar */
         sprintf(percent_label, "%d%%", percent);
         prog_bar->label(percent_label);  /* update progress bar's label */
