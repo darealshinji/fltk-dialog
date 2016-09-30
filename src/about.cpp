@@ -31,47 +31,35 @@
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Text_Display.H>
 
-#include <string>    /* std::string, c_str */
-#include <stdlib.h>  /* exit */
+#include <string>  /* std::string, c_str */
 
 #include "fltk.xpm"
 #include "fltk-dialog.hpp"
 
-
-Fl_Pixmap       *about_pixmap;
-Fl_Text_Buffer  *license_buffer;
-Fl_Text_Display *license_display;
+static Fl_Window *about_win, *license_win;
 
 static void about_but_license_cb(Fl_Widget*)
 {
   license();
 }
 
-static void about_hide_cb(Fl_Widget *w)
+static void license_close_cb(Fl_Widget*)
 {
-  w->window()->hide();
+  license_win->hide();
 }
 
 static void about_close_cb(Fl_Widget*)
 {
-  delete about_pixmap;
-  delete license_display;
-  delete license_buffer;
-  exit(0);
+  license_win->hide();
+  about_win->hide();
 }
 
 int about()
 {
-  Fl_Window        *win;
+  Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
   Fl_Button        *but_license;
   Fl_Return_Button *but_close;
-
-  int winw = 450;
-  int winh = 460;
-  int bord = 10;
-  int butw = 100;
-  int buth = 26;
 
   std::string getver = get_fltk_version();
   std::string about_text = "\n"
@@ -98,24 +86,23 @@ int about()
   const char *about_text_c = about_text.c_str();
   about_pixmap = new Fl_Pixmap(fltk_xpm);
 
-  win = new Fl_Window(winw, winh, "About FLTK dialog");
-  win->callback(about_close_cb);  /* exit(0) */
+  about_win = new Fl_Window(450, 460, "About FLTK dialog");
+  about_win->callback(about_close_cb);
   {
-    box = new Fl_Box(bord, bord, winw-bord*2, winh-buth-bord*3, about_text_c);
+    box = new Fl_Box(10, 10, 430, 404, about_text_c);
     box->box(FL_UP_BOX);
     box->image(about_pixmap);
 
-    but_license = new Fl_Button(bord, winh-buth-bord, butw, buth, "Licenses");
+    but_license = new Fl_Button(10, 424, 90, 26, "Licenses");
     but_license->callback(about_but_license_cb);
 
-    but_close = new Fl_Return_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
+    but_close = new Fl_Return_Button(350, 424, 90, 26, fl_close);
     but_close->callback(about_close_cb);
   }
-  win->end();
-  win->show();
+  about_win->end();
+  about_win->show();
 
-  int ret = Fl::run();
-  delete about_pixmap;
+  Fl::run();
   return ret;
 }
 
@@ -236,29 +223,23 @@ const char *license_buffer_text =
 
 void license()
 {
-  Fl_Window *win;
-  Fl_Button *but_close;
+  Fl_Text_Buffer  *license_buffer;
+  Fl_Text_Display *license_display;
+  Fl_Button       *but_close;
 
-  int winw = 600;
-  int winh = 540;
-  int bord = 10;
-  int butw = 100;
-  int buth = 26;
-
-  win = new Fl_Window(winw, winh, "Terms and Conditions");
+  license_win = new Fl_Window(600, 540, "Terms and Conditions");
+  license_win->callback(license_close_cb);
   {
     license_buffer = new Fl_Text_Buffer();
-    license_display = new Fl_Text_Display(bord, bord, winw-bord*2, winh-buth-bord*3);
+    license_display = new Fl_Text_Display(10, 10, 580, 484);
     license_display->buffer(license_buffer);
     license_buffer->text(license_buffer_text);
-    but_close = new Fl_Button((winw-butw)/2, winh-buth-bord, butw, buth, fl_close);
-    but_close->callback(about_hide_cb);
+    but_close = new Fl_Button(250, 504, 90, 26, fl_close);
+    but_close->callback(license_close_cb);
   }
-  win->end();
-  win->show();
+  license_win->end();
+  license_win->show();
 
   Fl::run();
-  delete license_display;
-  delete license_buffer;
 }
 

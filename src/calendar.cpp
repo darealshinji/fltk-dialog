@@ -30,64 +30,56 @@
 
 #include <iostream>  /* std::cout, std::endl */
 #include <string>    /* std::string */
-#include <stdlib.h>  /* exit */
 
 #include "Flek/Fl_Calendar.H"
 #include "fltk-dialog.hpp"
 
 
-Fl_Calendar *calendar;
+static Fl_Window *calendar_win;
 
-static void calendar_ok_cb(Fl_Widget *w)
+static void calendar_ok_cb(Fl_Widget*)
 {
-  w->window()->hide();
-  return;
+  calendar_win->hide();
 }
 
 static void calendar_cancel_cb(Fl_Widget*)
 {
-  delete calendar;
-  exit(1);
+  calendar_win->hide();
+  ret = 1;
 }
 
 int dialog_fl_calendar(std::string format)
 {
-  Fl_Window        *win;
+  Fl_Calendar      *calendar;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
-
-  int bord = 10;
-  int calu = 32;
-  int calw = calu*7;             /* 224; make sure it's divisible by 7 */
-  int winw = calw+bord*2;        /* 244 */
-  int winh = winw+calu+bord/2;   /* 281 */
-  int buth = 26;
-  int butw = winw/2-(bord*3)/2;  /* 107 */
-
-  int ret;
 
   if (title == NULL)
   {
     title = (char *)"FLTK calendar";
   }
 
-  win = new Fl_Window(winw, winh, title);
-  calendar = new Fl_Calendar(bord, bord, calw, calw);
-  win->begin();  /* don't remove! */
-  win->callback(calendar_cancel_cb);  /* exit(1) */
+  /* one calendar unit = 32px
+   * calendar widget width/height = 32px * 7 = 224px
+   */
+  calendar_win = new Fl_Window(244, 281, title);
+  calendar = new Fl_Calendar(10, 10, 224, 224);
+  calendar_win->begin();  /* don't remove! */
+  calendar_win->callback(calendar_cancel_cb);
   {
-    but_ok = new Fl_Return_Button(calw-butw*2, winw, butw, buth, fl_ok);
+    but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
     but_ok->callback(calendar_ok_cb);
-    but_cancel = new Fl_Button(winw-butw-bord, winw, butw, buth, fl_cancel);
+    but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
     but_cancel->callback(calendar_cancel_cb);
   }
-  win->end();
-  win->show();
+  calendar_win->end();
+  calendar_win->show();
+  Fl::run();
 
-  ret = Fl::run();
-  print_date(format, calendar->year(), calendar->month(), calendar->day());
-
-  delete calendar;
+  if (ret == 0)
+  {
+    print_date(format, calendar->year(), calendar->month(), calendar->day());
+  }
   return ret;
 }
 

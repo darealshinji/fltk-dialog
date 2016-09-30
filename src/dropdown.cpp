@@ -1,6 +1,31 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2016, djcj <djcj@gmx.de>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Window.H>
@@ -13,66 +38,43 @@
 #include "misc/split.hpp"
 #include "fltk-dialog.hpp"
 
-Fl_Choice *dropdown_entries;
-std::vector<std::string> dropdown_v;
+static Fl_Window *dropdown_win;
+static Fl_Menu_Item dropdown_menu_items[1024];
 
 static void dropdown_exit0_cb(Fl_Widget*)
 {
-  int item = dropdown_entries->value();
-
- /* a bit stupid, but I couldn't find a way to set this as a
-  * callback parameter, so instead dropdown_return_number
-  * is set to anything but NULL when the command line
-  * option '--return-number' is given
-  */
-  if (dropdown_return_number != NULL)
-  {
-    std::cout << (item + 1) << std::endl;
-  }
-  else
-  {
-    std::cout << dropdown_v[item] << std::endl;
-  }
-
-  delete dropdown_entries;
-  exit(0);
+  dropdown_win->hide();
 }
 
 static void dropdown_exit1_cb(Fl_Widget*)
 {
-  delete dropdown_entries;
-  exit(1);
+  dropdown_win->hide();
+  ret = 1;
 }
 
-int dialog_dropdown(std::string dropdown_list)
+int dialog_dropdown(std::string dropdown_list,
+                           bool return_number)
 {
-  Fl_Window        *win;
+  Fl_Group         *g;
+  Fl_Choice        *entries;
+  Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
-
-  int winw = 320;
-  int droph = 30;
-  int bord = 10;
-  int textheight = 18;
-  int butw = 100;
-  int buth = 26;
+  std::vector<std::string> itemlist_v;
 
   if (msg == NULL)
   {
     msg = (char *)"Select an option";
   }
 
-  int boxh = textheight + bord*2;
-
   if (title == NULL)
   {
     title = (char *)"FLTK dropdown menu dialog";
   }
 
-  split(dropdown_list, DEFAULT_DELIMITER, dropdown_v);
+  split(dropdown_list, DEFAULT_DELIMITER, itemlist_v);
 
-  size_t count = dropdown_v.size();
-
+  size_t count = itemlist_v.size();
   if (count <= 1)
   {
     msg = (char *)"ERROR: need at least 2 entries";
@@ -80,19 +82,17 @@ int dialog_dropdown(std::string dropdown_list)
     return 1;
   }
 
-  Fl_Menu_Item dropdown_menu_items[count];
-
   for (size_t i = 0; i <= count; ++i)
   {
     if (i < count)
     {
-      if (dropdown_v[i] == "")
+      if (itemlist_v[i] == "")
       {
         dropdown_menu_items[i].text = (char *)"<EMPTY>";
       }
       else
       {
-        dropdown_menu_items[i].text = dropdown_v[i].c_str();
+        dropdown_menu_items[i].text = itemlist_v[i].c_str();
       }
     }
     else
@@ -111,23 +111,47 @@ int dialog_dropdown(std::string dropdown_list)
     dropdown_menu_items[i].labelcolor_ = 0;
   }
 
-  win = new Fl_Window(winw, boxh+droph+bord*3+textheight, title);
-  win->callback(dropdown_exit1_cb);
+  dropdown_win = new Fl_Window(320, 110, title);
+  dropdown_win->callback(dropdown_exit1_cb);
   {
-    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, boxh+textheight+buth, butw, buth, fl_ok);
-    but_ok->callback(dropdown_exit0_cb);
+    g = new Fl_Group(0, 0, 320, 110);
+    {
+      entries = new Fl_Choice(10, 30, 300, 30, msg);
+      entries->down_box(FL_BORDER_BOX);
+      entries->align(FL_ALIGN_TOP_LEFT);
+      entries->menu(dropdown_menu_items);
 
-    but_cancel = new Fl_Button(winw-butw-bord, boxh+textheight+buth, butw, buth, fl_cancel);
-    but_cancel->callback(dropdown_exit1_cb);
+      dummy = new Fl_Box(119, 73, 1, 1);
+      dummy->box(FL_NO_BOX);
 
-    dropdown_entries = new Fl_Choice(bord, boxh, winw-bord*2, droph, msg);
-    dropdown_entries->down_box(FL_BORDER_BOX);
-    dropdown_entries->align(FL_ALIGN_TOP_LEFT);
-    dropdown_entries->menu(dropdown_menu_items);
+      but_ok = new Fl_Return_Button(120, 74, 90, 26, fl_ok);
+      but_ok->callback(dropdown_exit0_cb);
+      but_cancel = new Fl_Button(220, 74, 90, 26, fl_cancel);
+      but_cancel->callback(dropdown_exit1_cb);
+    }
+    g->resizable(dummy);
+    g->end();
   }
-  win->end();
-  win->show();
+  if (resizable)
+  {
+    dropdown_win->resizable(g);
+  }
+  dropdown_win->end();
+  dropdown_win->show();
+  Fl::run();
 
-  return Fl::run();
+  if (ret == 0)
+  {
+    int item = entries->value();
+    if (return_number)
+    {
+      std::cout << (item + 1) << std::endl;
+    }
+    else
+    {
+      std::cout << itemlist_v[item] << std::endl;
+    }
+  }
+  return ret;
 }
 

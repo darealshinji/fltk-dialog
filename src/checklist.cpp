@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Window.H>
@@ -32,19 +33,19 @@
 #include <string>    /* std::string, size, length, substr, c_str */
 #include <iostream>  /* std::cout, std::endl */
 #include <vector>    /* std::vector */
-#include <stdlib.h>  /* exit, atoi */
+#include <stdlib.h>  /* atoi */
 
 #include "fltk-dialog.hpp"
 #include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
-Fl_Return_Button *checklist_but_ok;
-bool checklist_checked[1024];
-int check_button_count = 0;
-std::vector<std::string> checklist_v;
+static Fl_Window *check_button_win;
+static bool checklist_checked[1024];
+static int check_button_count = 0;
+static std::vector<std::string> checklist_v;
 
-static void cb_callback(Fl_Widget *w, void *p)
+static void check_button_callback(Fl_Widget *w, void *p)
 {
   (void) w;
   /* int->char->int because I can't use int directly */
@@ -60,12 +61,12 @@ static void cb_callback(Fl_Widget *w, void *p)
   }
 }
 
-static void cb_exit0_cb(Fl_Widget *w)
+static void check_button_exit0_cb(Fl_Widget *w)
 {
   (void) w;
   std::string list;
 
-  for (int i = 0; i < check_button_count; i++)
+  for (int i = 0; i < check_button_count; ++i)
   {
     if (checklist_checked[i])
     {
@@ -81,25 +82,28 @@ static void cb_exit0_cb(Fl_Widget *w)
   int len = list.length() - 1;
   std::cout << list.substr(0, len) << std::endl;
 
-  exit(0);
+  check_button_win->hide();
 }
 
-static void cb_exit1_cb(Fl_Widget*)
+static void check_button_exit1_cb(Fl_Widget*)
 {
-  exit(1);
+  check_button_win->hide();
+  ret = 1;
 }
 
 int dialog_fl_check_button(std::string checklist_options)
 {
-  Fl_Window *win;
-  Fl_Button *but_cancel;
-  std::vector<std::string> v;
+  Fl_Group         *g, *g_inside, *buttongroup;
+  Fl_Box           *dummy1, *dummy2;
+  Fl_Return_Button *but_ok;
+  Fl_Button        *but_cancel;
+  std::vector<std::string> counter_v;
 
   split(checklist_options, DEFAULT_DELIMITER, checklist_v);
 
   for (size_t i = 0; i < checklist_v.size(); ++i)
   {
-    v.push_back(itostr(i));
+    counter_v.push_back(itostr(i));
     checklist_checked[i] = false;
     check_button_count++;
   }
@@ -111,31 +115,50 @@ int dialog_fl_check_button(std::string checklist_options)
     title = (char *)"Select your option(s)";
   }
 
-  int bord = 10;
-  int butw = 100;
-  int buth = 26;
-  int chkh = 30;
-  int winw = 420;
-  int winh = chkh * check_button_count + buth + bord*3;
+  int win_h = (30 * check_button_count) + 56;
+  int mod_h = win_h - 40;
 
-  win = new Fl_Window(winw, winh, title);
-  win->callback(cb_exit1_cb);
+  check_button_win = new Fl_Window(420, win_h, title);
+  check_button_win->callback(check_button_exit1_cb);
   {
-    for (int i = 0; i < check_button_count; ++i)
+    g = new Fl_Group(0, 0, 420, mod_h);
     {
-      rb[i] = new Fl_Check_Button(bord, bord+i*chkh, winw-bord*2, chkh, checklist_v[i].c_str());
-      rb[i]->callback(cb_callback, (char *)v[i].c_str());
+      g_inside = new Fl_Group(0, 0, 420, mod_h);
+      {
+        for (int i = 0; i < check_button_count; ++i)
+        {
+          rb[i] = new Fl_Check_Button(10, 10 + (30 * i), 400, 30, checklist_v[i].c_str());
+          rb[i]->callback(check_button_callback, (char *)counter_v[i].c_str());
+        }
+        dummy1 = new Fl_Box(10, mod_h - 2, 400, 1);
+        dummy1->box(FL_NO_BOX);
+      }
+      g_inside->resizable(dummy1);
+      g_inside->end();
     }
+    g->resizable(g_inside);
+    g->end();
 
-    checklist_but_ok = new Fl_Return_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
-    checklist_but_ok->callback(cb_exit0_cb);
-
-    but_cancel = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_cancel);
-    but_cancel->callback(cb_exit1_cb);
+    buttongroup = new Fl_Group(0, mod_h, 420, 36);
+    {
+      dummy2 = new Fl_Box(219, mod_h, 1, 1);
+      dummy2->box(FL_NO_BOX);
+      but_ok = new Fl_Return_Button(220, mod_h + 4, 90, 26, fl_ok);
+      but_ok->callback(check_button_exit0_cb);
+      but_cancel = new Fl_Button(320, mod_h + 4, 90, 26, fl_cancel);
+      but_cancel->callback(check_button_exit1_cb);
+    }
+    buttongroup->resizable(dummy2);
+    buttongroup->end();
   }
-  win->end();
-  win->show();
+  if (resizable)
+  {
+    check_button_win->resizable(g);
+  }
+  check_button_win->end();
+  check_button_win->show();
 
-  return Fl::run();
+  Fl::run();
+  return ret;
 }
 

@@ -24,6 +24,7 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
@@ -37,29 +38,12 @@
 #include "fltk-dialog.hpp"
 
 
-#define FDATE_LABELSIZE 14
+static Fl_Window  *fdate_win;
+static Fl_Choice  *fdate_month;
+static Fl_Spinner *fdate_year;
+static Fl_Spinner *fdate_day;
 
-Fl_Choice  *fdate_month;
-Fl_Spinner *fdate_year;
-Fl_Spinner *fdate_day;
-
-Fl_Menu_Item item_month[] = {
-  { FDate::month_name[ JANUARY   - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ FEBRUARY  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ MARCH     - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ APRIL     - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ MAY       - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ JUNE      - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ JULY      - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ AUGUST    - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ SEPTEMBER - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ OCTOBER   - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ NOVEMBER  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { FDate::month_name[ DECEMBER  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, FDATE_LABELSIZE, 0 },
-  { 0, 0, 0, 0, 0, 0, 0, 0 ,0 }
-};
-
-void set_max_days()
+static void max_days_cb(Fl_Widget*)
 {
   int dim = FDate::days[fdate_month->value() + 1];
 
@@ -76,94 +60,109 @@ void set_max_days()
   fdate_day->maximum(dim);
 }
 
-static void max_days_cb(Fl_Widget*)
+static void date_ok_cb(Fl_Widget*)
 {
-  set_max_days();
-}
-
-static void date_ok_cb(Fl_Widget *w)
-{
-  w->window()->hide();
-  return;
+  fdate_win->hide();
 }
 
 static void date_cancel_cb(Fl_Widget*)
 {
-  delete fdate_day;
-  delete fdate_year;
-  delete fdate_month;
-  exit(1);
+  fdate_win->hide();
+  ret = 1;
 }
 
 int dialog_fdate(std::string format)
 {
-  Fl_Window        *win;
+  Fl_Group         *g, *buttongroup;
+  Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
-  int bord = 10;
-  int droph = 30;
-  int dropw = 120;
-  int textheight = 18;
-  int buth = 26;
-  int butw = 100;
-  int winw = bord*4+dropw*3;
-  int winh = textheight+droph+buth+bord*4;
+  Fl_Menu_Item item_month[] = {
+    { FDate::month_name[ JANUARY   - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ FEBRUARY  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ MARCH     - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ APRIL     - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ MAY       - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ JUNE      - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ JULY      - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ AUGUST    - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ SEPTEMBER - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ OCTOBER   - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ NOVEMBER  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { FDate::month_name[ DECEMBER  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+  };
 
-  time_t t = time(0);
-  struct tm *time = localtime(&t);
+  time_t t          = time(0);
+  struct tm *time   = localtime(&t);
   int current_year  = time->tm_year + 1900;
   int current_month = time->tm_mon;  /* January = 0 */
   int current_day   = time->tm_mday;
-
-  int ret;
 
   if (title == NULL)
   {
     title = (char *)"FLTK date";
   }
 
-  win = new Fl_Window(winw, winh, title);
-  win->callback(date_cancel_cb);  /* exit(1) */
+  fdate_win = new Fl_Window(400, 114, title);
+  fdate_win->callback(date_cancel_cb);
   {
-    fdate_month = new Fl_Choice(bord, bord+textheight, dropw, droph, "Month:");
-    fdate_month->down_box(FL_BORDER_BOX);
-    fdate_month->align(FL_ALIGN_TOP_LEFT);
-    fdate_month->menu(item_month);
-    fdate_month->value(current_month);
-    fdate_month->callback(max_days_cb);
+    g = new Fl_Group(0, 0, 400, 114);
+    {
+      fdate_month = new Fl_Choice(10, 28, 120, 30, "Month:");
+      fdate_month->down_box(FL_BORDER_BOX);
+      fdate_month->align(FL_ALIGN_TOP_LEFT);
+      fdate_month->menu(item_month);
+      fdate_month->value(current_month);
+      fdate_month->callback(max_days_cb);
 
-    fdate_year = new Fl_Spinner(bord*3+dropw*2, bord+textheight, dropw, droph, "Year:");
-    fdate_year->labelsize(FDATE_LABELSIZE);
-    fdate_year->align(FL_ALIGN_TOP_LEFT);
-    fdate_year->minimum(1);
-    fdate_year->maximum(9999);
-    fdate_year->step(1);
-    fdate_year->value(current_year);
-    fdate_year->callback(max_days_cb);
+      fdate_year = new Fl_Spinner(270, 28, 120, 30, "Year:");
+      fdate_year->labelsize(14);
+      fdate_year->align(FL_ALIGN_TOP_LEFT);
+      fdate_year->minimum(1);
+      fdate_year->maximum(9999);
+      fdate_year->step(1);
+      fdate_year->value(current_year);
+      fdate_year->callback(max_days_cb);
 
-    fdate_day = new Fl_Spinner(bord*2+dropw, bord+textheight, dropw, droph, "Day:");
-    fdate_day->labelsize(FDATE_LABELSIZE);
-    fdate_day->align(FL_ALIGN_TOP_LEFT);
-    fdate_day->minimum(1);
-    fdate_day->step(1);
-    fdate_day->value(current_day);
-    set_max_days();
+      fdate_day = new Fl_Spinner(140, 28, 120, 30, "Day:");
+      fdate_day->labelsize(14);
+      fdate_day->align(FL_ALIGN_TOP_LEFT);
+      fdate_day->minimum(1);
+      fdate_day->step(1);
+      fdate_day->value(current_day);
+      max_days_cb(NULL);
 
-    but_ok = new Fl_Return_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
-    but_ok->callback(date_ok_cb);
+      dummy1 = new Fl_Box(10, 58, 380, 1);
+      dummy1->box(FL_NO_BOX);
+    }
+    g->resizable(dummy1);
+    g->end();
 
-    but_cancel = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_cancel);
-    but_cancel->callback(date_cancel_cb);
+    buttongroup = new Fl_Group(0, 74, 400, 46);
+    {
+      dummy2 = new Fl_Box(199, 74, 1, 1);
+      dummy2->box(FL_NO_BOX);
+      but_ok = new Fl_Return_Button(200, 78, 90, 26, fl_ok);
+      but_ok->callback(date_ok_cb);
+      but_cancel = new Fl_Button(300, 78, 90, 26, fl_cancel);
+      but_cancel->callback(date_cancel_cb);
+    }
+    buttongroup->resizable(dummy2);
+    buttongroup->end();
   }
-  win->end();
-  win->show();
+  if (resizable)
+  {
+    fdate_win->resizable(g);
+  }
+  fdate_win->end();
+  fdate_win->show();
+  Fl::run();
 
-  ret = Fl::run();
-  print_date(format, fdate_year->value(), fdate_month->value() + 1, fdate_day->value());
-
-  delete fdate_day;
-  delete fdate_year;
-  delete fdate_month;
+  if (ret == 0)
+  {
+    print_date(format, fdate_year->value(), fdate_month->value() + 1, fdate_day->value());
+  }
   return ret;
 }

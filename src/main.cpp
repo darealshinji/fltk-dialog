@@ -33,7 +33,6 @@
 #include <iostream>  /* std::cout, std::cerr, std::endl */
 #include <string>    /* std::string */
 #include <getopt.h>  /* getopt_long_only */
-#include <stdlib.h>  /* exit */
 
 #include "fltk-dialog.hpp"
 #include "main.hpp"
@@ -65,8 +64,8 @@
 
 const char *title = NULL;
 const char *msg = NULL;
-const char *dropdown_return_number = NULL;
-bool resizable = false;
+int ret = 0;
+bool resizable = true;
 
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
@@ -654,7 +653,6 @@ int main(int argc, char **argv)
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
       case LO_RETURN_NUMBER:
         return_number = true;
-        dropdown_return_number = (char *)"y";  /* can be anything but NULL */
         break;
 #endif
 #ifdef WITH_CALENDAR
@@ -905,7 +903,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_DROPDOWN
     case DIALOG_DROPDOWN:
-      return dialog_dropdown(dropdown_options);
+      return dialog_dropdown(dropdown_options, return_number);
 #endif
 
 #ifdef WITH_CALENDAR

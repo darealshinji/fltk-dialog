@@ -33,31 +33,24 @@
 #include <string>    /* std::string, std::getline, c_str, compare, substr */
 #include <iostream>  /* std::cin */
 #include <stdio.h>   /* sprintf */
-#include <stdlib.h>  /* exit, atoi */
+#include <stdlib.h>  /* atoi */
 #include <string.h>  /* strlen */
 
 #include "fltk-dialog.hpp"
 #include "misc/readstdio.hpp"
 
 
-Fl_Window   *prog_win;
-Fl_Progress *prog_bar;
-
-static void progress_exit(int ret)
-{
-  prog_win->remove(prog_bar);
-  delete prog_bar;
-  exit(ret);
-}
+static Fl_Window *progress_win;
 
 static void progress_exit0_cb(Fl_Widget*)
 {
-  progress_exit(0);
+  progress_win->hide();
 }
 
 static void progress_exit1_cb(Fl_Widget*)
 {
-  progress_exit(1);
+  progress_win->hide();
+  ret = 1;
 }
 
 /* run a test:
@@ -66,23 +59,15 @@ static void progress_exit1_cb(Fl_Widget*)
 int dialog_fl_progress(bool autoclose,
                        bool hide_cancel)
 {
-  Fl_Box           *box;
+  Fl_Progress      *progress_bar;
+  Fl_Box           *box, *dummy;
+  Fl_Group         *g;
   Fl_Return_Button *but_ok = NULL;
   Fl_Button        *but_cancel = NULL;
 
-  int winw = 320;
-  int winh = 0;
-  int barh = 30;
-  int bord = 10;
-  int textheight = 18;
-  int textlines = 1;
-  int butw = 100;
-  int buth = 26;
-  int but_right = winw-butw-bord;
-  int but_left = winw-butw*2-bord*2;
-
   std::string s, line, linesubstr;
   int percent = 0;
+  int textlines = 1;
   char percent_label[5];
 
   if (msg == NULL)
@@ -122,51 +107,65 @@ int dialog_fl_progress(bool autoclose,
     return 1;
   }
 
-  int boxh = textlines*textheight + bord*2;
+  int box_h = textlines*18 + 20;
+  int mod_h = box_h + 44;
+  int win_h = 0;
   if (!autoclose)
   {
-    winh = boxh+barh+buth+bord*2+5;
+    win_h = box_h + 81;
   }
   else
   {
-    winh = boxh+barh+bord+5;
+    win_h = box_h + 45;
   }
 
-  prog_win = new Fl_Window(winw, winh, title);
-  prog_win->callback(progress_exit1_cb);
+  progress_win = new Fl_Window(320, win_h, title);
+  progress_win->callback(progress_exit1_cb);
   {
-    box = new Fl_Box(0, 0, bord, boxh, s.c_str());
-    box->box(FL_NO_BOX);
-    box->align(FL_ALIGN_RIGHT);
-
-    prog_bar = new Fl_Progress(bord, boxh, winw-bord*2, barh);
-    prog_bar->minimum(0);
-    prog_bar->maximum(100);
-    prog_bar->color(0x88888800);  /* background color */
-    prog_bar->selection_color(0x4444ff00);  /* progress bar color */
-    prog_bar->labelcolor(FL_WHITE);  /* percent text color */
-    prog_bar->value(0);
-    prog_bar->label("0%");
-
-    if (!autoclose)
+    g = new Fl_Group(0, 0, 320, win_h);
     {
-      int but_ok_x = but_right;
-      if (!hide_cancel)
+      box = new Fl_Box(0, 0, 10, box_h, s.c_str());
+      box->box(FL_NO_BOX);
+      box->align(FL_ALIGN_RIGHT);
+
+      progress_bar = new Fl_Progress(10, box_h, 300, 30);
+      progress_bar->minimum(0);
+      progress_bar->maximum(100);
+      progress_bar->color(0x88888800);  /* background color */
+      progress_bar->selection_color(0x4444ff00);  /* progress bar color */
+      progress_bar->labelcolor(FL_WHITE);  /* percent text color */
+      progress_bar->value(0);
+      progress_bar->label("0%");
+
+      int but_ok_x = 220;
+
+      if (!autoclose)
       {
-        but_cancel = new Fl_Button(but_right, boxh+textheight+buth, butw, buth, fl_cancel);
-        but_cancel->callback(progress_exit1_cb);
-        but_ok_x = but_left;
+        if (!hide_cancel)
+        {
+          but_cancel = new Fl_Button(220, mod_h, 90, 26, fl_cancel);
+          but_cancel->callback(progress_exit1_cb);
+          but_ok_x = 120;
+        }
+        but_ok = new Fl_Return_Button(but_ok_x, mod_h, 90, 26, fl_ok);
+        but_ok->deactivate();
+        but_ok->callback(progress_exit0_cb);
       }
-      but_ok = new Fl_Return_Button(but_ok_x, boxh+textheight+buth, butw, buth, fl_ok);
-      but_ok->deactivate();
-      but_ok->callback(progress_exit0_cb);
+      dummy = new Fl_Box(but_ok_x - 1, mod_h - 1, 1, 1);
+      dummy->box(FL_NO_BOX);
     }
+    g->resizable(dummy);
+    g->end();
   }
-  prog_win->end();
-  prog_win->show();
+  if (resizable)
+  {
+    progress_win->resizable(g);
+  }
+  progress_win->end();
+  progress_win->show();
 
   /* initialize with 0% bar */
-  prog_win->wait_for_expose();
+  progress_win->wait_for_expose();
   Fl::flush();
 
   /* get stdin line by line */
@@ -175,41 +174,41 @@ int dialog_fl_progress(bool autoclose,
     /* ignore lines beginning with a '#' */
     if (line.compare(0, 1, "#") != 0)
     {
-      linesubstr = line.substr(0,3);
+      linesubstr = line.substr(0, 3);
       percent = atoi(linesubstr.c_str());
       if (percent >= 0 && percent <= 100)
       {
        /*
         if (percent >= 0 && percent < 25)
         {
-          prog_bar->color(0x4444ff00);
-          prog_bar->selection_color(0x88888800);
-          prog_bar->value(percent*4);
+          progress_bar->color(0x4444ff00);
+          progress_bar->selection_color(0x88888800);
+          progress_bar->value(percent*4);
         }
         else if (percent >= 25 && percent < 50)
         {
-          prog_bar->color(0x88888800);
-          prog_bar->selection_color(0x4444ff00);
-          prog_bar->value((percent-25)*4);
+          progress_bar->color(0x88888800);
+          progress_bar->selection_color(0x4444ff00);
+          progress_bar->value((percent-25)*4);
         }
         else if (percent >= 50 && percent < 75)
         {
-          prog_bar->color(0x4444ff00);
-          prog_bar->selection_color(0x88888800);
-          prog_bar->value((percent-50)*4);
+          progress_bar->color(0x4444ff00);
+          progress_bar->selection_color(0x88888800);
+          progress_bar->value((percent-50)*4);
         }
         else if (percent >= 75 && percent <= 100)
         {
-          prog_bar->color(0x88888800);
-          prog_bar->selection_color(0x4444ff00);
-          prog_bar->value((percent-75)*4);
+          progress_bar->color(0x88888800);
+          progress_bar->selection_color(0x4444ff00);
+          progress_bar->value((percent-75)*4);
         }
-        prog_bar->label("");
+        progress_bar->label("");
         */
 
-        prog_bar->value(percent);  /* update progress bar */
+        progress_bar->value(percent);  /* update progress bar */
         sprintf(percent_label, "%d%%", percent);
-        prog_bar->label(percent_label);  /* update progress bar's label */
+        progress_bar->label(percent_label);  /* update progress bar's label */
         Fl::check();  /* update the screen */
 
         if (percent == 100)
@@ -222,18 +221,12 @@ int dialog_fl_progress(bool autoclose,
               but_cancel->deactivate();
             }
           }
-          else
-          {
-            progress_exit(0);
-          }
         }
       }
     }
   }
 
-  int ret = Fl::run();
-  prog_win->remove(prog_bar);
-  delete prog_bar;
+  Fl::run();
   return ret;
 }
 

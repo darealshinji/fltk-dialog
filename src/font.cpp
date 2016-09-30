@@ -122,15 +122,15 @@ void FontDisplay::draw()
   fl_draw(label(), x()+3, y()+3, w()-6, h()-6, align());
 }
 
-FontDisplay     *fd_text;
-Fl_Hold_Browser *fd_fonts, *fd_size;
-Fl_Tile         *font_tile;
+static Fl_Window       *font_win;
+static FontDisplay     *fd_text;
+static Fl_Hold_Browser *fd_fonts, *fd_size;
 
-int **fd_sizes;
-int *fd_numsizes;
-int fd_pickedsize = 18;
+static int **fd_sizes;
+static int  *fd_numsizes;
+static int   fd_pickedsize = 18;
 
-void fd_fonts_cb(Fl_Widget*)
+static void fd_fonts_cb(Fl_Widget*)
 {
   int fn = fd_fonts->value();
   if (!fn)
@@ -186,7 +186,7 @@ void fd_fonts_cb(Fl_Widget*)
   fd_text->redraw();
 }
 
-void fd_size_cb(Fl_Widget*)
+static void fd_size_cb(Fl_Widget*)
 {
   int i = fd_size->value();
   if (!i)
@@ -207,24 +207,20 @@ void fd_size_cb(Fl_Widget*)
 
 static void font_ok_cb(Fl_Widget *w)
 {
-  w->window()->hide();
-  return;
+  font_win->hide();
 }
 
 static void font_cancel_cb(Fl_Widget *w)
 {
-  delete fd_size;
-  delete fd_fonts;
-  delete fd_text;
-  delete font_tile;
-  exit(1);
+  font_win->hide();
+  ret = 1;
 }
 
 int dialog_font()
 {
-  Fl_Window        *win;
+  Fl_Tile          *font_tile;
   Fl_Group         *textgroup, *fontgroup, *buttongroup;
-  Fl_Box           *invisible;
+  Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
@@ -267,15 +263,15 @@ int dialog_font()
     title = (char *)"FLTK Font Selector";
   }
 
-  win = new Fl_Window(550, 400, title);
-  win->callback(font_cancel_cb);  /* exit(1) */
+  font_win = new Fl_Window(550, 400, title);
+  font_win->callback(font_cancel_cb);  /* exit(1) */
   {
     font_tile = new Fl_Tile(0, 0, 550, 370);
     {
       textgroup = new Fl_Group(0, 0, 550, 185);
       textgroup->box(FL_FLAT_BOX);
       {
-        fd_text = new FontDisplay(FL_FRAME_BOX, BORD, BORD, 530, 170, label);
+        fd_text = new FontDisplay(FL_FRAME_BOX, 10, 10, 530, 170, label);
         fd_text->align(FL_ALIGN_TOP|FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_CLIP);
         fd_text->color(17);  /* light yellow */
       }
@@ -285,7 +281,7 @@ int dialog_font()
       fontgroup = new Fl_Group(0, 185, 550, 185);
       fontgroup->box(FL_FLAT_BOX);
       {
-        fd_fonts = new Fl_Hold_Browser(BORD, 190, 390, 170);
+        fd_fonts = new Fl_Hold_Browser(10, 190, 390, 170);
         fd_fonts->box(FL_FRAME_BOX);
         fd_fonts->callback(fd_fonts_cb);
         fd_size = new Fl_Hold_Browser(410, 190, 130, 170);
@@ -299,20 +295,21 @@ int dialog_font()
 
     buttongroup = new Fl_Group(0, 370, 550, 30);
     {
-      invisible = new Fl_Box(329, 370, 1, BUTH);
-      but_ok = new Fl_Return_Button(330, 370, BUTW, BUTH, fl_ok);
+      dummy = new Fl_Box(329, 370, 1, 26);
+      dummy->box(FL_NO_BOX);
+      but_ok = new Fl_Return_Button(350, 370, 90, 26, fl_ok);
       but_ok->callback(font_ok_cb);
-      but_cancel = new Fl_Button(440, 370, BUTW, BUTH, fl_cancel);
+      but_cancel = new Fl_Button(450, 370, 90, 26, fl_cancel);
       but_cancel->callback(font_cancel_cb);
     }
-    buttongroup->resizable(invisible);
+    buttongroup->resizable(dummy);
     buttongroup->end();
   }
   if (resizable)
   {
-    win->resizable(font_tile);
+    font_win->resizable(font_tile);
   }
-  win->end();
+  font_win->end();
 
   int k = Fl::set_fonts("*");
   fd_sizes = new int*[k];
@@ -361,16 +358,13 @@ int dialog_font()
 
   fd_fonts->value(1);
   fd_fonts_cb(fd_fonts);
-  win->show();
+  font_win->show();
+  Fl::run();
 
-  int ret = Fl::run();
-
-  const char *fname = Fl::get_font_name((Fl_Font) fd_text->font, NULL);
-  std::cout << fname << "|" << fd_size->value() << std::endl;
-
-  delete fd_size;
-  delete fd_fonts;
-  delete fd_text;
-  delete font_tile;
+  if (ret == 0)
+  {
+    const char *fname = Fl::get_font_name((Fl_Font) fd_text->font, NULL);
+    std::cout << fname << "|" << fd_size->value() << std::endl;
+  }
   return ret;
 }

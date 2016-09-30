@@ -34,6 +34,11 @@
 #include "fltk-dialog.hpp"
 
 
+static Fl_Window *dnd_win;
+static Fl_Box    *dnd_count;
+static void dnd_callback(const char *items);
+static int dnd_count_val = 0;
+
 class dnd_box : public Fl_Box
 {
   public:
@@ -46,13 +51,26 @@ class dnd_box : public Fl_Box
     int handle(int event);
 };
 
-Fl_Window *dnd_win;
-Fl_Box    *dnd_count;
-int dnd_count_val = 0;
+int dnd_box::handle(int event)
+{
+  int handle_ret = Fl_Box::handle(event);
+  switch (event) {
+    case FL_DND_ENTER:
+    case FL_DND_DRAG:
+    case FL_DND_RELEASE:
+      handle_ret = 1;
+      break;
+    case FL_PASTE:
+      dnd_callback(Fl::event_text());
+      handle_ret = 1;
+      break;
+  }
+  return handle_ret;
+}
 
 static void dnd_exit_cb(Fl_Widget*)
 {
-  exit(0);
+  dnd_win->hide();
 }
 
 static void dnd_callback(const char *items)
@@ -75,36 +93,12 @@ static void dnd_callback(const char *items)
   std::cout << items;
 }
 
-int dnd_box::handle(int event)
-{
-  int ret = Fl_Box::handle(event);
-  switch (event) {
-    case FL_DND_ENTER:
-    case FL_DND_DRAG:
-    case FL_DND_RELEASE:
-      ret = 1;
-      break;
-    case FL_PASTE:
-      dnd_callback(Fl::event_text());
-      ret = 1;
-      break;
-  }
-  return ret;
-}
-
 int dialog_dnd()
 {
   dnd_box          *box;
   Fl_Group         *g;
-  Fl_Box           *text;
+  Fl_Box           *text, *dummy;
   Fl_Return_Button *but_close;
-
-  int bord = 10;
-  int winw = 400;
-  int winh = 300;
-  int butw = 100;
-  int buth = 26;
-  int textw = 110 + bord;
 
   if (msg == NULL)
   {
@@ -116,33 +110,42 @@ int dialog_dnd()
     title = (char *)"FLTK Drag & Drop";
   }
 
-  dnd_win = new Fl_Window(winw, winh, title);
+  dnd_win = new Fl_Window(400, 300, title);
   dnd_win->callback(dnd_exit_cb);
   {
-    box = new dnd_box(bord, bord, winw-bord*2, winh-buth-bord*3, msg);
+    box = new dnd_box(10, 10, 380, 244, msg);
     box->box(FL_ENGRAVED_FRAME);
-    g = new Fl_Group(bord, winh-buth-bord*3, winw-bord*2, buth+bord*2);
+
+    g = new Fl_Group(0, 244, 400, 56);
     {
-      text = new Fl_Box(bord, winh-buth-bord, textw, buth);
+      text = new Fl_Box(10, 264, 120, 26);
       text->label("Items dropped:");
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
 
       /* the dnd_count widget has the same size and position as the
        * text widget, but its label text is placed right to it */
-      dnd_count = new Fl_Box(bord, winh-buth-bord, textw, buth);
+      dnd_count = new Fl_Box(10, 264, 120, 26);
       dnd_count->label("0");
       dnd_count->box(FL_NO_BOX);
       dnd_count->align(FL_ALIGN_RIGHT);
 
-      but_close = new Fl_Return_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_close);
+      dummy = new Fl_Box(299, 260, 1, 1);
+      dummy->box(FL_NO_BOX);
+      but_close = new Fl_Return_Button(300, 264, 90, 26, fl_close);
       but_close->callback(dnd_exit_cb);
     }
+    g->resizable(dummy);
     g->end();
+  }
+  if (resizable)
+  {
+    dnd_win->resizable(box);
   }
   dnd_win->end();
   dnd_win->show();
+  Fl::run();
 
-  return Fl::run();
+  return ret;
 }
 

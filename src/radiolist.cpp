@@ -24,6 +24,7 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Radio_Round_Button.H>
@@ -32,28 +33,26 @@
 #include <string>    /* std::string, size, c_str */
 #include <iostream>  /* std::cout, std::endl */
 #include <vector>    /* std::vector */
-#include <stdlib.h>  /* exit */
 
 #include "fltk-dialog.hpp"
 #include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
-Fl_Return_Button *radiolist_but_ok;
-
-const char *radiolist_return = NULL;
-bool radiolist_but_ok_activated = false;
-std::vector<std::string> radiolist_v;
+static Fl_Window *radio_round_button_win;
+static Fl_Return_Button *radiolist_but_ok;
+static const char *radiolist_return = NULL;
+static bool radiolist_but_ok_activated = false;
 
 static void rb_exit0_cb(Fl_Widget*)
 {
-  std::cout << radiolist_return << std::endl;
-  exit(0);
+  radio_round_button_win->hide();
 }
 
 static void rb_exit1_cb(Fl_Widget*)
 {
-  exit(1);
+  radio_round_button_win->hide();
+  ret = 1;
 }
 
 static void rb_callback(Fl_Widget *w, void *p)
@@ -72,16 +71,18 @@ static void rb_callback(Fl_Widget *w, void *p)
 int dialog_fl_radio_round_button(std::string radiolist_options,
                                         bool return_number)
 {
-  Fl_Window *win;
+  Fl_Group  *g, *g_inside, *buttongroup;
+  Fl_Box    *dummy1, *dummy2;
   Fl_Button *but_cancel;
-  std::vector<std::string> v;
+  std::vector<std::string> radiolist_v;
+  std::vector<std::string> counter_v;
   int rbcount = 0;
 
   split(radiolist_options, DEFAULT_DELIMITER, radiolist_v);
 
   for (size_t i = 0; i < radiolist_v.size(); ++i)
   {
-    v.push_back(itostr(i+1));
+    counter_v.push_back(itostr(i+1));
     rbcount++;
   }
 
@@ -100,43 +101,65 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
     title = (char *)"Select an option";
   }
 
-  int bord = 10;
-  int butw = 100;
-  int buth = 26;
-  int radh = 30;
-  int winw = 420;
-  int winh = radh * rbcount + buth + bord*3;
+  int win_h = (30 * rbcount) + 56;
+  int mod_h = win_h - 40;
 
-  win = new Fl_Window(winw, winh, title);
-  win->callback(rb_exit1_cb);
+  radio_round_button_win = new Fl_Window(420, win_h, title);
+  radio_round_button_win->callback(rb_exit1_cb);
   {
-    for (int i = 0; i < rbcount; ++i)
+    g = new Fl_Group(0, 0, 420, mod_h);
     {
-      char *p = NULL;
-
-      rb[i] = new Fl_Radio_Round_Button(bord, bord+i*radh, winw-bord*2, radh, radiolist_v[i].c_str());
-
-      if (return_number)
+      g_inside = new Fl_Group(0, 0, 420, mod_h);
       {
-        p = (char *)v[i].c_str();
+        for (int i = 0; i < rbcount; ++i)
+        {
+          char *p = NULL;
+          rb[i] = new Fl_Radio_Round_Button(10, 10 + (30 * i), 400, 30, radiolist_v[i].c_str());
+
+          if (return_number)
+          {
+            p = (char *)counter_v[i].c_str();
+          }
+          else
+          {
+            p = (char *)rb[i]->label();
+          }
+          rb[i]->callback(rb_callback, (char *)p);
+        }
+        dummy1 = new Fl_Box(10, mod_h - 2, 400, 1);
+        dummy1->box(FL_NO_BOX);
       }
-      else
-      {
-        p = (char *)rb[i]->label();
-      }
-      rb[i]->callback(rb_callback, (char *)p);
+      g_inside->resizable(dummy1);
+      g_inside->end();
     }
+    g->resizable(g_inside);
+    g->end();
 
-    radiolist_but_ok = new Fl_Return_Button(winw-butw*2-bord*2, winh-buth-bord, butw, buth, fl_ok);
-    radiolist_but_ok->deactivate();
-    radiolist_but_ok->callback(rb_exit0_cb);
-
-    but_cancel = new Fl_Button(winw-butw-bord, winh-buth-bord, butw, buth, fl_cancel);
-    but_cancel->callback(rb_exit1_cb);
+    buttongroup = new Fl_Group(0, mod_h, 420, 36);
+    {
+      dummy2 = new Fl_Box(219, mod_h, 1, 1);
+      dummy2->box(FL_NO_BOX);
+      radiolist_but_ok = new Fl_Return_Button(220, mod_h + 4, 90, 26, fl_ok);
+      radiolist_but_ok->deactivate();
+      radiolist_but_ok->callback(rb_exit0_cb);
+      but_cancel = new Fl_Button(320, mod_h + 4, 90, 26, fl_cancel);
+      but_cancel->callback(rb_exit1_cb);
+    }
+    buttongroup->resizable(dummy2);
+    buttongroup->end();
   }
-  win->end();
-  win->show();
+  if (resizable)
+  {
+    radio_round_button_win->resizable(g);
+  }
+  radio_round_button_win->end();
+  radio_round_button_win->show();
+  Fl::run();
 
-  return Fl::run();
+  if (ret == 0)
+  {
+    std::cout << radiolist_return << std::endl;
+  }
+  return ret;
 }
 
