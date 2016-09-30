@@ -23,16 +23,16 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel, fl_close */
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Multi_Browser.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
-#include <FL/Fl_Multi_Browser.H>
-#include <FL/Fl_Check_Button.H>
 
-#include <string>    /* std::string, std::getline, c_str */
-#include <iostream>  /* std::cin */
+#include <iostream>
+#include <string>
 
 #include "fltk-dialog.hpp"
 #include "misc/readstdio.hpp"
@@ -147,7 +147,7 @@ int dialog_textinfo(       bool autoscroll,
       ti_browser->add(line.c_str());
       if (autoscroll)
       {
-        linecount++;
+        ++linecount;
         ti_browser->bottomline(linecount);
       }
       Fl::check();
@@ -155,13 +155,11 @@ int dialog_textinfo(       bool autoscroll,
   }
   else if (stdin == -1)
   {
-    line = "error: select()";
-    ti_browser->add(line.c_str());
+    ti_browser->add("error: select()");
   }
   else
   {
-    line = "error: no input";
-    ti_browser->add(line.c_str());
+    ti_browser->add("error: no input");
   }
 
   textinfo_win->show();

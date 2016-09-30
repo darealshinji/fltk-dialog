@@ -23,15 +23,15 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_close */
-#include <FL/Fl_Window.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Pixmap.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Window.H>
 
-#include <string>  /* std::string, c_str */
+#include <string>
 
 #include "fltk.xpm"
 #include "fltk-dialog.hpp"

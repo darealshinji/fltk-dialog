@@ -26,17 +26,20 @@
 #define FLTK_DIALOG_HPP
 
 #include <FL/Fl.H>
-#include <string>    /* std::string */
-#include <string.h>  /* strcmp */
+#include <string>
 
 
 #define STREQ(x, y) (strcmp(x, y) == 0)
 #define DEFAULT_DELIMITER '|'
 
-extern const char *title;
-extern const char *msg;
+extern const char *title, *msg;
 extern int ret;
 extern bool resizable;
+
+/* note:
+ *  regular button size is 90 x 26 px
+ *  border width is 10 px
+ */
 
 /* about.cpp */
 void license(void);

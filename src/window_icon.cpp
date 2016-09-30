@@ -31,13 +31,13 @@
 #include <FL/Fl_JPEG_Image.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_PNM_Image.H>
+#include <FL/Fl_RGB_Image.H>
 #include <FL/Fl_XBM_Image.H>
 #include <FL/Fl_XPM_Image.H>
-#include <FL/Fl_RGB_Image.H>
 
-#include <string>    /* std::string, c_str */
-#include <algorithm> /* std::transform */
-#include <locale>    /* std::tolower */
+#include <algorithm>
+#include <locale>
+#include <string>
 
 #include "fltk-dialog.hpp"
 
@@ -50,13 +50,13 @@ struct to_lower
   }
 };
 
-std::string get_ext(std::string input, unsigned int n=4)
+static std::string get_ext(std::string input, unsigned int n=4)
 {
-  if (input.std::string::size() <= n)
+  if (input.size() <= n)
   {
     return "";
   }
-  input = input.std::string::substr(input.std::string::size() - n);
+  input = input.substr(input.size() - n);
   std::transform(input.begin(), input.end(), input.begin(), to_lower());
   return input;
 }
@@ -82,9 +82,9 @@ void set_window_icon(std::string file)
     Fl_Image_Surface surf(in.w(), in.h());
     surf.set_current();
     fl_color(FL_WHITE);
-    fl_rectf(0,0, in.w(), in.h());
+    fl_rectf(0, 0, in.w(), in.h());
     fl_color(FL_BLACK);
-    in.draw(0,0);
+    in.draw(0, 0);
     Fl_RGB_Image *rgb = surf.image();
     Fl_Window::default_icon(rgb);
   }

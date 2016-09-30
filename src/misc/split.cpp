@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#include <string>  /* std::string, find, npos, substr, lenth */
-#include <vector>  /* std::vector, push_back */
+#include <string>
+#include <vector>
 
 void split(const std::string &s, char c, std::vector<std::string> &v)
 {
@@ -32,7 +32,7 @@ void split(const std::string &s, char c, std::vector<std::string> &v)
 
   while (j != std::string::npos)
   {
-    v.push_back(s.substr(i, j-i));
+    v.push_back(s.substr(i, j - i));
     i = ++j;
     j = s.find(c, j);
 

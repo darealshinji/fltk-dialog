@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-#include <iostream>  /* std::cout, std::endl */
-#include <string>    /* std::string, c_str */
-#include <stdio.h>   /* sprintf */
-#include <string.h>  /* memset */
-#include <time.h>    /* strptime, strftime */
+#include <iostream>
+#include <string>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 #include "fltk-dialog.hpp"
 

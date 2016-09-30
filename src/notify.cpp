@@ -22,15 +22,14 @@
  * SOFTWARE.
  */
 
-#include <iostream>   /* std::cerr, std::endl */
-#include <string>     /* std::string, c_str */
-#include <stdlib.h>   /* atoi */
-
+#include <iostream>
+#include <string>
+#include <stdlib.h>
 #ifdef DYNAMIC_NOTIFY
-#  include <dlfcn.h>  /* dlopen, dlerror, dlsym, dlclose */
+#  include <dlfcn.h>
 #endif
-
 #include <libnotify/notify.h>
+
 #include "fltk-dialog.hpp"
 
 
@@ -131,7 +130,7 @@ int dialog_notify(const char  *appname,
 
   NotifyNotification *n = (*dl_notify_notification_new)(title, msg, notify_icon.c_str());
 
-  (*dl_notify_notification_set_timeout)(n, timeout*1000);
+  (*dl_notify_notification_set_timeout)(n, timeout * 1000);
 
   if (!(*dl_notify_notification_show)(n, NULL))
   {

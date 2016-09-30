@@ -23,17 +23,17 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
-#include <FL/Fl_Button.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Button.H>
 #include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <string>    /* std::string, size, length, substr, c_str */
-#include <iostream>  /* std::cout, std::endl */
-#include <vector>    /* std::vector */
-#include <stdlib.h>  /* atoi */
+#include <string>
+#include <iostream>
+#include <vector>
+#include <stdlib.h>
 
 #include "fltk-dialog.hpp"
 #include "misc/itostr.hpp"

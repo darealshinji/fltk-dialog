@@ -23,19 +23,19 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/Fl_Value_Slider.H>
-#include <FL/Fl_Valuator.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Valuator.H>
+#include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Widget.H>
+#include <FL/Fl_Window.H>
 
-#include <string>    /* std::string */
-#include <iostream>  /* std::cout, std::endl */
-#include <stdlib.h>  /* atof */
-#include <string.h>  /* strlen */
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <string.h>
 
 #include "fltk-dialog.hpp"
 
@@ -75,7 +75,7 @@ int dialog_fl_value_slider(char *slider_min,
   double min = 0;
   double max = 100;
   double step = 1;
-  double val = min;
+  double val = 0;
 
   if (msg == NULL)
   {

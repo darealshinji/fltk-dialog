@@ -23,23 +23,23 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Radio_Round_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <string>    /* std::string, size, c_str */
-#include <iostream>  /* std::cout, std::endl */
-#include <vector>    /* std::vector */
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include "fltk-dialog.hpp"
 #include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
-static Fl_Window *radio_round_button_win;
+static Fl_Window        *radio_round_button_win;
 static Fl_Return_Button *radiolist_but_ok;
 static const char *radiolist_return = NULL;
 static bool radiolist_but_ok_activated = false;
@@ -74,15 +74,14 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
   Fl_Group  *g, *g_inside, *buttongroup;
   Fl_Box    *dummy1, *dummy2;
   Fl_Button *but_cancel;
-  std::vector<std::string> radiolist_v;
-  std::vector<std::string> counter_v;
+  std::vector<std::string> counter_v, radiolist_v;
   int rbcount = 0;
 
   split(radiolist_options, DEFAULT_DELIMITER, radiolist_v);
 
   for (size_t i = 0; i < radiolist_v.size(); ++i)
   {
-    counter_v.push_back(itostr(i+1));
+    counter_v.push_back(itostr(i + 1));
     rbcount++;
   }
 

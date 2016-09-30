@@ -25,10 +25,10 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Color_Chooser.H>
 
-#include <iostream>  /* std::cout, std::endl */
-#include <iomanip>   /* std::setfill, std::setw */
-#include <ios>       /* std::hex */
-#include <math.h>    /* round */
+#include <iostream>
+#include <iomanip>
+#include <ios>
+#include <math.h>
 
 #include "fltk-dialog.hpp"
 

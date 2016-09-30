@@ -25,7 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 
-#include <string>  /* std::string, c_str */
+#include <string>
 
 #include "fltk-dialog.hpp"
 

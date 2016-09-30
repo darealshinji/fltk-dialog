@@ -23,13 +23,13 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_close */
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <iostream>  /* std::cout */
-#include <stdio.h>   /* sprintf */
+#include <iostream>
+#include <stdio.h>
 
 #include "fltk-dialog.hpp"
 

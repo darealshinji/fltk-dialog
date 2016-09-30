@@ -23,16 +23,16 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Spinner.H>
+#include <FL/Fl_Window.H>
 
-#include <iostream>  /* std::cout, std::endl */
-#include <time.h>    /* time, localtime */
+#include <iostream>
+#include <time.h>
 
 #include "Flek/FDate.H"
 #include "fltk-dialog.hpp"

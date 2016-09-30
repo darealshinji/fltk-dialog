@@ -22,23 +22,22 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>   /* Fl::api_version */
+#include <FL/Fl.H>
 
-#include <string>    /* std::string, c_str, substr, */
-#include <iostream>  /* std::cout, std::endl */
-#include <sstream>   /* std::stringstream, str */
+#include <iostream>
+#include <sstream>
+#include <string>
 
 
 std::string get_fltk_version()
 {
 #ifdef FLTK_VERSION
 
-#ifdef REVISION
-#  define PRINT_VERSION FLTK_VERSION " (SVN r" REVISION ")"
-#else
-#  define PRINT_VERSION FLTK_VERSION
-#endif
-  return PRINT_VERSION;
+#  ifdef REVISION
+  return FLTK_VERSION " (SVN r" REVISION ")";
+#  else
+  return FLTK_VERSION;
+#  endif
 
 #else  /* FLTK_VERSION */
 

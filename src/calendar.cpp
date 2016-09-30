@@ -23,13 +23,13 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
+#include <FL/fl_ask.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <iostream>  /* std::cout, std::endl */
-#include <string>    /* std::string */
+#include <iostream>
+#include <string>
 
 #include "Flek/Fl_Calendar.H"
 #include "fltk-dialog.hpp"

@@ -26,8 +26,8 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Native_File_Chooser.H>
 
-#include <iostream>    /* std::cout, std::endl */
-#include <sys/stat.h>  /* stat */
+#include <iostream>
+#include <sys/stat.h>
 
 #include "fltk-dialog.hpp"
 

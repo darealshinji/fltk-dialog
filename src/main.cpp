@@ -30,9 +30,9 @@
 #  include <FL/Fl_RGB_Image.H>
 #endif
 
-#include <iostream>  /* std::cout, std::cerr, std::endl */
-#include <string>    /* std::string */
-#include <getopt.h>  /* getopt_long_only */
+#include <iostream>
+#include <string>
+#include <getopt.h>
 
 #include "fltk-dialog.hpp"
 #include "main.hpp"
@@ -42,25 +42,40 @@
 
 
 #if defined(WITH_RADIOLIST) && !defined(WITH_DROPDOWN)
-#  define RADIOLIST_DROPDOWN_OPTIONS "Radiolist"
+
+#  define RADIOLIST_DROPDOWN_OPTS "Radiolist"
 #  define RADIOLIST_DROPDOWN_ARGS "--radiolist"
+
 #elif !defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
-#  define RADIOLIST_DROPDOWN_OPTIONS "Dropdown"
+
+#  define RADIOLIST_DROPDOWN_OPTS "Dropdown"
 #  define RADIOLIST_DROPDOWN_ARGS "--dropdown"
+
 #elif defined(WITH_RADIOLIST) && defined(WITH_DROPDOWN)
-#  define RADIOLIST_DROPDOWN_OPTIONS "Radiolist/dropdown"
+
+#  define RADIOLIST_DROPDOWN_OPTS "Radiolist/dropdown"
 #  define RADIOLIST_DROPDOWN_ARGS "--radiolist or --dropdown"
+
 #endif
+
+
 #if defined(WITH_CALENDAR) && !defined(WITH_DATE)
-#  define CALENDAR_DATE_OPTIONS "Calendar"
+
+#  define CALENDAR_DATE_OPTS "Calendar"
 #  define CALENDAR_DATE_ARGS "--calendar"
+
 #elif !defined(WITH_CALENDAR) && defined(WITH_DATE)
-#  define CALENDAR_DATE_OPTIONS "Date"
+
+#  define CALENDAR_DATE_OPTS "Date"
 #  define CALENDAR_DATE_ARGS "--date"
+
 #elif defined(WITH_CALENDAR) && defined(WITH_DATE)
-#  define CALENDAR_DATE_OPTIONS "Calendar/date"
+
+#  define CALENDAR_DATE_OPTS "Calendar/date"
 #  define CALENDAR_DATE_ARGS "--calendar or --date"
+
 #endif
+
 
 const char *title = NULL;
 const char *msg = NULL;
@@ -198,13 +213,13 @@ void print_usage(char *prog)
 
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
   "\n"
-  RADIOLIST_DROPDOWN_OPTIONS " options:\n"
+  RADIOLIST_DROPDOWN_OPTS " options:\n"
   "  --return-number            Return selected entry number instead of label text\n"
 #endif
 
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
   "\n"
-  CALENDAR_DATE_OPTIONS " options:\n"
+  CALENDAR_DATE_OPTS " options:\n"
   "  --format=FORMAT            Set a custom output format\n"
   "                             Interpreted sequences for FORMAT are:\n"
   "                             (using the date 2006-01-08)\n"
@@ -696,16 +711,14 @@ int main(int argc, char **argv)
         break;
 #endif
       default:
-        std::cerr << "See `" << argv[0] << " --help' for available commands"
-          << std::endl;
+        std::cerr << "See `" << argv[0] << " --help' for available commands" << std::endl;
         return 1;
     }
   }
 
   if (dialog_count++ >= 2)
   {
-    std::cerr << argv[0] << ": "
-      << "two or more dialog options specified" << std::endl;
+    std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
     return 1;
   }
 
@@ -807,8 +820,7 @@ int main(int argc, char **argv)
   else
   {
     std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
-      << "Available schemes are: default gtk+ gleam plastic simple"
-      << std::endl;
+      << "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
   }
 

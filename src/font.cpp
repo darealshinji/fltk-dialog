@@ -80,14 +80,14 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Tile.H>
-#include <FL/Fl_Hold_Browser.H>
-#include <FL/fl_draw.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
+#include <FL/fl_draw.H>
+#include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Tile.H>
+#include <FL/Fl_Window.H>
 
 #include <iostream>
 #include <stdio.h>
@@ -119,7 +119,7 @@ void FontDisplay::draw()
   draw_box();
   fl_font((Fl_Font) font, size);
   fl_color(FL_BLACK);
-  fl_draw(label(), x()+3, y()+3, w()-6, h()-6, align());
+  fl_draw(label(), x() + 3, y() + 3, w() - 6, h() - 6, align());
 }
 
 static Fl_Window       *font_win;
@@ -151,7 +151,7 @@ static void fd_fonts_cb(Fl_Widget*)
   {
     /* many sizes */
     int j = 1;
-    for (int i = 1; i < 64 || i < s[n-1]; i++)
+    for (int i = 1; i < 64 || i < s[n - 1]; i++)
     {
       char buf[20];
       if (j < n && i == s[j])
@@ -181,7 +181,7 @@ static void fd_fonts_cb(Fl_Widget*)
       sprintf(buf, "@b%d", s[i]);
       fd_size->add(buf);
     }
-    fd_size->value(w+1);
+    fd_size->value(w + 1);
   }
   fd_text->redraw();
 }
@@ -233,25 +233,25 @@ int dialog_font()
   int i = strlen(label);
   unsigned long c;
 
-  for (c = ' '+1; c < 127; c++)
+  for (c = ' ' + 1; c < 127; c++)
   {
-    if (!(c&0x1f))
+    if (!(c &0x1f))
     {
-      label[i++]='\n';
+      label[i++] = '\n';
     }
-    if (c=='@')
+    if (c == '@')
     {
-      label[i++]=c;
+      label[i++] = c;
     }
-    label[i++]=c;
+    label[i++] = c;
   }
   label[i++] = '\n';
 
   for (c = 0xA1; c < 0x600; c += 9)
   {
-    if (!(++n&(0x1f)))
+    if (!(++n &(0x1f)))
     {
-      label[i++]='\n';
+      label[i++] = '\n';
     }
     i += fl_utf8encode((unsigned int) c, label + i);
   }

@@ -87,7 +87,6 @@ ifneq ($(WITH_CHECKLIST),no)
 CXXFLAGS += -DWITH_CHECKLIST
 OBJS += src/checklist.o
 HAVE_SPLIT = yes
-HAVE_ITOSTR = yes
 endif
 ifneq ($(WITH_COLOR),no)
 CXXFLAGS += -DWITH_COLOR
@@ -141,7 +140,6 @@ ifneq ($(WITH_RADIOLIST),no)
 CXXFLAGS += -DWITH_RADIOLIST
 OBJS += src/radiolist.o
 HAVE_SPLIT = yes
-HAVE_ITOSTR = yes
 endif
 ifneq ($(WITH_SCALE),no)
 CXXFLAGS += -DWITH_SCALE
@@ -157,9 +155,6 @@ CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS += src/window_icon.o
 endif
 
-ifneq ($(HAVE_ITOSTR),no)
-OBJS += src/misc/itostr.o
-endif
 ifneq ($(HAVE_PRINT_DATE),no)
 OBJS += src/misc/print_date.o src/Flek/FDate.o
 endif

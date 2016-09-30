@@ -25,10 +25,15 @@
 #ifndef FLTK_DIALOG_ITOSTR_HPP
 #define FLTK_DIALOG_ITOSTR_HPP
 
-#include <string>
 #include <sstream>
+#include <string>
 
-std::string itostr(int i);  /* int to std::string */
-
+/* convert int to std::string */
+static std::string itostr(int i)
+{
+  std::stringstream ss;
+  ss << i;
+  return ss.str();
+}
 #endif  /* !FLTK_DIALOG_ITOSTR_HPP */
 

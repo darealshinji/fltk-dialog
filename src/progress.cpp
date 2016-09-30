@@ -23,18 +23,18 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/fl_ask.H>  /* fl_ok, fl_cancel */
-#include <FL/Fl_Progress.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Progress.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
-#include <string>    /* std::string, std::getline, c_str, compare, substr */
-#include <iostream>  /* std::cin */
-#include <stdio.h>   /* sprintf */
-#include <stdlib.h>  /* atoi */
-#include <string.h>  /* strlen */
+#include <iostream>
+#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "fltk-dialog.hpp"
 #include "misc/readstdio.hpp"
@@ -107,7 +107,7 @@ int dialog_fl_progress(bool autoclose,
     return 1;
   }
 
-  int box_h = textlines*18 + 20;
+  int box_h = (textlines * 18) + 20;
   int mod_h = box_h + 44;
   int win_h = 0;
   if (!autoclose)

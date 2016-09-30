@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include <string>  /* std::string, npos, size, find, replace */
+#include <string>
 
 
 void repstr(const std::string &from,
