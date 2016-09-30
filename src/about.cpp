@@ -73,8 +73,13 @@ int about()
     "Copyright \xc2\xa9 2016 djcj <djcj@gmx.de>\n"
     "https://github.com/darealshinji/fltk-dialog\n"
     "\n"
+#ifdef WITH_FONT
+    "The FLTK library and the font widget are\n"
+    "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
+#else
     "The FLTK library is copyright \xc2\xa9 1998-2016 by\n"
     "Bill Spitzak and others.\n"
+#endif
     "\n"
     "The calendar widget is copyright \xc2\xa9 1999-2000 by\n"
     "the Flek development team and\n"
