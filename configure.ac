@@ -25,18 +25,30 @@ AS_IF([test "x$WGET" != "xyes"], [AC_MSG_WARN([\`wget' not in PATH! Cannot downl
 AC_ARG_ENABLE([calendar],
   [AS_HELP_STRING([--disable-calendar], [disable calendar dialog])],
   [use_calendar="no"], [use_calendar="yes"])
+AC_ARG_ENABLE([checklist],
+  [AS_HELP_STRING([--disable-checklist], [disable checklist dialog])],
+  [use_checklist="no"], [use_checklist="yes"])
 AC_ARG_ENABLE([color],
   [AS_HELP_STRING([--disable-color], [disable color dialog])],
   [use_color="no"], [use_color="yes"])
+AC_ARG_ENABLE([date],
+  [AS_HELP_STRING([--disable-date], [disable date dialog])],
+  [use_date="no"], [use_date="yes"])
 AC_ARG_ENABLE([dnd],
   [AS_HELP_STRING([--disable-dnd], [disable drag & drop dialog])],
   [use_dnd="no"], [use_dnd="yes"])
+AC_ARG_ENABLE([dropdown],
+  [AS_HELP_STRING([--disable-dropdown], [disable dropdown dialog])],
+  [use_dropdown="no"], [use_dropdown="yes"])
 AC_ARG_ENABLE([entry],
   [AS_HELP_STRING([--disable-entry], [disable entry dialog])],
   [use_entry="no"], [use_entry="yes"])
 AC_ARG_ENABLE([file],
   [AS_HELP_STRING([--disable-file], [disable file chooser dialog])],
   [use_file="no"], [use_file="yes"])
+AC_ARG_ENABLE([font],
+  [AS_HELP_STRING([--disable-font], [disable font selection dialog])],
+  [use_font="no"], [use_font="yes"])
 AC_ARG_ENABLE([html],
   [AS_HELP_STRING([--disable-html], [disable html dialog])],
   [use_html="no"], [use_html="yes"])
@@ -49,6 +61,9 @@ AC_ARG_ENABLE([password],
 AC_ARG_ENABLE([progress],
   [AS_HELP_STRING([--disable-progress], [disable progress dialog])],
   [use_progress="no"], [use_progress="yes"])
+AC_ARG_ENABLE([radiolist],
+  [AS_HELP_STRING([--disable-radiolist], [disable radiolist dialog])],
+  [use_radiolist="no"], [use_radiolist="yes"])
 AC_ARG_ENABLE([scale],
   [AS_HELP_STRING([--disable-scale], [disable scale dialog])],
   [use_scale="no"], [use_scale="yes"])
@@ -57,7 +72,7 @@ AC_ARG_ENABLE([textinfo],
   [use_textinfo="no"], [use_textinfo="yes"])
 
 AC_ARG_ENABLE([window-icon],
-  [AS_HELP_STRING([--disable-window-icon], [disable window icon select option])],
+  [AS_HELP_STRING([--disable-window-icon], [disable option to set the window icon])],
   [use_window_icon="no"], [use_window_icon="yes"])
 AC_ARG_ENABLE([default-icon],
   [AS_HELP_STRING([--disable-default-icon], [disable embedded default window icon])],
@@ -97,6 +112,7 @@ AS_IF([test "x$use_notify" = "xno"], [
     AC_CHECK_LIB([notify], [notify_notification_new], [have_libnotify="yes"], [have_libnotify="no"])
     AC_CHECK_LIB([notify], [notify_notification_set_timeout], [have_libnotify="yes"], [have_libnotify="no"])
     AC_CHECK_LIB([notify], [notify_notification_show], [have_libnotify="yes"], [have_libnotify="no"])
+    AC_CHECK_LIB([notify], [notify_uninit], [have_libnotify="yes"], [have_libnotify="no"])
   ])
   # libdl
   have_dlopen="no"
@@ -133,9 +149,11 @@ AS_IF([test "x$have_xft" != "xyes"], [
 AC_CHECK_HEADER([sys/time.h], [], [missing="sys/time.h"])
 AC_CHECK_HEADER([sys/types.h], [], [missing="sys/types.h $missing"])
 AC_CHECK_HEADER([unistd.h], [], [missing="unistd.h $missing"])
+AC_CHECK_FUNC([select])
 AS_IF([test "x$ac_cv_header_sys_time_h" != "xyes" \
          -o "x$ac_cv_header_sys_types_h" != "xyes" \
-         -o "x$ac_cv_header_unistd_h" != "xyes"],
+         -o "x$ac_cv_header_unistd_h" != "xyes" \
+         -o "x$ac_cv_func_select" != "xyes"],
 [
   AS_IF([test "x$use_progress" != "xno"], [
     AC_MSG_WARN([disabling progress dialog! headers missing: $missing])
@@ -157,14 +175,19 @@ AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([STATIC_FLTK], [$static_fltk])
 AC_SUBST([WITH_DEFAULT_ICON], [$default_icon])
 AC_SUBST([WITH_CALENDAR], [$use_calendar])
+AC_SUBST([WITH_CHECKLIST], [$use_checklist])
 AC_SUBST([WITH_COLOR], [$use_color])
+AC_SUBST([WITH_DATE], [$use_date])
 AC_SUBST([WITH_DND], [$use_dnd])
+AC_SUBST([WITH_DROPDOWN], [$use_dropdown])
 AC_SUBST([WITH_ENTRY], [$use_entry])
 AC_SUBST([WITH_FILE], [$use_file])
+AC_SUBST([WITH_FONT], [$use_font])
 AC_SUBST([WITH_HTML], [$use_html])
 AC_SUBST([WITH_NOTIFY], [$have_libnotify])
 AC_SUBST([WITH_PASSWORD], [$use_password])
 AC_SUBST([WITH_PROGRESS], [$use_progress])
+AC_SUBST([WITH_RADIOLIST], [$use_radiolist])
 AC_SUBST([WITH_SCALE], [$use_scale])
 AC_SUBST([WITH_TEXTINFO], [$use_textinfo])
 AC_SUBST([WITH_WINDOW_ICON], [$use_window_icon])

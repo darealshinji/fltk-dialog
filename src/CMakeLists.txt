@@ -18,15 +18,17 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 ##################################################################
-include_directories("${CMAKE_SOURCE_DIR}")
+include_directories("${CMAKE_SOURCE_DIR}"
+					"${CMAKE_SOURCE_DIR}/../fltk-1.3"
+					"${CMAKE_SOURCE_DIR}/../fltk-1.3/build"
+					"${CMAKE_SOURCE_DIR}/../libpng16")
 
 set(SOURCES
 	Flek/FDate.cpp
-	Flek/Fl_Calendar.cpp
+	misc/translate.cpp
 	about.cpp
 	choice.cpp
 	message.cpp
-	translate.cpp
 	version.cpp
 	main.cpp)
 
@@ -46,11 +48,16 @@ endif()
 find_package(LibNotify)
 
 ##################################################################
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../fltk-1.3/build")
+
 set(FLTK_SKIP_OPENGL 1)
 set(FLTK_SKIP_FORMS 1)
 set(FLTK_SKIP_FLUID 1)
 
 find_package(FLTK)
+if(FLTK_FOUND)
+	set(LIBS ${LIBS} ${FLTK_LIBRARIES})
+endif()
 
 ##################################################################
 option(WITH_DEFAULT_ICON "Use embedded default window icon" ON)
@@ -64,7 +71,17 @@ option(WITH_CALENDAR "Use calendar dialog" ON)
 
 if(WITH_CALENDAR)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_CALENDAR")
-	set(SOURCES	${SOURCES} calendar.cpp)
+	set(SOURCES	${SOURCES} calendar.cpp Flek/Fl_Calendar.cpp)
+	set(HAVE_PRINT_DATE 1)
+endif()
+
+##################################################################
+option(WITH_CHECKLIST "Use checklist dialog" ON)
+
+if(WITH_CHECKLIST)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_CHECKLIST")
+	set(SOURCES	${SOURCES} checklist.cpp)
+	set(HAVE_SPLIT 1)
 endif()
 
 ##################################################################
@@ -76,11 +93,29 @@ if(WITH_COLOR)
 endif()
 
 ##################################################################
+option(WITH_DATE "Use date dialog" ON)
+
+if(WITH_DATE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_DATE")
+	set(SOURCES	${SOURCES} date.cpp)
+	set(HAVE_PRINT_DATE 1)
+endif()
+
+##################################################################
 option(WITH_DND "Use drag & drop dialog" ON)
 
 if(WITH_DND)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_DND")
 	set(SOURCES	${SOURCES} dnd.cpp)
+endif()
+
+##################################################################
+option(WITH_DROPDOWN "Use dropdown dialog" ON)
+
+if(WITH_DROPDOWN)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_DROPDOWN")
+	set(SOURCES	${SOURCES} dropdown.cpp)
+	set(HAVE_SPLIT 1)
 endif()
 
 ##################################################################
@@ -97,6 +132,14 @@ option(WITH_FILE "Use file/directory chooser dialog" ON)
 if(WITH_FILE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_FILE")
 	set(SOURCES	${SOURCES} file.cpp)
+endif()
+
+##################################################################
+option(WITH_FONT "Use font dialog" ON)
+
+if(WITH_FONT)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_FONT")
+	set(SOURCES	${SOURCES} font.cpp)
 endif()
 
 ##################################################################
@@ -121,6 +164,16 @@ option(WITH_PROGRESS "Use progress dialog" ON)
 if(WITH_PROGRESS AND HAVE_SELECT)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_PROGRESS")
 	set(SOURCES	${SOURCES} progress.cpp)
+	set(HAVE_READSTDIO 1)
+endif()
+
+##################################################################
+option(WITH_RADIOLIST "Use radiolist dialog" ON)
+
+if(WITH_RADIOLIST)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_RADIOLIST")
+	set(SOURCES	${SOURCES} radiolist.cpp)
+	set(HAVE_SPLIT 1)
 endif()
 
 ##################################################################
@@ -137,6 +190,18 @@ option(WITH_TEXTINFO "Use text-info dialog" ON)
 if(WITH_TEXTINFO AND HAVE_SELECT)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_TEXTINFO")
 	set(SOURCES	${SOURCES} textinfo.cpp)
+	set(HAVE_READSTDIO 1)
+endif()
+
+##################################################################
+if(HAVE_PRINT_DATE)
+	set(SOURCES	${SOURCES} misc/print_date.cpp Flek/FDate.cpp)
+endif()
+if(HAVE_READSTDIO)
+	set(SOURCES	${SOURCES} misc/readstdio.cpp)
+endif()
+if(HAVE_SPLIT)
+	set(SOURCES	${SOURCES} misc/split.cpp)
 endif()
 
 ##################################################################
