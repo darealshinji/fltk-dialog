@@ -85,8 +85,8 @@ int dialog_dropdown(std::string dropdown_list,
 #ifdef WITH_FILE
 int dialog_fl_file_chooser(void);
 int dialog_fl_dir_chooser(void);
-#define FILE_CHOOSER 0
-#define DIR_CHOOSER 1
+#  define FILE_CHOOSER 0
+#  define DIR_CHOOSER 1
 int dialog_fl_native_file_chooser(int fnfc_dir);
 #endif  /* WITH_FILE */
 

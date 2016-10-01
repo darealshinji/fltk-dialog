@@ -37,6 +37,7 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Window *about_win, *license_win;
+static bool license_win_shown = false;
 
 static void about_but_license_cb(Fl_Widget*)
 {
@@ -50,7 +51,10 @@ static void license_close_cb(Fl_Widget*)
 
 static void about_close_cb(Fl_Widget*)
 {
-  license_win->hide();
+  if (license_win_shown)
+  {
+    license_win->hide();
+  }
   about_win->hide();
 }
 
@@ -244,6 +248,11 @@ void license()
   }
   license_win->end();
   license_win->show();
+
+  if (license_win->shown())
+  {
+    license_win_shown = true;
+  }
 
   Fl::run();
 }
