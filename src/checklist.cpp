@@ -36,7 +36,6 @@
 #include <stdlib.h>
 
 #include "fltk-dialog.hpp"
-#include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
@@ -45,11 +44,10 @@ static bool checklist_checked[1024];
 static int check_button_count = 0;
 static std::vector<std::string> checklist_v;
 
-static void check_button_callback(Fl_Widget *w, void *p)
+static void check_button_callback(Fl_Widget *w, long p)
 {
   (void) w;
-  /* int->char->int because I can't use int directly */
-  int i = atoi((char *)p);
+  int i = (int) p;
 
   if (checklist_checked[i])
   {
@@ -61,9 +59,8 @@ static void check_button_callback(Fl_Widget *w, void *p)
   }
 }
 
-static void check_button_exit0_cb(Fl_Widget *w)
+static void check_button_exit0_cb(Fl_Widget *)
 {
-  (void) w;
   std::string list;
 
   for (int i = 0; i < check_button_count; ++i)
@@ -97,13 +94,13 @@ int dialog_fl_check_button(std::string checklist_options)
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
-  std::vector<std::string> counter_v;
+  std::vector<long> counter_v;
 
   split(checklist_options, DEFAULT_DELIMITER, checklist_v);
 
   for (size_t i = 0; i < checklist_v.size(); ++i)
   {
-    counter_v.push_back(itostr(i));
+    counter_v.push_back((long) i);
     checklist_checked[i] = false;
     check_button_count++;
   }
@@ -128,7 +125,7 @@ int dialog_fl_check_button(std::string checklist_options)
         for (int i = 0; i < check_button_count; ++i)
         {
           rb[i] = new Fl_Check_Button(10, 10 + (30 * i), 400, 30, checklist_v[i].c_str());
-          rb[i]->callback(check_button_callback, (char *)counter_v[i].c_str());
+          rb[i]->callback(check_button_callback, counter_v[i]);
         }
         dummy1 = new Fl_Box(10, mod_h - 2, 400, 1);
         dummy1->box(FL_NO_BOX);
