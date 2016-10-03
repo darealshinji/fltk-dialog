@@ -41,8 +41,6 @@
 
 static Fl_Window *check_button_win;
 static bool checklist_checked[1024];
-static int check_button_count = 0;
-static std::vector<std::string> checklist_v;
 
 static void check_button_callback(Fl_Widget *w, long p)
 {
@@ -59,33 +57,11 @@ static void check_button_callback(Fl_Widget *w, long p)
   }
 }
 
-static void check_button_exit0_cb(Fl_Widget *)
+static void check_button_close_cb(Fl_Widget *w, long p)
 {
-  std::string list;
-
-  for (int i = 0; i < check_button_count; ++i)
-  {
-    if (checklist_checked[i])
-    {
-      list += "TRUE|";
-    }
-    else
-    {
-      list += "FALSE|";
-    }
-  }
-
-  /* strip trailing "|" */
-  int len = list.length() - 1;
-  std::cout << list.substr(0, len) << std::endl;
-
+  (void) w;
   check_button_win->hide();
-}
-
-static void check_button_exit1_cb(Fl_Widget*)
-{
-  check_button_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 int dialog_fl_check_button(std::string checklist_options)
@@ -94,7 +70,10 @@ int dialog_fl_check_button(std::string checklist_options)
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
+
+  std::vector<std::string> checklist_v;
   std::vector<long> counter_v;
+  int count = 0;
 
   split(checklist_options, DEFAULT_DELIMITER, checklist_v);
 
@@ -102,27 +81,27 @@ int dialog_fl_check_button(std::string checklist_options)
   {
     counter_v.push_back((long) i);
     checklist_checked[i] = false;
-    check_button_count++;
+    ++count;
   }
 
-  Fl_Check_Button *rb[check_button_count];
+  Fl_Check_Button *rb[count];
 
   if (title == NULL)
   {
     title = (char *)"Select your option(s)";
   }
 
-  int win_h = (30 * check_button_count) + 56;
+  int win_h = (30 * count) + 56;
   int mod_h = win_h - 40;
 
   check_button_win = new Fl_Window(420, win_h, title);
-  check_button_win->callback(check_button_exit1_cb);
+  check_button_win->callback(check_button_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 420, mod_h);
     {
       g_inside = new Fl_Group(0, 0, 420, mod_h);
       {
-        for (int i = 0; i < check_button_count; ++i)
+        for (int i = 0; i < count; ++i)
         {
           rb[i] = new Fl_Check_Button(10, 10 + (30 * i), 400, 30, checklist_v[i].c_str());
           rb[i]->callback(check_button_callback, counter_v[i]);
@@ -141,9 +120,9 @@ int dialog_fl_check_button(std::string checklist_options)
       dummy2 = new Fl_Box(219, mod_h, 1, 1);
       dummy2->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(220, mod_h + 4, 90, 26, fl_ok);
-      but_ok->callback(check_button_exit0_cb);
+      but_ok->callback(check_button_close_cb, 0);
       but_cancel = new Fl_Button(320, mod_h + 4, 90, 26, fl_cancel);
-      but_cancel->callback(check_button_exit1_cb);
+      but_cancel->callback(check_button_close_cb, 1);
     }
     buttongroup->resizable(dummy2);
     buttongroup->end();
@@ -154,8 +133,29 @@ int dialog_fl_check_button(std::string checklist_options)
   }
   check_button_win->end();
   check_button_win->show();
-
   Fl::run();
+
+  if (ret == 0)
+  {
+    std::string list;
+
+    for (int i = 0; i < count; ++i)
+    {
+      if (checklist_checked[i])
+      {
+        list += "TRUE|";
+      }
+      else
+      {
+        list += "FALSE|";
+      }
+    }
+
+    /* strip trailing "|" */
+    int len = list.length() - 1;
+    std::cout << list.substr(0, len) << std::endl;
+  }
+
   return ret;
 }
 

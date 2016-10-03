@@ -39,17 +39,17 @@
 static Fl_Window *about_win, *license_win;
 static bool license_win_shown = false;
 
-static void about_but_license_cb(Fl_Widget*)
+static void about_but_license_cb(Fl_Widget *)
 {
   license();
 }
 
-static void license_close_cb(Fl_Widget*)
+static void license_close_cb(Fl_Widget *)
 {
   license_win->hide();
 }
 
-static void about_close_cb(Fl_Widget*)
+static void about_close_cb(Fl_Widget *)
 {
   if (license_win_shown)
   {
@@ -112,7 +112,7 @@ int about()
   about_win->show();
 
   Fl::run();
-  return ret;
+  return 0;
 }
 
 const char *license_buffer_text =

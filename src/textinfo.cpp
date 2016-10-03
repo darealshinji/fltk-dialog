@@ -41,15 +41,11 @@ static Fl_Window        *textinfo_win;
 static Fl_Return_Button *ti_but_ok;
 static bool ti_checkbutton_set = false;
 
-static void textinfo_exit0_cb(Fl_Widget*)
+static void textinfo_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   textinfo_win->hide();
-}
-
-static void textinfo_exit1_cb(Fl_Widget*)
-{
-  textinfo_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 static void ti_checkbutton_cb(Fl_Widget*)
@@ -103,17 +99,17 @@ int dialog_textinfo(       bool autoscroll,
       int but_y = browser_h + 20;
       if (checkbox == "")
       {
-        textinfo_win->callback(textinfo_exit0_cb);
+        textinfo_win->callback(textinfo_close_cb, 0);
 
         ti_but_ok = new Fl_Return_Button(but_x, but_y, 90, 26, fl_close);
-        ti_but_ok->callback(textinfo_exit0_cb);
+        ti_but_ok->callback(textinfo_close_cb, 0);
       }
       else
       {
         but_x = 200;
         but_y = browser_h + 10;
 
-        textinfo_win->callback(textinfo_exit1_cb);
+        textinfo_win->callback(textinfo_close_cb, 1);
 
         checkbox = " " + checkbox;
         checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, checkbox.c_str());
@@ -121,9 +117,9 @@ int dialog_textinfo(       bool autoscroll,
 
         ti_but_ok = new Fl_Return_Button(but_x, but_y + 36, 90, 26, fl_ok);
         ti_but_ok->deactivate();
-        ti_but_ok->callback(textinfo_exit0_cb);
+        ti_but_ok->callback(textinfo_close_cb, 0);
         ti_but_cancel = new Fl_Button(300, but_y + 36, 90, 26, fl_cancel);
-        ti_but_cancel->callback(textinfo_exit1_cb);
+        ti_but_cancel->callback(textinfo_close_cb, 1);
       }
       dummy = new Fl_Box(but_x - 1, but_y - 1, 1, 1);
       dummy->box(FL_NO_BOX);

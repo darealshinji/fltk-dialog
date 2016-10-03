@@ -42,15 +42,11 @@
 
 static Fl_Window *progress_win;
 
-static void progress_exit0_cb(Fl_Widget*)
+static void progress_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   progress_win->hide();
-}
-
-static void progress_exit1_cb(Fl_Widget*)
-{
-  progress_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 /* run a test:
@@ -120,7 +116,7 @@ int dialog_fl_progress(bool autoclose,
   }
 
   progress_win = new Fl_Window(320, win_h, title);
-  progress_win->callback(progress_exit1_cb);
+  progress_win->callback(progress_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 320, win_h);
     {
@@ -144,12 +140,12 @@ int dialog_fl_progress(bool autoclose,
         if (!hide_cancel)
         {
           but_cancel = new Fl_Button(220, mod_h, 90, 26, fl_cancel);
-          but_cancel->callback(progress_exit1_cb);
+          but_cancel->callback(progress_close_cb, 1);
           but_ok_x = 120;
         }
         but_ok = new Fl_Return_Button(but_ok_x, mod_h, 90, 26, fl_ok);
         but_ok->deactivate();
-        but_ok->callback(progress_exit0_cb);
+        but_ok->callback(progress_close_cb, 0);
       }
       dummy = new Fl_Box(but_ok_x - 1, mod_h - 1, 1, 1);
       dummy->box(FL_NO_BOX);

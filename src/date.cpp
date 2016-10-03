@@ -43,7 +43,7 @@ static Fl_Choice  *fdate_month;
 static Fl_Spinner *fdate_year;
 static Fl_Spinner *fdate_day;
 
-static void max_days_cb(Fl_Widget*)
+static void max_days_cb(Fl_Widget *)
 {
   int dim = FDate::days[fdate_month->value() + 1];
 
@@ -60,15 +60,11 @@ static void max_days_cb(Fl_Widget*)
   fdate_day->maximum(dim);
 }
 
-static void date_ok_cb(Fl_Widget*)
+static void date_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   fdate_win->hide();
-}
-
-static void date_cancel_cb(Fl_Widget*)
-{
-  fdate_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 int dialog_fdate(std::string format)
@@ -106,7 +102,7 @@ int dialog_fdate(std::string format)
   }
 
   fdate_win = new Fl_Window(400, 114, title);
-  fdate_win->callback(date_cancel_cb);
+  fdate_win->callback(date_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 400, 114);
     {
@@ -145,9 +141,9 @@ int dialog_fdate(std::string format)
       dummy2 = new Fl_Box(199, 74, 1, 1);
       dummy2->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(200, 78, 90, 26, fl_ok);
-      but_ok->callback(date_ok_cb);
+      but_ok->callback(date_close_cb, 0);
       but_cancel = new Fl_Button(300, 78, 90, 26, fl_cancel);
-      but_cancel->callback(date_cancel_cb);
+      but_cancel->callback(date_close_cb, 1);
     }
     buttongroup->resizable(dummy2);
     buttongroup->end();

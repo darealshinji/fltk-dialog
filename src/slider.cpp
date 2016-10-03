@@ -42,20 +42,16 @@
 static Fl_Window *slider_win;
 static double slidval_round;
 
-static void slider_cb(Fl_Widget *o)
+static void slider_cb(Fl_Widget *w)
 {
-  slidval_round = ((Fl_Valuator *)o)->value();
+  slidval_round = ((Fl_Valuator *)w)->value();
 }
 
-static void slider_ok_cb(Fl_Widget*)
+static void slider_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   slider_win->hide();
-}
-
-static void slider_cancel_cb(Fl_Widget*)
-{
-  slider_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 int dialog_fl_value_slider(char *slider_min,
@@ -122,7 +118,7 @@ int dialog_fl_value_slider(char *slider_min,
   int mod_h = box_h + 78;
 
   slider_win = new Fl_Window(320, mod_h, title);
-  slider_win->callback(slider_cancel_cb);  /* exit(1) */
+  slider_win->callback(slider_close_cb, 1);  /* exit(1) */
   {
     g = new Fl_Group(0, 0, 320, mod_h);
     {
@@ -143,9 +139,9 @@ int dialog_fl_value_slider(char *slider_min,
       dummy = new Fl_Box(119, mod_h - 38, 1, 1);
       dummy->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(120, mod_h - 34, 90, 26, fl_ok);
-      but_ok->callback(slider_ok_cb);
+      but_ok->callback(slider_close_cb, 0);
       but_cancel = new Fl_Button(220, mod_h - 34, 90, 26, fl_cancel);
-      but_cancel->callback(slider_cancel_cb);
+      but_cancel->callback(slider_close_cb, 1);
     }
     g->resizable(dummy);
     g->end();

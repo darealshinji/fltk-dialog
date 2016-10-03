@@ -31,11 +31,11 @@
 #include <FL/Fl_Window.H>
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "fltk-dialog.hpp"
-#include "misc/itostr.hpp"
 #include "misc/split.hpp"
 
 
@@ -44,15 +44,11 @@ static Fl_Return_Button *radiolist_but_ok;
 static const char *radiolist_return = NULL;
 static bool radiolist_but_ok_activated = false;
 
-static void rb_exit0_cb(Fl_Widget*)
+static void radio_round_button_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   radio_round_button_win->hide();
-}
-
-static void rb_exit1_cb(Fl_Widget*)
-{
-  radio_round_button_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 static void rb_callback(Fl_Widget *w, void *p)
@@ -81,7 +77,9 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
 
   for (size_t i = 0; i < radiolist_v.size(); ++i)
   {
-    counter_v.push_back(itostr(i + 1));
+    std::stringstream ss;
+    ss << (i + 1);
+    counter_v.push_back(ss.str());
     rbcount++;
   }
 
@@ -104,7 +102,7 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
   int mod_h = win_h - 40;
 
   radio_round_button_win = new Fl_Window(420, win_h, title);
-  radio_round_button_win->callback(rb_exit1_cb);
+  radio_round_button_win->callback(radio_round_button_cb, 1);
   {
     g = new Fl_Group(0, 0, 420, mod_h);
     {
@@ -140,9 +138,9 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
       dummy2->box(FL_NO_BOX);
       radiolist_but_ok = new Fl_Return_Button(220, mod_h + 4, 90, 26, fl_ok);
       radiolist_but_ok->deactivate();
-      radiolist_but_ok->callback(rb_exit0_cb);
+      radiolist_but_ok->callback(radio_round_button_cb, 0);
       but_cancel = new Fl_Button(320, mod_h + 4, 90, 26, fl_cancel);
-      but_cancel->callback(rb_exit1_cb);
+      but_cancel->callback(radio_round_button_cb, 1);
     }
     buttongroup->resizable(dummy2);
     buttongroup->end();

@@ -68,7 +68,7 @@ int dnd_box::handle(int event)
   return handle_ret;
 }
 
-static void dnd_exit_cb(Fl_Widget*)
+static void dnd_close_cb(Fl_Widget *)
 {
   dnd_win->hide();
 }
@@ -78,11 +78,11 @@ static void dnd_callback(const char *items)
   const char *ch;
   static char newtext[128];
 
-  for (ch = items; *ch != '\0'; ch++)
+  for (ch = items; *ch != '\0'; ++ch)
   {
     if (*ch == '\n')
     {
-      dnd_count_val++;
+      ++dnd_count_val;
     }
   }
 
@@ -111,7 +111,7 @@ int dialog_dnd()
   }
 
   dnd_win = new Fl_Window(400, 300, title);
-  dnd_win->callback(dnd_exit_cb);
+  dnd_win->callback(dnd_close_cb);
   {
     box = new dnd_box(10, 10, 380, 244, msg);
     box->box(FL_ENGRAVED_FRAME);
@@ -133,7 +133,7 @@ int dialog_dnd()
       dummy = new Fl_Box(299, 260, 1, 1);
       dummy->box(FL_NO_BOX);
       but_close = new Fl_Return_Button(300, 264, 90, 26, fl_close);
-      but_close->callback(dnd_exit_cb);
+      but_close->callback(dnd_close_cb);
     }
     g->resizable(dummy);
     g->end();

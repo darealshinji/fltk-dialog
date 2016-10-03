@@ -37,15 +37,11 @@
 
 static Fl_Window *calendar_win;
 
-static void calendar_ok_cb(Fl_Widget*)
+static void calendar_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   calendar_win->hide();
-}
-
-static void calendar_cancel_cb(Fl_Widget*)
-{
-  calendar_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 int dialog_fl_calendar(std::string format)
@@ -65,12 +61,12 @@ int dialog_fl_calendar(std::string format)
   calendar_win = new Fl_Window(244, 281, title);
   calendar = new Fl_Calendar(10, 10, 224, 224);
   calendar_win->begin();  /* don't remove! */
-  calendar_win->callback(calendar_cancel_cb);
+  calendar_win->callback(calendar_close_cb, 1);
   {
     but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
-    but_ok->callback(calendar_ok_cb);
+    but_ok->callback(calendar_close_cb, 0);
     but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
-    but_cancel->callback(calendar_cancel_cb);
+    but_cancel->callback(calendar_close_cb, 1);
   }
   calendar_win->end();
   calendar_win->show();

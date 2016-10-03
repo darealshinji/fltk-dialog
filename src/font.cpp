@@ -205,15 +205,11 @@ static void fd_size_cb(Fl_Widget*)
   fd_text->redraw();
 }
 
-static void font_ok_cb(Fl_Widget *w)
+static void font_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   font_win->hide();
-}
-
-static void font_cancel_cb(Fl_Widget *w)
-{
-  font_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 int dialog_font()
@@ -264,7 +260,7 @@ int dialog_font()
   }
 
   font_win = new Fl_Window(550, 400, title);
-  font_win->callback(font_cancel_cb);  /* exit(1) */
+  font_win->callback(font_close_cb, 1);  /* exit(1) */
   {
     font_tile = new Fl_Tile(0, 0, 550, 370);
     {
@@ -298,9 +294,9 @@ int dialog_font()
       dummy = new Fl_Box(329, 370, 1, 26);
       dummy->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(350, 370, 90, 26, fl_ok);
-      but_ok->callback(font_ok_cb);
+      but_ok->callback(font_close_cb, 0);
       but_cancel = new Fl_Button(450, 370, 90, 26, fl_cancel);
-      but_cancel->callback(font_cancel_cb);
+      but_cancel->callback(font_close_cb, 1);
     }
     buttongroup->resizable(dummy);
     buttongroup->end();

@@ -39,27 +39,24 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Window *dropdown_win;
-static Fl_Menu_Item dropdown_menu_items[1024];
 
-static void dropdown_exit0_cb(Fl_Widget*)
+static void dropdown_close_cb(Fl_Widget *w, long p)
 {
+  (void) w;
   dropdown_win->hide();
-}
-
-static void dropdown_exit1_cb(Fl_Widget*)
-{
-  dropdown_win->hide();
-  ret = 1;
+  ret = (int) p;
 }
 
 int dialog_dropdown(std::string dropdown_list,
                            bool return_number)
 {
   Fl_Group         *g;
+  Fl_Menu_Item     menu_items[1024];
   Fl_Choice        *entries;
   Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
+
   std::vector<std::string> itemlist_v;
 
   if (msg == NULL)
@@ -88,46 +85,46 @@ int dialog_dropdown(std::string dropdown_list,
     {
       if (itemlist_v[i] == "")
       {
-        dropdown_menu_items[i].text = (char *)"<EMPTY>";
+        menu_items[i].text = (char *)"<EMPTY>";
       }
       else
       {
-        dropdown_menu_items[i].text = itemlist_v[i].c_str();
+        menu_items[i].text = itemlist_v[i].c_str();
       }
     }
     else
     {
       /* { 0,0,0,0,0,0,0,0,0 } */
-      dropdown_menu_items[i].text = 0;
+      menu_items[i].text = 0;
     }
 
-    dropdown_menu_items[i].shortcut_ = 0;
-    dropdown_menu_items[i].callback_ = 0;
-    dropdown_menu_items[i].user_data_ = 0;
-    dropdown_menu_items[i].flags = 0;
-    dropdown_menu_items[i].labeltype_ = (i == count) ? 0 : FL_NORMAL_LABEL;
-    dropdown_menu_items[i].labelfont_ = 0;
-    dropdown_menu_items[i].labelsize_ = (i == count) ? 0 : 14;
-    dropdown_menu_items[i].labelcolor_ = 0;
+    menu_items[i].shortcut_ = 0;
+    menu_items[i].callback_ = 0;
+    menu_items[i].user_data_ = 0;
+    menu_items[i].flags = 0;
+    menu_items[i].labeltype_ = (i == count) ? 0 : FL_NORMAL_LABEL;
+    menu_items[i].labelfont_ = 0;
+    menu_items[i].labelsize_ = (i == count) ? 0 : 14;
+    menu_items[i].labelcolor_ = 0;
   }
 
   dropdown_win = new Fl_Window(320, 110, title);
-  dropdown_win->callback(dropdown_exit1_cb);
+  dropdown_win->callback(dropdown_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 320, 110);
     {
       entries = new Fl_Choice(10, 30, 300, 30, msg);
       entries->down_box(FL_BORDER_BOX);
       entries->align(FL_ALIGN_TOP_LEFT);
-      entries->menu(dropdown_menu_items);
+      entries->menu(menu_items);
 
       dummy = new Fl_Box(119, 73, 1, 1);
       dummy->box(FL_NO_BOX);
 
       but_ok = new Fl_Return_Button(120, 74, 90, 26, fl_ok);
-      but_ok->callback(dropdown_exit0_cb);
+      but_ok->callback(dropdown_close_cb, 0);
       but_cancel = new Fl_Button(220, 74, 90, 26, fl_cancel);
-      but_cancel->callback(dropdown_exit1_cb);
+      but_cancel->callback(dropdown_close_cb, 1);
     }
     g->resizable(dummy);
     g->end();
