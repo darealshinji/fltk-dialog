@@ -205,9 +205,8 @@ static void fd_size_cb(Fl_Widget*)
   fd_text->redraw();
 }
 
-static void font_close_cb(Fl_Widget *w, long p)
+static void font_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   font_win->hide();
   ret = (int) p;
 }

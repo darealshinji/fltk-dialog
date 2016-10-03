@@ -40,9 +40,8 @@
 
 static Fl_Window *dropdown_win;
 
-static void dropdown_close_cb(Fl_Widget *w, long p)
+static void dropdown_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   dropdown_win->hide();
   ret = (int) p;
 }

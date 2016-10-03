@@ -47,9 +47,8 @@ static void slider_cb(Fl_Widget *w)
   slidval_round = ((Fl_Valuator *)w)->value();
 }
 
-static void slider_close_cb(Fl_Widget *w, long p)
+static void slider_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   slider_win->hide();
   ret = (int) p;
 }

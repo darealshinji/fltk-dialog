@@ -41,14 +41,13 @@ static Fl_Window        *textinfo_win;
 static Fl_Return_Button *ti_but_ok;
 static bool ti_checkbutton_set = false;
 
-static void textinfo_close_cb(Fl_Widget *w, long p)
+static void textinfo_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   textinfo_win->hide();
   ret = (int) p;
 }
 
-static void ti_checkbutton_cb(Fl_Widget*)
+static void ti_checkbutton_cb(Fl_Widget *)
 {
   if (ti_checkbutton_set == true)
   {

@@ -37,9 +37,8 @@
 
 static Fl_Window *calendar_win;
 
-static void calendar_close_cb(Fl_Widget *w, long p)
+static void calendar_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   calendar_win->hide();
   ret = (int) p;
 }

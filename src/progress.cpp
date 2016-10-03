@@ -42,9 +42,8 @@
 
 static Fl_Window *progress_win;
 
-static void progress_close_cb(Fl_Widget *w, long p)
+static void progress_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   progress_win->hide();
   ret = (int) p;
 }

@@ -60,9 +60,8 @@ static void max_days_cb(Fl_Widget *)
   fdate_day->maximum(dim);
 }
 
-static void date_close_cb(Fl_Widget *w, long p)
+static void date_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   fdate_win->hide();
   ret = (int) p;
 }

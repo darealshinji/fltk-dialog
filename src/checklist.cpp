@@ -42,9 +42,8 @@
 static Fl_Window *check_button_win;
 static bool checklist_checked[1024];
 
-static void check_button_callback(Fl_Widget *w, long p)
+static void check_button_callback(Fl_Widget *, long p)
 {
-  (void) w;
   int i = (int) p;
 
   if (checklist_checked[i])
@@ -57,9 +56,8 @@ static void check_button_callback(Fl_Widget *w, long p)
   }
 }
 
-static void check_button_close_cb(Fl_Widget *w, long p)
+static void check_button_close_cb(Fl_Widget *, long p)
 {
-  (void) w;
   check_button_win->hide();
   ret = (int) p;
 }

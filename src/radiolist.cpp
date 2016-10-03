@@ -44,17 +44,14 @@ static Fl_Return_Button *radiolist_but_ok;
 static const char *radiolist_return = NULL;
 static bool radiolist_but_ok_activated = false;
 
-static void radio_round_button_cb(Fl_Widget *w, long p)
+static void radio_round_button_cb(Fl_Widget *, long p)
 {
-  (void) w;
   radio_round_button_win->hide();
   ret = (int) p;
 }
 
-static void rb_callback(Fl_Widget *w, void *p)
+static void rb_callback(Fl_Widget *, void *p)
 {
-  (void) w;
-
   if (!radiolist_but_ok_activated)
   {
     radiolist_but_ok_activated = true;
