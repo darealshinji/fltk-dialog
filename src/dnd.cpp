@@ -138,10 +138,8 @@ int dialog_dnd()
     g->resizable(dummy);
     g->end();
   }
-  if (resizable)
-  {
-    dnd_win->resizable(box);
-  }
+  set_size(dnd_win, box);
+  set_position(dnd_win);
   dnd_win->end();
   dnd_win->show();
   Fl::run();

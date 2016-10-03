@@ -152,10 +152,8 @@ int dialog_fl_progress(bool autoclose,
     g->resizable(dummy);
     g->end();
   }
-  if (resizable)
-  {
-    progress_win->resizable(g);
-  }
+  set_size(progress_win, g);
+  set_position(progress_win);
   progress_win->end();
   progress_win->show();
 

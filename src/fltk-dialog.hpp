@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+/* note:
+ *  regular button size is 90 x 26 px
+ *  border width is 10 px
+ */
+
 #ifndef FLTK_DIALOG_HPP
 #define FLTK_DIALOG_HPP
 
@@ -34,12 +39,15 @@
 
 extern const char *title, *msg;
 extern int ret;
-extern bool resizable;
+extern bool resizable, position_center;
+extern int override_x, override_y, override_w, override_h;
+extern int win_w, win_h;
+extern int min_w, min_h;
+extern int max_w, max_h;
 
-/* note:
- *  regular button size is 90 x 26 px
- *  border width is 10 px
- */
+/* main.cpp */
+void set_size(Fl_Window *o, Fl_Widget *w);
+void set_position(Fl_Window *o);
 
 /* about.cpp */
 void license(void);

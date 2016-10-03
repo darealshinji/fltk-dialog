@@ -108,6 +108,7 @@ int about()
     but_close = new Fl_Return_Button(350, 424, 90, 26, fl_close);
     but_close->callback(about_close_cb);
   }
+  set_position(about_win);
   about_win->end();
   about_win->show();
 

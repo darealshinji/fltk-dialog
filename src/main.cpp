@@ -33,6 +33,7 @@
 #include <iostream>
 #include <string>
 #include <getopt.h>
+#include <stdlib.h>
 
 #include "fltk-dialog.hpp"
 #include "main.hpp"
@@ -80,13 +81,25 @@
 const char *title = NULL;
 const char *msg = NULL;
 int ret = 0;
+
+/* get dimensions of the main screen work area */
+int max_w = Fl::w();
+int max_h = Fl::h();
+
+int min_w = 60;
+int min_h = 40;
+int override_x = -1;
+int override_y = -1;
+int override_w = -1;
+int override_h = -1;
 bool resizable = true;
+bool position_center = false;
 
 /* don't use fltk's '@' symbols */
 static int use_symbols = 0;
 
 /* global FLTK callback for drawing all label text */
-void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
+static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
 {
   fl_font(o->font, o->size);
   fl_color((Fl_Color)o->color);
@@ -94,7 +107,7 @@ void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
 }
 
 /* global FLTK callback for measuring all labels */
-void measure_cb(const Fl_Label *o, int &w, int &h)
+static void measure_cb(const Fl_Label *o, int &w, int &h)
 {
   fl_font(o->font, o->size);
   fl_measure(o->value, w, h, use_symbols);
@@ -109,14 +122,56 @@ static int esc_handler(int event)
   return 0;
 }
 
-int use_only_with(char *self, std::string a, std::string b)
+void set_size(Fl_Window *o, Fl_Widget *w)
+{
+  if (resizable)
+  {
+    o->resizable(w);
+    o->size_range(min_w, min_h);
+
+    if (override_w > 0 || override_h > 0)
+    {
+      o->size(override_w, override_h);
+    }
+  }
+}
+
+void set_position(Fl_Window *o)
+{
+  if (position_center)
+  {
+    override_x = (max_w - o->w()) / 2;
+    override_y = (max_h - o->h()) / 2;
+  }
+
+  if (override_x >= 0 || override_y >= 0)
+  {
+    o->position(override_x, override_y);
+  }
+}
+
+static int argtoint(const char *arg, int &val, char *self, std::string cmd)
+{
+  char *p;
+  long l = strtol(arg, &p, 10);
+
+  if (*p)
+  {
+    std::cerr << self << ": " << cmd << ": input is not a number" << std::endl;
+    return 1;
+  }
+  val = (int) l;
+  return 0;
+}
+
+static int use_only_with(char *self, std::string a, std::string b)
 {
   std::cerr << self << ": " << a << " can only be used with " << b << "\n"
     "See `" << self << " --help' for more information" << std::endl;
   return 1;
 }
 
-void print_usage(char *prog)
+static void print_usage(char *prog)
 {
   std::cout << "Usage:\n"
   "  " << prog << " OPTION [...]\n"
@@ -130,6 +185,20 @@ void print_usage(char *prog)
   "  --ok-label=TEXT            Set the OK button text\n"
   "  --cancel-label=TEXT        Set the CANCEL button text\n"
   "  --close-label=TEXT         Set the CLOSE button text\n"
+#ifdef WITH_WINDOW_ICON
+  "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
+  "                             jpg png pnm xbm xpm"
+#endif
+  "  --width=WIDTH              Set the window width\n"
+  "  --height=HEIGHT            Set the window height\n"
+  "  --posx=NUMBER              Set the X position of a window\n"
+  "  --posy=NUMBER              Set the Y position of a window\n"
+/* "  --geometry=WxH+X+Y         Set the window geometry\n" */
+  "  --fixed                    Set window unresizable\n"
+  "  --center                   Place window on center of screen\n"
+  "  --no-escape                Don't close window on hitting ESC button\n"
+  "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
+  "                             gleam, plastic or simple; default is gtk+\n"
   "  --message                  Display message dialog\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
@@ -182,13 +251,6 @@ void print_usage(char *prog)
 #ifdef WITH_FONT
   "  --font                     Display font selection dialog\n"
 #endif
-#ifdef WITH_WINDOW_ICON
-  "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
-  "                             jpg png pnm xbm xpm"
-#endif
-  "  --no-escape                Don't close window on hitting ESC button\n"
-  "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
-  "                             gleam, plastic or simple; default is gtk+\n"
   "\n"
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
@@ -384,6 +446,12 @@ int main(int argc, char **argv)
     { "yes-label",       required_argument,  0,  LO_YES_LABEL       },
     { "no-label",        required_argument,  0,  LO_NO_LABEL        },
     { "alt-label",       required_argument,  0,  LO_ALT_LABEL       },
+    { "width",           required_argument,  0,  LO_WIDTH           },
+    { "height",          required_argument,  0,  LO_HEIGHT          },
+    { "posx",            required_argument,  0,  LO_POSX            },
+    { "posy",            required_argument,  0,  LO_POSY            },
+    { "fixed",           no_argument,        0,  LO_FIXED           },
+    { "center",          no_argument,        0,  LO_CENTER          },
 
 #ifdef WITH_DND
     { "dnd",             no_argument,        0,  LO_DND             },
@@ -545,6 +613,35 @@ int main(int argc, char **argv)
         {
           but_alt = optarg;
         }
+        break;
+      case LO_WIDTH:
+        if (argtoint(optarg, override_w, argv[0],  "--width"))
+        {
+          return 1;
+        }
+        break;
+      case LO_HEIGHT:
+        if (argtoint(optarg, override_h, argv[0], "--height"))
+        {
+          return 1;
+        }
+        break;
+      case LO_POSX:
+        if (argtoint(optarg, override_x, argv[0], "--posx")) {
+          return 1;
+        }
+        break;
+      case LO_POSY:
+        if (argtoint(optarg, override_y, argv[0], "--posy"))
+        {
+          return 1;
+        }
+        break;
+      case LO_FIXED:
+        resizable = false;
+        break;
+      case LO_CENTER:
+        position_center = true;
         break;
 #ifdef WITH_DND
       case LO_DND:

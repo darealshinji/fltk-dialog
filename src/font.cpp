@@ -300,10 +300,8 @@ int dialog_font()
     buttongroup->resizable(dummy);
     buttongroup->end();
   }
-  if (resizable)
-  {
-    font_win->resizable(font_tile);
-  }
+  set_size(font_win, font_tile);
+  set_position(font_win);
   font_win->end();
 
   int k = Fl::set_fonts("*");

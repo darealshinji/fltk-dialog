@@ -145,10 +145,8 @@ int dialog_fl_value_slider(char *slider_min,
     g->resizable(dummy);
     g->end();
   }
-  if (resizable)
-  {
-    slider_win->resizable(g);
-  }
+  set_size(slider_win, g);
+  set_position(slider_win);
   slider_win->end();
   slider_win->show();
   Fl::run();

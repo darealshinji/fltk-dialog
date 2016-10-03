@@ -142,10 +142,8 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  if (resizable)
-  {
-    radio_round_button_win->resizable(g);
-  }
+  set_size(radio_round_button_win, g);
+  set_position(radio_round_button_win);
   radio_round_button_win->end();
   radio_round_button_win->show();
   Fl::run();

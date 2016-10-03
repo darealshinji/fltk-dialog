@@ -147,10 +147,8 @@ int dialog_fdate(std::string format)
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  if (resizable)
-  {
-    fdate_win->resizable(g);
-  }
+  set_size(fdate_win, g);
+  set_position(fdate_win);
   fdate_win->end();
   fdate_win->show();
   Fl::run();

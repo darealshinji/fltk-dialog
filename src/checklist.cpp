@@ -125,10 +125,8 @@ int dialog_fl_check_button(std::string checklist_options)
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  if (resizable)
-  {
-    check_button_win->resizable(g);
-  }
+  set_size(check_button_win, g);
+  set_position(check_button_win);
   check_button_win->end();
   check_button_win->show();
   Fl::run();

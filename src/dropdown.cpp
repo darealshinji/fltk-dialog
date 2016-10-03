@@ -128,10 +128,8 @@ int dialog_dropdown(std::string dropdown_list,
     g->resizable(dummy);
     g->end();
   }
-  if (resizable)
-  {
-    dropdown_win->resizable(g);
-  }
+  set_size(dropdown_win, g);
+  set_position(dropdown_win);
   dropdown_win->end();
   dropdown_win->show();
   Fl::run();

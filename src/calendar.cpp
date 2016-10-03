@@ -67,6 +67,7 @@ int dialog_fl_calendar(std::string format)
     but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
     but_cancel->callback(calendar_close_cb, 1);
   }
+  set_position(calendar_win);
   calendar_win->end();
   calendar_win->show();
   Fl::run();

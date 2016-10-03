@@ -126,10 +126,8 @@ int dialog_textinfo(       bool autoscroll,
     buttongroup->resizable(dummy);
     buttongroup->end();
   }
-  if (resizable)
-  {
-    textinfo_win->resizable(ti_browser);
-  }
+  set_size(textinfo_win, ti_browser);
+  set_position(textinfo_win);
   textinfo_win->end();
 
   READSTDIO(stdin);
