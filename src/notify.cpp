@@ -24,7 +24,6 @@
 
 #include <iostream>
 #include <string>
-#include <stdlib.h>
 #ifdef DYNAMIC_NOTIFY
 #  include <dlfcn.h>
 #endif
@@ -33,12 +32,10 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_notify(const char  *appname,
-                  const char  *notify_timeout,
-                  std::string  notify_icon)
+int dialog_notify(const char *appname,
+                         int  notify_timeout,
+                  const char *notify_icon)
 {
-  int timeout = 5;
-
   if (msg == NULL)
   {
     msg = "This is a notification message";
@@ -49,21 +46,21 @@ int dialog_notify(const char  *appname,
     title = "Notification";
   }
 
-  if (notify_timeout != NULL)
+  if (notify_timeout == -1)
   {
-    timeout = atoi(notify_timeout);
+    notify_timeout = 5;
   }
 
-  if (timeout < 1)
+  if (notify_timeout < 1)
   {
-    std::cerr << "error: timeout shorter than 1 second: " << timeout
+    std::cerr << "error: timeout shorter than 1 second: " << notify_timeout
       << std::endl;
     return 1;
   }
 
-  if (timeout > 30)
+  if (notify_timeout > 30)
   {
-    std::cerr << "error: timeout longer than 30 seconds: " << timeout
+    std::cerr << "error: timeout longer than 30 seconds: " << notify_timeout
       << std::endl;
     return 1;
   }
@@ -128,9 +125,9 @@ int dialog_notify(const char  *appname,
     return 1;
   }
 
-  NotifyNotification *n = (*dl_notify_notification_new)(title, msg, notify_icon.c_str());
+  NotifyNotification *n = (*dl_notify_notification_new)(title, msg, notify_icon);
 
-  (*dl_notify_notification_set_timeout)(n, timeout * 1000);
+  (*dl_notify_notification_set_timeout)(n, notify_timeout * 1000);
 
   if (!(*dl_notify_notification_show)(n, NULL))
   {

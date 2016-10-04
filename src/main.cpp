@@ -96,21 +96,21 @@ bool resizable = true;
 bool position_center = false;
 
 /* don't use fltk's '@' symbols */
-static int use_symbols = 0;
+#define USE_SYMBOLS 0
 
 /* global FLTK callback for drawing all label text */
 static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
 {
   fl_font(o->font, o->size);
   fl_color((Fl_Color)o->color);
-  fl_draw(o->value, x, y, w, h, a, o->image, use_symbols);
+  fl_draw(o->value, x, y, w, h, a, o->image, USE_SYMBOLS);
 }
 
 /* global FLTK callback for measuring all labels */
 static void measure_cb(const Fl_Label *o, int &w, int &h)
 {
   fl_font(o->font, o->size);
-  fl_measure(o->value, w, h, use_symbols);
+  fl_measure(o->value, w, h, USE_SYMBOLS);
 }
 
 static int esc_handler(int event)
@@ -150,17 +150,32 @@ void set_position(Fl_Window *o)
   }
 }
 
-static int argtoint(const char *arg, int &val, char *self, std::string cmd)
+#define ARGTOINT(a, b)  if (_argtoint(optarg, a, argv[0], b)) { return 1; }
+static int _argtoint(const char *arg, int &val, char *self, std::string cmd)
 {
   char *p;
   long l = strtol(arg, &p, 10);
 
   if (*p)
   {
-    std::cerr << self << ": " << cmd << ": input is not a number" << std::endl;
+    std::cerr << self << ": " << cmd << ": input is not an integer number" << std::endl;
     return 1;
   }
   val = (int) l;
+  return 0;
+}
+
+#define ARGTODOUBLE(a, b)  if (_argtodouble(optarg, a, argv[0], b)) { return 1; }
+static int _argtodouble(const char *arg, double &val, char *self, std::string cmd)
+{
+  char *p;
+  val = strtod(arg, &p);
+
+  if (*p)
+  {
+    std::cerr << self << ": " << cmd << ": input is not an integer or float point number" << std::endl;
+    return 1;
+  }
   return 0;
 }
 
@@ -342,10 +357,10 @@ int main(int argc, char **argv)
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
 
 #ifdef WITH_SCALE
-  char *minval = NULL;
-  char *maxval = NULL;
-  char *stepval = NULL;
-  char *initval = NULL;
+  double minval = -1;
+  double maxval = -1;
+  double stepval = -1;
+  double initval = -1;
 #endif
 
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
@@ -357,12 +372,12 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_WINDOW_ICON
-  std::string window_icon = "";
+  const char *window_icon = NULL;
 #endif
 
 #ifdef WITH_NOTIFY
-  const char *notify_timeout = NULL;
-  std::string notify_icon = "";
+  int notify_timeout = -1;
+  const char *notify_icon = NULL;
 #endif
 
 #ifdef WITH_CHECKLIST
@@ -391,7 +406,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_TEXTINFO
-  std::string checkbox = "";
+  const char *checkbox = NULL;
   bool autoscroll = false;
 #endif
 
@@ -615,27 +630,16 @@ int main(int argc, char **argv)
         }
         break;
       case LO_WIDTH:
-        if (argtoint(optarg, override_w, argv[0],  "--width"))
-        {
-          return 1;
-        }
+        ARGTOINT(override_w, "--width");
         break;
       case LO_HEIGHT:
-        if (argtoint(optarg, override_h, argv[0], "--height"))
-        {
-          return 1;
-        }
+        ARGTOINT(override_h, "--height");
         break;
       case LO_POSX:
-        if (argtoint(optarg, override_x, argv[0], "--posx")) {
-          return 1;
-        }
+        ARGTOINT(override_x, "--posx");
         break;
       case LO_POSY:
-        if (argtoint(optarg, override_y, argv[0], "--posy"))
-        {
-          return 1;
-        }
+        ARGTOINT(override_y, "--posy");
         break;
       case LO_FIXED:
         resizable = false;
@@ -705,10 +709,10 @@ int main(int argc, char **argv)
         dialog_count++;
         break;
       case LO_TIMEOUT:
-        notify_timeout = optarg;
+        ARGTOINT(notify_timeout, "--timeout");
         break;
       case LO_NOTIFY_ICON:
-        notify_icon = std::string(optarg);
+        notify_icon = optarg;
         break;
 #endif
 #ifdef WITH_PROGRESS
@@ -729,16 +733,16 @@ int main(int argc, char **argv)
         dialog_count++;
         break;
       case LO_VALUE:
-        initval = optarg;
+        ARGTODOUBLE(initval, "--value");
         break;
       case LO_MIN_VALUE:
-        minval = optarg;
+        ARGTODOUBLE(minval, "--min-value");
         break;
       case LO_MAX_VALUE:
-        maxval = optarg;
+        ARGTODOUBLE(maxval, "--max-value");
         break;
       case LO_STEP:
-        stepval = optarg;
+        ARGTODOUBLE(stepval, "--step");
         break;
 #endif
 #ifdef WITH_CHECKLIST
@@ -793,7 +797,7 @@ int main(int argc, char **argv)
         autoscroll = true;
         break;
       case LO_CHECKBOX:
-        checkbox = std::string(optarg);
+        checkbox = optarg;
         break;
 #endif
 #ifdef WITH_FONT
@@ -804,7 +808,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_WINDOW_ICON
       case LO_WINDOW_ICON:
-        window_icon = std::string(optarg);
+        window_icon = optarg;
         break;
 #endif
       default:
@@ -819,8 +823,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL ||
-                                     but_alt != NULL))
+  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL))
   {
     return use_only_with(argv[0], "--yes-label/--no-label/--alt-label", "--question");
   }
@@ -834,12 +837,12 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_NOTIFY
-  if (notify_timeout != NULL && dialog != DIALOG_NOTIFY)
+  if (notify_timeout != -1 && dialog != DIALOG_NOTIFY)
   {
     return use_only_with(argv[0], "--timeout", "--notification");
   }
 
-  if (notify_icon != "" && dialog != DIALOG_NOTIFY)
+  if (notify_icon != NULL && dialog != DIALOG_NOTIFY)
   {
     return use_only_with(argv[0], "--notify-icon", "--notification");
   }
@@ -858,8 +861,8 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_SCALE
-  if (dialog != DIALOG_FL_VALUE_SLIDER && (minval != NULL || maxval != NULL ||
-                                           stepval != NULL || initval != NULL))
+  if (dialog != DIALOG_FL_VALUE_SLIDER && (minval != -1 || maxval != -1 ||
+                                           stepval != -1 || initval != -1))
   {
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
@@ -882,7 +885,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_TEXTINFO
-  if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != ""))
+  if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != NULL))
   {
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
   }
@@ -922,7 +925,7 @@ int main(int argc, char **argv)
   }
 
 #ifdef WITH_WINDOW_ICON
-  if (window_icon != "")
+  if (window_icon != NULL)
   {
     set_window_icon(window_icon);
   }

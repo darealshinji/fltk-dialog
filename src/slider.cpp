@@ -34,7 +34,6 @@
 
 #include <iostream>
 #include <string>
-#include <stdlib.h>
 #include <string.h>
 
 #include "fltk-dialog.hpp"
@@ -53,24 +52,36 @@ static void slider_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-int dialog_fl_value_slider(char *slider_min,
-                           char *slider_max,
-                           char *slider_step,
-                           char *slider_val)
+int dialog_fl_value_slider(double min,
+                           double max,
+                           double step,
+                           double val)
 {
   Fl_Group         *g;
-  Fl_Box           *dummy;
+  Fl_Box           *dummy, *box;
   Fl_Value_Slider  *slider;
-  Fl_Box           *box;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
   std::string s;
   int textlines = 1;
-  double min = 0;
-  double max = 100;
-  double step = 1;
-  double val = 0;
+
+  if (min == -1)
+  {
+    min = 0;
+  }
+  if (max == -1)
+  {
+    max = 100;
+  }
+  if (step == -1)
+  {
+    step = 1;
+  }
+  if (val == -1)
+  {
+    val = 0;
+  }
 
   if (msg == NULL)
   {
@@ -93,31 +104,11 @@ int dialog_fl_value_slider(char *slider_min,
     title = (char *)"FLTK slider window";
   }
 
-  if (slider_min != NULL)
-  {
-    min = atof(slider_min);
-  }
-
-  if (slider_max != NULL)
-  {
-    max = atof(slider_max);
-  }
-
-  if (slider_step != NULL)
-  {
-    step = atof(slider_step);
-  }
-
-  if (slider_val != NULL)
-  {
-    val = atof(slider_val);
-  }
-
   int box_h = (textlines * 18) + 20;
   int mod_h = box_h + 78;
 
   slider_win = new Fl_Window(320, mod_h, title);
-  slider_win->callback(slider_close_cb, 1);  /* exit(1) */
+  slider_win->callback(slider_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 320, mod_h);
     {

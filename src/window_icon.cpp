@@ -50,35 +50,35 @@ struct to_lower
   }
 };
 
-static std::string get_ext(std::string input, unsigned int n=4)
+static std::string get_ext(const char *input, unsigned int n=4)
 {
-  if (input.size() <= n)
+  std::string s = std::string(input);
+
+  if (s.size() <= n)
   {
     return "";
   }
-  input = input.substr(input.size() - n);
-  std::transform(input.begin(), input.end(), input.begin(), to_lower());
-  return input;
+  s = s.substr(s.size() - n);
+  std::transform(s.begin(), s.end(), s.begin(), to_lower());
+  return s;
 }
 
-void set_window_icon(std::string file)
+void set_window_icon(const char *file)
 {
-  const char *file_c = file.c_str();
-
   if (get_ext(file) == ".png")
   {
-    Fl_PNG_Image in(file_c);
+    Fl_PNG_Image in(file);
     Fl_Window::default_icon(&in);
   }
   else if (get_ext(file) == ".xpm")
   {
-    Fl_XPM_Image in(file_c);
+    Fl_XPM_Image in(file);
     Fl_RGB_Image rgb(&in, Fl_Color(0));
     Fl_Window::default_icon(&rgb);
   }
   else if (get_ext(file) == ".xbm")
   {
-    Fl_XBM_Image in(file_c);
+    Fl_XBM_Image in(file);
     Fl_Image_Surface surf(in.w(), in.h());
     surf.set_current();
     fl_color(FL_WHITE);
@@ -90,23 +90,23 @@ void set_window_icon(std::string file)
   }
   else if (get_ext(file) == ".jpg" || get_ext(file, 5) == ".jpeg")
   {
-    Fl_JPEG_Image in(file_c);
+    Fl_JPEG_Image in(file);
     Fl_Window::default_icon(&in);
   }
   else if (get_ext(file) == ".bmp")
   {
-    Fl_BMP_Image in(file_c);
+    Fl_BMP_Image in(file);
     Fl_Window::default_icon(&in);
   }
   else if (get_ext(file) == ".gif")
   {
-    Fl_GIF_Image in(file_c);
+    Fl_GIF_Image in(file);
     Fl_RGB_Image rgb(&in, Fl_Color(0));
     Fl_Window::default_icon(&rgb);
   }
   else if (get_ext(file) == ".pnm")
   {
-    Fl_PNM_Image in(file_c);
+    Fl_PNM_Image in(file);
     Fl_Window::default_icon(&in);
   }
 }

@@ -120,9 +120,9 @@ int dialog_fl_message(int type=MESSAGE);
 
 /* notify.cpp */
 #ifdef WITH_NOTIFY
-int dialog_notify(const char  *appname,
-                  const char  *notify_timeout,
-                  std::string  notify_icon);
+int dialog_notify(const char *appname,
+                          int notify_timeout,
+                  const char *notify_icon);
 #endif
 
 /* password.cpp */
@@ -138,16 +138,16 @@ int dialog_fl_progress(bool autoclose,
 
 /* slider.cpp */
 #ifdef WITH_SCALE
-int dialog_fl_value_slider(char *slider_min,
-                           char *slider_max,
-                           char *slider_step,
-                           char *slider_val);
+int dialog_fl_value_slider(double min,
+                           double max,
+                           double step,
+                           double val);
 #endif
 
 /* textinfo.cpp */
 #ifdef WITH_TEXTINFO
-int dialog_textinfo(       bool autoscroll,
-                    std::string checkbox);
+int dialog_textinfo(      bool  autoscroll,
+                    const char *checkbox);
 #endif
 
 /* radiolist.cpp */
@@ -158,7 +158,7 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
 
 /* window_icon.cpp */
 #ifdef WITH_WINDOW_ICON
-void set_window_icon(std::string file);
+void set_window_icon(const char *file);
 #endif
 
 /* misc/print_date.cpp */

@@ -61,8 +61,8 @@ static void ti_checkbutton_cb(Fl_Widget *)
   }
 }
 
-int dialog_textinfo(       bool autoscroll,
-                    std::string checkbox)
+int dialog_textinfo(      bool  autoscroll,
+                    const char *checkbox)
 {
   Fl_Multi_Browser *ti_browser;
   Fl_Group         *buttongroup;
@@ -70,7 +70,7 @@ int dialog_textinfo(       bool autoscroll,
   Fl_Check_Button  *checkbutton;
   Fl_Button        *ti_but_cancel;
 
-  std::string line;
+  std::string line, checkbox_s;
   int browser_h, stdin;
   int linecount = 0;
 
@@ -79,7 +79,7 @@ int dialog_textinfo(       bool autoscroll,
     title = (char *)"FLTK text info window";
   }
 
-  if (checkbox == "")
+  if (checkbox == NULL)
   {
     browser_h = 444;
   }
@@ -96,7 +96,7 @@ int dialog_textinfo(       bool autoscroll,
     {
       int but_x = 300;
       int but_y = browser_h + 20;
-      if (checkbox == "")
+      if (checkbox == NULL)
       {
         textinfo_win->callback(textinfo_close_cb, 0);
 
@@ -110,8 +110,8 @@ int dialog_textinfo(       bool autoscroll,
 
         textinfo_win->callback(textinfo_close_cb, 1);
 
-        checkbox = " " + checkbox;
-        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, checkbox.c_str());
+        checkbox_s = " " + std::string(checkbox);
+        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, checkbox_s.c_str());
         checkbutton->callback(ti_checkbutton_cb);
 
         ti_but_ok = new Fl_Return_Button(but_x, but_y + 36, 90, 26, fl_ok);
