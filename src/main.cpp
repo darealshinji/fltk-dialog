@@ -357,10 +357,11 @@ int main(int argc, char **argv)
   int dialog = DIALOG_FL_MESSAGE;  /* default message type */
 
 #ifdef WITH_SCALE
-  double minval = -1;
-  double maxval = -1;
-  double stepval = -1;
-  double initval = -1;
+  double minval = 0;
+  double maxval = 100;
+  double stepval = 1;
+  double initval = 0;
+  bool scale_val_set = false;
 #endif
 
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
@@ -376,7 +377,8 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_NOTIFY
-  int notify_timeout = -1;
+  int timeout = 5;
+  bool timeout_set = false;
   const char *notify_icon = NULL;
 #endif
 
@@ -709,7 +711,8 @@ int main(int argc, char **argv)
         dialog_count++;
         break;
       case LO_TIMEOUT:
-        ARGTOINT(notify_timeout, "--timeout");
+        ARGTOINT(timeout, "--timeout");
+        timeout_set = true;
         break;
       case LO_NOTIFY_ICON:
         notify_icon = optarg;
@@ -734,15 +737,19 @@ int main(int argc, char **argv)
         break;
       case LO_VALUE:
         ARGTODOUBLE(initval, "--value");
+        scale_val_set = true;
         break;
       case LO_MIN_VALUE:
         ARGTODOUBLE(minval, "--min-value");
+        scale_val_set = true;
         break;
       case LO_MAX_VALUE:
         ARGTODOUBLE(maxval, "--max-value");
+        scale_val_set = true;
         break;
       case LO_STEP:
         ARGTODOUBLE(stepval, "--step");
+        scale_val_set = true;
         break;
 #endif
 #ifdef WITH_CHECKLIST
@@ -837,7 +844,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_NOTIFY
-  if (notify_timeout != -1 && dialog != DIALOG_NOTIFY)
+  if (timeout_set && dialog != DIALOG_NOTIFY)
   {
     return use_only_with(argv[0], "--timeout", "--notification");
   }
@@ -861,8 +868,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_SCALE
-  if (dialog != DIALOG_FL_VALUE_SLIDER && (minval != -1 || maxval != -1 ||
-                                           stepval != -1 || initval != -1))
+  if (scale_val_set && dialog != DIALOG_FL_VALUE_SLIDER)
   {
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
@@ -990,7 +996,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_NOTIFY
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], notify_timeout, notify_icon);
+      return dialog_notify(argv[0], timeout, notify_icon);
 #endif
 
 #ifdef WITH_PROGRESS

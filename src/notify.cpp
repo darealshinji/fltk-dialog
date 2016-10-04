@@ -33,7 +33,7 @@
 
 
 int dialog_notify(const char *appname,
-                         int  notify_timeout,
+                         int  timeout,
                   const char *notify_icon)
 {
   if (msg == NULL)
@@ -46,21 +46,16 @@ int dialog_notify(const char *appname,
     title = "Notification";
   }
 
-  if (notify_timeout == -1)
+  if (timeout < 1)
   {
-    notify_timeout = 5;
-  }
-
-  if (notify_timeout < 1)
-  {
-    std::cerr << "error: timeout shorter than 1 second: " << notify_timeout
+    std::cerr << "error: timeout shorter than 1 second: " << timeout
       << std::endl;
     return 1;
   }
 
-  if (notify_timeout > 30)
+  if (timeout > 30)
   {
-    std::cerr << "error: timeout longer than 30 seconds: " << notify_timeout
+    std::cerr << "error: timeout longer than 30 seconds: " << timeout
       << std::endl;
     return 1;
   }
@@ -127,7 +122,7 @@ int dialog_notify(const char *appname,
 
   NotifyNotification *n = (*dl_notify_notification_new)(title, msg, notify_icon);
 
-  (*dl_notify_notification_set_timeout)(n, notify_timeout * 1000);
+  (*dl_notify_notification_set_timeout)(n, timeout * 1000);
 
   if (!(*dl_notify_notification_show)(n, NULL))
   {

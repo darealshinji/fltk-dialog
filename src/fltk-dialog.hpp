@@ -121,7 +121,7 @@ int dialog_fl_message(int type=MESSAGE);
 /* notify.cpp */
 #ifdef WITH_NOTIFY
 int dialog_notify(const char *appname,
-                          int notify_timeout,
+                          int timeout,
                   const char *notify_icon);
 #endif
 

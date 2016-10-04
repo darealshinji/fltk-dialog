@@ -66,23 +66,6 @@ int dialog_fl_value_slider(double min,
   std::string s;
   int textlines = 1;
 
-  if (min == -1)
-  {
-    min = 0;
-  }
-  if (max == -1)
-  {
-    max = 100;
-  }
-  if (step == -1)
-  {
-    step = 1;
-  }
-  if (val == -1)
-  {
-    val = 0;
-  }
-
   if (msg == NULL)
   {
     s = "Simple FLTK scaler";
