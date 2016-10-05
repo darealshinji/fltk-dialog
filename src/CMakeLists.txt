@@ -27,7 +27,6 @@ set(SOURCES
 	Flek/FDate.cpp
 	misc/translate.cpp
 	about.cpp
-	choice.cpp
 	message.cpp
 	version.cpp
 	main.cpp)

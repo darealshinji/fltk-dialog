@@ -50,7 +50,7 @@ libpng_version = 1.6.25
 libpng_tarball = libpng-$(libpng_version).tar.xz
 
 BIN = fltk-dialog
-OBJS = $(addprefix src/,about.o choice.o message.o misc/translate.o version.o main.o)
+OBJS = $(addprefix src/,about.o message.o misc/translate.o version.o main.o)
 
 OPT ?= -Os
 
@@ -294,5 +294,6 @@ $(libpng_a): $(libpng)/build/Makefile
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
 
-src/about.o src/font.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
+# caused by FL/Fl_Device.H
+src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 
