@@ -144,7 +144,7 @@ void set_position(Fl_Window *o)
     override_y = (max_h - o->h()) / 2;
   }
 
-  if (override_x >= 0 || override_y >= 0)
+  if (override_x >= 0 && override_y >= 0)
   {
     o->position(override_x, override_y);
   }

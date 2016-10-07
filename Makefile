@@ -266,7 +266,11 @@ $(libpng)/checkout_stamp:
   rm -f $(libpng_tarball) && \
   touch $@
 
-$(fltk): $(fltk)/revision
+$(fltk): $(fltk)/patched
+
+$(fltk)/patched: $(fltk)/revision
+	cd $(fltk) && patch -p1 < ../fl_ask.diff && touch ../$@
+
 $(fltk)/revision:
 	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $(fltk); \
   LANG=C svn info $(fltk) | grep '^Revision:' | cut -d' ' -f2 > $@

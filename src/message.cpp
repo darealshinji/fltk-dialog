@@ -49,6 +49,7 @@ int dialog_fl_message(int type)
   }
 
   fl_message_title(title);
+  fl_message_size(override_w, override_h);
 
   if (type == ALERT)
   {

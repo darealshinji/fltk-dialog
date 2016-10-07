@@ -51,6 +51,7 @@ int dialog_fl_password()
   }
 
   fl_message_title(title);
+  fl_message_size(override_w, override_h);
 
   if ((entered = fl_password("%s", NULL, s.c_str())))
   {

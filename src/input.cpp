@@ -51,6 +51,7 @@ int dialog_fl_input()
   }
 
   fl_message_title(title);
+  fl_message_size(override_w, override_h);
 
   if ((entered = fl_input("%s", NULL, s.c_str())))
   {

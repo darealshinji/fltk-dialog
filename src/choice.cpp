@@ -61,6 +61,7 @@ int dialog_fl_choice(const char *choice_but_yes,
   }
 
   fl_message_title(title);
+  fl_message_size(override_w, override_h);
 
   if (fl_choice("%s", choice_but_no, choice_but_yes, choice_but_alt, s.c_str()))
   {
