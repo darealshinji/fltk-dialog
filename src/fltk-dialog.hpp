@@ -50,7 +50,6 @@ void set_size(Fl_Window *o, Fl_Widget *w);
 void set_position(Fl_Window *o);
 
 /* about.cpp */
-void license(void);
 int about(void);
 
 /* calendar.cpp */

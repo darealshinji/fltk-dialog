@@ -28,6 +28,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Tabs.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Window.H>
 
@@ -36,40 +37,28 @@
 #include "fltk.xpm"
 #include "fltk-dialog.hpp"
 
-static Fl_Window *about_win, *license_win;
-static bool license_win_shown = false;
-
-static void about_but_license_cb(Fl_Widget *)
-{
-  license();
-}
-
-static void license_close_cb(Fl_Widget *)
-{
-  license_win->hide();
-}
+static Fl_Window *about_win;
 
 static void about_close_cb(Fl_Widget *)
 {
-  if (license_win_shown)
-  {
-    license_win->hide();
-  }
   about_win->hide();
 }
 
 int about()
 {
+  Fl_Tabs          *about_tab;
+  Fl_Group         *g_about, *g_license, *g_patches;
   Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
-  Fl_Button        *but_license;
+  Fl_Text_Buffer   *about_buffer, *license_buffer, *patches_buffer;
+  Fl_Text_Display  *about_display, *license_display, *patches_display;
   Fl_Return_Button *but_close;
 
   std::string getver = get_fltk_version();
-  std::string about_text = "\n"
-    "- FLTK dialog -\n"
-    "run dialog boxes from shell scripts\n"
-    "\n"
+  std::string about_text = //"\n"
+    //"- FLTK dialog -\n"
+    //"run dialog boxes from shell scripts\n"
+    //"\n"
     "Using FLTK version " + getver + "\n"
     "http://www.fltk.org\n"
     "\n"
@@ -86,37 +75,15 @@ int about()
 #endif
     "\n"
     "The calendar widget is copyright \xc2\xa9 1999-2000 by\n"
-    "the Flek development team and\n"
-    "copyright \xc2\xa9 2016 by djcj <djcj@gmx.de>\n"
+    "the Flek development team and copyright \xc2\xa9 2016\n"
+    "by djcj <djcj@gmx.de>\n"
 #ifdef WITH_DEFAULT_ICON
     "\nThe application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
 #endif
-    /**/;
+    /* about_text end */;
   const char *about_text_c = about_text.c_str();
-  about_pixmap = new Fl_Pixmap(fltk_xpm);
 
-  about_win = new Fl_Window(450, 460, "About FLTK dialog");
-  about_win->callback(about_close_cb);
-  {
-    box = new Fl_Box(10, 10, 430, 404, about_text_c);
-    box->box(FL_UP_BOX);
-    box->image(about_pixmap);
-
-    but_license = new Fl_Button(10, 424, 90, 26, "Licenses");
-    but_license->callback(about_but_license_cb);
-
-    but_close = new Fl_Return_Button(350, 424, 90, 26, fl_close);
-    but_close->callback(about_close_cb);
-  }
-  set_position(about_win);
-  about_win->end();
-  about_win->show();
-
-  Fl::run();
-  return 0;
-}
-
-const char *license_buffer_text =
+  const char *license_buffer_text =
     /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' LICENSE */
     "The MIT License (MIT)\n"
     "\n"
@@ -229,32 +196,137 @@ const char *license_buffer_text =
     "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
     "SOFTWARE.\n"
 #endif  /* WITH_ICON */
-    /**/;
+    /* license_buffer_text end */;
 
-void license()
-{
-  Fl_Text_Buffer  *license_buffer;
-  Fl_Text_Display *license_display;
-  Fl_Button       *but_close;
+  const char *patches_buffer_text =
+    /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' fl_ask.diff */
+    "--- a/FL/fl_ask.H\n"
+    "+++ b/FL/fl_ask.H\n"
+    "@@ -69,6 +69,8 @@\n"
+    " FL_EXPORT void fl_message_title(const char *title);\n"
+    " FL_EXPORT void fl_message_title_default(const char *title);\n"
+    " \n"
+    "+FL_EXPORT void fl_message_size(int w, int h);\n"
+    "+\n"
+    " // pointers you can use to change FLTK to a foreign language:\n"
+    " extern FL_EXPORT const char* fl_no;\n"
+    " extern FL_EXPORT const char* fl_yes;\n"
+    "--- a/src/fl_ask.cxx\n"
+    "+++ b/src/fl_ask.cxx\n"
+    "@@ -49,6 +49,8 @@\n"
+    " static Fl_Button *button[3];\n"
+    " static Fl_Input *input;\n"
+    " static int ret_val;\n"
+    "+static int override_w = 0;\n"
+    "+static int override_h = 0;\n"
+    " static const char *iconlabel = \"?\";\n"
+    " static const char *message_title_default;\n"
+    " Fl_Font fl_message_font_ = FL_HELVETICA;\n"
+    "@@ -131,6 +133,8 @@\n"
+    "   int     text_height;\n"
+    "   int     button_w[3], button_h[3];\n"
+    "   int     x, w, h, max_w, max_h;\n"
+    "+  int min_w = 60;\n"
+    "+  int min_h = 30;\n"
+    "   const int icon_size = 50;\n"
+    " \n"
+    "   message_form->size(410,103);\n"
+    "@@ -143,9 +147,14 @@\n"
+    "   message_h += 10;\n"
+    "   if (message_w < 340)\n"
+    "     message_w = 340;\n"
+    "-  if (message_h < 30)\n"
+    "-    message_h = 30;\n"
+    "+  if (message_h < min_h)\n"
+    "+    message_h = min_h;\n"
+    " \n"
+    "+  if (override_w > min_w)\n"
+    "+    message_w = override_w;\n"
+    "+  if (override_h > min_h)\n"
+    "+    message_h = override_h;\n"
+    "+\n"
+    "   fl_font(button[0]->labelfont(), button[0]->labelsize());\n"
+    " \n"
+    "   memset(button_w, 0, sizeof(button_w));\n"
+    "@@ -181,7 +190,7 @@\n"
+    "   h = max_h + 30 + text_height;\n"
+    " \n"
+    "   message_form->size(w, h);\n"
+    "-  message_form->size_range(w, h, w, h);\n"
+    "+  message_form->size_range(min_w, min_h, Fl::w(), Fl::h());\n"
+    " \n"
+    "   message->resize(20 + icon_size, 10, message_w, message_h);\n"
+    "   icon->resize(10, 10, icon_size, icon_size);\n"
+    "@@ -588,6 +597,13 @@\n"
+    "   message_form->copy_label(title);\n"
+    " }\n"
+    " \n"
+    "+/** Sets the window dimensions\n"
+    "+*/\n"
+    "+void fl_message_size(int w, int h) {\n"
+    "+  override_w = w;\n"
+    "+  override_h = h;\n"
+    "+}\n"
+    "+\n"
+    " /** Sets the default title of the dialog window used in many common dialogs.\n"
+    " \n"
+    "     This window \\p title will be used in all subsequent calls of one of the\n"
+    /* patches_buffer_text end */;
 
-  license_win = new Fl_Window(600, 540, "Terms and Conditions");
-  license_win->callback(license_close_cb);
+  about_pixmap = new Fl_Pixmap(fltk_xpm);
+
+  about_win = new Fl_Window(450, 490, "About FLTK dialog");
+  about_win->callback(about_close_cb);
   {
-    license_buffer = new Fl_Text_Buffer();
-    license_display = new Fl_Text_Display(10, 10, 580, 484);
-    license_display->buffer(license_buffer);
-    license_buffer->text(license_buffer_text);
-    but_close = new Fl_Button(250, 504, 90, 26, fl_close);
-    but_close->callback(license_close_cb);
-  }
-  license_win->end();
-  license_win->show();
+    about_tab = new Fl_Tabs(10, 10, 430, 434);
+    {
+      g_about = new Fl_Group(10, 40, 430, 404, "About");
+      {
+        box = new Fl_Box(10, 40, 430, 150, "\n"
+                         "- FLTK dialog -\n"
+                         "run dialog boxes from shell scripts");
+        box->box(FL_NO_BOX);
+        box->image(about_pixmap);
 
-  if (license_win->shown())
-  {
-    license_win_shown = true;
+        about_buffer = new Fl_Text_Buffer();
+        about_display = new Fl_Text_Display(20, 195, 410, 230);
+        about_display->box(FL_NO_BOX);
+        about_display->color(FL_BACKGROUND_COLOR);
+        //about_display->align(FL_ALIGN_CENTER);  /* no effect */
+        about_display->buffer(about_buffer);
+        about_buffer->text(about_text_c);
+      }
+      g_about->end();
+
+      g_license = new Fl_Group(10, 40, 430, 404, "License");
+      {
+        license_buffer = new Fl_Text_Buffer();
+        license_display = new Fl_Text_Display(10, 40, 430, 404);
+        license_display->buffer(license_buffer);
+        license_buffer->text(license_buffer_text);
+      }
+      g_license->end();
+
+      g_patches = new Fl_Group(10, 40, 430, 404, "Patches");
+      {
+        patches_buffer = new Fl_Text_Buffer();
+        patches_display = new Fl_Text_Display(10, 40, 430, 404);
+        patches_display->textfont(FL_COURIER);
+        patches_display->buffer(patches_buffer);
+        patches_buffer->text(patches_buffer_text);
+      }
+      g_patches->end();
+    }
+    about_tab->end();
+
+    but_close = new Fl_Return_Button(350, 454, 90, 26, fl_close);
+    but_close->callback(about_close_cb);
   }
+  set_position(about_win);
+  about_win->end();
+  about_win->show();
 
   Fl::run();
+  return 0;
 }
 
