@@ -11,60 +11,31 @@
  extern FL_EXPORT const char* fl_yes;
 --- a/src/fl_ask.cxx
 +++ b/src/fl_ask.cxx
-@@ -49,6 +49,8 @@
- static Fl_Button *button[3];
- static Fl_Input *input;
- static int ret_val;
+@@ -58,6 +58,9 @@
+ extern "C" void NSBeep(void);
+ #endif
+ 
 +static int override_w = 0;
 +static int override_h = 0;
- static const char *iconlabel = "?";
- static const char *message_title_default;
- Fl_Font fl_message_font_ = FL_HELVETICA;
-@@ -131,6 +133,8 @@
-   int	text_height;
-   int	button_w[3], button_h[3];
-   int	x, w, h, max_w, max_h;
-+  int min_w = 60;
-+  int min_h = 30;
- 	const int icon_size = 50;
++
+ static char avoidRecursion = 0;
  
-   message_form->size(410,103);
-@@ -143,9 +147,14 @@
-   message_h += 10;
-   if (message_w < 340)
-     message_w = 340;
--  if (message_h < 30)
--    message_h = 30;
-+  if (message_h < min_h)
-+    message_h = min_h;
+ // Sets the global return value (ret_val) and closes the window.
+@@ -146,6 +149,9 @@
+   if (message_h < 30)
+     message_h = 30;
  
-+  if (override_w > min_w)
-+    message_w = override_w;
-+  if (override_h > min_h)
-+    message_h = override_h;
++  if (override_w > 60) message_w = override_w;
++  if (override_h > 30) message_h = override_h;
 +
    fl_font(button[0]->labelfont(), button[0]->labelsize());
  
    memset(button_w, 0, sizeof(button_w));
-@@ -181,7 +190,7 @@
-   h = max_h + 30 + text_height;
- 
-   message_form->size(w, h);
--  message_form->size_range(w, h, w, h);
-+  message_form->size_range(min_w, min_h, Fl::w(), Fl::h());
- 
-   message->resize(20 + icon_size, 10, message_w, message_h);
-   icon->resize(10, 10, icon_size, icon_size);
-@@ -588,6 +597,13 @@
+@@ -588,6 +594,8 @@
    message_form->copy_label(title);
  }
  
-+/** Sets the window dimensions
-+*/
-+void fl_message_size(int w, int h) {
-+  override_w = w;
-+  override_h = h;
-+}
++void fl_message_size(int w, int h) { override_w = w; override_h = h; }
 +
  /** Sets the default title of the dialog window used in many common dialogs.
  
