@@ -38,10 +38,10 @@
 #define DEFAULT_DELIMITER '|'
 
 extern const char *title, *msg;
-extern const char *label_yes, *label_no, *label_ok, *label_cancel, *label_close;
 extern int ret;
 extern bool resizable, position_center;
 extern int override_x, override_y, override_w, override_h;
+extern int win_w, win_h;
 extern int min_w, min_h;
 extern int max_w, max_h;
 
@@ -62,6 +62,11 @@ int dialog_fl_calendar(std::string format);
 #ifdef WITH_CHECKLIST
 int dialog_fl_check_button(std::string checklist_options);
 #endif
+
+/* choice.cpp */
+int dialog_fl_choice(const char *choice_but_yes,
+                     const char *choice_but_no,
+                     const char *choice_but_alt);
 
 /* color.cpp */
 #ifdef WITH_COLOR
@@ -109,12 +114,9 @@ int dialog_fl_input(void);
 #endif
 
 /* message.cpp */
-enum {
-  MESSAGE_TYPE_INFO,
-  MESSAGE_TYPE_WARNING,
-  MESSAGE_TYPE_QUESTION
-};
-int dialog_message(int type=MESSAGE_TYPE_INFO);
+#define MESSAGE 0
+#define ALERT 1
+int dialog_fl_message(int type=MESSAGE);
 
 /* notify.cpp */
 #ifdef WITH_NOTIFY

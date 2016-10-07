@@ -80,11 +80,6 @@
 
 const char *title = NULL;
 const char *msg = NULL;
-const char *label_yes = (char *)"Yes";
-const char *label_no = (char *)"No";
-const char *label_ok = (char *)"OK";
-const char *label_cancel = (char *)"Cancel";
-const char *label_close = (char *)"Close";
 int ret = 0;
 
 /* get dimensions of the main screen work area */
@@ -275,8 +270,8 @@ static void print_usage(char *prog)
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
   "  --no-label=TEXT            Sets the label of the No button\n"
-//  "  --alt-label=TEXT           Adds a third button and sets its label;\n"
-//  "                             exit code is 2\n"
+  "  --alt-label=TEXT           Adds a third button and sets its label;\n"
+  "                             exit code is 2\n"
 
 #ifdef WITH_FILE
   "\n"
@@ -354,9 +349,12 @@ static void print_usage(char *prog)
 
 int main(int argc, char **argv)
 {
+  const char *but_yes = NULL;
+  const char *but_no = NULL;
+  const char *but_alt = NULL;
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
-  int dialog = DIALOG_MESSAGE;  /* default message type */
+  int dialog = DIALOG_FL_MESSAGE;  /* default message type */
 
 #ifdef WITH_SCALE
   double minval = 0;
@@ -464,7 +462,7 @@ int main(int argc, char **argv)
     { "cancel-label",    required_argument,  0,  LO_CANCEL_LABEL    },
     { "yes-label",       required_argument,  0,  LO_YES_LABEL       },
     { "no-label",        required_argument,  0,  LO_NO_LABEL        },
-//    { "alt-label",       required_argument,  0,  LO_ALT_LABEL       },
+    { "alt-label",       required_argument,  0,  LO_ALT_LABEL       },
     { "width",           required_argument,  0,  LO_WIDTH           },
     { "height",          required_argument,  0,  LO_HEIGHT          },
     { "posx",            required_argument,  0,  LO_POSX            },
@@ -592,41 +590,47 @@ int main(int argc, char **argv)
       case LO_OK_LABEL:
         if (!STREQ(optarg, ""))
         {
-          label_ok = optarg;
+          fl_ok = optarg;
         }
         break;
       case LO_CLOSE_LABEL:
         if (!STREQ(optarg, ""))
         {
-          label_close = optarg;
+          fl_close = optarg;
         }
         break;
       case LO_CANCEL_LABEL:
         if (!STREQ(optarg, ""))
         {
-          label_cancel = optarg;
+          fl_cancel = optarg;
         }
         break;
       case LO_YES_LABEL:
-        if (!STREQ(optarg, ""))
+        if (STREQ(optarg, ""))
         {
-          label_yes = optarg;
+          but_yes = fl_yes;
+        }
+        else
+        {
+          but_yes = optarg;
         }
         break;
       case LO_NO_LABEL:
         if (!STREQ(optarg, ""))
         {
-          label_no = optarg;
+          but_no = fl_no;
+        }
+        else
+        {
+          but_no = optarg;
         }
         break;
-      /*
       case LO_ALT_LABEL:
         if (!STREQ(optarg, ""))
         {
           but_alt = optarg;
         }
         break;
-       */
       case LO_WIDTH:
         ARGTOINT(override_w, "--width");
         break;
@@ -659,7 +663,7 @@ int main(int argc, char **argv)
         break;
 #endif
       case LO_MESSAGE:
-        dialog = DIALOG_MESSAGE;
+        dialog = DIALOG_FL_MESSAGE;
         dialog_count++;
         break;
       case LO_WARNING:
@@ -667,7 +671,7 @@ int main(int argc, char **argv)
         dialog_count++;
         break;
       case LO_QUESTION:
-        dialog = DIALOG_QUESTION;
+        dialog = DIALOG_FL_CHOICE;
         dialog_count++;
         break;
 #ifdef WITH_FILE
@@ -826,12 +830,10 @@ int main(int argc, char **argv)
     return 1;
   }
 
-/*
-  if (dialog != DIALOG_QUESTION && (but_yes != NULL || but_no != NULL || but_alt != NULL))
+  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL))
   {
     return use_only_with(argv[0], "--yes-label/--no-label/--alt-label", "--question");
   }
- */
 
 #ifdef WITH_FILE
   if (native && (dialog != DIALOG_FL_FILE_CHOOSER &&
@@ -939,12 +941,12 @@ int main(int argc, char **argv)
   {
     case DIALOG_ABOUT:
       return about();
-    case DIALOG_MESSAGE:
-      return dialog_message(MESSAGE_TYPE_INFO);
+    case DIALOG_FL_MESSAGE:
+      return dialog_fl_message(MESSAGE);
     case DIALOG_ALERT:
-      return dialog_message(MESSAGE_TYPE_WARNING);
-    case DIALOG_QUESTION:
-      return dialog_message(MESSAGE_TYPE_QUESTION);
+      return dialog_fl_message(ALERT);
+    case DIALOG_FL_CHOICE:
+      return dialog_fl_choice(but_yes, but_no, but_alt);
 
 #ifdef WITH_DND
     case DIALOG_DND:
