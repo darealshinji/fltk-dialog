@@ -31,6 +31,7 @@
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Window.H>
+#include <FL/filename.H>
 
 #include <string>
 
@@ -38,6 +39,21 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Window *about_win;
+
+static void open_uri_cb(Fl_Widget *, void *p)
+{
+  const char *uri = (char *)p;
+  char errmsg[512];
+  char warnmsg[768];
+
+  if (!fl_open_uri(uri, errmsg, sizeof(errmsg)))
+  {
+    sprintf(warnmsg, "Error: %s", errmsg);
+    title = "Error";
+    msg = warnmsg;
+    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+  }
+}
 
 static void about_close_cb(Fl_Widget *)
 {
@@ -50,23 +66,26 @@ int about()
   Fl_Group         *g_about, *g_license; //*g_patches;
   Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
-  Fl_Text_Buffer   *about_buffer, *license_buffer; //*patches_buffer;
-  Fl_Text_Display  *about_display, *license_display; //*patches_display;
+  Fl_Text_Buffer   *license_buffer; //*patches_buffer;
+  Fl_Text_Display  *license_display; //*patches_display;
+  Fl_Button        *uri_button1, *uri_button2;
   Fl_Return_Button *but_close;
 
+  const char *uri1 = "http://www.fltk.org";
+  const char *uri2 = "https://github.com/darealshinji/fltk-dialog";
   int but_w;
 
   std::string getver = get_fltk_version();
-  std::string about_text = //"\n"
-    //"- FLTK dialog -\n"
-    //"run dialog boxes from shell scripts\n"
-    //"\n"
+  std::string about_text = "\n"
+    "- FLTK dialog -\n"
+    "run dialog boxes from shell scripts\n"
+    "\n"
     "Using FLTK version " + getver + "\n"
-    "http://www.fltk.org\n"
+    "\n" //http://www.fltk.org\n"
     "\n"
     /* http://www.utf8-chartable.de/ */
     "Copyright \xc2\xa9 2016 djcj <djcj@gmx.de>\n"
-    "https://github.com/darealshinji/fltk-dialog\n"
+    "\n" //https://github.com/darealshinji/fltk-dialog\n"
     "\n"
 #ifdef WITH_FONT
     "The FLTK library and the font widget are\n"
@@ -76,9 +95,9 @@ int about()
     "Bill Spitzak and others.\n"
 #endif
     "\n"
-    "The calendar widget is copyright \xc2\xa9 1999-2000 by\n"
-    "the Flek development team and copyright \xc2\xa9 2016\n"
-    "by djcj <djcj@gmx.de>\n"
+    "The calendar widget is copyright \xc2\xa9 1999-2000\n"
+    "by the Flek development team and\n"
+    "copyright \xc2\xa9 2016 by djcj <djcj@gmx.de>\n"
 #ifdef WITH_DEFAULT_ICON
     "\nThe application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
 #endif
@@ -214,19 +233,23 @@ int about()
     {
       g_about = new Fl_Group(10, 40, 430, 404, "About");
       {
-        box = new Fl_Box(10, 40, 430, 150, "\n"
-                         "- FLTK dialog -\n"
-                         "run dialog boxes from shell scripts");
+        box = new Fl_Box(10, 40, 430, 404, about_text_c);
         box->box(FL_NO_BOX);
         box->image(about_pixmap);
 
-        about_buffer = new Fl_Text_Buffer();
-        about_display = new Fl_Text_Display(20, 195, 410, 230);
-        about_display->box(FL_NO_BOX);
-        about_display->color(FL_BACKGROUND_COLOR);
-        //about_display->align(FL_ALIGN_CENTER);  /* no effect */
-        about_display->buffer(about_buffer);
-        about_buffer->text(about_text_c);
+        uri_button1 = new Fl_Button(74, 210, 302, 22, uri1);
+        uri_button1->box(FL_NO_BOX);
+        uri_button1->down_box(FL_NO_BOX);
+        uri_button1->labelcolor(FL_BLUE);
+        uri_button1->clear_visible_focus();
+        uri_button1->callback(open_uri_cb, (void *)uri1);
+
+        uri_button2 = new Fl_Button(74, 260, 302, 22, uri2);
+        uri_button2->box(FL_NO_BOX);
+        uri_button2->down_box(FL_NO_BOX);
+        uri_button2->labelcolor(FL_BLUE);
+        uri_button2->clear_visible_focus();
+        uri_button2->callback(open_uri_cb, (void *)uri2);
       }
       g_about->end();
 
@@ -254,7 +277,7 @@ int about()
 
     but_close = new Fl_Return_Button(0,0,0,0, fl_close);
     measure_button_width(but_close, but_w, 40);
-    but_close = new Fl_Return_Button(440 - but_w, 454, but_w, 26, fl_close);
+    but_close = new Fl_Return_Button(440 - but_w, 454, but_w, 28, fl_close);
     but_close->callback(about_close_cb);
   }
   set_position(about_win);
