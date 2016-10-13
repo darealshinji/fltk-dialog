@@ -230,12 +230,8 @@ static void print_usage(char *prog)
   "  --file                     Display file selection dialog\n"
   "  --directory                Display directory selection dialog\n"
 #endif
-#ifdef WITH_ENTRY
   "  --entry                    Display text entry dialog\n"
-#endif
-#ifdef WITH_PASSWORD
   "  --password                 Display password dialog\n"
-#endif
 #ifdef WITH_PROGRESS
   "  --progress                 Display progress indication dialog\n"
 #endif
@@ -248,9 +244,7 @@ static void print_usage(char *prog)
 #ifdef WITH_COLOR
   "  --color                    Display color selection dialog\n"
 #endif
-#ifdef WITH_SCALE
   "  --scale                    Display scale dialog\n"
-#endif
 #ifdef WITH_CHECKLIST
   "  --checklist=OPT1[|..]      Display a check button list\n"
 #endif
@@ -272,6 +266,9 @@ static void print_usage(char *prog)
 #ifdef WITH_FONT
   "  --font                     Display font selection dialog\n"
 #endif
+  "\n"
+  "Message/warning/question options:\n"
+  "  --no-symbol                Don't show symbol box\n"
   "\n"
   "Question options:\n"
   "  --yes-label=TEXT           Sets the label of the Yes button\n"
@@ -325,7 +322,6 @@ static void print_usage(char *prog)
   "                             \\t  tab character\n"
 #endif
 
-#ifdef WITH_SCALE
   "\n"
   "Scale options:\n"
   "  --value=VALUE              Set initial value\n"
@@ -333,7 +329,6 @@ static void print_usage(char *prog)
   "  --max-value=VALUE          Set maximum value\n"
   "  --step=VALUE               Set step size\n"
   "                             VALUE can be float point or integer\n"
-#endif
 
 #ifdef WITH_TEXTINFO
   "\n"
@@ -483,6 +478,7 @@ int main(int argc, char **argv)
     { "message",         no_argument,        0,  LO_MESSAGE         },
     { "warning",         no_argument,        0,  LO_WARNING         },
     { "question",        no_argument,        0,  LO_QUESTION        },
+    { "no-symbol",       no_argument,        0,  LO_NO_SYMBOL       },
 
 #ifdef WITH_FILE
     { "file",            no_argument,        0,  LO_FILE            },
@@ -669,6 +665,9 @@ int main(int argc, char **argv)
         dialog = DIALOG_PASSWORD;
         dialog_count++;
         break;
+      case LO_NO_SYMBOL:
+        with_icon_box = false;
+        break;
 #ifdef WITH_FILE
       case LO_FILE:
         dialog = DIALOG_FL_FILE_CHOOSER;
@@ -809,6 +808,13 @@ int main(int argc, char **argv)
   {
     std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
     return 1;
+  }
+
+  if (!with_icon_box && (dialog != DIALOG_MESSAGE &&
+                         dialog != DIALOG_WARNING &&
+                         dialog != DIALOG_QUESTION))
+  {
+    return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
   }
 
 #ifdef WITH_FILE

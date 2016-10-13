@@ -59,6 +59,7 @@ enum longOpts {
   LO_NO_CANCEL,
   LO_NO_ESCAPE,
   LO_NO_LABEL,
+  LO_NO_SYMBOL,
   LO_NOTIFY,
   LO_NOTIFY_ICON,
   LO_OK_LABEL,
