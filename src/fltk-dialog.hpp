@@ -33,17 +33,15 @@
 #include <FL/Fl.H>
 #include <string>
 
-
 #define STREQ(x, y) (strcmp(x, y) == 0)
 #define DEFAULT_DELIMITER '|'
 
 extern const char *title, *msg;
 extern int ret;
-extern bool resizable, position_center;
+extern bool resizable, position_center, scale_val_set;
 extern int override_x, override_y, override_w, override_h;
-extern int win_w, win_h;
-extern int min_w, min_h;
-extern int max_w, max_h;
+extern int win_w, win_h, min_w, min_h, max_w, max_h;
+extern double scale_value, scale_min, scale_max, scale_step, scale_init;
 
 /* main.cpp */
 void set_size(Fl_Window *o, Fl_Widget *w);
@@ -61,11 +59,6 @@ int dialog_fl_calendar(std::string format);
 #ifdef WITH_CHECKLIST
 int dialog_fl_check_button(std::string checklist_options);
 #endif
-
-/* choice.cpp */
-int dialog_fl_choice(const char *choice_but_yes,
-                     const char *choice_but_no,
-                     const char *choice_but_alt);
 
 /* color.cpp */
 #ifdef WITH_COLOR
@@ -107,15 +100,22 @@ int dialog_font(void);
 int dialog_html_viewer(const char *file);
 #endif
 
-/* input.cpp */
-#ifdef WITH_ENTRY
-int dialog_fl_input(void);
-#endif
-
 /* message.cpp */
-#define MESSAGE 0
-#define ALERT 1
-int dialog_fl_message(int type=MESSAGE);
+enum {
+  MESSAGE_TYPE_INFO,
+  MESSAGE_TYPE_WARNING,
+  MESSAGE_TYPE_QUESTION,
+  MESSAGE_TYPE_INPUT,
+  MESSAGE_TYPE_PASSWORD,
+  MESSAGE_TYPE_SCALE
+};
+int dialog_message(
+  const char *label_but_ret,
+  const char *label_but,
+  const char *label_but_alt = NULL,
+  int type = MESSAGE_TYPE_WARNING,
+  bool with_icon_box = true
+);
 
 /* notify.cpp */
 #ifdef WITH_NOTIFY
@@ -124,23 +124,10 @@ int dialog_notify(const char *appname,
                   const char *notify_icon);
 #endif
 
-/* password.cpp */
-#ifdef WITH_PASSWORD
-int dialog_fl_password(void);
-#endif
-
 /* progress.cpp */
 #ifdef WITH_PROGRESS
 int dialog_fl_progress(bool autoclose,
                        bool hide_cancel);
-#endif
-
-/* slider.cpp */
-#ifdef WITH_SCALE
-int dialog_fl_value_slider(double min,
-                           double max,
-                           double step,
-                           double val);
 #endif
 
 /* textinfo.cpp */
@@ -158,6 +145,11 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
 /* window_icon.cpp */
 #ifdef WITH_WINDOW_ICON
 void set_window_icon(const char *file);
+#endif
+
+/* l10n.cpp */
+#ifdef WITH_L10N
+void l10n(void);
 #endif
 
 /* misc/print_date.cpp */

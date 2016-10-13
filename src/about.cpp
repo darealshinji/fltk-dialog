@@ -47,11 +47,11 @@ static void about_close_cb(Fl_Widget *)
 int about()
 {
   Fl_Tabs          *about_tab;
-  Fl_Group         *g_about, *g_license, *g_patches;
+  Fl_Group         *g_about, *g_license; //*g_patches;
   Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
-  Fl_Text_Buffer   *about_buffer, *license_buffer, *patches_buffer;
-  Fl_Text_Display  *about_display, *license_display, *patches_display;
+  Fl_Text_Buffer   *about_buffer, *license_buffer; //*patches_buffer;
+  Fl_Text_Display  *about_display, *license_display; //*patches_display;
   Fl_Return_Button *but_close;
 
   std::string getver = get_fltk_version();
@@ -198,51 +198,10 @@ int about()
 #endif  /* WITH_ICON */
     /* license_buffer_text end */;
 
-  const char *patches_buffer_text =
+//  const char *patches_buffer_text =
     /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' fl_ask.diff */
-    "--- a/FL/fl_ask.H\n"
-    "+++ b/FL/fl_ask.H\n"
-    "@@ -69,6 +69,8 @@\n"
-    " FL_EXPORT void fl_message_title(const char *title);\n"
-    " FL_EXPORT void fl_message_title_default(const char *title);\n"
-    " \n"
-    "+FL_EXPORT void fl_message_size(int w, int h);\n"
-    "+\n"
-    " // pointers you can use to change FLTK to a foreign language:\n"
-    " extern FL_EXPORT const char* fl_no;\n"
-    " extern FL_EXPORT const char* fl_yes;\n"
-    "--- a/src/fl_ask.cxx\n"
-    "+++ b/src/fl_ask.cxx\n"
-    "@@ -58,6 +58,9 @@\n"
-    " extern \"C\" void NSBeep(void);\n"
-    " #endif\n"
-    " \n"
-    "+static int override_w = 0;\n"
-    "+static int override_h = 0;\n"
-    "+\n"
-    " static char avoidRecursion = 0;\n"
-    " \n"
-    " // Sets the global return value (ret_val) and closes the window.\n"
-    "@@ -146,6 +149,9 @@\n"
-    "   if (message_h < 30)\n"
-    "     message_h = 30;\n"
-    " \n"
-    "+  if (override_w > 60) message_w = override_w;\n"
-    "+  if (override_h > 30) message_h = override_h;\n"
-    "+\n"
-    "   fl_font(button[0]->labelfont(), button[0]->labelsize());\n"
-    " \n"
-    "   memset(button_w, 0, sizeof(button_w));\n"
-    "@@ -588,6 +594,8 @@\n"
-    "   message_form->copy_label(title);\n"
-    " }\n"
-    " \n"
-    "+void fl_message_size(int w, int h) { override_w = w; override_h = h; }\n"
-    "+\n"
-    " /** Sets the default title of the dialog window used in many common dialogs.\n"
-    " \n"
-    "     This window \\p title will be used in all subsequent calls of one of the\n"
-    /* patches_buffer_text end */;
+//    "[...]"
+//    /* patches_buffer_text end */;
 
   about_pixmap = new Fl_Pixmap(fltk_xpm);
 
@@ -277,7 +236,7 @@ int about()
         license_buffer->text(license_buffer_text);
       }
       g_license->end();
-
+/*
       g_patches = new Fl_Group(10, 40, 430, 404, "Patches");
       {
         patches_buffer = new Fl_Text_Buffer();
@@ -287,6 +246,7 @@ int about()
         patches_buffer->text(patches_buffer_text);
       }
       g_patches->end();
+*/
     }
     about_tab->end();
 

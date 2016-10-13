@@ -92,13 +92,13 @@ int dialog_fl_progress(bool autoclose,
   if (stdin == -1)
   {
     msg = (char *)"ERROR: select()";
-    dialog_fl_message(ALERT);
+    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
   else if (!stdin)
   {
     msg = (char *)"ERROR: no input data receiving";
-    dialog_fl_message(ALERT);
+    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
 

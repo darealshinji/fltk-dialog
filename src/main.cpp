@@ -95,6 +95,13 @@ int override_h = -1;
 bool resizable = true;
 bool position_center = false;
 
+double scale_min = 0;
+double scale_max = 100;
+double scale_step = 1;
+double scale_init = 0;
+double scale_value = 0;
+bool scale_val_set = false;
+
 /* don't use fltk's '@' symbols */
 #define USE_SYMBOLS 0
 
@@ -127,12 +134,11 @@ void set_size(Fl_Window *o, Fl_Widget *w)
   if (resizable)
   {
     o->resizable(w);
-    o->size_range(min_w, min_h);
+  }
 
-    if (override_w > 0 || override_h > 0)
-    {
-      o->size(override_w, override_h);
-    }
+  if (override_w > 0 || override_h > 0)
+  {
+    o->size(override_w, override_h);
   }
 }
 
@@ -349,20 +355,11 @@ static void print_usage(char *prog)
 
 int main(int argc, char **argv)
 {
-  const char *but_yes = NULL;
-  const char *but_no = NULL;
   const char *but_alt = NULL;
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
-  int dialog = DIALOG_FL_MESSAGE;  /* default message type */
-
-#ifdef WITH_SCALE
-  double minval = 0;
-  double maxval = 100;
-  double stepval = 1;
-  double initval = 0;
-  bool scale_val_set = false;
-#endif
+  int dialog = DIALOG_MESSAGE;  /* default message type */
+  bool with_icon_box = true;
 
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
   std::string format = "";
@@ -426,6 +423,11 @@ int main(int argc, char **argv)
   /* use a slightly brighter gray than the default one in FLTK */
   Fl::background(204, 204, 204);
 
+  /* localize buttons */
+#ifdef WITH_L10N
+  l10n();
+#endif
+
   /* run "About" dialog if invoked
    * without command line options */
   if (argc < 2)
@@ -488,13 +490,8 @@ int main(int argc, char **argv)
     { "native",          no_argument,        0,  LO_NATIVE          },
 #endif
 
-#ifdef WITH_ENTRY
     { "entry",           no_argument,        0,  LO_ENTRY           },
-#endif
-
-#ifdef WITH_PASSWORD
     { "password",        no_argument,        0,  LO_PASSWORD        },
-#endif
 
 #ifdef WITH_COLOR
     { "color",           no_argument,        0,  LO_COLOR           },
@@ -512,13 +509,11 @@ int main(int argc, char **argv)
     { "no-cancel",       no_argument,        0,  LO_NO_CANCEL       },
 #endif
 
-#ifdef WITH_SCALE
     { "scale",           no_argument,        0,  LO_SCALE           },
     { "value",           required_argument,  0,  LO_VALUE           },
     { "min-value",       required_argument,  0,  LO_MIN_VALUE       },
     { "max-value",       required_argument,  0,  LO_MAX_VALUE       },
     { "step",            required_argument,  0,  LO_STEP            },
-#endif
 
 #ifdef WITH_CHECKLIST
     { "checklist",       required_argument,  0,  LO_CHECKLIST       },
@@ -606,23 +601,15 @@ int main(int argc, char **argv)
         }
         break;
       case LO_YES_LABEL:
-        if (STREQ(optarg, ""))
+        if (!STREQ(optarg, ""))
         {
-          but_yes = fl_yes;
-        }
-        else
-        {
-          but_yes = optarg;
+          fl_yes = optarg;
         }
         break;
       case LO_NO_LABEL:
         if (!STREQ(optarg, ""))
         {
-          but_no = fl_no;
-        }
-        else
-        {
-          but_no = optarg;
+          fl_no = optarg;
         }
         break;
       case LO_ALT_LABEL:
@@ -663,15 +650,23 @@ int main(int argc, char **argv)
         break;
 #endif
       case LO_MESSAGE:
-        dialog = DIALOG_FL_MESSAGE;
+        dialog = DIALOG_MESSAGE;
         dialog_count++;
         break;
       case LO_WARNING:
-        dialog = DIALOG_ALERT;
+        dialog = DIALOG_WARNING;
         dialog_count++;
         break;
       case LO_QUESTION:
-        dialog = DIALOG_FL_CHOICE;
+        dialog = DIALOG_QUESTION;
+        dialog_count++;
+        break;
+      case LO_ENTRY:
+        dialog = DIALOG_INPUT;
+        dialog_count++;
+        break;
+      case LO_PASSWORD:
+        dialog = DIALOG_PASSWORD;
         dialog_count++;
         break;
 #ifdef WITH_FILE
@@ -685,18 +680,6 @@ int main(int argc, char **argv)
         break;
       case LO_NATIVE:
         native = true;
-        break;
-#endif
-#ifdef WITH_ENTRY
-      case LO_ENTRY:
-        dialog = DIALOG_FL_INPUT;
-        dialog_count++;
-        break;
-#endif
-#ifdef WITH_PASSWORD
-      case LO_PASSWORD:
-        dialog = DIALOG_FL_PASSWORD;
-        dialog_count++;
         break;
 #endif
 #ifdef WITH_COLOR
@@ -730,28 +713,26 @@ int main(int argc, char **argv)
         hide_cancel = true;
         break;
 #endif
-#ifdef WITH_SCALE
       case LO_SCALE:
-        dialog = DIALOG_FL_VALUE_SLIDER;
+        dialog = DIALOG_SCALE;
         dialog_count++;
         break;
       case LO_VALUE:
-        ARGTODOUBLE(initval, "--value");
+        ARGTODOUBLE(scale_init, "--value");
         scale_val_set = true;
         break;
       case LO_MIN_VALUE:
-        ARGTODOUBLE(minval, "--min-value");
+        ARGTODOUBLE(scale_min, "--min-value");
         scale_val_set = true;
         break;
       case LO_MAX_VALUE:
-        ARGTODOUBLE(maxval, "--max-value");
+        ARGTODOUBLE(scale_max, "--max-value");
         scale_val_set = true;
         break;
       case LO_STEP:
-        ARGTODOUBLE(stepval, "--step");
+        ARGTODOUBLE(scale_step, "--step");
         scale_val_set = true;
         break;
-#endif
 #ifdef WITH_CHECKLIST
       case LO_CHECKLIST:
         dialog = DIALOG_FL_CHECK_BUTTON;
@@ -830,11 +811,6 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  if (dialog != DIALOG_FL_CHOICE && (but_yes != NULL || but_no != NULL || but_alt != NULL))
-  {
-    return use_only_with(argv[0], "--yes-label/--no-label/--alt-label", "--question");
-  }
-
 #ifdef WITH_FILE
   if (native && (dialog != DIALOG_FL_FILE_CHOOSER &&
                  dialog != DIALOG_FL_DIR_CHOOSER))
@@ -867,12 +843,10 @@ int main(int argc, char **argv)
   }
 #endif
 
-#ifdef WITH_SCALE
-  if (scale_val_set && dialog != DIALOG_FL_VALUE_SLIDER)
+  if (scale_val_set && dialog != DIALOG_SCALE)
   {
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
-#endif
 
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
   if (return_number && (dialog != DIALOG_FL_RADIO_ROUND_BUTTON &&
@@ -941,12 +915,12 @@ int main(int argc, char **argv)
   {
     case DIALOG_ABOUT:
       return about();
-    case DIALOG_FL_MESSAGE:
-      return dialog_fl_message(MESSAGE);
+    case DIALOG_MESSAGE:
+      return dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO, with_icon_box);
     case DIALOG_ALERT:
-      return dialog_fl_message(ALERT);
-    case DIALOG_FL_CHOICE:
-      return dialog_fl_choice(but_yes, but_no, but_alt);
+      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_WARNING, with_icon_box);
+    case DIALOG_CHOICE:
+      return dialog_message(fl_yes, fl_no, but_alt, MESSAGE_TYPE_QUESTION, with_icon_box);
 
 #ifdef WITH_DND
     case DIALOG_DND:
@@ -974,20 +948,16 @@ int main(int argc, char **argv)
       }
 #endif  /* WITH_FILE */
 
-#ifdef WITH_ENTRY
-    case DIALOG_FL_INPUT:
-      return dialog_fl_input();
-#endif
+    case DIALOG_INPUT:
+      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_INPUT, false);
 
 #ifdef WITH_HTML
     case DIALOG_HTML:
       return dialog_html_viewer(html);
 #endif
 
-#ifdef WITH_PASSWORD
-    case DIALOG_FL_PASSWORD:
-      return dialog_fl_password();
-#endif
+    case DIALOG_PASSWORD:
+      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_PASSWORD, false);
 
 #ifdef WITH_COLOR
     case DIALOG_FL_COLOR:
@@ -1004,10 +974,8 @@ int main(int argc, char **argv)
       return dialog_fl_progress(autoclose, hide_cancel);
 #endif
 
-#ifdef WITH_SCALE
-    case DIALOG_FL_VALUE_SLIDER:
-      return dialog_fl_value_slider(minval, maxval, stepval, initval);
-#endif
+    case DIALOG_SCALE:
+      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_SCALE, false);
 
 #ifdef WITH_CHECKLIST
     case DIALOG_FL_CHECK_BUTTON:

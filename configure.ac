@@ -40,9 +40,6 @@ AC_ARG_ENABLE([dnd],
 AC_ARG_ENABLE([dropdown],
   [AS_HELP_STRING([--disable-dropdown], [disable dropdown dialog])],
   [use_dropdown="no"], [use_dropdown="yes"])
-AC_ARG_ENABLE([entry],
-  [AS_HELP_STRING([--disable-entry], [disable entry dialog])],
-  [use_entry="no"], [use_entry="yes"])
 AC_ARG_ENABLE([file],
   [AS_HELP_STRING([--disable-file], [disable file chooser dialog])],
   [use_file="no"], [use_file="yes"])
@@ -55,22 +52,19 @@ AC_ARG_ENABLE([html],
 AC_ARG_ENABLE([notify],
   [AS_HELP_STRING([--disable-notify], [disable notification dialog])],
   [use_notify="no"], [use_notify="yes"])
-AC_ARG_ENABLE([password],
-  [AS_HELP_STRING([--disable-password], [disable password dialog])],
-  [use_password="no"], [use_password="yes"])
 AC_ARG_ENABLE([progress],
   [AS_HELP_STRING([--disable-progress], [disable progress dialog])],
   [use_progress="no"], [use_progress="yes"])
 AC_ARG_ENABLE([radiolist],
   [AS_HELP_STRING([--disable-radiolist], [disable radiolist dialog])],
   [use_radiolist="no"], [use_radiolist="yes"])
-AC_ARG_ENABLE([scale],
-  [AS_HELP_STRING([--disable-scale], [disable scale dialog])],
-  [use_scale="no"], [use_scale="yes"])
 AC_ARG_ENABLE([textinfo],
   [AS_HELP_STRING([--disable-textinfo], [disable textinfo dialog])],
   [use_textinfo="no"], [use_textinfo="yes"])
 
+AC_ARG_ENABLE([l10n],
+  [AS_HELP_STRING([--disable-l10n], [disable localization])],
+  [use_l10n="no"], [use_l10n="yes"])
 AC_ARG_ENABLE([window-icon],
   [AS_HELP_STRING([--disable-window-icon], [disable option to set the window icon])],
   [use_window_icon="no"], [use_window_icon="yes"])
@@ -165,14 +159,12 @@ AS_IF([test "x$ac_cv_header_sys_time_h" != "xyes" \
   ])
 ])
 
-static_fltk="yes"
-
 
 # substitute variables
 AC_SUBST([SYSTEM_JPEG], [$use_system_jpeg])
 AC_SUBST([SYSTEM_PNG], [$use_system_png])
 AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
-AC_SUBST([STATIC_FLTK], [$static_fltk])
+AC_SUBST([WITH_L10N], [$use_l10n])
 AC_SUBST([WITH_DEFAULT_ICON], [$default_icon])
 AC_SUBST([WITH_CALENDAR], [$use_calendar])
 AC_SUBST([WITH_CHECKLIST], [$use_checklist])
@@ -180,15 +172,12 @@ AC_SUBST([WITH_COLOR], [$use_color])
 AC_SUBST([WITH_DATE], [$use_date])
 AC_SUBST([WITH_DND], [$use_dnd])
 AC_SUBST([WITH_DROPDOWN], [$use_dropdown])
-AC_SUBST([WITH_ENTRY], [$use_entry])
 AC_SUBST([WITH_FILE], [$use_file])
 AC_SUBST([WITH_FONT], [$use_font])
 AC_SUBST([WITH_HTML], [$use_html])
 AC_SUBST([WITH_NOTIFY], [$have_libnotify])
-AC_SUBST([WITH_PASSWORD], [$use_password])
 AC_SUBST([WITH_PROGRESS], [$use_progress])
 AC_SUBST([WITH_RADIOLIST], [$use_radiolist])
-AC_SUBST([WITH_SCALE], [$use_scale])
 AC_SUBST([WITH_TEXTINFO], [$use_textinfo])
 AC_SUBST([WITH_WINDOW_ICON], [$use_window_icon])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])

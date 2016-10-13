@@ -74,7 +74,7 @@ int dialog_dropdown(std::string dropdown_list,
   if (count <= 1)
   {
     msg = (char *)"ERROR: need at least 2 entries";
-    dialog_fl_message(ALERT);
+    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
 

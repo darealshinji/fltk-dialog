@@ -9,6 +9,7 @@ Note: the Makefile will automatically download and compile FLTK.
 
 Minimum build dependencies are `libx11-dev` and `cmake`.
 For better looking fonts it's recommended to install `libxft-dev` too.
+Building with notification support requires `libnotify-dev`.
 
 Configuration:
 Run `autoconf` and see `./configure --help` for available options.

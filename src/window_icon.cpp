@@ -42,8 +42,7 @@
 #include "fltk-dialog.hpp"
 
 
-struct to_lower
-{
+struct to_lower {
   int operator() (int ch)
   {
     return std::tolower(ch);

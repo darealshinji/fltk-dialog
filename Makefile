@@ -8,35 +8,24 @@ SYSTEM_JPEG ?= no
 SYSTEM_PNG  ?= no
 SYSTEM_ZLIB ?= no
 
-# yes: FLTK version string will be set statically;
-#   don't use this on shared libraries!
-# no: version string will be obtained dynamically
-#   from the linked in library; works with statically
-#   linked FLTK too, but makes more sense on shared libs
-# TODO: actually use the system libs or build shared
-#   libs if disabled
-STATIC_FLTK ?= yes
-
 # set to "no" if you don't want an embedded FLKT
 # icon to appear in taskbar and windows
 WITH_DEFAULT_ICON ?= yes
 
 # set to "no" to disable certain features
+WITH_L10N        ?= yes
 WITH_CALENDAR    ?= yes
 WITH_CHECKLIST   ?= yes
 WITH_COLOR       ?= yes
 WITH_DATE        ?= yes
 WITH_DND         ?= yes
 WITH_DROPDOWN    ?= yes
-WITH_ENTRY       ?= yes
 WITH_FILE        ?= yes
 WITH_FONT        ?= yes
 WITH_HTML        ?= yes
 WITH_NOTIFY      ?= yes
-WITH_PASSWORD    ?= yes
 WITH_PROGRESS    ?= yes
 WITH_RADIOLIST   ?= yes
-WITH_SCALE       ?= yes
 WITH_TEXTINFO    ?= yes
 WITH_WINDOW_ICON ?= yes
 
@@ -50,7 +39,7 @@ libpng_version = 1.6.25
 libpng_tarball = libpng-$(libpng_version).tar.xz
 
 BIN = fltk-dialog
-OBJS = $(addprefix src/,about.o choice.o message.o misc/translate.o version.o main.o)
+OBJS = $(addprefix src/,about.o message.o misc/translate.o version.o main.o)
 
 OPT ?= -Os
 
@@ -64,17 +53,19 @@ LDFLAGS += \
 CXXFLAGS += $(common_CFLAGS) -Isrc -I$(fltk)/build -I$(fltk) \
  $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 
-ifneq ($(STATIC_FLTK),no)
 CXXFLAGS += \
  -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
  -DREVISION=\"$(shell cat $(fltk)/revision)\"
-endif
 
 HAVE_ITOSTR = no
 HAVE_PRINT_DATE = no
 HAVE_READSTDIO = no
 HAVE_SPLIT = no
 
+ifneq ($(WITH_L10N),no)
+CXXFLAGS += -DWITH_L10N
+OBJS += src/l10n.o
+endif
 ifneq ($(WITH_DEFAULT_ICON),no)
 CXXFLAGS += -DWITH_DEFAULT_ICON
 endif
@@ -106,10 +97,6 @@ CXXFLAGS += -DWITH_DROPDOWN
 OBJS += src/dropdown.o
 HAVE_SPLIT = yes
 endif
-ifneq ($(WITH_ENTRY),no)
-CXXFLAGS += -DWITH_ENTRY
-OBJS += src/input.o
-endif
 ifneq ($(WITH_FILE),no)
 CXXFLAGS += -DWITH_FILE
 OBJS += src/file.o
@@ -127,10 +114,6 @@ CXXFLAGS += -DWITH_NOTIFY
 CXXFLAGS += $(shell pkg-config --cflags libnotify)
 OBJS += src/notify.o
 endif
-ifneq ($(WITH_PASSWORD),no)
-CXXFLAGS += -DWITH_PASSWORD
-OBJS += src/password.o
-endif
 ifneq ($(WITH_PROGRESS),no)
 CXXFLAGS += -DWITH_PROGRESS
 OBJS += src/progress.o
@@ -140,10 +123,6 @@ ifneq ($(WITH_RADIOLIST),no)
 CXXFLAGS += -DWITH_RADIOLIST
 OBJS += src/radiolist.o
 HAVE_SPLIT = yes
-endif
-ifneq ($(WITH_SCALE),no)
-CXXFLAGS += -DWITH_SCALE
-OBJS += src/slider.o
 endif
 ifneq ($(WITH_TEXTINFO),no)
 CXXFLAGS += -DWITH_TEXTINFO
@@ -266,11 +245,7 @@ $(libpng)/checkout_stamp:
   rm -f $(libpng_tarball) && \
   touch $@
 
-$(fltk): $(fltk)/patched
-
-$(fltk)/patched: $(fltk)/revision
-	cd $(fltk) && patch -p1 < ../fl_ask.diff && touch ../$@
-
+$(fltk): $(fltk)/revision
 $(fltk)/revision:
 	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $(fltk); \
   LANG=C svn info $(fltk) | grep '^Revision:' | cut -d' ' -f2 > $@
@@ -298,5 +273,5 @@ $(libpng_a): $(libpng)/build/Makefile
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
 
-src/about.o src/font.o src/html.o src/main.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 
