@@ -68,7 +68,7 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
   Fl_Box    *dummy1, *dummy2;
   Fl_Button *but_cancel;
   std::vector<std::string> counter_v, radiolist_v;
-  int rbcount = 0;
+  int count = 0;
 
   split(radiolist_options, DEFAULT_DELIMITER, radiolist_v);
 
@@ -77,10 +77,10 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
     std::stringstream ss;
     ss << (i + 1);
     counter_v.push_back(ss.str());
-    rbcount++;
+    ++count;
   }
 
-  if (rbcount < 1)
+  if (count < 1)
   {
     title = (char *)"error: radiolist";
     msg = (char *)"Two or more options required!";
@@ -88,14 +88,14 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
     return 1;
   }
 
-  Fl_Radio_Round_Button *rb[rbcount];
+  Fl_Radio_Round_Button *rb[count];
 
   if (title == NULL)
   {
     title = (char *)"Select an option";
   }
 
-  int win_h = (30 * rbcount) + 56;
+  int win_h = (30 * count) + 56;
   int mod_h = win_h - 40;
 
   radio_round_button_win = new Fl_Window(420, win_h, title);
@@ -105,7 +105,7 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
     {
       g_inside = new Fl_Group(0, 0, 420, mod_h);
       {
-        for (int i = 0; i < rbcount; ++i)
+        for (int i = 0; i < count; ++i)
         {
           char *p = NULL;
           rb[i] = new Fl_Radio_Round_Button(10, 10 + (30 * i), 400, 30, radiolist_v[i].c_str());
@@ -133,10 +133,10 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
     {
       dummy2 = new Fl_Box(219, mod_h, 1, 1);
       dummy2->box(FL_NO_BOX);
-      radiolist_but_ok = new Fl_Return_Button(220, mod_h + 4, 90, 26, fl_ok);
+      radiolist_but_ok = new Fl_Return_Button(200, mod_h + 4, 100, 26, fl_ok);
       radiolist_but_ok->deactivate();
       radiolist_but_ok->callback(radio_round_button_cb, 0);
-      but_cancel = new Fl_Button(320, mod_h + 4, 90, 26, fl_cancel);
+      but_cancel = new Fl_Button(310, mod_h + 4, 100, 26, fl_cancel);
       but_cancel->callback(radio_round_button_cb, 1);
     }
     buttongroup->resizable(dummy2);

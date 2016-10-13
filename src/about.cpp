@@ -54,6 +54,8 @@ int about()
   Fl_Text_Display  *about_display, *license_display; //*patches_display;
   Fl_Return_Button *but_close;
 
+  int but_w;
+
   std::string getver = get_fltk_version();
   std::string about_text = //"\n"
     //"- FLTK dialog -\n"
@@ -250,7 +252,9 @@ int about()
     }
     about_tab->end();
 
-    but_close = new Fl_Return_Button(350, 454, 90, 26, fl_close);
+    but_close = new Fl_Return_Button(0,0,0,0, fl_close);
+    measure_button_width(but_close, but_w, 40);
+    but_close = new Fl_Return_Button(440 - but_w, 454, but_w, 26, fl_close);
     but_close->callback(about_close_cb);
   }
   set_position(about_win);

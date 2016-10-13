@@ -108,6 +108,7 @@ int dialog_dropdown(std::string dropdown_list,
   }
 
   dropdown_win = new Fl_Window(320, 110, title);
+  dropdown_win->size_range(320, 110, max_w, max_h);
   dropdown_win->callback(dropdown_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 320, 110);
@@ -117,12 +118,12 @@ int dialog_dropdown(std::string dropdown_list,
       entries->align(FL_ALIGN_TOP_LEFT);
       entries->menu(menu_items);
 
-      dummy = new Fl_Box(119, 73, 1, 1);
+      dummy = new Fl_Box(99, 73, 1, 1);
       dummy->box(FL_NO_BOX);
 
-      but_ok = new Fl_Return_Button(120, 74, 90, 26, fl_ok);
+      but_ok = new Fl_Return_Button(100, 74, 100, 26, fl_ok);
       but_ok->callback(dropdown_close_cb, 0);
-      but_cancel = new Fl_Button(220, 74, 90, 26, fl_cancel);
+      but_cancel = new Fl_Button(210, 74, 100, 26, fl_cancel);
       but_cancel->callback(dropdown_close_cb, 1);
     }
     g->resizable(dummy);

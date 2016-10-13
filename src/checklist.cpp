@@ -82,6 +82,14 @@ int dialog_fl_check_button(std::string checklist_options)
     ++count;
   }
 
+  if (count < 1)
+  {
+    title = (char *)"error: checklist";
+    msg = (char *)"Two or more options required!";
+    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
+    return 1;
+  }
+
   Fl_Check_Button *rb[count];
 
   if (title == NULL)
@@ -117,9 +125,9 @@ int dialog_fl_check_button(std::string checklist_options)
     {
       dummy2 = new Fl_Box(219, mod_h, 1, 1);
       dummy2->box(FL_NO_BOX);
-      but_ok = new Fl_Return_Button(220, mod_h + 4, 90, 26, fl_ok);
+      but_ok = new Fl_Return_Button(200, mod_h + 4, 100, 26, fl_ok);
       but_ok->callback(check_button_close_cb, 0);
-      but_cancel = new Fl_Button(320, mod_h + 4, 90, 26, fl_cancel);
+      but_cancel = new Fl_Button(310, mod_h + 4, 100, 26, fl_cancel);
       but_cancel->callback(check_button_close_cb, 1);
     }
     buttongroup->resizable(dummy2);

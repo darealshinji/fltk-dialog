@@ -707,7 +707,7 @@ int main(int argc, char **argv)
         dialog_count++;
         break;
       case LO_AUTO_CLOSE:
-        dialog_count++;
+        autoclose = true;
         break;
       case LO_NO_CANCEL:
         hide_cancel = true;

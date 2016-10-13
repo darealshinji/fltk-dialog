@@ -43,7 +43,7 @@ static void message_scale_cb(Fl_Widget *o)
   scale_value = ((Fl_Valuator *)o)->value();
 }
 
-static void measure_button_width(Fl_Widget *o, int &w, int off)
+void measure_button_width(Fl_Widget *o, int &w, int off)
 {
   int h;
   w = h = 0;
@@ -208,8 +208,8 @@ int dialog_message(
   /* initialize window */
 
   message_win = new Fl_Window(win_w, win_h, title);
-  message_win->callback(message_close_cb, esc_ret);
   message_win->size_range(win_w, win_h, max_w, max_h);
+  message_win->callback(message_close_cb, esc_ret);
   {
     /* icon box */
     if (with_icon_box)

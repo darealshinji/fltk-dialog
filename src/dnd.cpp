@@ -100,6 +100,8 @@ int dialog_dnd()
   Fl_Box           *text, *dummy;
   Fl_Return_Button *but_close;
 
+  int but_w;
+
   if (msg == NULL)
   {
     msg = (char *)"drop stuff here";
@@ -111,6 +113,7 @@ int dialog_dnd()
   }
 
   dnd_win = new Fl_Window(400, 300, title);
+  dnd_win->size_range(400, 300, max_w, max_h);
   dnd_win->callback(dnd_close_cb);
   {
     box = new dnd_box(10, 10, 380, 244, msg);
@@ -130,9 +133,12 @@ int dialog_dnd()
       dnd_count->box(FL_NO_BOX);
       dnd_count->align(FL_ALIGN_RIGHT);
 
-      dummy = new Fl_Box(299, 260, 1, 1);
+      but_close = new Fl_Return_Button(0,0,0,0, fl_close);
+      measure_button_width(but_close, but_w, 40);
+
+      dummy = new Fl_Box(389 - but_w, 260, 1, 1);
       dummy->box(FL_NO_BOX);
-      but_close = new Fl_Return_Button(300, 264, 90, 26, fl_close);
+      but_close = new Fl_Return_Button(390 - but_w, 264, but_w, 26, fl_close);
       but_close->callback(dnd_close_cb);
     }
     g->resizable(dummy);

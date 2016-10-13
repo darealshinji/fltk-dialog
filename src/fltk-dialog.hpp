@@ -22,11 +22,6 @@
  * SOFTWARE.
  */
 
-/* note:
- *  regular button size is 90 x 26 px
- *  border width is 10 px
- */
-
 #ifndef FLTK_DIALOG_HPP
 #define FLTK_DIALOG_HPP
 
@@ -101,6 +96,7 @@ int dialog_html_viewer(const char *file);
 #endif
 
 /* message.cpp */
+void measure_button_width(Fl_Widget *o, int &w, int off);
 enum {
   MESSAGE_TYPE_INFO,
   MESSAGE_TYPE_WARNING,

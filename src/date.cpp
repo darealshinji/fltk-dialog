@@ -101,6 +101,7 @@ int dialog_fdate(std::string format)
   }
 
   fdate_win = new Fl_Window(400, 114, title);
+  fdate_win->size_range(400, 114, max_w, max_h);
   fdate_win->callback(date_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 400, 114);
@@ -137,11 +138,11 @@ int dialog_fdate(std::string format)
 
     buttongroup = new Fl_Group(0, 74, 400, 46);
     {
-      dummy2 = new Fl_Box(199, 74, 1, 1);
+      dummy2 = new Fl_Box(179, 74, 1, 1);
       dummy2->box(FL_NO_BOX);
-      but_ok = new Fl_Return_Button(200, 78, 90, 26, fl_ok);
+      but_ok = new Fl_Return_Button(180, 78, 100, 26, fl_ok);
       but_ok->callback(date_close_cb, 0);
-      but_cancel = new Fl_Button(300, 78, 90, 26, fl_cancel);
+      but_cancel = new Fl_Button(290, 78, 100, 26, fl_cancel);
       but_cancel->callback(date_close_cb, 1);
     }
     buttongroup->resizable(dummy2);

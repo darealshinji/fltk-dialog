@@ -132,17 +132,17 @@ int dialog_fl_progress(bool autoclose,
       progress_bar->value(0);
       progress_bar->label("0%");
 
-      int but_ok_x = 220;
+      int but_ok_x = 210;
 
       if (!autoclose)
       {
         if (!hide_cancel)
         {
-          but_cancel = new Fl_Button(220, mod_h, 90, 26, fl_cancel);
+          but_cancel = new Fl_Button(210, mod_h, 100, 26, fl_cancel);
           but_cancel->callback(progress_close_cb, 1);
-          but_ok_x = 120;
+          but_ok_x = 100;
         }
-        but_ok = new Fl_Return_Button(but_ok_x, mod_h, 90, 26, fl_ok);
+        but_ok = new Fl_Return_Button(but_ok_x, mod_h, 100, 26, fl_ok);
         but_ok->deactivate();
         but_ok->callback(progress_close_cb, 0);
       }
@@ -206,7 +206,11 @@ int dialog_fl_progress(bool autoclose,
 
         if (percent == 100)
         {
-          if (!autoclose)
+          if (autoclose)
+          {
+            progress_win->hide();
+          }
+          else
           {
             but_ok->activate();
             if (!hide_cancel)

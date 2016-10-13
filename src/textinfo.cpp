@@ -94,18 +94,23 @@ int dialog_textinfo(      bool  autoscroll,
 
     buttongroup = new Fl_Group(0, browser_h, 400, 500);
     {
-      int but_x = 300;
+      int but_x = 290;
       int but_y = browser_h + 20;
       if (checkbox == NULL)
       {
+        int but_w;
+
         textinfo_win->callback(textinfo_close_cb, 0);
 
-        ti_but_ok = new Fl_Return_Button(but_x, but_y, 90, 26, fl_close);
+        ti_but_ok = new Fl_Return_Button(0,0,0,0, fl_close);
+        measure_button_width(ti_but_ok, but_w, 40);
+
+        ti_but_ok = new Fl_Return_Button(390 - but_w, but_y, but_w, 26, fl_close);
         ti_but_ok->callback(textinfo_close_cb, 0);
       }
       else
       {
-        but_x = 200;
+        but_x = 180;
         but_y = browser_h + 10;
 
         textinfo_win->callback(textinfo_close_cb, 1);
@@ -114,10 +119,10 @@ int dialog_textinfo(      bool  autoscroll,
         checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, checkbox_s.c_str());
         checkbutton->callback(ti_checkbutton_cb);
 
-        ti_but_ok = new Fl_Return_Button(but_x, but_y + 36, 90, 26, fl_ok);
+        ti_but_ok = new Fl_Return_Button(but_x, but_y + 36, 100, 26, fl_ok);
         ti_but_ok->deactivate();
         ti_but_ok->callback(textinfo_close_cb, 0);
-        ti_but_cancel = new Fl_Button(300, but_y + 36, 90, 26, fl_cancel);
+        ti_but_cancel = new Fl_Button(290, but_y + 36, 100, 26, fl_cancel);
         ti_but_cancel->callback(textinfo_close_cb, 1);
       }
       dummy = new Fl_Box(but_x - 1, but_y - 1, 1, 1);
