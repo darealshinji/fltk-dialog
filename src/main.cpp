@@ -32,11 +32,13 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <getopt.h>
 #include <stdlib.h>
 
 #include "fltk-dialog.hpp"
 #include "main.hpp"
+#include "misc/split.hpp"
 #ifdef WITH_DEFAULT_ICON
 #  include "icon.xpm"
 #endif
@@ -157,6 +159,7 @@ void set_position(Fl_Window *o)
 }
 
 #define ARGTOINT(a, b)  if (_argtoint(optarg, a, argv[0], b)) { return 1; }
+#define STRINGTOINT(s, a, b)  if (_argtoint(s.c_str(), a, argv[0], b)) { return 1; }
 static int _argtoint(const char *arg, int &val, char *self, std::string cmd)
 {
   char *p;
@@ -214,7 +217,7 @@ static void print_usage(char *prog)
   "  --height=HEIGHT            Set the window height\n"
   "  --posx=NUMBER              Set the X position of a window\n"
   "  --posy=NUMBER              Set the Y position of a window\n"
-/* "  --geometry=WxH+X+Y         Set the window geometry\n" */
+  "  --geometry=WxH+X+Y         Set the window geometry\n"
   "  --fixed                    Set window unresizable\n"
   "  --center                   Place window on center of screen\n"
   "  --no-escape                Don't close window on hitting ESC button\n"
@@ -356,6 +359,10 @@ int main(int argc, char **argv)
   int dialog = DIALOG_MESSAGE;  /* default message type */
   bool with_icon_box = true;
 
+  std::string geometry;
+  bool geometry_set = false;
+  std::vector<std::string> v, v_wh;
+
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
   std::string format = "";
 #endif
@@ -464,6 +471,7 @@ int main(int argc, char **argv)
     { "height",          required_argument,  0,  LO_HEIGHT          },
     { "posx",            required_argument,  0,  LO_POSX            },
     { "posy",            required_argument,  0,  LO_POSY            },
+    { "geometry",        required_argument,  0,  LO_GEOMETRY        },
     { "fixed",           no_argument,        0,  LO_FIXED           },
     { "center",          no_argument,        0,  LO_CENTER          },
 
@@ -625,6 +633,10 @@ int main(int argc, char **argv)
         break;
       case LO_POSY:
         ARGTOINT(override_y, "--posy");
+        break;
+      case LO_GEOMETRY:
+        geometry = std::string(optarg);
+        geometry_set = true;
         break;
       case LO_FIXED:
         resizable = false;
@@ -815,6 +827,28 @@ int main(int argc, char **argv)
                          dialog != DIALOG_QUESTION))
   {
     return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
+  }
+
+  if (geometry_set)
+  {
+    split(geometry, '+', v);
+    if (v.size() != 3)
+    {
+      std::cerr << argv[0] << ": --geometry=WxH+X+Y: wrong format" << std::endl;
+      return 1;
+    }
+
+    split(v[0], 'x', v_wh);
+    if (v_wh.size() != 2)
+    {
+      std::cerr << argv[0] << ": --geometry=WxH+X+Y: wrong format" << std::endl;
+      return 1;
+    }
+
+    STRINGTOINT(v[1], override_x, "--geometry=WxH+X+Y -> X");
+    STRINGTOINT(v[2], override_y, "--geometry=WxH+X+Y -> Y");
+    STRINGTOINT(v_wh[0], override_w, "--geometry=WxH+X+Y -> W");
+    STRINGTOINT(v_wh[1], override_h, "--geometry=WxH+X+Y -> H");
   }
 
 #ifdef WITH_FILE

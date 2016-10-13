@@ -50,6 +50,7 @@ enum longOpts {
   LO_FIXED,
   LO_FONT,
   LO_FORMAT,
+  LO_GEOMETRY,
   LO_HEIGHT,
   LO_HTML,
   LO_MESSAGE,
