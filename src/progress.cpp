@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+/* to run a test:
+( (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) & echo $! >&3 ) 3>/tmp/mypid | \
+  ./fltk-dialog --progress --auto-kill=$(cat /tmp/mypid); echo "exit: $?"
+ */
+
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
@@ -36,11 +41,52 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
+#include <sys/types.h>
+#include <signal.h>
+
 #include "fltk-dialog.hpp"
 #include "misc/readstdio.hpp"
 
 
 static Fl_Window *progress_win;
+
+static int kill_process_by_pid(int pid)
+{
+  int kill_ret = 1;
+
+  if (pid > 1)
+  {
+    kill_ret = kill((pid_t) pid, 1);
+  }
+
+  if (kill_ret == 0)
+  {
+    return 0;
+  }
+  else if (kill_ret == -1)
+  {
+    char errstr[512];
+
+    switch (errno)
+    {
+      case EINVAL:
+        sprintf(errstr, "%d: an invalid signal was specified", pid);
+        break;
+      case EPERM:
+        sprintf(errstr, "%d: the process does not have permission to send "
+          "the signal to any of the target processes", pid);
+        break;
+      case ESRCH:
+        sprintf(errstr, "%d: the pid or process group does not exist", pid);
+        break;
+    }
+
+    msg = errstr;
+    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+  }
+  return 1;
+}
 
 static void progress_close_cb(Fl_Widget *, long p)
 {
@@ -48,9 +94,16 @@ static void progress_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-/* run a test:
- * (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) | ./fltk-dialog --progress; echo "exit: $?"
- */
+static void progress_cancel_cb(Fl_Widget *o)
+{
+  progress_close_cb(o, 1);
+
+  if (kill_pid != -1)
+  {
+    kill_process_by_pid(kill_pid);
+  }
+}
+
 int dialog_fl_progress(bool autoclose,
                        bool hide_cancel)
 {
@@ -92,13 +145,13 @@ int dialog_fl_progress(bool autoclose,
   if (stdin == -1)
   {
     msg = (char *)"ERROR: select()";
-    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
+    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
   else if (!stdin)
   {
     msg = (char *)"ERROR: no input data receiving";
-    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
+    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
 
@@ -115,7 +168,7 @@ int dialog_fl_progress(bool autoclose,
   }
 
   progress_win = new Fl_Window(320, win_h, title);
-  progress_win->callback(progress_close_cb, 1);
+  progress_win->callback(progress_cancel_cb);
   {
     g = new Fl_Group(0, 0, 320, win_h);
     {
@@ -139,7 +192,7 @@ int dialog_fl_progress(bool autoclose,
         if (!hide_cancel)
         {
           but_cancel = new Fl_Button(210, mod_h, 100, 26, fl_cancel);
-          but_cancel->callback(progress_close_cb, 1);
+          but_cancel->callback(progress_cancel_cb);
           but_ok_x = 100;
         }
         but_ok = new Fl_Return_Button(but_ok_x, mod_h, 100, 26, fl_ok);
@@ -212,6 +265,7 @@ int dialog_fl_progress(bool autoclose,
           }
           else
           {
+            progress_win->callback(progress_close_cb, 0);
             but_ok->activate();
             if (!hide_cancel)
             {

@@ -84,6 +84,10 @@ const char *title = NULL;
 const char *msg = NULL;
 int ret = 0;
 
+#ifdef WITH_PROGRESS
+int kill_pid = -1;
+#endif
+
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
 int max_h = Fl::h();
@@ -291,6 +295,8 @@ static void print_usage(char *prog)
   "\n"
   "Progress options:\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
+  "  --auto-kill=PID            Kill the process with the specified PID if cancel\n"
+  "                             button is pressed\n"
   "  --no-cancel                Hide cancel button\n"
 #endif
 
@@ -510,6 +516,7 @@ int main(int argc, char **argv)
 #ifdef WITH_PROGRESS
     { "progress",        no_argument,        0,  LO_PROGRESS        },
     { "auto-close",      no_argument,        0,  LO_AUTO_CLOSE      },
+    { "auto-kill",       required_argument,  0,  LO_AUTO_KILL       },
     { "no-cancel",       no_argument,        0,  LO_NO_CANCEL       },
 #endif
 
@@ -720,6 +727,9 @@ int main(int argc, char **argv)
       case LO_AUTO_CLOSE:
         autoclose = true;
         break;
+      case LO_AUTO_KILL:
+        ARGTOINT(kill_pid, "--auto-kill");
+        break;
       case LO_NO_CANCEL:
         hide_cancel = true;
         break;
@@ -875,6 +885,11 @@ int main(int argc, char **argv)
   if (autoclose && dialog != DIALOG_FL_PROGRESS)
   {
     return use_only_with(argv[0], "--auto-close", "--progress");
+  }
+
+  if (kill_pid != -1 && dialog != DIALOG_FL_PROGRESS)
+  {
+    return use_only_with(argv[0], "--auto-kill", "--progress");
   }
 
   if (hide_cancel && dialog != DIALOG_FL_PROGRESS)

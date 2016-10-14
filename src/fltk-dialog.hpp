@@ -122,6 +122,7 @@ int dialog_notify(const char *appname,
 
 /* progress.cpp */
 #ifdef WITH_PROGRESS
+extern int kill_pid;
 int dialog_fl_progress(bool autoclose,
                        bool hide_cancel);
 #endif
