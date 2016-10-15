@@ -18,20 +18,6 @@
 
 static Fl_Window *message_win;
 
-/*
-static void set_scaler_values(
-  double min,
-  double max,
-  double step,
-  double init)
-{
-  scale_min = min;
-  scale_max = max;
-  scale_step = step;
-  scale_init = scale_value = init;
-  scale_val_set = true;
-}*/
-
 static void message_close_cb(Fl_Widget *, long p)
 {
   message_win->hide();
@@ -286,11 +272,6 @@ int dialog_message(
                               /*w*/ win_w,
                               /*h*/ 30);
       {
-		/*
-        if (!scale_val_set)
-        {
-          set_scaler_values(0, 100, 1, 0);
-        }*/
         scale = new Fl_Value_Slider(/*x*/ 10,
                                     /*y*/ win_h - input_off - 38,
                                     /*w*/ win_w - 20,

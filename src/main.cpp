@@ -870,31 +870,37 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_NOTIFY
-  if (timeout_set && dialog != DIALOG_NOTIFY)
+  if (dialog != DIALOG_NOTIFY)
   {
-    return use_only_with(argv[0], "--timeout", "--notification");
-  }
+    if (timeout_set)
+    {
+      return use_only_with(argv[0], "--timeout", "--notification");
+    }
 
-  if (notify_icon != NULL && dialog != DIALOG_NOTIFY)
-  {
-    return use_only_with(argv[0], "--notify-icon", "--notification");
+    if (notify_icon != NULL)
+    {
+      return use_only_with(argv[0], "--notify-icon", "--notification");
+    }
   }
 #endif
 
 #ifdef WITH_PROGRESS
-  if (autoclose && dialog != DIALOG_FL_PROGRESS)
+  if (dialog != DIALOG_FL_PROGRESS)
   {
-    return use_only_with(argv[0], "--auto-close", "--progress");
-  }
+    if (autoclose)
+    {
+      return use_only_with(argv[0], "--auto-close", "--progress");
+    }
 
-  if (kill_pid != -1 && dialog != DIALOG_FL_PROGRESS)
-  {
-    return use_only_with(argv[0], "--auto-kill", "--progress");
-  }
+    if (kill_pid != -1)
+    {
+      return use_only_with(argv[0], "--auto-kill", "--progress");
+    }
 
-  if (hide_cancel && dialog != DIALOG_FL_PROGRESS)
-  {
-    return use_only_with(argv[0], "--no-cancel", "--progress");
+    if (hide_cancel)
+    {
+      return use_only_with(argv[0], "--no-cancel", "--progress");
+    }
   }
 #endif
 
@@ -923,6 +929,13 @@ int main(int argc, char **argv)
   if (dialog != DIALOG_TEXTINFO && (autoscroll == true || checkbox != NULL))
   {
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
+  }
+#endif
+
+#ifdef WITH_WINDOW_ICON
+  if (window_icon != NULL)
+  {
+    set_window_icon(window_icon);
   }
 #endif
 
@@ -958,13 +971,6 @@ int main(int argc, char **argv)
       << "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
   }
-
-#ifdef WITH_WINDOW_ICON
-  if (window_icon != NULL)
-  {
-    set_window_icon(window_icon);
-  }
-#endif
 
   switch (dialog)
   {
