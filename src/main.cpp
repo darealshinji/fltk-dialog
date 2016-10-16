@@ -86,6 +86,7 @@ int ret = 0;
 
 #ifdef WITH_PROGRESS
 int kill_pid = -1;
+bool kill_parent = false;
 #endif
 
 /* get dimensions of the main screen work area */
@@ -296,7 +297,8 @@ static void print_usage(char *prog)
   "Progress options:\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --auto-kill=PID            Kill the process with the specified PID if cancel\n"
-  "                             button is pressed\n"
+  "                             button is pressed; if the given parameter is \"parent\"\n"
+  "                             the parent process will be determined and killed\n"
   "  --no-cancel                Hide cancel button\n"
 #endif
 
@@ -728,7 +730,14 @@ int main(int argc, char **argv)
         autoclose = true;
         break;
       case LO_AUTO_KILL:
-        ARGTOINT(kill_pid, "--auto-kill");
+        if (STREQ(optarg, "parent"))
+        {
+          kill_parent = true;
+        }
+        else
+        {
+          ARGTOINT(kill_pid, "--auto-kill");
+        }
         break;
       case LO_NO_CANCEL:
         hide_cancel = true;
@@ -892,7 +901,7 @@ int main(int argc, char **argv)
       return use_only_with(argv[0], "--auto-close", "--progress");
     }
 
-    if (kill_pid != -1)
+    if (kill_pid != -1 || kill_parent)
     {
       return use_only_with(argv[0], "--auto-kill", "--progress");
     }

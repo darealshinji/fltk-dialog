@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "fltk-dialog.hpp"
 #include "misc/readstdio.hpp"
@@ -51,39 +52,38 @@
 
 static Fl_Window *progress_win;
 
-static int kill_process_by_pid(int pid)
+static int check_pid()
 {
-  int kill_ret = 1;
+  char errstr[512];
+  int kill_ret = 0;
 
-  if (pid > 1)
+  if (kill_pid <= 1)
   {
-    kill_ret = kill((pid_t) pid, 1);
+    std::cerr << "Warning: ignoring process ID `" << kill_pid << "'" << std::endl;
+  }
+  else
+  {
+    kill_ret = kill((pid_t) kill_pid, 0);
   }
 
-  if (kill_ret == 0)
+  if (kill_ret == -1)
   {
-    return 0;
-  }
-  else if (kill_ret == -1)
-  {
-    char errstr[512];
-
     switch (errno)
     {
-      case EINVAL:
-        sprintf(errstr, "%d: an invalid signal was specified", pid);
-        break;
       case EPERM:
-        sprintf(errstr, "%d: the process does not have permission to send "
-          "the signal to any of the target processes", pid);
+        sprintf(errstr, "PID %d: no permission to kill the target process", kill_pid);
         break;
       case ESRCH:
-        sprintf(errstr, "%d: the pid or process group does not exist", pid);
+        sprintf(errstr, "PID %d: the PID or process group does not exist", kill_pid);
         break;
     }
-
     msg = errstr;
+    title = "Error: auto-kill PID";
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+  }
+  else
+  {
+    return 0;
   }
   return 1;
 }
@@ -96,12 +96,17 @@ static void progress_close_cb(Fl_Widget *, long p)
 
 static void progress_cancel_cb(Fl_Widget *o)
 {
-  progress_close_cb(o, 1);
-
-  if (kill_pid != -1)
+  if (kill_parent)
   {
-    kill_process_by_pid(kill_pid);
+    kill_pid = (int) getppid();
   }
+
+  if (kill_pid > 1)
+  {
+    kill((pid_t) kill_pid, 1);
+  }
+
+  progress_close_cb(o, 1);
 }
 
 int dialog_fl_progress(bool autoclose,
@@ -155,6 +160,11 @@ int dialog_fl_progress(bool autoclose,
     return 1;
   }
 
+  if (check_pid() == 1)
+  {
+    return 1;
+  }
+
   int box_h = (textlines * 18) + 20;
   int mod_h = box_h + 44;
   int win_h = 0;
@@ -191,11 +201,11 @@ int dialog_fl_progress(bool autoclose,
       {
         if (!hide_cancel)
         {
-          but_cancel = new Fl_Button(210, mod_h, 100, 26, fl_cancel);
+          but_cancel = new Fl_Button(210, mod_h, 100, 28, fl_cancel);
           but_cancel->callback(progress_cancel_cb);
           but_ok_x = 100;
         }
-        but_ok = new Fl_Return_Button(but_ok_x, mod_h, 100, 26, fl_ok);
+        but_ok = new Fl_Return_Button(but_ok_x, mod_h, 100, 28, fl_ok);
         but_ok->deactivate();
         but_ok->callback(progress_close_cb, 0);
       }
