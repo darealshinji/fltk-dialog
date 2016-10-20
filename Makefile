@@ -50,7 +50,7 @@ common_CFLAGS := $(OPT) -Wall -Wextra \
 LDFLAGS += \
  -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
 
-CXXFLAGS += $(common_CFLAGS) -Isrc -I$(fltk)/build -I$(fltk) \
+CXXFLAGS += $(common_CFLAGS) -I. -Isrc -I$(fltk)/build -I$(fltk) \
  $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
 
 CXXFLAGS += \
@@ -99,7 +99,7 @@ HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_FILE),no)
 CXXFLAGS += -DWITH_FILE
-OBJS += src/file.o
+OBJS += src/file.o src/file_dlopen_qtplugin.o
 endif
 ifneq ($(WITH_FONT),no)
 CXXFLAGS += -DWITH_FONT
@@ -219,7 +219,7 @@ distclean: mostlyclean
 	-rm -f config.mak config.log config.status
 
 mostlyclean:
-	-rm -f $(BIN) src/*.o src/Flek/*.o src/misc/*.o
+	-rm -f $(BIN) *.so qtgui_so.h src/*.o src/Flek/*.o src/misc/*.o
 
 clobber: mostlyclean
 	-rm -rf $(fltk) $(libpng) autom4te.cache
@@ -272,6 +272,22 @@ $(libpng_a): $(libpng)/build/Makefile
 
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
+
+src/file_dlopen_qtplugin.o: qtgui_so.h
+qtgui_so.h: qt4gui.so qt5gui.so
+	xxd -i qt4gui.so > $@ && xxd -i qt5gui.so >> $@
+
+qt4gui.so: src/file_qtplugin_qt4.o
+	$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs QtGui QtCore)
+
+qt5gui.so: src/file_qtplugin_qt5.o
+	$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs Qt5Widgets Qt5Core)
+
+src/file_qtplugin_qt4.o: src/file_qtplugin.cpp
+	$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
+
+src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
+	$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
 
 src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 

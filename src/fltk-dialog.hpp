@@ -76,13 +76,19 @@ int dialog_dropdown(std::string dropdown_list,
                            bool return_number);
 #endif
 
+/* file_dlopen_qtplugin.cpp */
+#ifdef WITH_FILE
+int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv);
+#endif
+
 /* file.cpp */
 #ifdef WITH_FILE
 int dialog_fl_file_chooser(void);
 int dialog_fl_dir_chooser(void);
 #  define FILE_CHOOSER 0
 #  define DIR_CHOOSER 1
-int dialog_fl_native_file_chooser(int fnfc_dir);
+int dialog_fl_native_file_chooser(int mode);
+int dialog_native_file_chooser(int mode, int argc, char **argv);
 #endif  /* WITH_FILE */
 
 /* font.cpp */

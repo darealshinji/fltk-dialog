@@ -73,14 +73,14 @@ int dialog_fl_dir_chooser()
   return 0;
 }
 
-int dialog_fl_native_file_chooser(int fnfc_dir)
+int dialog_fl_native_file_chooser(int mode)
 {
   Fl_Native_File_Chooser fnfc;
   char *fnfc_def_title = NULL;
 
   if (title == NULL)
   {
-    if (fnfc_dir == DIR_CHOOSER)
+    if (mode == DIR_CHOOSER)
     {
       fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
       fnfc_def_title = (char *)"Select a directory";
@@ -102,5 +102,31 @@ int dialog_fl_native_file_chooser(int fnfc_dir)
 
   std::cout << fnfc.filename() << std::endl;
   return 0;
+}
+
+/* Save the attached Qt5 GUI module to disk and try to dlopen() it.
+ * If it fails (i.e. because Qt5 libraries are missing) try the same with the Qt4 module.
+ * If that fails too, fall back to Fl_Native_File_Chooser();
+ */
+int dialog_native_file_chooser(int mode, int argc, char **argv)
+{
+  ret = -1;
+
+  if (getenv("KDE_FULL_SESSION"))
+  {
+    ret = dlopen_getfilenameqt(5, mode, argc, argv);
+
+    if (ret == -1)
+    {
+      ret = dlopen_getfilenameqt(4, mode, argc, argv);
+    }
+  }
+
+  if (ret == -1)
+  {
+    ret = dialog_fl_native_file_chooser(mode);
+  }
+
+  return ret;
 }
 

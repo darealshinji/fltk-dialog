@@ -1001,7 +1001,8 @@ int main(int argc, char **argv)
     case DIALOG_FL_FILE_CHOOSER:
       if (native)
       {
-        return dialog_fl_native_file_chooser(FILE_CHOOSER);
+        //return dialog_fl_native_file_chooser(FILE_CHOOSER);
+        return dialog_native_file_chooser(FILE_CHOOSER, argc, argv);
       }
       else
       {
@@ -1010,7 +1011,8 @@ int main(int argc, char **argv)
     case DIALOG_FL_DIR_CHOOSER:
       if (native)
       {
-        return dialog_fl_native_file_chooser(DIR_CHOOSER);
+        //return dialog_fl_native_file_chooser(DIR_CHOOSER);
+        return dialog_native_file_chooser(DIR_CHOOSER, argc, argv);
       }
       else
       {
