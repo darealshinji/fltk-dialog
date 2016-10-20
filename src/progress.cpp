@@ -68,24 +68,26 @@ static int check_pid()
 
   if (kill_ret == -1)
   {
-    switch (errno)
+    if (errno == EPERM)
     {
-      case EPERM:
-        sprintf(errstr, "PID %d: no permission to kill the target process", kill_pid);
-        break;
-      case ESRCH:
-        sprintf(errstr, "PID %d: the PID or process group does not exist", kill_pid);
-        break;
+      sprintf(errstr, "PID %d: no permission to kill the target process", kill_pid);
     }
+    else if (errno == ESRCH)
+    {
+      sprintf(errstr, "PID %d: the PID or process group does not exist", kill_pid);
+    }
+    else
+    {
+      sprintf(errstr, "PID %d: errno %d", kill_pid, errno);
+    }
+
     msg = errstr;
     title = "Error: auto-kill PID";
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+    return 1;
   }
-  else
-  {
-    return 0;
-  }
-  return 1;
+
+  return 0;
 }
 
 static void progress_close_cb(Fl_Widget *, long p)
