@@ -73,20 +73,22 @@ int dialog_fdate(std::string format)
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
+#define MONTH_ITEM(x) FDate::month_name[x - 1], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
+
   Fl_Menu_Item item_month[] = {
-    { FDate::month_name[ JANUARY   - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ FEBRUARY  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ MARCH     - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ APRIL     - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ MAY       - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ JUNE      - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ JULY      - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ AUGUST    - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ SEPTEMBER - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ OCTOBER   - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ NOVEMBER  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { FDate::month_name[ DECEMBER  - 1 ], 0, 0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    { MONTH_ITEM(JANUARY)   },
+    { MONTH_ITEM(FEBRUARY)  },
+    { MONTH_ITEM(MARCH)     },
+    { MONTH_ITEM(APRIL)     },
+    { MONTH_ITEM(MAY)       },
+    { MONTH_ITEM(JUNE)      },
+    { MONTH_ITEM(JULY)      },
+    { MONTH_ITEM(AUGUST)    },
+    { MONTH_ITEM(SEPTEMBER) },
+    { MONTH_ITEM(OCTOBER)   },
+    { MONTH_ITEM(NOVEMBER)  },
+    { MONTH_ITEM(DECEMBER)  },
+    { 0,0,0,0,0,0,0,0,0 }
   };
 
   time_t t          = time(0);
