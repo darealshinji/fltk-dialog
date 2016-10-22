@@ -200,9 +200,10 @@ else
 silent = @
 endif
 
-msg_GENH  = @echo "Generating header file $@"
-msg_CXX   = @echo "Building CXX object $@"
-msg_CXXLD = @echo "Linking CXX executable $@"
+msg_GENH    = @echo "Generating header file $@"
+msg_CXX     = @echo "Building CXX object $@"
+msg_CXXLD   = @echo "Linking CXX executable $@"
+msg_CXXLDSO = @echo "Linking CXX shared object $@"
 
 CMAKE ?= cmake
 SVN ?= svn
@@ -290,11 +291,11 @@ qtgui_so.h: qt4gui.so qt5gui.so
 	$(silent)$(XXD) -i qt4gui.so > $@ && $(XXD) -i qt5gui.so >> $@
 
 qt4gui.so: src/file_qtplugin_qt4.o
-	$(msg_CXXLD)
+	$(msg_CXXLDSO)
 	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs QtGui QtCore)
 
 qt5gui.so: src/file_qtplugin_qt5.o
-	$(msg_CXXLD)
+	$(msg_CXXLDSO)
 	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs Qt5Widgets Qt5Core)
 
 src/file_qtplugin_qt4.o: src/file_qtplugin.cpp
@@ -306,7 +307,7 @@ src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
 	$(silent)$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
 
 src/file_dlopen_qtplugin.o: qtgui_so.h
-src/file_qtplugin.cpp: $(fltk)/revision
+src/file_qtplugin.cpp: $(libfltk)
 
 src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 
