@@ -130,3 +130,22 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
   return ret;
 }
 
+/* the Qt equivalent to Fl_Native_File_Chooser() */
+int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
+{
+  ret = dlopen_getfilenameqt(qt_major, mode, argc, argv);
+
+  if (ret == -1)
+  {
+    if (mode == DIR_CHOOSER)
+    {
+      ret = dialog_fl_dir_chooser();
+    }
+    else
+    {
+      ret = dialog_fl_file_chooser();
+    }
+  }
+  return ret;
+}
+

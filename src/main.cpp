@@ -287,9 +287,11 @@ static void print_usage(char *prog)
 #ifdef WITH_FILE
   "\n"
   "File/directory selection options:\n"
-  "  --native                   Use the operating system's native file\n"
-  "                             chooser (GTK) if available, otherwise\n"
-  "                             fall back to FLTK's own version\n"
+  "  --native                   Use the operating system's native file chooser if\n"
+  "                             available, otherwise fall back to FLTK's own version\n"
+  "  --native-gtk               Display the Gtk+ native file chooser\n"
+  "  --native-qt4               Display the Qt4 native file chooser\n"
+  "  --native-qt5               Display the Qt5 native file chooser\n"
 #endif
 
 #ifdef WITH_PROGRESS
@@ -407,6 +409,10 @@ int main(int argc, char **argv)
 
 #ifdef WITH_FILE
   bool native = false;
+  bool native_gtk = false;
+  bool native_qt4 = false;
+  bool native_qt5 = false;
+  int native_count = 0;
 #endif
 
 #ifdef WITH_PROGRESS
@@ -500,6 +506,9 @@ int main(int argc, char **argv)
     { "file",            no_argument,        0,  LO_FILE            },
     { "directory",       no_argument,        0,  LO_DIRECTORY       },
     { "native",          no_argument,        0,  LO_NATIVE          },
+    { "native-gtk",      no_argument,        0,  LO_NATIVE_GTK      },
+    { "native-qt4",      no_argument,        0,  LO_NATIVE_QT4      },
+    { "native-qt5",      no_argument,        0,  LO_NATIVE_QT5      },
 #endif
 
     { "entry",           no_argument,        0,  LO_ENTRY           },
@@ -700,6 +709,19 @@ int main(int argc, char **argv)
         break;
       case LO_NATIVE:
         native = true;
+        native_count++;
+        break;
+      case LO_NATIVE_GTK:
+        native_gtk = true;
+        native_count++;
+        break;
+      case LO_NATIVE_QT4:
+        native_qt4 = true;
+        native_count++;
+        break;
+      case LO_NATIVE_QT5:
+        native_qt5 = true;
+        native_count++;
         break;
 #endif
 #ifdef WITH_COLOR
@@ -835,7 +857,7 @@ int main(int argc, char **argv)
     }
   }
 
-  if (dialog_count++ >= 2)
+  if (dialog_count >= 2)
   {
     std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
     return 1;
@@ -871,10 +893,17 @@ int main(int argc, char **argv)
   }
 
 #ifdef WITH_FILE
-  if (native && (dialog != DIALOG_FL_FILE_CHOOSER &&
-                 dialog != DIALOG_FL_DIR_CHOOSER))
+  if ((native || native_gtk || native_qt4 || native_qt5) &&
+      (dialog != DIALOG_FL_FILE_CHOOSER && dialog != DIALOG_FL_DIR_CHOOSER))
   {
-    return use_only_with(argv[0], "--native", "--file or --directory");
+    return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5",
+                         "--file or --directory");
+  }
+
+  if (native_count >= 2)
+  {
+    std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
+    return 1;
   }
 #endif
 
@@ -1001,18 +1030,41 @@ int main(int argc, char **argv)
     case DIALOG_FL_FILE_CHOOSER:
       if (native)
       {
-        //return dialog_fl_native_file_chooser(FILE_CHOOSER);
         return dialog_native_file_chooser(FILE_CHOOSER, argc, argv);
+      }
+      else if (native_gtk)
+      {
+        return dialog_fl_native_file_chooser(FILE_CHOOSER);
+      }
+      else if (native_qt4)
+      {
+        return dialog_native_file_chooser_qt(4, FILE_CHOOSER, argc, argv);
+      }
+      else if (native_qt5)
+      {
+        return dialog_native_file_chooser_qt(5, FILE_CHOOSER, argc, argv);
       }
       else
       {
         return dialog_fl_file_chooser();
       }
+
     case DIALOG_FL_DIR_CHOOSER:
       if (native)
       {
-        //return dialog_fl_native_file_chooser(DIR_CHOOSER);
         return dialog_native_file_chooser(DIR_CHOOSER, argc, argv);
+      }
+      else if (native_gtk)
+      {
+        return dialog_fl_native_file_chooser(DIR_CHOOSER);
+      }
+      else if (native_qt4)
+      {
+        return dialog_native_file_chooser_qt(4, DIR_CHOOSER, argc, argv);
+      }
+      else if (native_qt5)
+      {
+        return dialog_native_file_chooser_qt(5, DIR_CHOOSER, argc, argv);
       }
       else
       {

@@ -59,7 +59,6 @@ int getfilenameqt(int mode, int argc, char **argv)
     strList << dialog->selectedFiles();
     QString str = strList.join("|");
     std::cout << str.toUtf8().constData() << std::endl;
-    app->exec();
     return 0;
   }
 
