@@ -86,7 +86,7 @@ int dialog_fl_check_button(std::string checklist_options)
   {
     title = "error: checklist";
     msg = "Two or more options required!";
-    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
+    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
 

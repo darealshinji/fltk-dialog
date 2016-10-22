@@ -33,9 +33,11 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Slider.H>
 #include <FL/Fl_Window.H>
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,10 +113,12 @@ static void progress_cancel_cb(Fl_Widget *o)
   progress_close_cb(o, 1);
 }
 
-int dialog_fl_progress(bool autoclose,
+int dialog_fl_progress(bool pulsate,
+                       bool autoclose,
                        bool hide_cancel)
 {
-  Fl_Progress      *progress_bar;
+  Fl_Progress      *progress_bar = NULL;
+  Fl_Slider        *slider = NULL;
   Fl_Box           *box, *dummy;
   Fl_Group         *g;
   Fl_Return_Button *but_ok = NULL;
@@ -188,14 +192,26 @@ int dialog_fl_progress(bool autoclose,
       box->box(FL_NO_BOX);
       box->align(FL_ALIGN_RIGHT);
 
-      progress_bar = new Fl_Progress(10, box_h, 300, 30);
-      progress_bar->minimum(0);
-      progress_bar->maximum(100);
-      progress_bar->color(0x88888800);  /* background color */
-      progress_bar->selection_color(0x4444ff00);  /* progress bar color */
-      progress_bar->labelcolor(FL_WHITE);  /* percent text color */
-      progress_bar->value(0);
-      progress_bar->label("0%");
+      if (pulsate)
+      {
+        slider = new Fl_Slider(10, box_h, 300, 30, NULL);
+        slider->type(1);
+        slider->minimum(0);
+        slider->maximum(100);
+        slider->value(0);
+        slider->slider_size(0.25);
+      }
+      else
+      {
+        progress_bar = new Fl_Progress(10, box_h, 300, 30);
+        progress_bar->minimum(0);
+        progress_bar->maximum(100);
+        progress_bar->color(0x88888800);  /* background color */
+        progress_bar->selection_color(0x4444ff00);  /* progress bar color */
+        progress_bar->labelcolor(FL_WHITE);  /* percent text color */
+        progress_bar->value(0);
+        progress_bar->label("0%");
+      }
 
       int but_ok_x = 210;
 
@@ -226,62 +242,88 @@ int dialog_fl_progress(bool autoclose,
   progress_win->wait_for_expose();
   Fl::flush();
 
-  /* get stdin line by line */
-  for (/**/; std::getline(std::cin, line); /**/)
+  if (pulsate)
   {
-    /* ignore lines beginning with a '#' */
-    if (line.compare(0, 1, "#") != 0)
+    char c;
+    int a = 2;
+    std::ifstream stdin("/dev/stdin");  /* TODO: make more portable */
+
+    while (stdin.get(c))
     {
-      linesubstr = line.substr(0, 3);
-      percent = atoi(linesubstr.c_str());
-      if (percent >= 0 && percent <= 100)
+      if (percent >= 100)
       {
-       /*
-        if (percent >= 0 && percent < 25)
-        {
-          progress_bar->color(0x4444ff00);
-          progress_bar->selection_color(0x88888800);
-          progress_bar->value(percent*4);
-        }
-        else if (percent >= 25 && percent < 50)
-        {
-          progress_bar->color(0x88888800);
-          progress_bar->selection_color(0x4444ff00);
-          progress_bar->value((percent-25)*4);
-        }
-        else if (percent >= 50 && percent < 75)
-        {
-          progress_bar->color(0x4444ff00);
-          progress_bar->selection_color(0x88888800);
-          progress_bar->value((percent-50)*4);
-        }
-        else if (percent >= 75 && percent <= 100)
-        {
-          progress_bar->color(0x88888800);
-          progress_bar->selection_color(0x4444ff00);
-          progress_bar->value((percent-75)*4);
-        }
-        progress_bar->label("");
-        */
+        a = -2;
+      }
+      else if (percent <= 0)
+      {
+        a = 2;
+      }
+      percent += a;
 
-        progress_bar->value(percent);  /* update progress bar */
-        sprintf(percent_label, "%d%%", percent);
-        progress_bar->label(percent_label);  /* update progress bar's label */
-        Fl::check();  /* update the screen */
+      slider->value(percent);
+      Fl::check();  /* update the screen */
+    }
 
-        if (percent == 100)
+    slider->value(100);
+    slider->deactivate();
+    Fl::check();
+
+    if (autoclose)
+    {
+      progress_win->hide();
+    }
+    else
+    {
+      progress_win->callback(progress_close_cb, 0);
+      but_ok->activate();
+
+      if (!hide_cancel)
+      {
+        but_cancel->deactivate();
+      }
+    }
+
+    if (!stdin.eof())
+    {
+      title = "error";
+      msg = "Error: stdin";
+      dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+    }
+
+    stdin.close();
+  }
+  else /* if (!pulsate) */
+  {
+    /* get stdin line by line */
+    for (/**/; std::getline(std::cin, line); /**/)
+    {
+      /* ignore lines beginning with a '#' */
+      if (line.compare(0, 1, "#") != 0)
+      {
+        linesubstr = line.substr(0, 3);
+        percent = atoi(linesubstr.c_str());
+        if (percent >= 0 && percent <= 100)
         {
-          if (autoclose)
+          progress_bar->value(percent);
+          sprintf(percent_label, "%d%%", percent);
+          progress_bar->label(percent_label);
+          Fl::check();
+
+          if (percent == 100)
           {
-            progress_win->hide();
-          }
-          else
-          {
-            progress_win->callback(progress_close_cb, 0);
-            but_ok->activate();
-            if (!hide_cancel)
+            if (autoclose)
             {
-              but_cancel->deactivate();
+              progress_win->hide();
+            }
+            else
+            {
+              progress_win->callback(progress_close_cb, 0);
+              but_ok->activate();
+
+              if (!hide_cancel)
+              {
+                but_cancel->deactivate();
+              }
             }
           }
         }

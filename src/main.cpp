@@ -297,6 +297,7 @@ static void print_usage(char *prog)
 #ifdef WITH_PROGRESS
   "\n"
   "Progress options:\n"
+  "  --pulsate                  Pulsate progress bar\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --auto-kill=PID            Kill the process with the specified PID if cancel\n"
   "                             button is pressed; if the given parameter is \"parent\"\n"
@@ -416,6 +417,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
+  bool pulsate = false;
   bool autoclose = false;
   bool hide_cancel = false;
 #endif
@@ -526,6 +528,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     { "progress",        no_argument,        0,  LO_PROGRESS        },
+    { "pulsate",         no_argument,        0,  LO_PULSATE         },
     { "auto-close",      no_argument,        0,  LO_AUTO_CLOSE      },
     { "auto-kill",       required_argument,  0,  LO_AUTO_KILL       },
     { "no-cancel",       no_argument,        0,  LO_NO_CANCEL       },
@@ -748,6 +751,9 @@ int main(int argc, char **argv)
         dialog = DIALOG_FL_PROGRESS;
         dialog_count++;
         break;
+      case LO_PULSATE:
+        pulsate = true;
+        break;
       case LO_AUTO_CLOSE:
         autoclose = true;
         break;
@@ -925,6 +931,11 @@ int main(int argc, char **argv)
 #ifdef WITH_PROGRESS
   if (dialog != DIALOG_FL_PROGRESS)
   {
+    if (pulsate)
+    {
+      return use_only_with(argv[0], "--pulsate", "--progress");
+    }
+
     if (autoclose)
     {
       return use_only_with(argv[0], "--auto-close", "--progress");
@@ -1095,7 +1106,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     case DIALOG_FL_PROGRESS:
-      return dialog_fl_progress(autoclose, hide_cancel);
+      return dialog_fl_progress(pulsate, autoclose, hide_cancel);
 #endif
 
     case DIALOG_SCALE:

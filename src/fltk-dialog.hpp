@@ -131,7 +131,8 @@ int dialog_notify(const char *appname,
 #ifdef WITH_PROGRESS
 extern int kill_pid;
 extern bool kill_parent;
-int dialog_fl_progress(bool autoclose,
+int dialog_fl_progress(bool pulsate,
+                       bool autoclose,
                        bool hide_cancel);
 #endif
 
