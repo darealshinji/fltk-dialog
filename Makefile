@@ -5,8 +5,8 @@ endif
 # set to "yes" if you want to link
 # against system libraries
 SYSTEM_JPEG ?= no
-SYSTEM_PNG  ?= no
-SYSTEM_ZLIB ?= no
+SYSTEM_PNG  ?= yes
+SYSTEM_ZLIB ?= yes
 
 # set to "no" if you don't want an embedded FLKT
 # icon to appear in taskbar and windows
@@ -200,12 +200,21 @@ else
 silent = @
 endif
 
+msg_GENH  = @echo "Generating header file $@"
+msg_CXX   = @echo "Building CXX object $@"
+msg_CXXLD = @echo "Linking CXX executable $@"
+
+CMAKE ?= cmake
+SVN ?= svn
+WGET ?= wget
+XXD ?= xxd
+
 
 
 all: $(BIN)
 
 configure: checkout-sources
-	autoconf
+	autoreconf -if
 
 download: checkout-sources
 checkout-sources: $(libpng) $(fltk)
@@ -221,6 +230,9 @@ distclean: mostlyclean
 mostlyclean:
 	-rm -f $(BIN) *.so qtgui_so.h src/*.o src/Flek/*.o src/misc/*.o
 
+maintainer-clean: distclean
+	-rm -f configure
+
 clobber: mostlyclean
 	-rm -rf $(fltk) $(libpng) autom4te.cache
 	-rm -f configure config.mak config.log config.status
@@ -229,17 +241,17 @@ clobber: mostlyclean
 $(OBJS): $(libpng_a) $(libfltk)
 
 $(BIN): $(OBJS)
-	@echo "Linking CXX executable $@"
+	$(msg_CXXLD)
 	$(silent)$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 .cpp.o:
-	@echo "Building CXX object $@"
+	$(msg_CXX)
 	$(silent)$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(libpng): $(libpng)/checkout_stamp
 $(libpng)/checkout_stamp:
 	rm -rf `dirname $@` $(libpng_tarball) && \
-  wget "https://sourceforge.net/projects/libpng/files/$(libpng)/$(libpng_version)/$(libpng_tarball)" && \
+  $(WGET) "https://sourceforge.net/projects/libpng/files/$(libpng)/$(libpng_version)/$(libpng_tarball)" && \
   tar xf $(libpng_tarball) && \
   mv libpng-$(libpng_version) `dirname $@` && \
   rm -f $(libpng_tarball) && \
@@ -247,16 +259,16 @@ $(libpng)/checkout_stamp:
 
 $(fltk): $(fltk)/revision
 $(fltk)/revision:
-	svn co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $(fltk); \
-  LANG=C svn info $(fltk) | grep '^Revision:' | cut -d' ' -f2 > $@
+	$(SVN) co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $(fltk); \
+  LANG=C $(SVN) info $(fltk) | grep '^Revision:' | cut -d' ' -f2 > $@
 
 $(fltk)/build/Makefile: $(fltk)
 	mkdir -p $(fltk)/build
-	cd $(fltk)/build && cmake .. $(cmake_config) $(cmake_vebose)
+	cd $(fltk)/build && $(CMAKE) .. $(cmake_config) $(cmake_vebose)
 
 $(libpng)/build/Makefile: $(libpng)
 	mkdir -p $(libpng)/build
-	cd $(libpng)/build && cmake .. $(cmake_vebose) \
+	cd $(libpng)/build && $(CMAKE) .. $(cmake_vebose) \
   -DCMAKE_BUILD_TYPE="None" \
   -DCMAKE_CXX_FLAGS="$(common_CFLAGS)" \
   -DCMAKE_C_FLAGS="$(common_CFLAGS)" \
@@ -273,21 +285,28 @@ $(libpng_a): $(libpng)/build/Makefile
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
 
-src/file_dlopen_qtplugin.o: qtgui_so.h
 qtgui_so.h: qt4gui.so qt5gui.so
-	xxd -i qt4gui.so > $@ && xxd -i qt5gui.so >> $@
+	$(msg_GENH)
+	$(silent)$(XXD) -i qt4gui.so > $@ && $(XXD) -i qt5gui.so >> $@
 
 qt4gui.so: src/file_qtplugin_qt4.o
-	$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs QtGui QtCore)
+	$(msg_CXXLD)
+	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs QtGui QtCore)
 
 qt5gui.so: src/file_qtplugin_qt5.o
-	$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs Qt5Widgets Qt5Core)
+	$(msg_CXXLD)
+	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs Qt5Widgets Qt5Core)
 
 src/file_qtplugin_qt4.o: src/file_qtplugin.cpp
-	$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
+	$(msg_CXX)
+	$(silent)$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
 
 src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
-	$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
+	$(msg_CXX)
+	$(silent)$(CXX) -std=c++0x -fPIC -DPIC $(CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
+
+src/file_dlopen_qtplugin.o: qtgui_so.h
+src/file_qtplugin.cpp: $(fltk)/revision
 
 src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: CXXFLAGS+=-Wno-unused-parameter
 

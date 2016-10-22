@@ -1,5 +1,17 @@
-AC_INIT([fltk-dialog], [0.1],
-        [https://github.com/darealshinji/fltk-dialog/issues])
+
+# AX_PKG_CHECK_MODULES_SIMPLE(prefix, pkg-module, [mandatory|optional])
+m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
+  AC_MSG_CHECKING([for package $1])
+  AS_IF([test "x$(pkg-config --exists $2; echo $?)" = "x0"], [
+    AC_MSG_RESULT([yes])
+  ], [
+    AC_MSG_RESULT([no])
+    AS_IF([test "x$3" = "xmandatory"], [exit 1])
+  ])
+}])
+
+
+AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issues])
 AC_CONFIG_SRCDIR([src/main.cpp])
 
 
@@ -72,18 +84,18 @@ AC_ARG_ENABLE([default-icon],
   [AS_HELP_STRING([--disable-default-icon], [disable embedded default window icon])],
   [default_icon="no"], [default_icon="yes"])
 AC_ARG_ENABLE([dynamic-notify],
-  [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library; less portable)])],
+  [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
 
 AC_ARG_ENABLE([system-jpeg],
-  [AS_HELP_STRING([--enable-system-jpeg], [link against system wide libjpeg])],
+  [AS_HELP_STRING([--enable-system-jpeg], [link against system libjpeg])],
   [use_system_jpeg="yes"], [use_system_jpeg="no"])
 AC_ARG_ENABLE([system-png],
-  [AS_HELP_STRING([--enable-system-png], [link against system wide libpng])],
-  [use_system_png="yes"], [use_system_png="no"])
+  [AS_HELP_STRING([--disable-system-png], [do not link against system libpng (may cause issues with native file dialogs)])],
+  [use_system_png="no"], [use_system_png="yes"])
 AC_ARG_ENABLE([system-zlib],
-  [AS_HELP_STRING([--enable-system-zlib], [link against system wide zlib])],
-  [use_system_zlib="yes"], [use_system_zlib="no"])
+  [AS_HELP_STRING([--disable-system-zlib], [do not link against system zlib])],
+  [use_system_zlib="no"], [use_system_zlib="yes"])
 
 
 # libnotify checks
@@ -92,13 +104,15 @@ AS_IF([test "x$use_notify" = "xno"], [
   dynamic_notify="no"
 ], [
   # libnotify headers
-  CFLAGS_backup="$CFLAGS"
-  CPPFLAGS_backup="$CPPFLAGS"
-  CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
-  CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
-  AC_CHECK_HEADER([libnotify/notify.h], [have_libnotify="yes"], [have_libnotify="no"])
-  CFLAGS="$CFLAGS_backup"
-  CPPFLAGS="$CPPFLAGS_backup"
+    CFLAGS_backup="$CFLAGS"
+    CPPFLAGS_backup="$CPPFLAGS"
+  AS_IF([test "x$(pkg-config --exists libnotify; echo $?)" = "x0"], [
+    CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
+    CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
+    AC_CHECK_HEADER([libnotify/notify.h], [have_libnotify="yes"], [have_libnotify="no"])
+    CFLAGS="$CFLAGS_backup"
+    CPPFLAGS="$CPPFLAGS_backup"
+  ])
   # libnotify library functions
   AS_IF([test "$xhave_libnotify" = "xyes"], [
     AC_CHECK_LIB([notify], [notify_init], [have_libnotify="yes"], [have_libnotify="no"])
@@ -119,6 +133,13 @@ AS_IF([test "x$use_notify" = "xno"], [
   ])
   AS_IF([test "x$have_dlopen" = "xyes"], [dynamic_notify="yes"])
 ])
+
+
+# Qt checks
+AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore],     [mandatory])
+AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)],  [QtGui],      [mandatory])
+AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core],      [Qt5Core],    [mandatory])
+AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets],   [Qt5Widgets], [mandatory])
 
 
 # Xft
