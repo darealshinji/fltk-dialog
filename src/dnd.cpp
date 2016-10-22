@@ -104,12 +104,12 @@ int dialog_dnd()
 
   if (msg == NULL)
   {
-    msg = (char *)"drop stuff here";
+    msg = "drop stuff here";
   }
 
   if (title == NULL)
   {
-    title = (char *)"FLTK Drag & Drop";
+    title = "FLTK Drag & Drop";
   }
 
   dnd_win = new Fl_Window(400, 300, title);

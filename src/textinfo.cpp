@@ -76,7 +76,7 @@ int dialog_textinfo(      bool  autoscroll,
 
   if (title == NULL)
   {
-    title = (char *)"FLTK text info window";
+    title = "FLTK text info window";
   }
 
   if (checkbox == NULL)

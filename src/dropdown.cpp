@@ -60,12 +60,12 @@ int dialog_dropdown(std::string dropdown_list,
 
   if (msg == NULL)
   {
-    msg = (char *)"Select an option";
+    msg = "Select an option";
   }
 
   if (title == NULL)
   {
-    title = (char *)"FLTK dropdown menu dialog";
+    title = "FLTK dropdown menu dialog";
   }
 
   split(dropdown_list, DEFAULT_DELIMITER, itemlist_v);
@@ -73,7 +73,7 @@ int dialog_dropdown(std::string dropdown_list,
   size_t count = itemlist_v.size();
   if (count <= 1)
   {
-    msg = (char *)"ERROR: need at least 2 entries";
+    msg = "ERROR: need at least 2 entries";
     dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
@@ -84,7 +84,7 @@ int dialog_dropdown(std::string dropdown_list,
     {
       if (itemlist_v[i] == "")
       {
-        menu_items[i].text = (char *)"<EMPTY>";
+        menu_items[i].text = "<EMPTY>";
       }
       else
       {

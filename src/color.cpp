@@ -41,7 +41,7 @@ int dialog_fl_color()
 
   if (title == NULL)
   {
-    title = (char *)"FLTK color chooser";
+    title = "FLTK color chooser";
   }
 
   if (fl_color_chooser(title, r,g,b, 1))

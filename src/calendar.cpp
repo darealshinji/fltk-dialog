@@ -51,7 +51,7 @@ int dialog_fl_calendar(std::string format)
 
   if (title == NULL)
   {
-    title = (char *)"FLTK calendar";
+    title = "FLTK calendar";
   }
 
   /* one calendar unit = 32px

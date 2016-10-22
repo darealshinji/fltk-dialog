@@ -38,7 +38,7 @@ int dialog_fl_file_chooser()
 
   if (title == NULL)
   {
-    title = (char *)"Select a file";
+    title = "Select a file";
   }
 
   char *file = fl_file_chooser(title, "*", NULL);
@@ -58,7 +58,7 @@ int dialog_fl_dir_chooser()
 
   if (title == NULL)
   {
-    title = (char *)"Select a directory";
+    title = "Select a directory";
   }
 
   char *dir = fl_dir_chooser(title, NULL);

@@ -97,7 +97,7 @@ int dialog_fdate(std::string format)
 
   if (title == NULL)
   {
-    title = (char *)"FLTK date";
+    title = "FLTK date";
   }
 
   fdate_win = new Fl_Window(400, 114, title);

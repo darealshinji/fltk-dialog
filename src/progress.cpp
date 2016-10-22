@@ -143,7 +143,7 @@ int dialog_fl_progress(bool autoclose,
 
   if (title == NULL)
   {
-    title = (char *)"FLTK progress window";
+    title = "FLTK progress window";
   }
 
   int stdin;
@@ -151,13 +151,13 @@ int dialog_fl_progress(bool autoclose,
 
   if (stdin == -1)
   {
-    msg = (char *)"ERROR: select()";
+    msg = "ERROR: select()";
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
   else if (!stdin)
   {
-    msg = (char *)"ERROR: no input data receiving";
+    msg = "ERROR: no input data receiving";
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }

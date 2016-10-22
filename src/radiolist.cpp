@@ -82,8 +82,8 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
 
   if (count < 1)
   {
-    title = (char *)"error: radiolist";
-    msg = (char *)"Two or more options required!";
+    title = "error: radiolist";
+    msg = "Two or more options required!";
     dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
@@ -92,7 +92,7 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
 
   if (title == NULL)
   {
-    title = (char *)"Select an option";
+    title = "Select an option";
   }
 
   int win_h = (30 * count) + 56;

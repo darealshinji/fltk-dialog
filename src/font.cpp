@@ -255,7 +255,7 @@ int dialog_font()
   /* create the window */
   if (title == NULL)
   {
-    title = (char *)"FLTK Font Selector";
+    title = "FLTK Font Selector";
   }
 
   font_win = new Fl_Window(550, 400, title);
