@@ -9,7 +9,10 @@
 /config.status
 /configure
 
+/qtgui_so.h
+
 *.o
+*.so
 a.out
 
 *~
