@@ -35,7 +35,7 @@ DYNAMIC_NOTIFY ?= yes
 fltk = fltk-1.3
 libpng = libpng16
 
-libpng_version = 1.6.25
+libpng_version = 1.6.26
 libpng_tarball = libpng-$(libpng_version).tar.xz
 
 BIN = fltk-dialog
