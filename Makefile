@@ -230,7 +230,7 @@ configure: checkout-sources
 	autoreconf -if
 
 download: checkout-sources
-checkout-sources: $(libpng) $(fltk)
+checkout-sources: zlib $(libpng) $(fltk)
 
 clean: mostlyclean
 	[ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
