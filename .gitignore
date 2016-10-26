@@ -1,5 +1,6 @@
 /fltk-1.3/
 /libpng16/
+/zlib/
 
 /fltk-dialog
 /config.mak

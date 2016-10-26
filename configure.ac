@@ -91,11 +91,11 @@ AC_ARG_ENABLE([system-jpeg],
   [AS_HELP_STRING([--enable-system-jpeg], [link against system libjpeg])],
   [use_system_jpeg="yes"], [use_system_jpeg="no"])
 AC_ARG_ENABLE([system-png],
-  [AS_HELP_STRING([--disable-system-png], [do not link against system libpng (may cause issues with native file dialogs)])],
-  [use_system_png="no"], [use_system_png="yes"])
+  [AS_HELP_STRING([--disable-system-png], [link against system libpng])],
+  [use_system_png="yes"], [use_system_png="no"])
 AC_ARG_ENABLE([system-zlib],
-  [AS_HELP_STRING([--disable-system-zlib], [do not link against system zlib])],
-  [use_system_zlib="no"], [use_system_zlib="yes"])
+  [AS_HELP_STRING([--disable-system-zlib], [link against system zlib])],
+  [use_system_zlib="yes"], [use_system_zlib="no"])
 
 
 # libnotify checks
