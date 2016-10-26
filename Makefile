@@ -48,8 +48,7 @@ common_CFLAGS := $(OPT) -Wall -Wextra \
  -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 \
  -ffunction-sections -fdata-sections
 
-LDFLAGS += \
- -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
+LDFLAGS += -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
 
 CXXFLAGS += $(common_CFLAGS) -I. -Isrc -I$(fltk)/build -I$(fltk) \
  $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
@@ -165,7 +164,6 @@ cmake_config = \
   -DCMAKE_CXX_FLAGS="$(fltk_CFLAGS) $(extra_include)" \
   -DCMAKE_C_FLAGS="$(fltk_CFLAGS) $(extra_include)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(extra_libdirs)" \
-  -DOPTION_BUILD_EXAMPLES="OFF" \
   -DOPTION_USE_GL="OFF" \
   -DOPTION_OPTIM="$(OPT)"
 
@@ -262,6 +260,7 @@ $(BIN): $(OBJS)
 	$(msg_CXX)
 	$(silent)$(CXX) $(CXXFLAGS) -c -o $@ $<
 
+
 $(libpng): $(libpng)/checkout_stamp
 $(libpng)/checkout_stamp:
 	rm -rf `dirname $@` $(libpng_tarball) && \
@@ -280,7 +279,10 @@ zlib/checkout_stamp:
   rm -f $(zlib_tarball) && \
   touch $@
 
-$(fltk): $(fltk)/revision
+$(fltk): $(fltk)/patch_stamp
+$(fltk)/patch_stamp: $(fltk)/revision
+	test -f $@ || (patch -p1 < libjpeg-prefixes.patch && touch $@)
+
 $(fltk)/revision:
 	$(SVN) co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $(fltk); \
   LANG=C $(SVN) info $(fltk) | grep '^Revision:' | cut -d' ' -f2 > $@
@@ -305,8 +307,7 @@ $(libpng)/build/Makefile: $(libpng_build_Makefile_dep)
     --with-libpng-prefix="fltk_dialog_"
 
 zlib/patch_stamp: zlib
-	test -f $@ || (cd zlib && patch -p1 < ../zlib-prefixes.patch && \
-  touch ../$@)
+	test -f $@ || (patch -p1 < zlib-prefixes.patch && touch $@)
 
 ifneq ($(SYSTEM_ZLIB),no)
 # system zlib
