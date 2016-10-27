@@ -24,10 +24,12 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
-AC_CHECK_PROG([CMAKE], [cmake], [yes])
-AS_IF([test "x$CMAKE" != "xyes"], [exit 1])
+AC_CHECK_PROG([XXD], [xxd], [yes])
+AS_IF([test "x$XXD" != "xyes"], [exit 1])
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes])
 AS_IF([test "x$PKG_CONFIG" != "xyes"], [exit 1])
+AC_CHECK_PROG([CMAKE], [cmake], [yes])
+AS_IF([test "x$CMAKE" != "xyes"], [exit 1])
 
 
 # additional configure options

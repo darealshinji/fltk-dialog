@@ -52,7 +52,7 @@ LDFLAGS       ?= -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-se
 
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra $(CXXFLAGS) $(CPPFLAGS) -I. -Isrc -I$(fltk)/build -I$(fltk) -DFLTK_VERSION=\"$(FLTK_VERSION)\"
-main_CXXFLAGS += $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
+main_CXXFLAGS += $(shell $(fltk)/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
 
 # libfltk build flags
 fltk_CFLAGS   := -Wall $(CFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
@@ -207,9 +207,11 @@ libfltk    = $(fltk)/build/lib/libfltk.a
 main_LIBS += $(libfltk) $(shell $(fltk)/build/fltk-config --use-images --ldflags)
 
 ifeq ($(V),1)
-cmake_vebose = -DCMAKE_VERBOSE_MAKEFILE="ON"
+cmake_verbose = -DCMAKE_VERBOSE_MAKEFILE="ON"
+make_verbose  = 1
 else
-silent = @
+make_verbose  = 0
+silent        = @
 endif
 
 msg_GENH    = @echo "Generating header file $@"
@@ -254,7 +256,7 @@ $(fltk)/build/fltk-config: $(libfltk)
 
 $(fltk)/build/Makefile: $(fltk)
 	mkdir -p $(fltk)/build
-	cd $(fltk)/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_vebose)
+	cd $(fltk)/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_verbose)
 
 
 ifeq ($(SYSTEM_ZLIB),no)
@@ -272,19 +274,18 @@ $(png)/build/Makefile: $(libpng_build_Makefile_dep)
 
 $(zlib)/build/Makefile:
 	mkdir -p $(zlib)/build
-	cd $(zlib)/build && $(CMAKE) .. $(cmake_vebose) \
+	cd $(zlib)/build && $(CMAKE) .. $(cmake_verbose) \
   -DCMAKE_BUILD_TYPE="None" \
   -DCMAKE_C_FLAGS="-Wall $(CFLAGS) $(CPPFLAGS)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
 
 
 $(libpng_a): $(png)/build/Makefile
-	$(MAKE) -C $(png)/build && \
-  cd $(png)/build && rm -f libpng.so libpng.a && \
-  ln -s .libs/libpng16.a libpng.a
+	$(MAKE) -C $(png)/build V=$(make_verbose) && \
+  cd $(png)/build && ln -fs .libs/libpng16.a libpng.a
 
 $(libz_a): $(zlib)/build/Makefile
-	$(MAKE) -C $(zlib)/build && rm -f $(zlib)/build/libz.so*
+	$(MAKE) -C $(zlib)/build zlibstatic
 
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
