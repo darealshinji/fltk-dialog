@@ -1,5 +1,5 @@
---- a/fltk-1.3/jpeg/jpeglib.h
-+++ b/fltk-1.3/jpeg/jpeglib.h
+--- a/jpeg/jpeglib.h
++++ b/jpeg/jpeglib.h
 @@ -887,60 +887,169 @@
   * characters, you are out of luck.  Get a better compiler.)
   */

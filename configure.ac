@@ -17,6 +17,7 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 
 : ${CFLAGS="-Os"}
 : ${CXXFLAGS="-Os"}
+: ${LDFLAGS="-s"}
 
 
 # check for programs

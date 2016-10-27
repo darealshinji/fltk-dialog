@@ -262,7 +262,7 @@ $(png)/build/Makefile: $(libpng_build_Makefile_dep)
 	mkdir -p $(png)/build
 	cd $(png)/build && \
   LDFLAGS="$(LDFLAGS) -L$(CURDIR)/$(zlib)/build" \
-  CFLAGS="$(common_CFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
+  CFLAGS="$(CFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
   ../configure --disable-shared \
     --with-zlib-prefix="fltk_dialog_" \
     --with-libpng-prefix="fltk_dialog_"
@@ -271,7 +271,7 @@ $(zlib)/build/Makefile:
 	mkdir -p $(zlib)/build
 	cd $(zlib)/build && $(CMAKE) .. $(cmake_vebose) \
   -DCMAKE_BUILD_TYPE="None" \
-  -DCMAKE_C_FLAGS="$(common_CFLAGS)" \
+  -DCMAKE_C_FLAGS="$(CFLAGS)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
 
 $(fltk)/build/fltk-config: $(libfltk)
