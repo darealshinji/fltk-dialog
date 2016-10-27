@@ -31,13 +31,12 @@ WITH_WINDOW_ICON ?= yes
 
 DYNAMIC_NOTIFY ?= yes
 
-# source directories and tarballs
-fltk = fltk-1.3
-libpng_version = 1.6.26
-libpng_tarball = libpng-$(libpng_version).tar.xz
-libpng = libpng16
-zlib_version = 1.2.8
-zlib_tarball = zlib-$(zlib_version).tar.xz
+FLTK_VERSION = 1.3.4rc2
+
+# source directories
+fltk = 3rdparty/fltk
+png = 3rdparty/png
+zlib = 3rdparty/zlib
 
 BIN = fltk-dialog
 OBJS = $(addprefix src/,about.o message.o misc/translate.o version.o main.o)
@@ -49,13 +48,10 @@ common_CFLAGS := $(OPT) -Wall -Wextra \
  -ffunction-sections -fdata-sections
 
 LDFLAGS += -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
-
-CXXFLAGS += $(common_CFLAGS) -I. -Isrc -I$(fltk)/build -I$(fltk) \
- $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
-
-CXXFLAGS += \
- -DFLTK_VERSION=\"$(shell cat $(fltk)/VERSION)\" \
- -DREVISION=\"$(shell cat $(fltk)/revision)\"
+CFLAGS += $(common_CFLAGS)
+CXXFLAGS += $(common_CFLAGS) -I. -Isrc -I$(fltk)/build -I$(fltk)
+CXXFLAGS += $(shell $(fltk)/build/fltk-config --cxxflags | tr ' ' '\n' | grep '^-D.*')
+CXXFLAGS += -DFLTK_VERSION=\"$(FLTK_VERSION)\"
 
 HAVE_ITOSTR = no
 HAVE_PRINT_DATE = no
@@ -154,8 +150,7 @@ endif
 endif
 
 
-fltk_CFLAGS := $(common_CFLAGS) \
-  -Wno-unused-parameter -Wno-missing-field-initializers
+fltk_CFLAGS := $(common_CFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
 
 extra_include :=
 extra_libdirs :=
@@ -179,26 +174,26 @@ endif
 ifneq ($(SYSTEM_PNG),no)
 LIBS += -lpng
 else
-libpng_a = $(libpng)/build/libpng.a
+libpng_a = $(png)/build/libpng.a
 cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="ON" \
- -DHAVE_LIBPNG_PNG_H="$(CURDIR)/$(libpng)/build/png.h" \
+ -DHAVE_LIBPNG_PNG_H="$(CURDIR)/$(png)/build/png.h" \
  -DLIB_png="$(CURDIR)/$(libpng_a)"
 LIBS += $(libpng_a)
-extra_include += -I\"$(CURDIR)/$(libpng)/build\" -I\"$(CURDIR)/$(libpng)\"
-extra_libdirs += -L\"$(CURDIR)/$(libpng)/build\"
+extra_include += -I\"$(CURDIR)/$(png)/build\" -I\"$(CURDIR)/$(png)\"
+extra_libdirs += -L\"$(CURDIR)/$(png)/build\"
 endif
 
 ifneq ($(SYSTEM_ZLIB),no)
 LIBS += -lz
 else
-libz_a = zlib/build/libz.a
+libz_a = $(zlib)/build/libz.a
 cmake_config += -DOPTION_USE_SYSTEM_ZLIB="ON" \
-  -DZLIB_INCLUDE_DIR="$(CURDIR)/zlib" \
+  -DZLIB_INCLUDE_DIR="$(CURDIR)/$(zlib)" \
   -DZLIB_LIBRARY_RELEASE="$(CURDIR)/$(libz_a)" \
   -DLIB_zlib="$(CURDIR)/$(libz_a)"
 LIBS += $(libz_a)
-extra_include += -I\"$(CURDIR)/zlib\"
-extra_libdirs += -L\"$(CURDIR)/zlib/build\"
+extra_include += -I\"$(CURDIR)/$(zlib)\"
+extra_libdirs += -L\"$(CURDIR)/$(zlib)/build\"
 endif
 
 libfltk = $(fltk)/build/lib/libfltk.a
@@ -228,15 +223,15 @@ configure: checkout-sources
 	autoreconf -if
 
 download: checkout-sources
-checkout-sources: zlib $(libpng) $(fltk)
+checkout-sources: $(zlib) $(png) $(fltk)
 
 clean: mostlyclean
 	[ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
-	[ ! -f $(libpng)/build/Makefile ] || $(MAKE) -C $(libpng)/build clean
-	[ ! -f zlib/build/Makefile ] || $(MAKE) -C zlib/build clean
+	[ ! -f $(png)/build/Makefile ] || $(MAKE) -C $(png)/build clean
+	[ ! -f $(zlib)/build/Makefile ] || $(MAKE) -C $(zlib)/build clean
 
 distclean: mostlyclean
-	-rm -rf $(fltk)/build $(libpng)/build zlib/build autom4te.cache
+	-rm -rf $(fltk)/build $(png)/build $(zlib)/build autom4te.cache
 	-rm -f config.mak config.log config.status
 
 mostlyclean:
@@ -244,11 +239,6 @@ mostlyclean:
 
 maintainer-clean: distclean
 	-rm -f configure
-
-clobber: mostlyclean
-	-rm -rf $(fltk) $(libpng) zlib autom4te.cache
-	-rm -f configure config.mak config.log config.status
-	-rm -f $(libpng_tarball)
 
 $(OBJS): $(libpng_a) $(libfltk)
 
@@ -261,77 +251,38 @@ $(BIN): $(OBJS)
 	$(silent)$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 
-$(libpng): $(libpng)/checkout_stamp
-$(libpng)/checkout_stamp:
-	rm -rf `dirname $@` $(libpng_tarball) && \
-  $(WGET) "https://sourceforge.net/projects/libpng/files/$(libpng)/$(libpng_version)/$(libpng_tarball)" && \
-  tar xf $(libpng_tarball) && \
-  mv libpng-$(libpng_version) `dirname $@` && \
-  rm -f $(libpng_tarball) && \
-  touch $@
-
-zlib: zlib/checkout_stamp
-zlib/checkout_stamp:
-	rm -rf `dirname $@` $(zlib_tarball) && \
-  $(WGET) "http://zlib.net/$(zlib_tarball)" && \
-  tar xf $(zlib_tarball) && \
-  mv zlib-$(zlib_version) `dirname $@` && \
-  rm -f $(zlib_tarball) && \
-  touch $@
-
-$(fltk): $(fltk)/patch_stamp
-$(fltk)/patch_stamp: $(fltk)/revision
-	test -f $@ || (patch -p1 < libjpeg-prefixes.patch && touch $@)
-
-$(fltk)/revision:
-	$(SVN) co --username="" --password="" "http://seriss.com/public/fltk/fltk/branches/branch-1.3" $(fltk); \
-  LANG=C $(SVN) info $(fltk) | grep '^Revision:' | cut -d' ' -f2 > $@
-
 $(fltk)/build/Makefile: $(fltk)
 	mkdir -p $(fltk)/build
 	cd $(fltk)/build && $(CMAKE) .. $(cmake_config) $(cmake_vebose)
 
-ifneq ($(SYSTEM_ZLIB),no)
-# system zlib
-libpng_build_Makefile_dep = $(libpng)
-else
-libpng_build_Makefile_dep = $(libpng) $(libz_a)
+ifeq ($(SYSTEM_ZLIB),no)
+libpng_build_Makefile_dep = $(libz_a)
 endif
-$(libpng)/build/Makefile: $(libpng_build_Makefile_dep)
-	mkdir -p $(libpng)/build
-	cd $(libpng)/build && \
-  LDFLAGS="$(LDFLAGS) -L$(CURDIR)/zlib/build" \
-  CFLAGS="$(common_CFLAGS) -I$(CURDIR)/zlib -I$(CURDIR)/zlib/build" \
+$(png)/build/Makefile: $(libpng_build_Makefile_dep)
+	mkdir -p $(png)/build
+	cd $(png)/build && \
+  LDFLAGS="$(LDFLAGS) -L$(CURDIR)/$(zlib)/build" \
+  CFLAGS="$(common_CFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
   ../configure --disable-shared \
     --with-zlib-prefix="fltk_dialog_" \
     --with-libpng-prefix="fltk_dialog_"
 
-zlib/patch_stamp: zlib
-	test -f $@ || (patch -p1 < zlib-prefixes.patch && touch $@)
-
-ifneq ($(SYSTEM_ZLIB),no)
-# system zlib
-zlib_build_Makefile_dep = zlib
-else
-zlib_build_Makefile_dep = zlib/patch_stamp
-endif
-zlib/build/Makefile: $(zlib_build_Makefile_dep)
-	mkdir -p zlib/build
-	cd zlib/build && $(CMAKE) .. $(cmake_vebose) \
+$(zlib)/build/Makefile:
+	mkdir -p $(zlib)/build
+	cd $(zlib)/build && $(CMAKE) .. $(cmake_vebose) \
   -DCMAKE_BUILD_TYPE="None" \
-  -DCMAKE_CXX_FLAGS="$(common_CFLAGS)" \
   -DCMAKE_C_FLAGS="$(common_CFLAGS)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
 
 $(fltk)/build/fltk-config: $(libfltk)
 
-$(libpng_a): $(libpng)/build/Makefile
-	$(MAKE) -C $(libpng)/build && \
-  cd $(libpng)/build && rm -f libpng.so libpng.a && \
+$(libpng_a): $(png)/build/Makefile
+	$(MAKE) -C $(png)/build && \
+  cd $(png)/build && rm -f libpng.so libpng.a && \
   ln -s .libs/libpng16.a libpng.a
 
-$(libz_a): zlib/build/Makefile
-	$(MAKE) -C zlib/build && rm -f zlib/build/libz.so*
+$(libz_a): $(zlib)/build/Makefile
+	$(MAKE) -C $(zlib)/build && rm -f $(zlib)/build/libz.so*
 
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build

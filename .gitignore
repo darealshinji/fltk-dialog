@@ -1,6 +1,6 @@
-/fltk-1.3/
-/libpng16/
-/zlib/
+/3rdparty/fltk/build/
+/3rdparty/png/build/
+/3rdparty/zlib/build/
 
 /fltk-dialog
 /config.mak
@@ -8,7 +8,6 @@
 /autom4te.cache/
 /config.log
 /config.status
-/configure
 
 /qtgui_so.h
 
