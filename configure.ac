@@ -15,9 +15,9 @@ AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issue
 AC_CONFIG_SRCDIR([src/main.cpp])
 
 
-: ${CFLAGS="-Os"}
-: ${CXXFLAGS="-Os"}
-: ${LDFLAGS="-s"}
+: ${CFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
+: ${CXXFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
+: ${LDFLAGS="-s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections"}
 
 
 # check for programs
