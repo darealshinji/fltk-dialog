@@ -211,8 +211,6 @@ msg_CXXLD   = @echo "Linking CXX executable $@"
 msg_CXXLDSO = @echo "Linking CXX shared object $@"
 
 CMAKE ?= cmake
-SVN ?= svn
-WGET ?= wget
 XXD ?= xxd
 
 

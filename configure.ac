@@ -28,10 +28,6 @@ AC_CHECK_PROG([CMAKE], [cmake], [yes])
 AS_IF([test "x$CMAKE" != "xyes"], [exit 1])
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes])
 AS_IF([test "x$PKG_CONFIG" != "xyes"], [exit 1])
-AC_CHECK_PROG([SVN], [svn], [yes])
-AS_IF([test "x$SVN" != "xyes"], [AC_MSG_WARN([\`svn' not in PATH! Cannot download missing source files])])
-AC_CHECK_PROG([WGET], [wget], [yes])
-AS_IF([test "x$WGET" != "xyes"], [AC_MSG_WARN([\`wget' not in PATH! Cannot download missing source files])])
 
 
 # additional configure options
