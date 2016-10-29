@@ -625,7 +625,6 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-OPT
 DYNAMIC_NOTIFY
 WITH_WINDOW_ICON
 WITH_TEXTINFO
@@ -4453,11 +4452,9 @@ CPPFLAGS="$CPPFLAGS_backup"
 if test "x$have_xft" != "xyes"; then :
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $PACKAGE_NAME will not be linked against Xft.
-  Displayed fonts may look ugly!
-  (ignore this warning if you are not on an X11 system)" >&5
+  Displayed fonts may look ugly!" >&5
 $as_echo "$as_me: WARNING: $PACKAGE_NAME will not be linked against Xft.
-  Displayed fonts may look ugly!
-  (ignore this warning if you are not on an X11 system)" >&2;}
+  Displayed fonts may look ugly!" >&2;}
 
 fi
 
@@ -4556,7 +4553,6 @@ WITH_WINDOW_ICON=$use_window_icon
 
 DYNAMIC_NOTIFY=$dynamic_notify
 
-  # override value in Makefile with empty string
 
 
 ac_config_files="$ac_config_files config.mak"

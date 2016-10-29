@@ -154,8 +154,7 @@ CFLAGS="$CFLAGS_backup"
 CPPFLAGS="$CPPFLAGS_backup"
 AS_IF([test "x$have_xft" != "xyes"], [
   AC_MSG_WARN([$PACKAGE_NAME will not be linked against Xft.
-  Displayed fonts may look ugly!
-  (ignore this warning if you are not on an X11 system)])
+  Displayed fonts may look ugly!])
 ])
 
 
@@ -201,7 +200,6 @@ AC_SUBST([WITH_RADIOLIST], [$use_radiolist])
 AC_SUBST([WITH_TEXTINFO], [$use_textinfo])
 AC_SUBST([WITH_WINDOW_ICON], [$use_window_icon])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
-AC_SUBST([OPT], [])  # override value in Makefile with empty string
 
 
 AC_CONFIG_FILES([config.mak])
