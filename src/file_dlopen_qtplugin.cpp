@@ -110,7 +110,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
   dlerror();
 
-  int (*getfilenameqt) (int, int, char **);
+  int (*getfilenameqt) (int, const char*, int, char **);
   *(void **)(&getfilenameqt) = dlsym(handle, "getfilenameqt");
 
   dlsym_error = dlerror();
@@ -123,7 +123,8 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
     return -1;
   }
 
-  int ret = getfilenameqt(mode, argc, argv);
+  const char *separator_c = separator_s.c_str();
+  int ret = getfilenameqt(mode, separator_c, argc, argv);
   dlclose(handle);
   DELETE(filename);
 

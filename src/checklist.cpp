@@ -73,7 +73,7 @@ int dialog_fl_check_button(std::string checklist_options)
   std::vector<long> counter_v;
   int count = 0;
 
-  split(checklist_options, DEFAULT_DELIMITER, checklist_v);
+  split(checklist_options, separator, checklist_v);
 
   for (size_t i = 0; i < checklist_v.size(); ++i)
   {
@@ -147,17 +147,20 @@ int dialog_fl_check_button(std::string checklist_options)
     {
       if (checklist_checked[i])
       {
-        list += "TRUE|";
+        list += "TRUE";
       }
       else
       {
-        list += "FALSE|";
+        list += "FALSE";
+      }
+
+      if (i < (count - 1))
+      {
+        list += separator_s;
       }
     }
 
-    /* strip trailing "|" */
-    int len = list.length() - 1;
-    std::cout << list.substr(0, len) << std::endl;
+    std::cout << list << std::endl;
   }
 
   return ret;

@@ -29,9 +29,10 @@
 #include <string>
 
 #define STREQ(x, y) (strcmp(x, y) == 0)
-#define DEFAULT_DELIMITER '|'
 
 extern const char *title, *msg;
+extern char separator;
+extern std::string separator_s;
 extern int ret;
 extern bool resizable, position_center, scale_val_set;
 extern int override_x, override_y, override_w, override_h;

@@ -39,7 +39,7 @@
 
 
 extern "C"
-int getfilenameqt(int mode, int argc, char **argv)
+int getfilenameqt(int mode, const char *separator, int argc, char **argv)
 {
   QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
   QFileDialog *dialog = new QFileDialog();
@@ -57,7 +57,7 @@ int getfilenameqt(int mode, int argc, char **argv)
   {
     QStringList strList;
     strList << dialog->selectedFiles();
-    QString str = strList.join("|");
+    QString str = strList.join(QString::fromLatin1(separator));
     std::cout << str.toUtf8().constData() << std::endl;
     return 0;
   }

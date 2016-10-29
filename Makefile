@@ -224,10 +224,11 @@ XXD   ?= xxd
 
 define MAKE_CLEAN
   [ ! -f $(fltk)/makeinclude ] || $(MAKE) -C $(fltk) $@
+  [ ! -f $(png)/Makefile ] || $(MAKE) -C $(png) $@
   $(MAKE) -C $(zlib) -f Makefile.in $@
   $(foreach DIR,\
-    $(fltk)/build $(png) $(png)/build $(zlib)/build,\
-    [ ! -f $(DIR)/Makefile ] || $(MAKE) -C $(DIR) $@;)
+    $(fltk)/build $(png)/build $(zlib)/build,\
+    [ ! -f $(DIR)/Makefile ] || $(MAKE) -C $(DIR) clean;)
 endef
 
 
@@ -238,9 +239,9 @@ clean: mostlyclean
 	$(MAKE_CLEAN)
 
 distclean: mostlyclean
-	$(MAKE_CLEAN)
 	-rm -rf $(fltk)/build $(png)/build $(zlib)/build autom4te.cache
 	-rm -f config.mak config.log config.status
+	$(MAKE_CLEAN)
 
 mostlyclean:
 	-rm -f $(BIN) *.so qtgui_so.h src/*.o src/Flek/*.o src/misc/*.o

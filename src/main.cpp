@@ -84,6 +84,9 @@ const char *title = NULL;
 const char *msg = NULL;
 int ret = 0;
 
+char separator = '|';
+std::string separator_s = "|";
+
 #ifdef WITH_PROGRESS
 int kill_pid = -1;
 bool kill_parent = false;
@@ -214,6 +217,7 @@ static void print_usage(char *prog)
   "  --ok-label=TEXT            Set the OK button text\n"
   "  --cancel-label=TEXT        Set the CANCEL button text\n"
   "  --close-label=TEXT         Set the CLOSE button text\n"
+  "  --separator=SEPARATOR      Set common separator character\n"
 #ifdef WITH_WINDOW_ICON
   "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
   "                             jpg png pnm xbm xpm"
@@ -483,6 +487,7 @@ int main(int argc, char **argv)
     { "yes-label",       required_argument,  0,  LO_YES_LABEL       },
     { "no-label",        required_argument,  0,  LO_NO_LABEL        },
     { "alt-label",       required_argument,  0,  LO_ALT_LABEL       },
+    { "separator",       required_argument,  0,  LO_SEPARATOR       },
     { "width",           required_argument,  0,  LO_WIDTH           },
     { "height",          required_argument,  0,  LO_HEIGHT          },
     { "posx",            required_argument,  0,  LO_POSX            },
@@ -641,6 +646,13 @@ int main(int argc, char **argv)
         if (!STREQ(optarg, ""))
         {
           but_alt = optarg;
+        }
+        break;
+      case LO_SEPARATOR:
+        {
+          separator_s = std::string(optarg).substr(0,1);
+          const char *tmp = separator_s.c_str();
+          separator = tmp[0];
         }
         break;
       case LO_WIDTH:

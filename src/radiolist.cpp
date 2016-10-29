@@ -70,7 +70,7 @@ int dialog_fl_radio_round_button(std::string radiolist_options,
   std::vector<std::string> counter_v, radiolist_v;
   int count = 0;
 
-  split(radiolist_options, DEFAULT_DELIMITER, radiolist_v);
+  split(radiolist_options, separator, radiolist_v);
 
   for (size_t i = 0; i < radiolist_v.size(); ++i)
   {

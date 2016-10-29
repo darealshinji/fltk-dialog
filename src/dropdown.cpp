@@ -68,7 +68,7 @@ int dialog_dropdown(std::string dropdown_list,
     title = "FLTK dropdown menu dialog";
   }
 
-  split(dropdown_list, DEFAULT_DELIMITER, itemlist_v);
+  split(dropdown_list, separator, itemlist_v);
 
   size_t count = itemlist_v.size();
   if (count <= 1)
