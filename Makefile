@@ -222,16 +222,23 @@ msg_CXXLDSO = @echo "Linking CXX shared object $@"
 CMAKE ?= cmake
 XXD   ?= xxd
 
+define MAKE_CLEAN
+  [ ! -f $(fltk)/makeinclude ] || $(MAKE) -C $(fltk) $@
+  $(MAKE) -C $(zlib) -f Makefile.in $@
+  $(foreach DIR,\
+    $(fltk)/build $(png) $(png)/build $(zlib)/build,\
+    [ ! -f $(DIR)/Makefile ] || $(MAKE) -C $(DIR) $@;)
+endef
+
 
 
 all: $(BIN)
 
 clean: mostlyclean
-	[ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
-	[ ! -f $(png)/build/Makefile ] || $(MAKE) -C $(png)/build clean
-	[ ! -f $(zlib)/build/Makefile ] || $(MAKE) -C $(zlib)/build clean
+	$(MAKE_CLEAN)
 
 distclean: mostlyclean
+	$(MAKE_CLEAN)
 	-rm -rf $(fltk)/build $(png)/build $(zlib)/build autom4te.cache
 	-rm -f config.mak config.log config.status
 
@@ -317,4 +324,26 @@ src/file_qtplugin.cpp: $(libfltk)
 
 
 src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: main_CXXFLAGS+=-Wno-unused-parameter
+
+
+DISTFILES = 3rdparty/ patches/ src/ \
+	config.mak.in \
+	configure \
+	configure.ac \
+	COPYING.LGPL-2 \
+	LICENSE \
+	Makefile \
+	README.md
+
+DISTDIR = fltk-dialog-src
+
+dist: distclean
+	-rm -rf $(DISTDIR)
+	-rm -f $(DISTDIR).tar.xz
+	mkdir $(DISTDIR)
+	cp -r $(DISTFILES) $(DISTDIR)
+	cd $(DISTDIR) && autoconf
+	-rm -rf $(DISTDIR)/autom4te.cache
+	tar cfJ $(DISTDIR).tar.xz $(DISTDIR)
+	-rm -rf $(DISTDIR)
 
