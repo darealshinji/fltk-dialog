@@ -98,8 +98,11 @@ int about()
     "The calendar widget is copyright \xc2\xa9 1999-2000\n"
     "by the Flek development team and\n"
     "copyright \xc2\xa9 2016 by djcj <djcj@gmx.de>\n"
+    "\n"
 #ifdef WITH_DEFAULT_ICON
-    "\nThe application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
+    "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
+#else
+    "\n"
 #endif
     /* about_text end */;
   const char *about_text_c = about_text.c_str();
