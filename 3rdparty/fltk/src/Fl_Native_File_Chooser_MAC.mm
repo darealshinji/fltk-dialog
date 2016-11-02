@@ -1,4 +1,4 @@
-// "$Id: Fl_Native_File_Chooser_MAC.mm 12012 2016-10-05 07:36:04Z manolo $"
+// "$Id: Fl_Native_File_Chooser_MAC.mm 12055 2016-10-27 15:43:09Z manolo $"
 //
 // FLTK native OS file chooser widget
 //
@@ -568,6 +568,7 @@ int Fl_Native_File_Chooser::post() {
   if ( _filt_total == 0 ) {	// Make sure they match
     _filt_value = 0;		// TBD: move to someplace more logical?
   }
+  fl_open_display();
   NSAutoreleasePool *localPool;
   localPool = [[NSAutoreleasePool alloc] init];
   switch (_btype) {
@@ -662,5 +663,5 @@ int Fl_Native_File_Chooser::post() {
 #endif // __APPLE__
 
 //
-// End of "$Id: Fl_Native_File_Chooser_MAC.mm 12012 2016-10-05 07:36:04Z manolo $".
+// End of "$Id: Fl_Native_File_Chooser_MAC.mm 12055 2016-10-27 15:43:09Z manolo $".
 //
