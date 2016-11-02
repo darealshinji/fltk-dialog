@@ -88,9 +88,13 @@ int dialog_fl_file_chooser(void);
 int dialog_fl_dir_chooser(void);
 #  define FILE_CHOOSER 0
 #  define DIR_CHOOSER 1
+#  ifdef WITH_NATIVE_FILE_CHOOSER
 int dialog_fl_native_file_chooser(int mode);
 int dialog_native_file_chooser(int mode, int argc, char **argv);
+#    ifdef HAVE_QT
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv);
+#    endif  /* HAVE_QT */
+#  endif  /* WITH_NATIVE_FILE_CHOOSER */
 #endif  /* WITH_FILE */
 
 /* font.cpp */

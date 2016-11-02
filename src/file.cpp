@@ -73,6 +73,8 @@ int dialog_fl_dir_chooser()
   return 0;
 }
 
+#ifdef WITH_NATIVE_FILE_CHOOSER
+
 int dialog_fl_native_file_chooser(int mode)
 {
   Fl_Native_File_Chooser fnfc;
@@ -110,16 +112,23 @@ int dialog_fl_native_file_chooser(int mode)
  */
 int dialog_native_file_chooser(int mode, int argc, char **argv)
 {
+#ifdef HAVE_QT
   ret = -1;
 
   if (getenv("KDE_FULL_SESSION"))
   {
+#if defined(HAVE_QT5) && defined(HAVE_QT4)
     ret = dlopen_getfilenameqt(5, mode, argc, argv);
 
     if (ret == -1)
     {
       ret = dlopen_getfilenameqt(4, mode, argc, argv);
     }
+#elif defined(HAVE_QT5)
+    ret = dlopen_getfilenameqt(5, mode, argc, argv);
+#elif defined(HAVE_QT4)
+    ret = dlopen_getfilenameqt(4, mode, argc, argv);
+#endif  /* HAVE_QT5 && HAVE_QT4 */
   }
 
   if (ret == -1)
@@ -128,8 +137,12 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
   }
 
   return ret;
+#else  /* HAVE_QT */
+  return = dialog_fl_native_file_chooser(mode);
+#endif  /* HAVE_QT */
 }
 
+#ifdef HAVE_QT
 /* the Qt equivalent to Fl_Native_File_Chooser() */
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
 {
@@ -148,4 +161,7 @@ int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
   }
   return ret;
 }
+#endif  /* HAVE_QT */
+
+#endif  /* WITH_NATIVE_FILE_CHOOSER */
 

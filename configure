@@ -633,6 +633,7 @@ WITH_PROGRESS
 WITH_NOTIFY
 WITH_HTML
 WITH_FONT
+WITH_NATIVE_FILE
 WITH_FILE
 WITH_DROPDOWN
 WITH_DND
@@ -642,6 +643,9 @@ WITH_CHECKLIST
 WITH_CALENDAR
 WITH_DEFAULT_ICON
 WITH_L10N
+HAVE_QT5
+HAVE_QT4
+HAVE_QT
 SYSTEM_ZLIB
 SYSTEM_PNG
 SYSTEM_JPEG
@@ -710,6 +714,9 @@ enable_date
 enable_dnd
 enable_dropdown
 enable_file
+enable_native_file
+enable_qt4
+enable_qt5
 enable_font
 enable_html
 enable_notify
@@ -1363,6 +1370,9 @@ Optional Features:
   --disable-dnd           disable drag & drop dialog
   --disable-dropdown      disable dropdown dialog
   --disable-file          disable file chooser dialog
+  --disable-native-file   disable native file chooser dialog(s)
+  --disable-qt4           disable Qt4 file chooser dialog
+  --disable-qt5           disable Qt5 file chooser dialog
   --disable-font          disable font selection dialog
   --disable-html          disable html dialog
   --disable-notify        disable notification dialog
@@ -3576,6 +3586,27 @@ else
   use_file="yes"
 fi
 
+# Check whether --enable-native-file was given.
+if test "${enable_native_file+set}" = set; then :
+  enableval=$enable_native_file; use_native_file="no"
+else
+  use_native_file="yes"
+fi
+
+# Check whether --enable-qt4 was given.
+if test "${enable_qt4+set}" = set; then :
+  enableval=$enable_qt4; use_qt4="no"
+else
+  use_qt4="yes"
+fi
+
+# Check whether --enable-qt5 was given.
+if test "${enable_qt5+set}" = set; then :
+  enableval=$enable_qt5; use_qt5="no"
+else
+  use_qt5="yes"
+fi
+
 # Check whether --enable-font was given.
 if test "${enable_font+set}" = set; then :
   enableval=$enable_font; use_font="no"
@@ -3940,11 +3971,127 @@ if test "x$use_notify" = "xno"; then :
 
 else
 
+  # libdl
+  have_dlopen="no"
+  if test "x$dynamic_notify" = "xyes"; then :
+
+    ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
+if test "x$ac_cv_header_dlfcn_h" = xyes; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
+$as_echo_n "checking for dlopen in -ldl... " >&6; }
+if ${ac_cv_lib_dl_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_dl_dlopen=yes
+else
+  ac_cv_lib_dl_dlopen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
+$as_echo "$ac_cv_lib_dl_dlopen" >&6; }
+if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
+  have_dlopen="yes"
+else
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lc" >&5
+$as_echo_n "checking for dlopen in -lc... " >&6; }
+if ${ac_cv_lib_c_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_c_dlopen=yes
+else
+  ac_cv_lib_c_dlopen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_dlopen" >&5
+$as_echo "$ac_cv_lib_c_dlopen" >&6; }
+if test "x$ac_cv_lib_c_dlopen" = xyes; then :
+  have_dlopen="yes"
+fi
+
+
+fi
+
+
+fi
+
+
+
+fi
+  if test "x$have_dlopen" = "xyes"; then :
+  dynamic_notify="yes"
+fi
   # libnotify headers
-    CFLAGS_backup="$CFLAGS"
-    CPPFLAGS_backup="$CPPFLAGS"
+  {
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package libnotify" >&5
+$as_echo_n "checking for package libnotify... " >&6; }
   if test "x$(pkg-config --exists libnotify; echo $?)" = "x0"; then :
 
+    ax_cv_pkg_check_modules_simple_libnotify="yes"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+    ax_cv_pkg_check_modules_simple_libnotify="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+}
+  if test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"; then :
+
+    CFLAGS_backup="$CFLAGS"
+    CPPFLAGS_backup="$CPPFLAGS"
     CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
     CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
     ac_fn_c_check_header_mongrel "$LINENO" "libnotify/notify.h" "ac_cv_header_libnotify_notify_h" "$ac_includes_default"
@@ -4216,182 +4363,105 @@ fi
 
 
 fi
-  # libdl
-  have_dlopen="no"
-  if test "x$dynamic_notify" = "xyes"; then :
-
-    ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
-if test "x$ac_cv_header_dlfcn_h" = xyes; then :
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
-$as_echo_n "checking for dlopen in -ldl... " >&6; }
-if ${ac_cv_lib_dl_dlopen+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-ldl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char dlopen ();
-int
-main ()
-{
-return dlopen ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_dl_dlopen=yes
-else
-  ac_cv_lib_dl_dlopen=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
-$as_echo "$ac_cv_lib_dl_dlopen" >&6; }
-if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
-  have_dlopen="yes"
-else
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lc" >&5
-$as_echo_n "checking for dlopen in -lc... " >&6; }
-if ${ac_cv_lib_c_dlopen+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char dlopen ();
-int
-main ()
-{
-return dlopen ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_c_dlopen=yes
-else
-  ac_cv_lib_c_dlopen=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_dlopen" >&5
-$as_echo "$ac_cv_lib_c_dlopen" >&6; }
-if test "x$ac_cv_lib_c_dlopen" = xyes; then :
-  have_dlopen="yes"
-fi
-
-
-fi
-
-
-fi
-
-
-
-fi
-  if test "x$have_dlopen" = "xyes"; then :
-  dynamic_notify="yes"
-fi
 
 fi
 
 
 # Qt checks
-{
+if test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"; then :
+
+  if test "x$use_qt4" = "xyes"; then :
+
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package QtCore (Qt4)" >&5
 $as_echo_n "checking for package QtCore (Qt4)... " >&6; }
   if test "x$(pkg-config --exists QtCore; echo $?)" = "x0"; then :
 
+    ax_cv_pkg_check_modules_simple_QtCore="yes"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
 else
 
+    ax_cv_pkg_check_modules_simple_QtCore="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    if test "xmandatory" = "xmandatory"; then :
-  exit 1
-fi
 
 fi
 }
-{
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package QtGui (Qt4)" >&5
 $as_echo_n "checking for package QtGui (Qt4)... " >&6; }
   if test "x$(pkg-config --exists QtGui; echo $?)" = "x0"; then :
 
+    ax_cv_pkg_check_modules_simple_QtGui="yes"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
 else
 
+    ax_cv_pkg_check_modules_simple_QtGui="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    if test "xmandatory" = "xmandatory"; then :
-  exit 1
-fi
 
 fi
 }
-{
+    if test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"; then :
+  have_qt="yes" have_qt4="yes"
+fi
+
+fi
+  if test "x$use_qt5" = "xyes"; then :
+
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package Qt5Core" >&5
 $as_echo_n "checking for package Qt5Core... " >&6; }
   if test "x$(pkg-config --exists Qt5Core; echo $?)" = "x0"; then :
 
+    ax_cv_pkg_check_modules_simple_Qt5Core="yes"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
 else
 
+    ax_cv_pkg_check_modules_simple_Qt5Core="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    if test "xmandatory" = "xmandatory"; then :
-  exit 1
-fi
 
 fi
 }
-{
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package Qt5Widgets" >&5
 $as_echo_n "checking for package Qt5Widgets... " >&6; }
   if test "x$(pkg-config --exists Qt5Widgets; echo $?)" = "x0"; then :
 
+    ax_cv_pkg_check_modules_simple_Qt5Widgets="yes"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
 else
 
+    ax_cv_pkg_check_modules_simple_Qt5Widgets="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    if test "xmandatory" = "xmandatory"; then :
-  exit 1
-fi
 
 fi
 }
+    if test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"; then :
+  have_qt="yes" have_qt5="yes"
+fi
+
+fi
+
+else
+
+  have_qt="no"
+  have_qt4="no"
+  have_qt5="no"
+
+fi
 
 
 # Xft
@@ -4519,6 +4589,12 @@ SYSTEM_PNG=$use_system_png
 
 SYSTEM_ZLIB=$use_system_zlib
 
+HAVE_QT=$have_qt
+
+HAVE_QT4=$have_qt4
+
+HAVE_QT5=$have_qt5
+
 WITH_L10N=$use_l10n
 
 WITH_DEFAULT_ICON=$default_icon
@@ -4536,6 +4612,8 @@ WITH_DND=$use_dnd
 WITH_DROPDOWN=$use_dropdown
 
 WITH_FILE=$use_file
+
+WITH_NATIVE_FILE=$use_native_file
 
 WITH_FONT=$use_font
 

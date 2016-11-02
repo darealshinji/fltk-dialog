@@ -7,10 +7,11 @@ I recommend using [YAD](https://sourceforge.net/projects/yad-dialog/).
 
 Note: the Makefile will automatically download and compile FLTK.
 
-Minimum build dependencies are: `libx11-dev libxcursor-dev libxext-dev libxfixes-dev libxinerama-dev libqt4-dev qtbase5-dev cmake`
+Minimum build dependencies are: `libx11-dev libxcursor-dev libxext-dev libxfixes-dev libxinerama-dev cmake`
 
 For better looking fonts it's recommended to install `libxft-dev` too.
 Building with notification support requires `libnotify-dev`.
+To enable native Qt file choosers you must install `libqt4-dev` and/or `qtbase5-dev`.
 
 Configuration:
 Run `autoconf` and see `./configure --help` for available options.

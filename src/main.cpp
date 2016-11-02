@@ -288,15 +288,21 @@ static void print_usage(char *prog)
   "  --alt-label=TEXT           Adds a third button and sets its label;\n"
   "                             exit code is 2\n"
 
-#ifdef WITH_FILE
+#if defined(WITH_FILE) && defined(WITH_NATIVE_FILE_CHOOSER)
   "\n"
   "File/directory selection options:\n"
   "  --native                   Use the operating system's native file chooser if\n"
   "                             available, otherwise fall back to FLTK's own version\n"
+#  ifdef HAVE_QT
   "  --native-gtk               Display the Gtk+ native file chooser\n"
+#    ifdef HAVE_QT4
   "  --native-qt4               Display the Qt4 native file chooser\n"
+#    endif
+#    ifdef HAVE_QT5
   "  --native-qt5               Display the Qt5 native file chooser\n"
-#endif
+#    endif
+#  endif
+#endif  /* WITH_FILE && WITH_NATIVE_FILE_CHOOSER */
 
 #ifdef WITH_PROGRESS
   "\n"
@@ -412,13 +418,13 @@ int main(int argc, char **argv)
   bool return_number = false;
 #endif
 
-#ifdef WITH_FILE
+#if defined(WITH_FILE) && defined(WITH_NATIVE_FILE_CHOOSER)
   bool native = false;
+  int native_count = 0;
   bool native_gtk = false;
   bool native_qt4 = false;
   bool native_qt5 = false;
-  int native_count = 0;
-#endif
+#endif  /* WITH_FILE && WITH_NATIVE_FILE_CHOOSER */
 
 #ifdef WITH_PROGRESS
   bool pulsate = false;
@@ -512,11 +518,19 @@ int main(int argc, char **argv)
 #ifdef WITH_FILE
     { "file",            no_argument,        0,  LO_FILE            },
     { "directory",       no_argument,        0,  LO_DIRECTORY       },
+#  ifdef WITH_NATIVE_FILE_CHOOSER
     { "native",          no_argument,        0,  LO_NATIVE          },
+#    ifdef HAVE_QT
     { "native-gtk",      no_argument,        0,  LO_NATIVE_GTK      },
+#      ifdef HAVE_QT4
     { "native-qt4",      no_argument,        0,  LO_NATIVE_QT4      },
+#      endif
+#      ifdef HAVE_QT5
     { "native-qt5",      no_argument,        0,  LO_NATIVE_QT5      },
-#endif
+#      endif
+#    endif  /* HAVE_QT */
+#  endif  /* WITH_NATIVE_FILE_CHOOSER */
+#endif  /* WITH_FILE */
 
     { "entry",           no_argument,        0,  LO_ENTRY           },
     { "password",        no_argument,        0,  LO_PASSWORD        },
@@ -722,23 +736,31 @@ int main(int argc, char **argv)
         dialog = DIALOG_FL_DIR_CHOOSER;
         dialog_count++;
         break;
+#  ifdef WITH_NATIVE_FILE_CHOOSER
       case LO_NATIVE:
         native = true;
         native_count++;
         break;
+#    ifdef HAVE_QT
       case LO_NATIVE_GTK:
         native_gtk = true;
         native_count++;
         break;
+#      ifdef HAVE_QT4
       case LO_NATIVE_QT4:
         native_qt4 = true;
         native_count++;
         break;
+#      endif
+#      ifdef HAVE_QT5
       case LO_NATIVE_QT5:
         native_qt5 = true;
         native_count++;
         break;
-#endif
+#      endif
+#    endif  /* HAVE_QT */
+#  endif  /* WITH_NATIVE_FILE_CHOOSER */
+#endif  /* WITH_FILE */
 #ifdef WITH_COLOR
       case LO_COLOR:
         dialog = DIALOG_FL_COLOR;
@@ -910,7 +932,7 @@ int main(int argc, char **argv)
     STRINGTOINT(v_wh[1], override_h, "--geometry=WxH+X+Y -> H");
   }
 
-#ifdef WITH_FILE
+#if defined(WITH_FILE) && defined(WITH_NATIVE_FILE_CHOOSER)
   if ((native || native_gtk || native_qt4 || native_qt5) &&
       (dialog != DIALOG_FL_FILE_CHOOSER && dialog != DIALOG_FL_DIR_CHOOSER))
   {
@@ -1051,48 +1073,68 @@ int main(int argc, char **argv)
 
 #ifdef WITH_FILE
     case DIALOG_FL_FILE_CHOOSER:
+#  ifdef WITH_NATIVE_FILE_CHOOSER
       if (native)
       {
         return dialog_native_file_chooser(FILE_CHOOSER, argc, argv);
       }
+#    ifdef HAVE_QT
       else if (native_gtk)
       {
         return dialog_fl_native_file_chooser(FILE_CHOOSER);
       }
+#      ifdef HAVE_QT4
       else if (native_qt4)
       {
         return dialog_native_file_chooser_qt(4, FILE_CHOOSER, argc, argv);
       }
+#      endif
+#      ifdef HAVE_QT5
       else if (native_qt5)
       {
         return dialog_native_file_chooser_qt(5, FILE_CHOOSER, argc, argv);
       }
+#      endif
+#    endif  /* HAVE_QT */
       else
       {
         return dialog_fl_file_chooser();
       }
+#  else
+      return dialog_fl_file_chooser();
+#  endif  /* WITH_NATIVE_FILE_CHOOSER */
 
     case DIALOG_FL_DIR_CHOOSER:
+#  ifdef WITH_NATIVE_FILE_CHOOSER
       if (native)
       {
         return dialog_native_file_chooser(DIR_CHOOSER, argc, argv);
       }
+#    ifdef HAVE_QT
       else if (native_gtk)
       {
         return dialog_fl_native_file_chooser(DIR_CHOOSER);
       }
+#      ifdef HAVE_QT4
       else if (native_qt4)
       {
         return dialog_native_file_chooser_qt(4, DIR_CHOOSER, argc, argv);
       }
+#      endif
+#      ifdef HAVE_QT5
       else if (native_qt5)
       {
         return dialog_native_file_chooser_qt(5, DIR_CHOOSER, argc, argv);
       }
+#      endif
+#    endif  /* HAVE_QT */
       else
       {
         return dialog_fl_dir_chooser();
       }
+#  else
+      return dialog_fl_dir_chooser();
+#  endif  /* WITH_NATIVE_FILE_CHOOSER */
 #endif  /* WITH_FILE */
 
     case DIALOG_INPUT:

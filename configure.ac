@@ -1,12 +1,13 @@
 
-# AX_PKG_CHECK_MODULES_SIMPLE(prefix, pkg-module, [mandatory|optional])
+# AX_PKG_CHECK_MODULES_SIMPLE(prefix, pkg-module)
 m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
   AC_MSG_CHECKING([for package $1])
   AS_IF([test "x$(pkg-config --exists $2; echo $?)" = "x0"], [
+    ax_cv_pkg_check_modules_simple_$2="yes"
     AC_MSG_RESULT([yes])
   ], [
+    ax_cv_pkg_check_modules_simple_$2="no"
     AC_MSG_RESULT([no])
-    AS_IF([test "x$3" = "xmandatory"], [exit 1])
   ])
 }])
 
@@ -54,6 +55,15 @@ AC_ARG_ENABLE([dropdown],
 AC_ARG_ENABLE([file],
   [AS_HELP_STRING([--disable-file], [disable file chooser dialog])],
   [use_file="no"], [use_file="yes"])
+AC_ARG_ENABLE([native-file],
+  [AS_HELP_STRING([--disable-native-file], [disable native file chooser dialog(s)])],
+  [use_native_file="no"], [use_native_file="yes"])
+AC_ARG_ENABLE([qt4],
+  [AS_HELP_STRING([--disable-qt4], [disable Qt4 file chooser dialog])],
+  [use_qt4="no"], [use_qt4="yes"])
+AC_ARG_ENABLE([qt5],
+  [AS_HELP_STRING([--disable-qt5], [disable Qt5 file chooser dialog])],
+  [use_qt5="no"], [use_qt5="yes"])
 AC_ARG_ENABLE([font],
   [AS_HELP_STRING([--disable-font], [disable font selection dialog])],
   [use_font="no"], [use_font="yes"])
@@ -102,10 +112,21 @@ have_libnotify="no"
 AS_IF([test "x$use_notify" = "xno"], [
   dynamic_notify="no"
 ], [
+  # libdl
+  have_dlopen="no"
+  AS_IF([test "x$dynamic_notify" = "xyes"], [
+    AC_CHECK_HEADER([dlfcn.h], [
+      AC_CHECK_LIB([dl], [dlopen], [have_dlopen="yes"], [
+        AC_CHECK_LIB([c], [dlopen], [have_dlopen="yes"])
+      ])
+    ])
+  ])
+  AS_IF([test "x$have_dlopen" = "xyes"], [dynamic_notify="yes"])
   # libnotify headers
+  AX_PKG_CHECK_MODULES_SIMPLE([libnotify], [libnotify])
+  AS_IF([test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"], [
     CFLAGS_backup="$CFLAGS"
     CPPFLAGS_backup="$CPPFLAGS"
-  AS_IF([test "x$(pkg-config --exists libnotify; echo $?)" = "x0"], [
     CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
     CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
     AC_CHECK_HEADER([libnotify/notify.h], [have_libnotify="yes"], [have_libnotify="no"])
@@ -121,24 +142,30 @@ AS_IF([test "x$use_notify" = "xno"], [
     AC_CHECK_LIB([notify], [notify_notification_show], [have_libnotify="yes"], [have_libnotify="no"])
     AC_CHECK_LIB([notify], [notify_uninit], [have_libnotify="yes"], [have_libnotify="no"])
   ])
-  # libdl
-  have_dlopen="no"
-  AS_IF([test "x$dynamic_notify" = "xyes"], [
-    AC_CHECK_HEADER([dlfcn.h], [
-      AC_CHECK_LIB([dl], [dlopen], [have_dlopen="yes"], [
-        AC_CHECK_LIB([c], [dlopen], [have_dlopen="yes"])
-      ])
-    ])
-  ])
-  AS_IF([test "x$have_dlopen" = "xyes"], [dynamic_notify="yes"])
 ])
 
 
 # Qt checks
-AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore],     [mandatory])
-AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)],  [QtGui],      [mandatory])
-AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core],      [Qt5Core],    [mandatory])
-AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets],   [Qt5Widgets], [mandatory])
+AS_IF([test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"], [
+  AS_IF([test "x$use_qt4" = "xyes"], [
+    AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
+    AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)],  [QtGui])
+    AS_IF([test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"],
+          [have_qt="yes" have_qt4="yes"])
+  ])
+  AS_IF([test "x$use_qt5" = "xyes"], [
+    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core],      [Qt5Core])
+    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets],   [Qt5Widgets])
+    AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
+          [have_qt="yes" have_qt5="yes"])
+  ])
+], [
+  have_qt="no"
+  have_qt4="no"
+  have_qt5="no"
+])
 
 
 # Xft
@@ -183,6 +210,9 @@ AS_IF([test "x$ac_cv_header_sys_time_h" != "xyes" \
 AC_SUBST([SYSTEM_JPEG], [$use_system_jpeg])
 AC_SUBST([SYSTEM_PNG], [$use_system_png])
 AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
+AC_SUBST([HAVE_QT], [$have_qt])
+AC_SUBST([HAVE_QT4], [$have_qt4])
+AC_SUBST([HAVE_QT5], [$have_qt5])
 AC_SUBST([WITH_L10N], [$use_l10n])
 AC_SUBST([WITH_DEFAULT_ICON], [$default_icon])
 AC_SUBST([WITH_CALENDAR], [$use_calendar])
@@ -192,6 +222,7 @@ AC_SUBST([WITH_DATE], [$use_date])
 AC_SUBST([WITH_DND], [$use_dnd])
 AC_SUBST([WITH_DROPDOWN], [$use_dropdown])
 AC_SUBST([WITH_FILE], [$use_file])
+AC_SUBST([WITH_NATIVE_FILE], [$use_native_file])
 AC_SUBST([WITH_FONT], [$use_font])
 AC_SUBST([WITH_HTML], [$use_html])
 AC_SUBST([WITH_NOTIFY], [$have_libnotify])

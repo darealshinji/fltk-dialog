@@ -13,6 +13,9 @@ SYSTEM_ZLIB ?= no
 WITH_DEFAULT_ICON ?= yes
 
 # set to "no" to disable certain features
+HAVE_QT          ?= yes
+HAVE_QT4         ?= yes
+HAVE_QT5         ?= yes
 WITH_L10N        ?= yes
 WITH_CALENDAR    ?= yes
 WITH_CHECKLIST   ?= yes
@@ -21,6 +24,7 @@ WITH_DATE        ?= yes
 WITH_DND         ?= yes
 WITH_DROPDOWN    ?= yes
 WITH_FILE        ?= yes
+WITH_NATIVE_FILE ?= yes
 WITH_FONT        ?= yes
 WITH_HTML        ?= yes
 WITH_NOTIFY      ?= yes
@@ -98,10 +102,25 @@ main_CXXFLAGS += -DWITH_DROPDOWN
 OBJS          += src/dropdown.o
 HAVE_SPLIT = yes
 endif
+
 ifneq ($(WITH_FILE),no)
 main_CXXFLAGS += -DWITH_FILE
-OBJS          += src/file.o src/file_dlopen_qtplugin.o
+ifneq ($(WITH_NATIVE_FILE),no)
+main_CXXFLAGS += -DWITH_NATIVE_FILE_CHOOSER
 endif
+OBJS          += src/file.o
+ifneq ($(HAVE_QT),no)
+main_CXXFLAGS += -DHAVE_QT
+OBJS          += src/file_dlopen_qtplugin.o
+ifneq ($(HAVE_QT4),no)
+main_CXXFLAGS += -DHAVE_QT4
+endif
+ifneq ($(HAVE_QT5),no)
+main_CXXFLAGS += -DHAVE_QT5
+endif
+endif
+endif
+
 ifneq ($(WITH_FONT),no)
 main_CXXFLAGS += -DWITH_FONT
 OBJS          += src/font.o
@@ -160,6 +179,8 @@ extra_include :=
 extra_libdirs :=
 fltk_cmake_config = \
   -DCMAKE_BUILD_TYPE="None" \
+  -DCMAKE_CXX_COMPILER="$(CXX)" \
+  -DCMAKE_C_COMPILER="$(CC)" \
   -DCMAKE_CXX_FLAGS="$(fltk_CXXFLAGS) $(extra_include)" \
   -DCMAKE_C_FLAGS="$(fltk_CFLAGS) $(extra_include)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(extra_libdirs)" \
@@ -274,6 +295,7 @@ endif
 $(png)/build/Makefile: $(libpng_build_Makefile_dep)
 	mkdir -p $(png)/build
 	cd $(png)/build && \
+  CC="$(CC)" \
   CFLAGS="-Wall $(CFLAGS) $(CPPFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
   LDFLAGS="$(LDFLAGS) -L$(CURDIR)/$(zlib)/build" \
   ../configure --disable-shared \
@@ -284,6 +306,7 @@ $(zlib)/build/Makefile:
 	mkdir -p $(zlib)/build
 	cd $(zlib)/build && $(CMAKE) .. $(cmake_verbose) \
   -DCMAKE_BUILD_TYPE="None" \
+  -DCMAKE_C_COMPILER="$(CC)" \
   -DCMAKE_C_FLAGS="-Wall $(CFLAGS) $(CPPFLAGS)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
 
@@ -299,9 +322,24 @@ $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build
 
 
-qtgui_so.h: qt4gui.so qt5gui.so
+ifneq ($(HAVE_QT),no)
+qtplugins =
+ifneq ($(HAVE_QT4),no)
+qtplugins += qt4gui.so
+endif
+ifneq ($(HAVE_QT5),no)
+qtplugins += qt5gui.so
+endif
+
+qtgui_so.h: $(qtplugins)
 	$(msg_GENH)
-	$(silent)$(XXD) -i qt4gui.so > $@ && $(XXD) -i qt5gui.so >> $@
+	$(silent)rm -f $@
+ifneq ($(HAVE_QT4),no)
+	$(silent)$(XXD) -i qt4gui.so >> $@
+endif
+ifneq ($(HAVE_QT5),no)
+	$(silent)$(XXD) -i qt5gui.so >> $@
+endif
 
 qt4gui.so: src/file_qtplugin_qt4.o
 	$(msg_CXXLDSO)
@@ -322,6 +360,7 @@ src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
 src/file_dlopen_qtplugin.o: qtgui_so.h
 
 src/file_qtplugin.cpp: $(libfltk)
+endif
 
 
 src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: main_CXXFLAGS+=-Wno-unused-parameter
