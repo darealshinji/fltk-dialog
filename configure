@@ -3703,7 +3703,7 @@ fi
 
 
 # libnotify checks
-have_libnotify="no"
+have_libnotify="yes"
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
@@ -3968,6 +3968,7 @@ done
 if test "x$use_notify" = "xno"; then :
 
   dynamic_notify="no"
+  have_libnotify="no"
 
 else
 
@@ -4069,9 +4070,10 @@ fi
 fi
   if test "x$have_dlopen" = "xyes"; then :
   dynamic_notify="yes"
-fi
-  # libnotify headers
-  {
+else
+
+    # libnotify headers
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package libnotify" >&5
 $as_echo_n "checking for package libnotify... " >&6; }
   if test "x$(pkg-config --exists libnotify; echo $?)" = "x0"; then :
@@ -4088,13 +4090,13 @@ $as_echo "no" >&6; }
 
 fi
 }
-  if test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"; then :
+    if test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"; then :
 
-    CFLAGS_backup="$CFLAGS"
-    CPPFLAGS_backup="$CPPFLAGS"
-    CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
-    CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
-    ac_fn_c_check_header_mongrel "$LINENO" "libnotify/notify.h" "ac_cv_header_libnotify_notify_h" "$ac_includes_default"
+      CFLAGS_backup="$CFLAGS"
+      CPPFLAGS_backup="$CPPFLAGS"
+      CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
+      CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
+      ac_fn_c_check_header_mongrel "$LINENO" "libnotify/notify.h" "ac_cv_header_libnotify_notify_h" "$ac_includes_default"
 if test "x$ac_cv_header_libnotify_notify_h" = xyes; then :
   have_libnotify="yes"
 else
@@ -4102,14 +4104,14 @@ else
 fi
 
 
-    CFLAGS="$CFLAGS_backup"
-    CPPFLAGS="$CPPFLAGS_backup"
+      CFLAGS="$CFLAGS_backup"
+      CPPFLAGS="$CPPFLAGS_backup"
 
 fi
-  # libnotify library functions
-  if test "$xhave_libnotify" = "xyes"; then :
+    # libnotify library functions
+    if test "$xhave_libnotify" = "xyes"; then :
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_init in -lnotify" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_init in -lnotify" >&5
 $as_echo_n "checking for notify_init in -lnotify... " >&6; }
 if ${ac_cv_lib_notify_notify_init+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4151,7 +4153,7 @@ else
   have_libnotify="no"
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_is_initted in -lnotify" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_is_initted in -lnotify" >&5
 $as_echo_n "checking for notify_is_initted in -lnotify... " >&6; }
 if ${ac_cv_lib_notify_notify_is_initted+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4193,7 +4195,7 @@ else
   have_libnotify="no"
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_notification_new in -lnotify" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_notification_new in -lnotify" >&5
 $as_echo_n "checking for notify_notification_new in -lnotify... " >&6; }
 if ${ac_cv_lib_notify_notify_notification_new+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4235,7 +4237,7 @@ else
   have_libnotify="no"
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_notification_set_timeout in -lnotify" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_notification_set_timeout in -lnotify" >&5
 $as_echo_n "checking for notify_notification_set_timeout in -lnotify... " >&6; }
 if ${ac_cv_lib_notify_notify_notification_set_timeout+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4277,7 +4279,7 @@ else
   have_libnotify="no"
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_notification_show in -lnotify" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_notification_show in -lnotify" >&5
 $as_echo_n "checking for notify_notification_show in -lnotify... " >&6; }
 if ${ac_cv_lib_notify_notify_notification_show+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4319,7 +4321,7 @@ else
   have_libnotify="no"
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_uninit in -lnotify" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for notify_uninit in -lnotify" >&5
 $as_echo_n "checking for notify_uninit in -lnotify... " >&6; }
 if ${ac_cv_lib_notify_notify_uninit+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4361,6 +4363,8 @@ else
   have_libnotify="no"
 fi
 
+
+fi
 
 fi
 
@@ -5789,4 +5793,13 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result:
+$(cat config.mak)
+" >&5
+$as_echo "
+$(cat config.mak)
+" >&6; }
 

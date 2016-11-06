@@ -108,9 +108,10 @@ AC_ARG_ENABLE([system-zlib],
 
 
 # libnotify checks
-have_libnotify="no"
+have_libnotify="yes"
 AS_IF([test "x$use_notify" = "xno"], [
   dynamic_notify="no"
+  have_libnotify="no"
 ], [
   # libdl
   have_dlopen="no"
@@ -121,26 +122,27 @@ AS_IF([test "x$use_notify" = "xno"], [
       ])
     ])
   ])
-  AS_IF([test "x$have_dlopen" = "xyes"], [dynamic_notify="yes"])
-  # libnotify headers
-  AX_PKG_CHECK_MODULES_SIMPLE([libnotify], [libnotify])
-  AS_IF([test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"], [
-    CFLAGS_backup="$CFLAGS"
-    CPPFLAGS_backup="$CPPFLAGS"
-    CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
-    CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
-    AC_CHECK_HEADER([libnotify/notify.h], [have_libnotify="yes"], [have_libnotify="no"])
-    CFLAGS="$CFLAGS_backup"
-    CPPFLAGS="$CPPFLAGS_backup"
-  ])
-  # libnotify library functions
-  AS_IF([test "$xhave_libnotify" = "xyes"], [
-    AC_CHECK_LIB([notify], [notify_init], [have_libnotify="yes"], [have_libnotify="no"])
-    AC_CHECK_LIB([notify], [notify_is_initted], [have_libnotify="yes"], [have_libnotify="no"])
-    AC_CHECK_LIB([notify], [notify_notification_new], [have_libnotify="yes"], [have_libnotify="no"])
-    AC_CHECK_LIB([notify], [notify_notification_set_timeout], [have_libnotify="yes"], [have_libnotify="no"])
-    AC_CHECK_LIB([notify], [notify_notification_show], [have_libnotify="yes"], [have_libnotify="no"])
-    AC_CHECK_LIB([notify], [notify_uninit], [have_libnotify="yes"], [have_libnotify="no"])
+  AS_IF([test "x$have_dlopen" = "xyes"], [dynamic_notify="yes"], [
+    # libnotify headers
+    AX_PKG_CHECK_MODULES_SIMPLE([libnotify], [libnotify])
+    AS_IF([test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"], [
+      CFLAGS_backup="$CFLAGS"
+      CPPFLAGS_backup="$CPPFLAGS"
+      CFLAGS="$CFLAGS $(pkg-config --cflags libnotify)"
+      CPPFLAGS="$CPPFLAGS $(pkg-config --cflags libnotify)"
+      AC_CHECK_HEADER([libnotify/notify.h], [have_libnotify="yes"], [have_libnotify="no"])
+      CFLAGS="$CFLAGS_backup"
+      CPPFLAGS="$CPPFLAGS_backup"
+    ])
+    # libnotify library functions
+    AS_IF([test "$xhave_libnotify" = "xyes"], [
+      AC_CHECK_LIB([notify], [notify_init], [have_libnotify="yes"], [have_libnotify="no"])
+      AC_CHECK_LIB([notify], [notify_is_initted], [have_libnotify="yes"], [have_libnotify="no"])
+      AC_CHECK_LIB([notify], [notify_notification_new], [have_libnotify="yes"], [have_libnotify="no"])
+      AC_CHECK_LIB([notify], [notify_notification_set_timeout], [have_libnotify="yes"], [have_libnotify="no"])
+      AC_CHECK_LIB([notify], [notify_notification_show], [have_libnotify="yes"], [have_libnotify="no"])
+      AC_CHECK_LIB([notify], [notify_uninit], [have_libnotify="yes"], [have_libnotify="no"])
+    ])
   ])
 ])
 
@@ -235,3 +237,9 @@ AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 
 AC_CONFIG_FILES([config.mak])
 AC_OUTPUT
+
+
+AC_MSG_RESULT([
+$(cat config.mak)
+])
+

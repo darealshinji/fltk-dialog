@@ -26,8 +26,10 @@
 #include <string>
 #ifdef DYNAMIC_NOTIFY
 #  include <dlfcn.h>
+#  include "notify_mini.hpp"
+#else
+#  include <libnotify/notify.h>
 #endif
-#include <libnotify/notify.h>
 
 #include "fltk-dialog.hpp"
 
