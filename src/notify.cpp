@@ -26,7 +26,7 @@
 #include <string>
 #ifdef DYNAMIC_NOTIFY
 #  include <dlfcn.h>
-#  include "notify_mini.hpp"
+#  include "notify.hpp"
 #else
 #  include <libnotify/notify.h>
 #endif
