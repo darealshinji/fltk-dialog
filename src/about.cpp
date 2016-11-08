@@ -63,11 +63,11 @@ static void about_close_cb(Fl_Widget *)
 int about()
 {
   Fl_Tabs          *about_tab;
-  Fl_Group         *g_about, *g_license; //*g_patches;
+  Fl_Group         *g_about, *g_license, *g_patches;
   Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
-  Fl_Text_Buffer   *license_buffer; //*patches_buffer;
-  Fl_Text_Display  *license_display; //*patches_display;
+  Fl_Text_Buffer   *license_buffer, *patches_buffer;
+  Fl_Text_Display  *license_display, *patches_display;
   Fl_Button        *uri_button1, *uri_button2;
   Fl_Return_Button *but_close;
 
@@ -222,10 +222,27 @@ int about()
 #endif  /* WITH_ICON */
     /* license_buffer_text end */;
 
-//  const char *patches_buffer_text =
+    const char *patches_buffer_text =
     /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' fl_ask.diff */
-//    "[...]"
-//    /* patches_buffer_text end */;
+    "--- a/3rdparty/fltk/src/Fl_Choice.cxx\n"
+    "+++ b/3rdparty/fltk/src/Fl_Choice.cxx\n"
+    "@@ -186,13 +186,13 @@ int Fl_Choice::handle(int e) {\n"
+    "   J1:\n"
+    "     if (Fl::scheme()\n"
+    " 	|| fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {\n"
+    "-      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);\n"
+    "+      v = menu()->pulldown(x(), y(), w(), h(), 0, this);\n"
+    "     } else {\n"
+    "       // In order to preserve the old look-n-feel of \"white\" menus,\n"
+    "       // temporarily override the color() of this widget...\n"
+    "       Fl_Color c = color();\n"
+    "       color(FL_BACKGROUND2_COLOR);\n"
+    "-      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);\n"
+    "+      v = menu()->pulldown(x(), y(), w(), h(), 0, this);\n"
+    "       color(c);\n"
+    "     }\n"
+    "     if (!v || v->submenu()) return 1;\n"
+    /* patches_buffer_text end */;
 
   about_pixmap = new Fl_Pixmap(fltk_xpm);
 
@@ -264,7 +281,7 @@ int about()
         license_buffer->text(license_buffer_text);
       }
       g_license->end();
-/*
+
       g_patches = new Fl_Group(10, 40, 430, 404, "Patches");
       {
         patches_buffer = new Fl_Text_Buffer();
@@ -274,7 +291,6 @@ int about()
         patches_buffer->text(patches_buffer_text);
       }
       g_patches->end();
-*/
     }
     about_tab->end();
 

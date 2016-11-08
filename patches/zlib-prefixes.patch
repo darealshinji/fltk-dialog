@@ -1,5 +1,5 @@
---- a/zlib/zconf.h.cmakein
-+++ b/zlib/zconf.h.cmakein
+--- a/3rdparty/zlib/zconf.h.cmakein
++++ b/3rdparty/zlib/zconf.h.cmakein
 @@ -16,141 +16,144 @@
   * Even better than compiling with -DZ_PREFIX would be to use configure to set
   * this permanently in zconf.h using "./configure --zprefix".
