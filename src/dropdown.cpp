@@ -26,7 +26,7 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Choice.H>
+#include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
@@ -38,7 +38,9 @@
 #include "misc/split.hpp"
 #include "fltk-dialog.hpp"
 
-static Fl_Window *dropdown_win;
+static Fl_Window      *dropdown_win;
+static Fl_Menu_Button *entries;
+static std::string     entries_text;
 
 static void dropdown_close_cb(Fl_Widget *, long p)
 {
@@ -46,13 +48,18 @@ static void dropdown_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
+static void entries_cb(Fl_Widget *)
+{
+  entries_text = " " + std::string(entries->text());
+  entries->label(entries_text.c_str());
+}
+
 int dialog_dropdown(std::string dropdown_list,
                            bool return_number)
 {
   Fl_Group         *g;
-  Fl_Menu_Item     menu_items[1024];
-  Fl_Choice        *entries;
-  Fl_Box           *dummy;
+  Fl_Menu_Item      menu_items[1024];
+  Fl_Box           *entries_l, *dummy;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
@@ -113,10 +120,17 @@ int dialog_dropdown(std::string dropdown_list,
   {
     g = new Fl_Group(0, 0, 320, 110);
     {
-      entries = new Fl_Choice(10, 30, 300, 30, msg);
-      entries->down_box(FL_BORDER_BOX);
-      entries->align(FL_ALIGN_TOP_LEFT);
+      entries_l = new Fl_Box(10, 26, 300, 30, msg);
+      entries_l->align(FL_ALIGN_TOP_LEFT);
+      entries_l->box(FL_NO_BOX);
+
+      entries = new Fl_Menu_Button(10, 30, 300, 30);
+      entries->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
       entries->menu(menu_items);
+      entries->value(0);
+      entries_text = " " + std::string(entries->text());
+      entries->label(entries_text.c_str());
+      entries->callback(entries_cb);
 
       dummy = new Fl_Box(99, 73, 1, 1);
       dummy->box(FL_NO_BOX);

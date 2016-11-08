@@ -26,22 +26,24 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Choice.H>
+#include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Spinner.H>
 #include <FL/Fl_Window.H>
 
 #include <iostream>
+#include <string>
 #include <time.h>
 
 #include "Flek/FDate.H"
 #include "fltk-dialog.hpp"
 
 
-static Fl_Window  *fdate_win;
-static Fl_Choice  *fdate_month;
-static Fl_Spinner *fdate_year;
-static Fl_Spinner *fdate_day;
+static Fl_Window      *fdate_win;
+static Fl_Menu_Button *fdate_month;
+static Fl_Spinner     *fdate_year;
+static Fl_Spinner     *fdate_day;
+static std::string     fdate_month_text;
 
 static void max_days_cb(Fl_Widget *)
 {
@@ -60,6 +62,13 @@ static void max_days_cb(Fl_Widget *)
   fdate_day->maximum(dim);
 }
 
+static void fdate_month_cb(Fl_Widget *o)
+{
+  max_days_cb(o);
+  fdate_month_text = " " + std::string(fdate_month->text());
+  fdate_month->label(fdate_month_text.c_str());
+}
+
 static void date_close_cb(Fl_Widget *, long p)
 {
   fdate_win->hide();
@@ -69,7 +78,7 @@ static void date_close_cb(Fl_Widget *, long p)
 int dialog_fdate(std::string format)
 {
   Fl_Group         *g, *buttongroup;
-  Fl_Box           *dummy1, *dummy2;
+  Fl_Box           *fdate_month_l, *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
@@ -108,12 +117,20 @@ int dialog_fdate(std::string format)
   {
     g = new Fl_Group(0, 0, 400, 114);
     {
-      fdate_month = new Fl_Choice(10, 28, 120, 30, "Month:");
-      fdate_month->down_box(FL_BORDER_BOX);
-      fdate_month->align(FL_ALIGN_TOP_LEFT);
+      fdate_month_l = new Fl_Box(10, 24, 120, 30, "Month:");
+      fdate_month_l->align(FL_ALIGN_TOP_LEFT);
+      fdate_month_l->box(FL_NO_BOX);
+
+      fdate_month = new Fl_Menu_Button(10, 28, 120, 30);
+      fdate_month->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+      fdate_month->box(FL_DOWN_BOX);
+      fdate_month->down_box(FL_DOWN_BOX);
+      fdate_month->color(FL_WHITE);
       fdate_month->menu(item_month);
       fdate_month->value(current_month);
-      fdate_month->callback(max_days_cb);
+      fdate_month_text = " " + std::string(fdate_month->text());
+      fdate_month->label(fdate_month_text.c_str());
+      fdate_month->callback(fdate_month_cb);
 
       fdate_year = new Fl_Spinner(270, 28, 120, 30, "Year:");
       fdate_year->labelsize(14);
