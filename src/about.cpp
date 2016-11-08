@@ -222,7 +222,7 @@ int about()
 #endif  /* WITH_ICON */
     /* license_buffer_text end */;
 
-    const char *patches_buffer_text =
+  const char *patches_buffer_text =
     /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' fl_ask.diff */
     "--- a/3rdparty/fltk/src/Fl_Choice.cxx\n"
     "+++ b/3rdparty/fltk/src/Fl_Choice.cxx\n"
