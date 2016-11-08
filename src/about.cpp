@@ -223,7 +223,7 @@ int about()
     /* license_buffer_text end */;
 
   const char *patches_buffer_text =
-    /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' fl_ask.diff */
+    /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' diff-file */
     "--- a/3rdparty/fltk/src/Fl_Choice.cxx\n"
     "+++ b/3rdparty/fltk/src/Fl_Choice.cxx\n"
     "@@ -186,13 +186,21 @@ int Fl_Choice::handle(int e) {\n"
