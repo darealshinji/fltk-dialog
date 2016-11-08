@@ -1,10 +1,14 @@
 --- a/3rdparty/fltk/src/Fl_Choice.cxx
 +++ b/3rdparty/fltk/src/Fl_Choice.cxx
-@@ -186,13 +186,13 @@ int Fl_Choice::handle(int e) {
+@@ -186,13 +186,21 @@ int Fl_Choice::handle(int e) {
    J1:
      if (Fl::scheme()
  	|| fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {
 -      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
++      // 2016/11/09  djcj <djcj@gmx.de>
++      // Set 5th parameter to 0 to change the dropdown menu behavior
++      // to that of Fl_Menu_Button().  Original line:
++      // v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
 +      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
      } else {
        // In order to preserve the old look-n-feel of "white" menus,
@@ -12,6 +16,10 @@
        Fl_Color c = color();
        color(FL_BACKGROUND2_COLOR);
 -      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
++      // 2016/11/09  djcj <djcj@gmx.de>
++      // Set 5th parameter to 0 to change the dropdown menu behavior
++      // to that of Fl_Menu_Button().  Original line:
++      // v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
 +      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
        color(c);
      }
