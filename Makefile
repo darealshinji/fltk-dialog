@@ -40,7 +40,7 @@ FLTK_VERSION = 1.3.4rc2
 
 # source directories
 fltk = 3rdparty/fltk
-png  = 3rdparty/png
+png  = 3rdparty/libpng
 zlib = 3rdparty/zlib
 
 
@@ -130,7 +130,7 @@ main_CXXFLAGS += -DWITH_HTML
 OBJS          += src/html.o
 endif
 ifneq ($(WITH_NOTIFY),no)
-main_CXXFLAGS += -DWITH_NOTIFY $(shell pkg-config --cflags libnotify)
+main_CXXFLAGS += -DWITH_NOTIFY
 OBJS          += src/notify.o
 endif
 ifneq ($(WITH_PROGRESS),no)
@@ -166,6 +166,7 @@ ifneq ($(DYNAMIC_NOTIFY),no)
 main_CXXFLAGS += -DDYNAMIC_NOTIFY
 main_LIBS     += -ldl
 else
+main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
 endif
 endif
@@ -204,8 +205,12 @@ libpng_a           = $(png)/build/libpng.a
 fltk_cmake_config += \
   -DOPTION_USE_SYSTEM_LIBPNG="ON" \
   -DHAVE_LIBPNG_PNG_H="$(CURDIR)/$(png)/build/png.h" \
-  -DLIB_png="$(CURDIR)/$(libpng_a)"
+  -DLIB_png="$(CURDIR)/$(libpng_a)" \
+  -DPNG_LIBRARY_RELEASE="$(CURDIR)/$(libpng_a)" \
+  -DPNG_PNG_INCLUDE_DIR="$(CURDIR)/$(png)/build;$(CURDIR)/$(png)"
 main_LIBS         += $(libpng_a)
+# don't fail if fltk added '-lpng'
+main_LIBS         += -L$(CURDIR)/$(png)/build
 extra_include     += -I"$(CURDIR)/$(png)/build" -I"$(CURDIR)/$(png)"
 extra_libdirs     += -L"$(CURDIR)/$(png)/build"
 endif
@@ -314,6 +319,7 @@ $(zlib)/build/Makefile:
 $(libpng_a): $(png)/build/Makefile
 	$(MAKE) -C $(png)/build V=$(make_verbose) && \
   cd $(png)/build && ln -fs .libs/libpng16.a libpng.a
+	ln -s .. $(png)/build/libpng
 
 $(libz_a): $(zlib)/build/Makefile
 	$(MAKE) -C $(zlib)/build zlibstatic

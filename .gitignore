@@ -1,5 +1,5 @@
 /3rdparty/fltk/build/
-/3rdparty/png/build/
+/3rdparty/libpng/build/
 /3rdparty/zlib/build
 /3rdparty/zlib/zconf.h
 
