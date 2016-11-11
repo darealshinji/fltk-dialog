@@ -181,9 +181,7 @@ AC_CHECK_HEADER([X11/Xft/Xft.h], [
 ])
 CFLAGS="$CFLAGS_backup"
 CPPFLAGS="$CPPFLAGS_backup"
-AS_IF([test "x$have_xft" != "xyes"], [
-  AC_MSG_WARN([$PACKAGE_NAME will not be linked against Xft.
-  Displayed fonts may look ugly!])
+AS_IF([test "x$have_xft" != "xyes"], [exit 1])
 ])
 
 

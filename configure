@@ -4524,13 +4524,9 @@ fi
 CFLAGS="$CFLAGS_backup"
 CPPFLAGS="$CPPFLAGS_backup"
 if test "x$have_xft" != "xyes"; then :
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $PACKAGE_NAME will not be linked against Xft.
-  Displayed fonts may look ugly!" >&5
-$as_echo "$as_me: WARNING: $PACKAGE_NAME will not be linked against Xft.
-  Displayed fonts may look ugly!" >&2;}
-
+  exit 1
 fi
+])
 
 
 # select(2) (used by READSTDIO macros)
