@@ -138,7 +138,9 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 
   return ret;
 #else  /* HAVE_QT */
-  return = dialog_fl_native_file_chooser(mode);
+  (void) argc;
+  (void) argv;
+  return dialog_fl_native_file_chooser(mode);
 #endif  /* HAVE_QT */
 }
 

@@ -715,6 +715,7 @@ enable_dnd
 enable_dropdown
 enable_file
 enable_native_file
+enable_qt
 enable_qt4
 enable_qt5
 enable_font
@@ -1371,6 +1372,8 @@ Optional Features:
   --disable-dropdown      disable dropdown dialog
   --disable-file          disable file chooser dialog
   --disable-native-file   disable native file chooser dialog(s)
+  --disable-qt            disable Qt file chooser dialogs (implies
+                          --disable-qt4 and --disable-qt5)
   --disable-qt4           disable Qt4 file chooser dialog
   --disable-qt5           disable Qt5 file chooser dialog
   --disable-font          disable font selection dialog
@@ -3593,6 +3596,13 @@ else
   use_native_file="yes"
 fi
 
+# Check whether --enable-qt was given.
+if test "${enable_qt+set}" = set; then :
+  enableval=$enable_qt; use_qt="no"
+else
+  use_qt="yes"
+fi
+
 # Check whether --enable-qt4 was given.
 if test "${enable_qt4+set}" = set; then :
   enableval=$enable_qt4; use_qt4="no"
@@ -4372,11 +4382,16 @@ fi
 
 
 # Qt checks
+have_qt="no"
+have_qt4="no"
+have_qt5="no"
 if test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"; then :
 
-  if test "x$use_qt4" = "xyes"; then :
+  if test "x$use_qt" = "xyes"; then :
 
-    {
+    if test "x$use_qt4" = "xyes"; then :
+
+      {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package QtCore (Qt4)" >&5
 $as_echo_n "checking for package QtCore (Qt4)... " >&6; }
   if test "x$(pkg-config --exists QtCore; echo $?)" = "x0"; then :
@@ -4393,7 +4408,7 @@ $as_echo "no" >&6; }
 
 fi
 }
-    {
+      {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package QtGui (Qt4)" >&5
 $as_echo_n "checking for package QtGui (Qt4)... " >&6; }
   if test "x$(pkg-config --exists QtGui; echo $?)" = "x0"; then :
@@ -4410,15 +4425,15 @@ $as_echo "no" >&6; }
 
 fi
 }
-    if test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
-             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"; then :
+      if test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
+               -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"; then :
   have_qt="yes" have_qt4="yes"
 fi
 
 fi
-  if test "x$use_qt5" = "xyes"; then :
+    if test "x$use_qt5" = "xyes"; then :
 
-    {
+      {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package Qt5Core" >&5
 $as_echo_n "checking for package Qt5Core... " >&6; }
   if test "x$(pkg-config --exists Qt5Core; echo $?)" = "x0"; then :
@@ -4435,7 +4450,7 @@ $as_echo "no" >&6; }
 
 fi
 }
-    {
+      {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package Qt5Widgets" >&5
 $as_echo_n "checking for package Qt5Widgets... " >&6; }
   if test "x$(pkg-config --exists Qt5Widgets; echo $?)" = "x0"; then :
@@ -4452,18 +4467,14 @@ $as_echo "no" >&6; }
 
 fi
 }
-    if test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
-             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"; then :
+      if test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+               -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"; then :
   have_qt="yes" have_qt5="yes"
 fi
 
 fi
 
-else
-
-  have_qt="no"
-  have_qt4="no"
-  have_qt5="no"
+fi
 
 fi
 
@@ -4526,7 +4537,6 @@ CPPFLAGS="$CPPFLAGS_backup"
 if test "x$have_xft" != "xyes"; then :
   exit 1
 fi
-])
 
 
 # select(2) (used by READSTDIO macros)

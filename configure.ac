@@ -58,6 +58,9 @@ AC_ARG_ENABLE([file],
 AC_ARG_ENABLE([native-file],
   [AS_HELP_STRING([--disable-native-file], [disable native file chooser dialog(s)])],
   [use_native_file="no"], [use_native_file="yes"])
+AC_ARG_ENABLE([qt],
+  [AS_HELP_STRING([--disable-qt], [disable Qt file chooser dialogs (implies --disable-qt4 and --disable-qt5)])],
+  [use_qt="no"], [use_qt="yes"])
 AC_ARG_ENABLE([qt4],
   [AS_HELP_STRING([--disable-qt4], [disable Qt4 file chooser dialog])],
   [use_qt4="no"], [use_qt4="yes"])
@@ -148,25 +151,26 @@ AS_IF([test "x$use_notify" = "xno"], [
 
 
 # Qt checks
+have_qt="no"
+have_qt4="no"
+have_qt5="no"
 AS_IF([test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"], [
-  AS_IF([test "x$use_qt4" = "xyes"], [
-    AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
-    AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)],  [QtGui])
-    AS_IF([test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
-             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"],
-          [have_qt="yes" have_qt4="yes"])
+  AS_IF([test "x$use_qt" = "xyes"], [
+    AS_IF([test "x$use_qt4" = "xyes"], [
+      AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
+      AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)],  [QtGui])
+      AS_IF([test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
+               -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"],
+            [have_qt="yes" have_qt4="yes"])
+    ])
+    AS_IF([test "x$use_qt5" = "xyes"], [
+      AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core],      [Qt5Core])
+      AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets],   [Qt5Widgets])
+      AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+               -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
+            [have_qt="yes" have_qt5="yes"])
+    ])
   ])
-  AS_IF([test "x$use_qt5" = "xyes"], [
-    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core],      [Qt5Core])
-    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets],   [Qt5Widgets])
-    AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
-             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
-          [have_qt="yes" have_qt5="yes"])
-  ])
-], [
-  have_qt="no"
-  have_qt4="no"
-  have_qt5="no"
 ])
 
 
@@ -182,7 +186,6 @@ AC_CHECK_HEADER([X11/Xft/Xft.h], [
 CFLAGS="$CFLAGS_backup"
 CPPFLAGS="$CPPFLAGS_backup"
 AS_IF([test "x$have_xft" != "xyes"], [exit 1])
-])
 
 
 # select(2) (used by READSTDIO macros)
