@@ -62,7 +62,7 @@ static void check_button_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-int dialog_fl_check_button(std::string checklist_options)
+int dialog_fl_check_button(std::string checklist_options, bool return_value)
 {
   Fl_Group         *g, *g_inside, *buttongroup;
   Fl_Box           *dummy1, *dummy2;
@@ -145,18 +145,33 @@ int dialog_fl_check_button(std::string checklist_options)
 
     for (int i = 0; i < count; ++i)
     {
-      if (checklist_checked[i])
+      if (return_value)
       {
-        list += "TRUE";
+        if (checklist_checked[i])
+        {
+          list += checklist_v[i].c_str();
+
+          if (i < (count - 1))
+          {
+            list += separator_s;
+          }
+        }
       }
       else
       {
-        list += "FALSE";
-      }
+        if (checklist_checked[i])
+        {
+          list += "TRUE";
+        }
+        else
+        {
+          list += "FALSE";
+        }
 
-      if (i < (count - 1))
-      {
-        list += separator_s;
+        if (i < (count - 1))
+        {
+          list += separator_s;
+        }
       }
     }
 

@@ -220,7 +220,7 @@ static void print_usage(char *prog)
   "  --separator=SEPARATOR      Set common separator character\n"
 #ifdef WITH_WINDOW_ICON
   "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
-  "                             jpg png pnm xbm xpm"
+  "                             jpg png pnm xbm xpm\n"
 #endif
   "  --width=WIDTH              Set the window width\n"
   "  --height=HEIGHT            Set the window height\n"
@@ -313,6 +313,12 @@ static void print_usage(char *prog)
   "                             button is pressed; if the given parameter is \"parent\"\n"
   "                             the parent process will be determined and killed\n"
   "  --no-cancel                Hide cancel button\n"
+#endif
+
+#ifdef WITH_CHECKLIST
+  "\n"
+  "Checklist options:\n"
+  " --return-value              Return list of selected items instead of a \"TRUE|FALSE\" list\n"
 #endif
 
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
@@ -408,6 +414,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_RADIOLIST
   std::string radiolist_options = "";
+  bool return_value = false;
 #endif
 
 #ifdef WITH_DROPDOWN
@@ -561,6 +568,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CHECKLIST
     { "checklist",       required_argument,  0,  LO_CHECKLIST       },
+    { "return-value",    no_argument,        0,  LO_RETURN_VALUE    },
 #endif
 
 #ifdef WITH_RADIOLIST
@@ -831,6 +839,9 @@ int main(int argc, char **argv)
         checklist_options = std::string(optarg);
         dialog_count++;
         break;
+      case LO_RETURN_VALUE:
+        return_value = true;
+        break;
 #endif
 #ifdef WITH_RADIOLIST
       case LO_RADIOLIST:
@@ -991,6 +1002,13 @@ int main(int argc, char **argv)
   {
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
+
+#ifdef WITH_CHECKLIST
+  if (return_value && dialog != DIALOG_FL_CHECK_BUTTON)
+  {
+    return use_only_with(argv[0], "--return-value", "--checklist");
+  }
+#endif
 
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
   if (return_number && (dialog != DIALOG_FL_RADIO_ROUND_BUTTON &&
@@ -1168,7 +1186,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CHECKLIST
     case DIALOG_FL_CHECK_BUTTON:
-      return dialog_fl_check_button(checklist_options);
+      return dialog_fl_check_button(checklist_options, return_value);
 #endif
 
 #ifdef WITH_RADIOLIST
