@@ -54,7 +54,8 @@ int dialog_fl_calendar(std::string format);
 /* checklist.cpp */
 #ifdef WITH_CHECKLIST
 int dialog_fl_check_button(std::string checklist_options,
-                                  bool return_value);
+                                  bool return_value,
+                                  bool check_all);
 #endif
 
 /* color.cpp */

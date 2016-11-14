@@ -318,6 +318,7 @@ static void print_usage(char *prog)
 #ifdef WITH_CHECKLIST
   "\n"
   "Checklist options:\n"
+  " --check-all                 Start with all items selected\n"
   " --return-value              Return list of selected items instead of a \"TRUE|FALSE\" list\n"
 #endif
 
@@ -410,6 +411,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CHECKLIST
   std::string checklist_options = "";
+  bool check_all = false;
 #endif
 
 #ifdef WITH_RADIOLIST
@@ -568,6 +570,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CHECKLIST
     { "checklist",       required_argument,  0,  LO_CHECKLIST       },
+    { "check-all",       no_argument,        0,  LO_CHECK_ALL       },
     { "return-value",    no_argument,        0,  LO_RETURN_VALUE    },
 #endif
 
@@ -839,6 +842,9 @@ int main(int argc, char **argv)
         checklist_options = std::string(optarg);
         dialog_count++;
         break;
+      case LO_CHECK_ALL:
+        check_all = true;
+        break;
       case LO_RETURN_VALUE:
         return_value = true;
         break;
@@ -1007,6 +1013,11 @@ int main(int argc, char **argv)
   if (return_value && dialog != DIALOG_FL_CHECK_BUTTON)
   {
     return use_only_with(argv[0], "--return-value", "--checklist");
+  }
+
+  if (check_all && dialog != DIALOG_FL_CHECK_BUTTON)
+  {
+    return use_only_with(argv[0], "--check-all", "--checklist");
   }
 #endif
 
@@ -1186,7 +1197,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_CHECKLIST
     case DIALOG_FL_CHECK_BUTTON:
-      return dialog_fl_check_button(checklist_options, return_value);
+      return dialog_fl_check_button(checklist_options, return_value, check_all);
 #endif
 
 #ifdef WITH_RADIOLIST
