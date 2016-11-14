@@ -123,7 +123,7 @@ int dialog_fl_check_button(std::string checklist_options, bool return_value)
 
     buttongroup = new Fl_Group(0, mod_h, 420, 36);
     {
-      dummy2 = new Fl_Box(219, mod_h, 1, 1);
+      dummy2 = new Fl_Box(199, mod_h, 1, 1);
       dummy2->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(200, mod_h + 4, 100, 26, fl_ok);
       but_ok->callback(check_button_close_cb, 0);
