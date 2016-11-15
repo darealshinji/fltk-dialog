@@ -457,8 +457,7 @@ int main(int argc, char **argv)
   Fl_Window::default_icon(&win_icon);
 #endif
 
-  /* use a slightly brighter gray than the default one in FLTK */
-  Fl::background(204, 204, 204);
+  Fl::get_system_colors();
 
   /* localize buttons */
 #ifdef WITH_L10N
