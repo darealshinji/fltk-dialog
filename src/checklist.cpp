@@ -88,8 +88,8 @@ int dialog_fl_check_button(std::string checklist_options, bool return_value, boo
       g_inside = new Fl_Group(0, 0, 420, 310);
       {
         checklist_browser = new Fl_Check_Browser(10, 10, 400, 299);
-        checklist_browser->box(FL_NO_BOX);
-        checklist_browser->color(fl_rgb_color(255, 255, 220));  /* light yellow */
+        checklist_browser->box(FL_THIN_DOWN_BOX);
+        checklist_browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
         for (int i = 0; i < count; ++i)
         {
           checklist_browser->add(checklist_v[i].c_str());
