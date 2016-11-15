@@ -66,7 +66,7 @@ static void date_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-int dialog_fdate(std::string format)
+int dialog_date(std::string format)
 {
   Fl_Group         *g, *buttongroup;
   Fl_Box           *dummy1, *dummy2;

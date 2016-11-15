@@ -43,7 +43,7 @@ static void calendar_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-int dialog_fl_calendar(std::string format)
+int dialog_calendar(std::string format)
 {
   Fl_Calendar      *calendar;
   Fl_Return_Button *but_ok;

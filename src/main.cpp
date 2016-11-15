@@ -739,11 +739,11 @@ int main(int argc, char **argv)
         break;
 #ifdef WITH_FILE
       case LO_FILE:
-        dialog = DIALOG_FL_FILE_CHOOSER;
+        dialog = DIALOG_FILE_CHOOSER;
         dialog_count++;
         break;
       case LO_DIRECTORY:
-        dialog = DIALOG_FL_DIR_CHOOSER;
+        dialog = DIALOG_DIR_CHOOSER;
         dialog_count++;
         break;
 #  ifdef WITH_NATIVE_FILE_CHOOSER
@@ -773,7 +773,7 @@ int main(int argc, char **argv)
 #endif  /* WITH_FILE */
 #ifdef WITH_COLOR
       case LO_COLOR:
-        dialog = DIALOG_FL_COLOR;
+        dialog = DIALOG_COLOR;
         dialog_count++;
         break;
 #endif
@@ -792,7 +792,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_PROGRESS
       case LO_PROGRESS:
-        dialog = DIALOG_FL_PROGRESS;
+        dialog = DIALOG_PROGRESS;
         dialog_count++;
         break;
       case LO_PULSATE:
@@ -837,7 +837,7 @@ int main(int argc, char **argv)
         break;
 #ifdef WITH_CHECKLIST
       case LO_CHECKLIST:
-        dialog = DIALOG_FL_CHECK_BUTTON;
+        dialog = DIALOG_CHECKLIST;
         checklist_options = std::string(optarg);
         dialog_count++;
         break;
@@ -850,7 +850,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_RADIOLIST
       case LO_RADIOLIST:
-        dialog = DIALOG_FL_RADIO_ROUND_BUTTON;
+        dialog = DIALOG_RADIOLIST;
         radiolist_options = std::string(optarg);
         dialog_count++;
         break;
@@ -869,13 +869,13 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_CALENDAR
       case LO_CALENDAR:
-        dialog = DIALOG_FL_CALENDAR;
+        dialog = DIALOG_CALENDAR;
         dialog_count++;
         break;
 #endif
 #ifdef WITH_DATE
       case LO_DATE:
-        dialog = DIALOG_FDATE;
+        dialog = DIALOG_DATE;
         dialog_count++;
         break;
 #endif
@@ -950,7 +950,7 @@ int main(int argc, char **argv)
 
 #if defined(WITH_FILE) && defined(WITH_NATIVE_FILE_CHOOSER)
   if ((native || native_gtk || native_qt4 || native_qt5) &&
-      (dialog != DIALOG_FL_FILE_CHOOSER && dialog != DIALOG_FL_DIR_CHOOSER))
+      (dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER))
   {
     return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5",
                          "--file or --directory");
@@ -979,7 +979,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
-  if (dialog != DIALOG_FL_PROGRESS)
+  if (dialog != DIALOG_PROGRESS)
   {
     if (pulsate)
     {
@@ -1009,19 +1009,19 @@ int main(int argc, char **argv)
   }
 
 #ifdef WITH_CHECKLIST
-  if (return_value && dialog != DIALOG_FL_CHECK_BUTTON)
+  if (return_value && dialog != DIALOG_CHECKLIST)
   {
     return use_only_with(argv[0], "--return-value", "--checklist");
   }
 
-  if (check_all && dialog != DIALOG_FL_CHECK_BUTTON)
+  if (check_all && dialog != DIALOG_CHECKLIST)
   {
     return use_only_with(argv[0], "--check-all", "--checklist");
   }
 #endif
 
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
-  if (return_number && (dialog != DIALOG_FL_RADIO_ROUND_BUTTON &&
+  if (return_number && (dialog != DIALOG_RADIOLIST &&
                         dialog != DIALOG_DROPDOWN))
   {
     return use_only_with(argv[0], "--return-number", RADIOLIST_DROPDOWN_ARGS);
@@ -1029,8 +1029,8 @@ int main(int argc, char **argv)
 #endif
 
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
-  if (format != "" && (dialog != DIALOG_FL_CALENDAR &&
-                       dialog != DIALOG_FDATE))
+  if (format != "" && (dialog != DIALOG_CALENDAR &&
+                       dialog != DIALOG_DATE))
   {
     return use_only_with(argv[0], "--format", CALENDAR_DATE_ARGS);
   }
@@ -1051,8 +1051,8 @@ int main(int argc, char **argv)
 #endif
 
 #if defined(WITH_HTML) || defined(WITH_DATE)
-  /* keep fltk's '@' symbols enabled for HTML and FDate dialogs */
-  if (dialog != DIALOG_HTML && dialog != DIALOG_FDATE)
+  /* keep fltk's '@' symbols enabled for HTML and Date dialogs */
+  if (dialog != DIALOG_HTML && dialog != DIALOG_DATE)
   {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
@@ -1100,7 +1100,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_FILE
-    case DIALOG_FL_FILE_CHOOSER:
+    case DIALOG_FILE_CHOOSER:
 #  ifdef WITH_NATIVE_FILE_CHOOSER
       if (native)
       {
@@ -1109,7 +1109,7 @@ int main(int argc, char **argv)
 #    ifdef HAVE_QT
       else if (native_gtk)
       {
-        return dialog_fl_native_file_chooser(FILE_CHOOSER);
+        return dialog_native_file_chooser_gtk(FILE_CHOOSER);
       }
 #      ifdef HAVE_QT4
       else if (native_qt4)
@@ -1126,13 +1126,13 @@ int main(int argc, char **argv)
 #    endif  /* HAVE_QT */
       else
       {
-        return dialog_fl_file_chooser();
+        return dialog_file_chooser();
       }
 #  else
-      return dialog_fl_file_chooser();
+      return dialog_file_chooser();
 #  endif  /* WITH_NATIVE_FILE_CHOOSER */
 
-    case DIALOG_FL_DIR_CHOOSER:
+    case DIALOG_DIR_CHOOSER:
 #  ifdef WITH_NATIVE_FILE_CHOOSER
       if (native)
       {
@@ -1141,7 +1141,7 @@ int main(int argc, char **argv)
 #    ifdef HAVE_QT
       else if (native_gtk)
       {
-        return dialog_fl_native_file_chooser(DIR_CHOOSER);
+        return dialog_native_file_chooser_gtk(DIR_CHOOSER);
       }
 #      ifdef HAVE_QT4
       else if (native_qt4)
@@ -1158,10 +1158,10 @@ int main(int argc, char **argv)
 #    endif  /* HAVE_QT */
       else
       {
-        return dialog_fl_dir_chooser();
+        return dialog_dir_chooser();
       }
 #  else
-      return dialog_fl_dir_chooser();
+      return dialog_dir_chooser();
 #  endif  /* WITH_NATIVE_FILE_CHOOSER */
 #endif  /* WITH_FILE */
 
@@ -1177,8 +1177,8 @@ int main(int argc, char **argv)
       return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_PASSWORD, false);
 
 #ifdef WITH_COLOR
-    case DIALOG_FL_COLOR:
-      return dialog_fl_color();
+    case DIALOG_COLOR:
+      return dialog_color();
 #endif
 
 #ifdef WITH_NOTIFY
@@ -1187,21 +1187,21 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
-    case DIALOG_FL_PROGRESS:
-      return dialog_fl_progress(pulsate, autoclose, hide_cancel);
+    case DIALOG_PROGRESS:
+      return dialog_progress(pulsate, autoclose, hide_cancel);
 #endif
 
     case DIALOG_SCALE:
       return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_SCALE, false);
 
 #ifdef WITH_CHECKLIST
-    case DIALOG_FL_CHECK_BUTTON:
-      return dialog_fl_check_button(checklist_options, return_value, check_all);
+    case DIALOG_CHECKLIST:
+      return dialog_checklist(checklist_options, return_value, check_all);
 #endif
 
 #ifdef WITH_RADIOLIST
-    case DIALOG_FL_RADIO_ROUND_BUTTON:
-      return dialog_fl_radio_round_button(radiolist_options, return_number);
+    case DIALOG_RADIOLIST:
+      return dialog_radiolist(radiolist_options, return_number);
 #endif
 
 #ifdef WITH_DROPDOWN
@@ -1210,13 +1210,13 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_CALENDAR
-    case DIALOG_FL_CALENDAR:
-      return dialog_fl_calendar(format);
+    case DIALOG_CALENDAR:
+      return dialog_calendar(format);
 #endif
 
 #ifdef WITH_DATE
-    case DIALOG_FDATE:
-      return dialog_fdate(format);
+    case DIALOG_DATE:
+      return dialog_date(format);
 #endif
 
 #ifdef WITH_FONT

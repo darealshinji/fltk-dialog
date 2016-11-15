@@ -113,9 +113,9 @@ static void progress_cancel_cb(Fl_Widget *o)
   progress_close_cb(o, 1);
 }
 
-int dialog_fl_progress(bool pulsate,
-                       bool autoclose,
-                       bool hide_cancel)
+int dialog_progress(bool pulsate,
+                    bool autoclose,
+                    bool hide_cancel)
 {
   Fl_Progress      *progress_bar = NULL;
   Fl_Slider        *slider = NULL;

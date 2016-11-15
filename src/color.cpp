@@ -33,7 +33,7 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_color()
+int dialog_color()
 {
   double r = 1;
   double g = 1;

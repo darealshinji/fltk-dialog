@@ -47,7 +47,9 @@ static void check_button_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-int dialog_fl_check_button(std::string checklist_options, bool return_value, bool check_all)
+int dialog_checklist(std::string checklist_options,
+                            bool return_value,
+                            bool check_all)
 {
   Fl_Group         *g, *g_inside, *buttongroup;
   Fl_Box           *dummy1, *dummy2;

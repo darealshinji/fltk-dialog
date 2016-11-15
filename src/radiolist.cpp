@@ -61,8 +61,8 @@ static void rb_callback(Fl_Widget *, void *p)
   radiolist_return = (char *)p;
 }
 
-int dialog_fl_radio_round_button(std::string radiolist_options,
-                                        bool return_number)
+int dialog_radiolist(std::string radiolist_options,
+                            bool return_number)
 {
   Fl_Group  *g, *g_inside, *buttongroup;
   Fl_Box    *dummy1, *dummy2;

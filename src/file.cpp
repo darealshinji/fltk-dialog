@@ -32,7 +32,7 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_fl_file_chooser()
+int dialog_file_chooser()
 {
   struct stat s;
 
@@ -52,7 +52,7 @@ int dialog_fl_file_chooser()
   return 0;
 }
 
-int dialog_fl_dir_chooser()
+int dialog_dir_chooser()
 {
   struct stat s;
 
@@ -75,7 +75,7 @@ int dialog_fl_dir_chooser()
 
 #ifdef WITH_NATIVE_FILE_CHOOSER
 
-int dialog_fl_native_file_chooser(int mode)
+int dialog_native_file_chooser_gtk(int mode)
 {
   Fl_Native_File_Chooser fnfc;
   char *fnfc_def_title = NULL;
@@ -133,14 +133,14 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 
   if (ret == -1)
   {
-    ret = dialog_fl_native_file_chooser(mode);
+    ret = dialog_native_file_chooser_gtk(mode);
   }
 
   return ret;
 #else  /* HAVE_QT */
   (void) argc;
   (void) argv;
-  return dialog_fl_native_file_chooser(mode);
+  return dialog_native_file_chooser_gtk(mode);
 #endif  /* HAVE_QT */
 }
 

@@ -48,24 +48,24 @@ int about(void);
 
 /* calendar.cpp */
 #ifdef WITH_CALENDAR
-int dialog_fl_calendar(std::string format);
+int dialog_calendar(std::string format);
 #endif
 
 /* checklist.cpp */
 #ifdef WITH_CHECKLIST
-int dialog_fl_check_button(std::string checklist_options,
-                                  bool return_value,
-                                  bool check_all);
+int dialog_checklist(std::string checklist_options,
+                            bool return_value,
+                            bool check_all);
 #endif
 
 /* color.cpp */
 #ifdef WITH_COLOR
-int dialog_fl_color(void);
+int dialog_color(void);
 #endif
 
 /* date.cpp */
 #ifdef WITH_DATE
-int dialog_fdate(std::string format);
+int dialog_date(std::string format);
 #endif
 
 /* dnd.cpp */
@@ -86,13 +86,13 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv);
 
 /* file.cpp */
 #ifdef WITH_FILE
-int dialog_fl_file_chooser(void);
-int dialog_fl_dir_chooser(void);
+int dialog_file_chooser(void);
+int dialog_dir_chooser(void);
 #  define FILE_CHOOSER 0
 #  define DIR_CHOOSER 1
 #  ifdef WITH_NATIVE_FILE_CHOOSER
-int dialog_fl_native_file_chooser(int mode);
 int dialog_native_file_chooser(int mode, int argc, char **argv);
+int dialog_native_file_chooser_gtk(int mode);
 #    ifdef HAVE_QT
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv);
 #    endif  /* HAVE_QT */
@@ -138,9 +138,9 @@ int dialog_notify(const char *appname,
 #ifdef WITH_PROGRESS
 extern int kill_pid;
 extern bool kill_parent;
-int dialog_fl_progress(bool pulsate,
-                       bool autoclose,
-                       bool hide_cancel);
+int dialog_progress(bool pulsate,
+                    bool autoclose,
+                    bool hide_cancel);
 #endif
 
 /* textinfo.cpp */
@@ -151,8 +151,8 @@ int dialog_textinfo(      bool  autoscroll,
 
 /* radiolist.cpp */
 #ifdef WITH_RADIOLIST
-int dialog_fl_radio_round_button(std::string radiolist_options,
-                                        bool return_number);
+int dialog_radiolist(std::string radiolist_options,
+                            bool return_number);
 #endif
 
 /* window_icon.cpp */
