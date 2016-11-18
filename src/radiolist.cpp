@@ -27,7 +27,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <sstream>
@@ -39,7 +39,7 @@
 #include "misc/Fl_Select_Browser2.H"
 
 
-static Fl_Window        *radio_round_button_win;
+static Fl_Double_Window *radio_round_button_win;
 static Fl_Return_Button *radiolist_but_ok;
 static int radiolist_return = 0;
 static bool radiolist_but_ok_activated = false;
@@ -89,7 +89,7 @@ int dialog_radiolist(std::string radiolist_options,
     title = "Select an option";
   }
 
-  radio_round_button_win = new Fl_Window(420, 356, title);
+  radio_round_button_win = new Fl_Double_Window(420, 356, title);
   radio_round_button_win->callback(radio_round_button_cb, 1);
   {
     g = new Fl_Group(0, 0, 420, 290);

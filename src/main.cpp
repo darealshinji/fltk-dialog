@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Double_Window.H>
 #ifdef WITH_DEFAULT_ICON
 #  include <FL/Fl_Pixmap.H>
 #  include <FL/Fl_RGB_Image.H>
@@ -139,7 +140,7 @@ static int esc_handler(int event)
   return 0;
 }
 
-void set_size(Fl_Window *o, Fl_Widget *w)
+void set_size(Fl_Double_Window *o, Fl_Widget *w)
 {
   if (resizable)
   {
@@ -152,7 +153,7 @@ void set_size(Fl_Window *o, Fl_Widget *w)
   }
 }
 
-void set_position(Fl_Window *o)
+void set_position(Fl_Double_Window *o)
 {
   if (position_center)
   {
@@ -463,6 +464,9 @@ int main(int argc, char **argv)
 #ifdef WITH_L10N
   l10n();
 #endif
+
+  /* recommended in Fl_Double_Window.H */
+  Fl::visual(FL_DOUBLE|FL_INDEX);
 
   /* run "About" dialog if invoked
    * without command line options */

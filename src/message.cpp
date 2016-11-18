@@ -7,7 +7,7 @@
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Valuator.H>
 #include <FL/Fl_Value_Slider.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <string>
@@ -16,7 +16,7 @@
 
 #include "fltk-dialog.hpp"
 
-static Fl_Window *message_win;
+static Fl_Double_Window *message_win;
 
 static void message_close_cb(Fl_Widget *, long p)
 {
@@ -193,7 +193,7 @@ int dialog_message(
 
   /* initialize window */
 
-  message_win = new Fl_Window(win_w, win_h, title);
+  message_win = new Fl_Double_Window(win_w, win_h, title);
   message_win->size_range(win_w, win_h, max_w, max_h);
   message_win->callback(message_close_cb, esc_ret);
   {

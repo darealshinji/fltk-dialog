@@ -87,7 +87,7 @@
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Tile.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <stdio.h>
@@ -122,9 +122,9 @@ void FontDisplay::draw()
   fl_draw(label(), x() + 3, y() + 3, w() - 6, h() - 6, align());
 }
 
-static Fl_Window       *font_win;
-static FontDisplay     *fd_text;
-static Fl_Hold_Browser *fd_fonts, *fd_size;
+static Fl_Double_Window *font_win;
+static FontDisplay      *fd_text;
+static Fl_Hold_Browser  *fd_fonts, *fd_size;
 
 static int **fd_sizes;
 static int  *fd_numsizes;
@@ -258,7 +258,7 @@ int dialog_font()
     title = "FLTK Font Selector";
   }
 
-  font_win = new Fl_Window(550, 400, title);
+  font_win = new Fl_Double_Window(550, 400, title);
   font_win->callback(font_close_cb, 1);  /* exit(1) */
   {
     font_tile = new Fl_Tile(0, 0, 550, 370);

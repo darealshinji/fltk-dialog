@@ -29,7 +29,7 @@
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Multi_Browser.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <string>
@@ -37,7 +37,7 @@
 #include "fltk-dialog.hpp"
 #include "misc/readstdio.hpp"
 
-static Fl_Window        *textinfo_win;
+static Fl_Double_Window *textinfo_win;
 static Fl_Return_Button *ti_but_ok;
 static bool ti_checkbutton_set = false;
 
@@ -88,7 +88,7 @@ int dialog_textinfo(      bool  autoscroll,
     browser_h = 418;
   }
 
-  textinfo_win = new Fl_Window(400, 500, title);
+  textinfo_win = new Fl_Double_Window(400, 500, title);
   {
     ti_browser = new Fl_Multi_Browser(10, 10, 380, browser_h);
 

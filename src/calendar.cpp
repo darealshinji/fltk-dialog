@@ -26,7 +26,7 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <string>
@@ -35,7 +35,7 @@
 #include "fltk-dialog.hpp"
 
 
-static Fl_Window *calendar_win;
+static Fl_Double_Window *calendar_win;
 
 static void calendar_close_cb(Fl_Widget *, long p)
 {
@@ -57,7 +57,7 @@ int dialog_calendar(std::string format)
   /* one calendar unit = 32px
    * calendar widget width/height = 32px * 7 = 224px
    */
-  calendar_win = new Fl_Window(244, 281, title);
+  calendar_win = new Fl_Double_Window(244, 281, title);
   calendar = new Fl_Calendar(10, 10, 224, 224);
   calendar_win->begin();  /* don't remove! */
   calendar_win->callback(calendar_close_cb, 1);

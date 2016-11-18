@@ -28,7 +28,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <string>
@@ -38,7 +38,7 @@
 #include "misc/split.hpp"
 #include "fltk-dialog.hpp"
 
-static Fl_Window *dropdown_win;
+static Fl_Double_Window *dropdown_win;
 
 static void dropdown_close_cb(Fl_Widget *, long p)
 {
@@ -107,7 +107,7 @@ int dialog_dropdown(std::string dropdown_list,
     menu_items[i].labelcolor_ = 0;
   }
 
-  dropdown_win = new Fl_Window(320, 110, title);
+  dropdown_win = new Fl_Double_Window(320, 110, title);
   dropdown_win->size_range(320, 110, max_w, max_h);
   dropdown_win->callback(dropdown_close_cb, 1);
   {

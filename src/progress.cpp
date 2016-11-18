@@ -34,7 +34,7 @@
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Slider.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <fstream>
@@ -52,7 +52,7 @@
 #include "misc/readstdio.hpp"
 
 
-static Fl_Window *progress_win;
+static Fl_Double_Window *progress_win;
 
 static int check_pid()
 {
@@ -183,7 +183,7 @@ int dialog_progress(bool pulsate,
     win_h = box_h + 45;
   }
 
-  progress_win = new Fl_Window(320, win_h, title);
+  progress_win = new Fl_Double_Window(320, win_h, title);
   progress_win->callback(progress_cancel_cb);
   {
     g = new Fl_Group(0, 0, 320, win_h);

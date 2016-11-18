@@ -26,7 +26,7 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <stdio.h>
@@ -34,8 +34,8 @@
 #include "fltk-dialog.hpp"
 
 
-static Fl_Window *dnd_win;
-static Fl_Box    *dnd_count;
+static Fl_Double_Window *dnd_win;
+static Fl_Box *dnd_count;
 static void dnd_callback(const char *items);
 static int dnd_count_val = 0;
 
@@ -112,7 +112,7 @@ int dialog_dnd()
     title = "FLTK Drag & Drop";
   }
 
-  dnd_win = new Fl_Window(400, 300, title);
+  dnd_win = new Fl_Double_Window(400, 300, title);
   dnd_win->size_range(400, 300, max_w, max_h);
   dnd_win->callback(dnd_close_cb);
   {

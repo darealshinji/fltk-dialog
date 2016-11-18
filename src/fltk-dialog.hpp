@@ -26,6 +26,7 @@
 #define FLTK_DIALOG_HPP
 
 #include <FL/Fl.H>
+#include <FL/Fl_Double_Window.H>
 #include <string>
 
 #define STREQ(x, y) (strcmp(x, y) == 0)
@@ -40,8 +41,8 @@ extern int win_w, win_h, min_w, min_h, max_w, max_h;
 extern double scale_value, scale_min, scale_max, scale_step, scale_init;
 
 /* main.cpp */
-void set_size(Fl_Window *o, Fl_Widget *w);
-void set_position(Fl_Window *o);
+void set_size(Fl_Double_Window *o, Fl_Widget *w);
+void set_position(Fl_Double_Window *o);
 
 /* about.cpp */
 int about(void);

@@ -29,7 +29,7 @@
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Spinner.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <iostream>
 #include <time.h>
@@ -38,10 +38,10 @@
 #include "fltk-dialog.hpp"
 
 
-static Fl_Window  *fdate_win;
-static Fl_Choice  *fdate_month;
-static Fl_Spinner *fdate_year;
-static Fl_Spinner *fdate_day;
+static Fl_Double_Window *fdate_win;
+static Fl_Choice        *fdate_month;
+static Fl_Spinner       *fdate_year;
+static Fl_Spinner       *fdate_day;
 
 static void max_days_cb(Fl_Widget *)
 {
@@ -102,7 +102,7 @@ int dialog_date(std::string format)
     title = "FLTK date";
   }
 
-  fdate_win = new Fl_Window(400, 114, title);
+  fdate_win = new Fl_Double_Window(400, 114, title);
   fdate_win->size_range(400, 114, max_w, max_h);
   fdate_win->callback(date_close_cb, 1);
   {

@@ -28,7 +28,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Check_Browser.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 
 #include <string>
 #include <iostream>
@@ -39,7 +39,7 @@
 #include "misc/split.hpp"
 
 
-static Fl_Window *check_button_win;
+static Fl_Double_Window *check_button_win;
 
 static void check_button_close_cb(Fl_Widget *, long p)
 {
@@ -82,7 +82,7 @@ int dialog_checklist(std::string checklist_options,
     title = "Select your option(s)";
   }
 
-  check_button_win = new Fl_Window(420, 356, title);
+  check_button_win = new Fl_Double_Window(420, 356, title);
   check_button_win->callback(check_button_close_cb, 1);
   {
     g = new Fl_Group(0, 0, 420, 310);

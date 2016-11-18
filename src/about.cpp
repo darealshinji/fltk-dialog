@@ -30,7 +30,7 @@
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Text_Display.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 #include <FL/filename.H>
 
 #include <string>
@@ -38,7 +38,7 @@
 #include "fltk.xpm"
 #include "fltk-dialog.hpp"
 
-static Fl_Window *about_win;
+static Fl_Double_Window *about_win;
 
 static void open_uri_cb(Fl_Widget *, void *p)
 {
@@ -254,7 +254,7 @@ int about()
 
   about_pixmap = new Fl_Pixmap(fltk_xpm);
 
-  about_win = new Fl_Window(450, 490, "About FLTK dialog");
+  about_win = new Fl_Double_Window(450, 490, "About FLTK dialog");
   about_win->callback(about_close_cb);
   {
     about_tab = new Fl_Tabs(10, 10, 430, 434);
