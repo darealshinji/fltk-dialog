@@ -102,6 +102,7 @@ int dialog_radiolist(std::string radiolist_options,
           browser->when(FL_WHEN_CHANGED);
           browser->box(FL_THIN_DOWN_BOX);
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
+          browser->clear_visible_focus();
           for (int i = 0; i < count; ++i)
           {
             browser->add(radiolist_v[i].c_str());

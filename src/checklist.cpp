@@ -55,7 +55,7 @@ int dialog_checklist(std::string checklist_options,
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
-  Fl_Check_Browser *checklist_browser;
+  Fl_Check_Browser *browser;
 
   std::vector<std::string> checklist_v;
   std::vector<long> counter_v;
@@ -89,16 +89,17 @@ int dialog_checklist(std::string checklist_options,
     {
       g_inside = new Fl_Group(0, 0, 420, 310);
       {
-        checklist_browser = new Fl_Check_Browser(10, 10, 400, 299);
-        checklist_browser->box(FL_THIN_DOWN_BOX);
-        checklist_browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
+        browser = new Fl_Check_Browser(10, 10, 400, 299);
+        browser->box(FL_THIN_DOWN_BOX);
+        browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
+        browser->clear_visible_focus();
         for (int i = 0; i < count; ++i)
         {
-          checklist_browser->add(checklist_v[i].c_str());
+          browser->add(checklist_v[i].c_str());
         }
         if (check_all)
         {
-          checklist_browser->check_all();
+          browser->check_all();
         }
         dummy1 = new Fl_Box(10, 308, 400, 1);
         dummy1->box(FL_NO_BOX);
@@ -135,14 +136,14 @@ int dialog_checklist(std::string checklist_options,
     {
       if (return_value)
       {
-        if (checklist_browser->checked(i))
+        if (browser->checked(i))
         {
-          list += std::string(checklist_browser->text(i)) + separator_s;
+          list += std::string(browser->text(i)) + separator_s;
         }
       }
       else
       {
-        if (checklist_browser->checked(i))
+        if (browser->checked(i))
         {
           list += "TRUE";
         }
