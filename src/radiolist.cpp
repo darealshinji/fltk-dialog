@@ -131,7 +131,7 @@ int dialog_radiolist(std::string radiolist_options,
 
     buttongroup = new Fl_Group(0, mod_h, 420, 36);
     {
-      dummy2 = new Fl_Box(219, mod_h, 1, 1);
+      dummy2 = new Fl_Box(199, mod_h, 1, 1);
       dummy2->box(FL_NO_BOX);
       radiolist_but_ok = new Fl_Return_Button(200, mod_h + 4, 100, 26, fl_ok);
       radiolist_but_ok->deactivate();
