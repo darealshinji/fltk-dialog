@@ -140,7 +140,7 @@ HAVE_READSTDIO = yes
 endif
 ifneq ($(WITH_RADIOLIST),no)
 main_CXXFLAGS += -DWITH_RADIOLIST
-OBJS          += src/radiolist.o
+OBJS          += src/radiolist.o src/misc/Fl_Select_Browser2.o
 HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_TEXTINFO),no)
@@ -369,7 +369,7 @@ src/file_qtplugin.cpp: $(libfltk)
 endif
 
 
-src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o: main_CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o src/misc/Fl_Select_Browser2.o: main_CXXFLAGS+=-Wno-unused-parameter
 
 
 DISTFILES = 3rdparty/ patches/ src/ \

@@ -26,7 +26,6 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Radio_Round_Button.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Window.H>
 
@@ -37,11 +36,12 @@
 
 #include "fltk-dialog.hpp"
 #include "misc/split.hpp"
+#include "misc/Fl_Select_Browser2.H"
 
 
 static Fl_Window        *radio_round_button_win;
 static Fl_Return_Button *radiolist_but_ok;
-static const char *radiolist_return = NULL;
+static int radiolist_return = 0;
 static bool radiolist_but_ok_activated = false;
 
 static void radio_round_button_cb(Fl_Widget *, long p)
@@ -50,7 +50,7 @@ static void radio_round_button_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-static void rb_callback(Fl_Widget *, void *p)
+static void radiolist_callback(Fl_Widget *v)
 {
   if (!radiolist_but_ok_activated)
   {
@@ -58,27 +58,23 @@ static void rb_callback(Fl_Widget *, void *p)
     radiolist_but_ok->activate();
   }
 
-  radiolist_return = (char *)p;
+  Fl_Select_Browser2 *b = (Fl_Select_Browser2 *)v;
+  radiolist_return = b->value();
 }
 
 int dialog_radiolist(std::string radiolist_options,
                             bool return_number)
 {
-  Fl_Group  *g, *g_inside, *buttongroup;
-  Fl_Box    *dummy1, *dummy2;
-  Fl_Button *but_cancel;
-  std::vector<std::string> counter_v, radiolist_v;
-  int count = 0;
+  Fl_Group           *g, *g_inside, *buttongroup;
+  Fl_Box             *dummy1, *dummy2;
+  Fl_Button          *but_cancel;
+  Fl_Select_Browser2 *browser;
 
+  std::vector<std::string> radiolist_v;
   split(radiolist_options, separator, radiolist_v);
 
-  for (size_t i = 0; i < radiolist_v.size(); ++i)
-  {
-    std::stringstream ss;
-    ss << (i + 1);
-    counter_v.push_back(ss.str());
-    ++count;
-  }
+  int count = 0;
+  for (/**/; (size_t) count < radiolist_v.size(); ++count) {}
 
   if (count < 1)
   {
@@ -88,39 +84,31 @@ int dialog_radiolist(std::string radiolist_options,
     return 1;
   }
 
-  Fl_Radio_Round_Button *rb[count];
-
   if (title == NULL)
   {
     title = "Select an option";
   }
 
-  int win_h = (30 * count) + 56;
-  int mod_h = win_h - 40;
-
-  radio_round_button_win = new Fl_Window(420, win_h, title);
+  radio_round_button_win = new Fl_Window(420, 356, title);
   radio_round_button_win->callback(radio_round_button_cb, 1);
   {
-    g = new Fl_Group(0, 0, 420, mod_h);
+    g = new Fl_Group(0, 0, 420, 290);
     {
-      g_inside = new Fl_Group(0, 0, 420, mod_h);
+      g_inside = new Fl_Group(0, 0, 420, 290);
       {
         for (int i = 0; i < count; ++i)
         {
-          char *p = NULL;
-          rb[i] = new Fl_Radio_Round_Button(10, 10 + (30 * i), 400, 30, radiolist_v[i].c_str());
-
-          if (return_number)
+          browser = new Fl_Select_Browser2(10, 10, 400, 289);
+          browser->when(FL_WHEN_CHANGED);
+          browser->box(FL_THIN_DOWN_BOX);
+          browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
+          for (int i = 0; i < count; ++i)
           {
-            p = (char *)counter_v[i].c_str();
+            browser->add(radiolist_v[i].c_str());
           }
-          else
-          {
-            p = (char *)rb[i]->label();
-          }
-          rb[i]->callback(rb_callback, (char *)p);
+          browser->callback(radiolist_callback);
         }
-        dummy1 = new Fl_Box(10, mod_h - 2, 400, 1);
+        dummy1 = new Fl_Box(10, 288, 400, 1);
         dummy1->box(FL_NO_BOX);
       }
       g_inside->resizable(dummy1);
@@ -129,14 +117,14 @@ int dialog_radiolist(std::string radiolist_options,
     g->resizable(g_inside);
     g->end();
 
-    buttongroup = new Fl_Group(0, mod_h, 420, 36);
+    buttongroup = new Fl_Group(0, 310, 420, 36);
     {
-      dummy2 = new Fl_Box(199, mod_h, 1, 1);
+      dummy2 = new Fl_Box(199, 310, 1, 1);
       dummy2->box(FL_NO_BOX);
-      radiolist_but_ok = new Fl_Return_Button(200, mod_h + 4, 100, 26, fl_ok);
+      radiolist_but_ok = new Fl_Return_Button(200, 314, 100, 26, fl_ok);
       radiolist_but_ok->deactivate();
       radiolist_but_ok->callback(radio_round_button_cb, 0);
-      but_cancel = new Fl_Button(310, mod_h + 4, 100, 26, fl_cancel);
+      but_cancel = new Fl_Button(310, 314, 100, 26, fl_cancel);
       but_cancel->callback(radio_round_button_cb, 1);
     }
     buttongroup->resizable(dummy2);
@@ -150,7 +138,14 @@ int dialog_radiolist(std::string radiolist_options,
 
   if (ret == 0)
   {
-    std::cout << radiolist_return << std::endl;
+    if (return_number)
+    {
+      std::cout << radiolist_return << std::endl;
+    }
+    else
+    {
+      std::cout << browser->text(radiolist_return) << std::endl;
+    }
   }
   return ret;
 }
