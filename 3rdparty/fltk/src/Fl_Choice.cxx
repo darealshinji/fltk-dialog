@@ -186,21 +186,13 @@ int Fl_Choice::handle(int e) {
   J1:
     if (Fl::scheme()
 	|| fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {
-      // 2016/11/09  djcj <djcj@gmx.de>
-      // Set 5th parameter to 0 to change the dropdown menu behavior
-      // to that of Fl_Menu_Button().  Original line:
-      // v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
-      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
+      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
     } else {
       // In order to preserve the old look-n-feel of "white" menus,
       // temporarily override the color() of this widget...
       Fl_Color c = color();
       color(FL_BACKGROUND2_COLOR);
-      // 2016/11/09  djcj <djcj@gmx.de>
-      // Set 5th parameter to 0 to change the dropdown menu behavior
-      // to that of Fl_Menu_Button().  Original line:
-      // v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
-      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
+      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
       color(c);
     }
     if (!v || v->submenu()) return 1;

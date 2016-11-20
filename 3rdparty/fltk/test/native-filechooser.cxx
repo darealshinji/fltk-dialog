@@ -1,5 +1,5 @@
 //
-// "$Id: native-filechooser.cxx 11947 2016-09-16 20:28:15Z greg.ercolano $"
+// "$Id: native-filechooser.cxx 12080 2016-11-06 10:40:39Z AlbrechtS $"
 //
 // Simple test of the Fl_Native_File_Chooser.
 //
@@ -128,7 +128,8 @@ int main(int argc, char **argv) {
 		"    Text<font color=#55f>&lt;Ctrl-I&gt;</font>*.txt\n"
 		"    C Files<font color=#55f>&lt;Ctrl-I&gt;</font>*.{cxx,h,c,cpp}\n"
 		"    Tars<font color=#55f>&lt;Ctrl-I&gt;</font>*.{tar,tar.gz}\n"
-		"    Apps<font color=#55f>&lt;Ctrl-I&gt;</font>*.app\n");
+		"    Apps<font color=#55f>&lt;Ctrl-I&gt;</font>*.app\n"
+		"</pre>\n");
 
     Fl_Button *but = new Fl_Button(win->w()-x-10, win->h()-25-10, 80, 25, "Pick File");
     but->callback(PickFile_CB);
@@ -144,5 +145,5 @@ int main(int argc, char **argv) {
 }
 
 //
-// End of "$Id: native-filechooser.cxx 11947 2016-09-16 20:28:15Z greg.ercolano $".
+// End of "$Id: native-filechooser.cxx 12080 2016-11-06 10:40:39Z AlbrechtS $".
 //

@@ -1,5 +1,5 @@
 //
-// "$Id: Fl_Image.cxx 12028 2016-10-14 16:35:44Z AlbrechtS $"
+// "$Id: Fl_Image.cxx 12073 2016-11-02 11:47:36Z AlbrechtS $"
 //
 // Image drawing code for the Fast Light Tool Kit (FLTK).
 //
@@ -294,12 +294,16 @@ Fl_RGB_Image::Fl_RGB_Image(const uchar *bits, int W, int H, int D, int LD) :
 */
 Fl_RGB_Image::Fl_RGB_Image(const Fl_Pixmap *pxm, Fl_Color bg):
   Fl_Image(pxm->w(), pxm->h(), 4),
+  array(0),
+  alloc_array(0),
   id_(0),
   mask_(0)
 {
-  array = new uchar[w() * h() * d()];
-  alloc_array = 1;
-  fl_convert_pixmap(pxm->data(), (uchar*)array, bg);
+  if (pxm && pxm->w() > 0 && pxm->h() > 0) {
+    array = new uchar[w() * h() * d()];
+    alloc_array = 1;
+    fl_convert_pixmap(pxm->data(), (uchar*)array, bg);
+  }
   data((const char **)&array, 1);
 }
 
@@ -877,5 +881,5 @@ void Fl_RGB_Image::label(Fl_Menu_Item* m) {
 }
 
 //
-// End of "$Id: Fl_Image.cxx 12028 2016-10-14 16:35:44Z AlbrechtS $".
+// End of "$Id: Fl_Image.cxx 12073 2016-11-02 11:47:36Z AlbrechtS $".
 //

@@ -1,5 +1,5 @@
 //
-// "$Id: Fl_cocoa.mm 12008 2016-10-04 11:26:36Z manolo $"
+// "$Id: Fl_cocoa.mm 12089 2016-11-09 20:19:10Z manolo $"
 //
 // MacOS-Cocoa specific code for the Fast Light Tool Kit (FLTK).
 //
@@ -1354,8 +1354,9 @@ static FLWindowDelegate *flwindowdelegate_instance = nil;
 }
 - (void)windowDidResize:(NSNotification *)notif
 {
-  fl_lock_function();
   FLWindow *nsw = (FLWindow*)[notif object];
+  if (![nsw isVisible]) return;
+  fl_lock_function();
   Fl_Window *window = [nsw getFl_Window];
   NSRect r; NSPoint pt2;
   r = [[nsw contentView] frame];
@@ -1542,7 +1543,7 @@ static FLWindowDelegate *flwindowdelegate_instance = nil;
   int count = [windows count];
   for (int i = 0; i < count; i++) {
     NSWindow *win = [windows objectAtIndex:i];
-    if ([win isKindOfClass:[FLWindow class]] && ![win parentWindow]) {
+    if ([win isKindOfClass:[FLWindow class]] && ![win parentWindow] && [win isVisible]) {
       [[NSNotificationCenter defaultCenter] postNotificationName:NSWindowDidMoveNotification object:win];
       }
     }
@@ -4247,6 +4248,7 @@ static NSBitmapImageRep* rect_to_NSBitmapImageRep(Fl_Window *win, int x, int y, 
   NSEnumerator *enumerator = [children objectEnumerator];
   id child;
   while ((child = [enumerator nextObject]) != nil) {
+    if (![child isKindOfClass:[FLWindow class]]) continue;
     Fl_Window *sub = [(FLWindow*)child getFl_Window];
     CGRect rsub = CGRectMake(sub->x(), win->h() -(sub->y()+sub->h()), sub->w(), sub->h());
     CGRect clip = CGRectMake(x, win->h()-(y+h), w, h);
@@ -4573,5 +4575,5 @@ int Fl_X::calc_mac_os_version() {
 #endif // __APPLE__
 
 //
-// End of "$Id: Fl_cocoa.mm 12008 2016-10-04 11:26:36Z manolo $".
+// End of "$Id: Fl_cocoa.mm 12089 2016-11-09 20:19:10Z manolo $".
 //
