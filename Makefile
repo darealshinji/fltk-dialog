@@ -35,7 +35,7 @@ WITH_WINDOW_ICON ?= yes
 
 DYNAMIC_NOTIFY ?= yes
 
-FLTK_VERSION = 1.3.4rc2
+FLTK_VERSION = 1.3.4
 
 
 # source directories
