@@ -57,6 +57,27 @@ typedef enum {
   DECEMBER
 } FMonth;
 
+extern const char *fdate_mo;
+extern const char *fdate_tu;
+extern const char *fdate_we;
+extern const char *fdate_th;
+extern const char *fdate_fr;
+extern const char *fdate_sa;
+extern const char *fdate_su;
+
+extern const char *fdate_mon_jan;
+extern const char *fdate_mon_feb;
+extern const char *fdate_mon_mar;
+extern const char *fdate_mon_apr;
+extern const char *fdate_mon_may;
+extern const char *fdate_mon_jun;
+extern const char *fdate_mon_jul;
+extern const char *fdate_mon_aug;
+extern const char *fdate_mon_sep;
+extern const char *fdate_mon_oct;
+extern const char *fdate_mon_nov;
+extern const char *fdate_mon_dec;
+
 /** @package libflek_core
  * FDate provides a date class that stores the day, month and year.
  */
@@ -367,11 +388,6 @@ class FDate : public FBase
    * An array of month names.
    */
   static const char* month_name[];
-
-  /**
-   * An array of weekday names.
-   */
-  static const char* weekday_name[];
 
 private:
 

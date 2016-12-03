@@ -73,7 +73,22 @@ int dialog_date(std::string format)
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
-#define MONTH_ITEM(x) FDate::month_name[x - 1], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
+  const char *_month_name[] = {
+    fdate_mon_jan,
+    fdate_mon_feb,
+    fdate_mon_mar,
+    fdate_mon_apr,
+    fdate_mon_may,
+    fdate_mon_jun,
+    fdate_mon_jul,
+    fdate_mon_aug,
+    fdate_mon_sep,
+    fdate_mon_oct,
+    fdate_mon_nov,
+    fdate_mon_dec
+  };
+
+#define MONTH_ITEM(x) _month_name[x - 1], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
 
   Fl_Menu_Item item_month[] = {
     { MONTH_ITEM(JANUARY)   },

@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include <Flek/Fl_Calendar.H>
+#include <Flek/FDate.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Repeat_Button.H>
@@ -221,13 +222,13 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
     weekdays[i]->color (color());
   }
 
-  weekdays[MONDAY]->label ("Mo");
-  weekdays[TUESDAY]->label ("Tu");
-  weekdays[WEDNESDAY]->label ("We");
-  weekdays[THURSDAY]->label ("Th");
-  weekdays[FRIDAY]->label ("Fr");
-  weekdays[SATURDAY]->label ("Sa");
-  weekdays[SUNDAY]->label ("Su");
+  weekdays[MONDAY]->label (fdate_mo);
+  weekdays[TUESDAY]->label (fdate_tu);
+  weekdays[WEDNESDAY]->label (fdate_we);
+  weekdays[THURSDAY]->label (fdate_th);
+  weekdays[FRIDAY]->label (fdate_fr);
+  weekdays[SATURDAY]->label (fdate_sa);
+  weekdays[SUNDAY]->label (fdate_su);
 
   /*  « MONTH »  */
 
@@ -299,8 +300,22 @@ Fl_Calendar::update ()
 {
   char tmp_m[32];
   char tmp_y[32];
+  const char *_month_name[] = {
+    fdate_mon_jan,
+    fdate_mon_feb,
+    fdate_mon_mar,
+    fdate_mon_apr,
+    fdate_mon_may,
+    fdate_mon_jun,
+    fdate_mon_jul,
+    fdate_mon_aug,
+    fdate_mon_sep,
+    fdate_mon_oct,
+    fdate_mon_nov,
+    fdate_mon_dec
+  };
 
-  sprintf (tmp_m, "%s", month_name[month ()-1]);
+  sprintf (tmp_m, "%s", _month_name[month ()-1]);
   sprintf (tmp_y, "%d", year ());
 
   Fl_Calendar_Base::update ();

@@ -33,29 +33,40 @@ const int FDate::julian_days[2][13] = {
   { 0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
 };
 
-const char *FDate::month_name[] = {
-  "January",
-  "Febuary",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December"
-};
+const char *fdate_mo = "Mo";
+const char *fdate_tu = "Tu";
+const char *fdate_we = "We";
+const char *fdate_th = "Th";
+const char *fdate_fr = "Fr";
+const char *fdate_sa = "Sa";
+const char *fdate_su = "Su";
 
-const char *FDate::weekday_name[] = {
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday"
+const char *fdate_mon_jan = "January";
+const char *fdate_mon_feb = "Febuary";
+const char *fdate_mon_mar = "March";
+const char *fdate_mon_apr = "April";
+const char *fdate_mon_may = "May";
+const char *fdate_mon_jun = "June";
+const char *fdate_mon_jul = "July";
+const char *fdate_mon_aug = "August";
+const char *fdate_mon_sep = "September";
+const char *fdate_mon_oct = "October";
+const char *fdate_mon_nov = "November";
+const char *fdate_mon_dec = "December";
+
+const char *FDate::month_name[] = {
+  fdate_mon_jan,
+  fdate_mon_feb,
+  fdate_mon_mar,
+  fdate_mon_apr,
+  fdate_mon_may,
+  fdate_mon_jun,
+  fdate_mon_jul,
+  fdate_mon_aug,
+  fdate_mon_sep,
+  fdate_mon_oct,
+  fdate_mon_nov,
+  fdate_mon_dec
 };
 
 void FDate::today () {
