@@ -23,6 +23,7 @@
  */
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Native_File_Chooser.H>
 
@@ -40,6 +41,10 @@ int dialog_file_chooser()
   {
     title = "Select a file";
   }
+
+  /* layout issues with localized buttons */
+  fl_ok = "OK";
+  fl_cancel = "Cancel";
 
   char *file = fl_file_chooser(title, "*", NULL);
 
@@ -60,6 +65,10 @@ int dialog_dir_chooser()
   {
     title = "Select a directory";
   }
+
+  /* layout issues with localized buttons */
+  fl_ok = "OK";
+  fl_cancel = "Cancel";
 
   char *dir = fl_dir_chooser(title, NULL);
 
