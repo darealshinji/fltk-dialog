@@ -33,7 +33,8 @@ WITH_RADIOLIST   ?= yes
 WITH_TEXTINFO    ?= yes
 WITH_WINDOW_ICON ?= yes
 
-DYNAMIC_NOTIFY ?= yes
+DYNAMIC_NOTIFY   ?= yes
+EMBEDDED_PLUGINS ?= yes
 
 FLTK_VERSION = 1.3.4
 
@@ -117,6 +118,10 @@ main_CXXFLAGS += -DHAVE_QT4
 endif
 ifneq ($(HAVE_QT5),no)
 main_CXXFLAGS += -DHAVE_QT5
+endif
+ifneq ($(EMBEDDED_PLUGINS),yes)
+main_CXXFLAGS += -DUSE_SYSTEM_PLUGINS
+main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
 endif
 endif
 endif
@@ -363,7 +368,11 @@ src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
 	$(msg_CXX)
 	$(silent)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
 
+ifneq ($(EMBEDDED_PLUGINS),no)
 src/file_dlopen_qtplugin.o: qtgui_so.h
+else
+src/file_dlopen_qtplugin.o: $(qtplugins)
+endif
 
 src/file_qtplugin.cpp: $(libfltk)
 endif

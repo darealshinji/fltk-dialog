@@ -625,6 +625,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+EMBEDDED_PLUGINS
 DYNAMIC_NOTIFY
 WITH_WINDOW_ICON
 WITH_TEXTINFO
@@ -649,6 +650,9 @@ HAVE_QT
 SYSTEM_ZLIB
 SYSTEM_PNG
 SYSTEM_JPEG
+LIBDIR
+EPREFIX
+PREFIX
 EGREP
 GREP
 CMAKE
@@ -728,6 +732,7 @@ enable_l10n
 enable_window_icon
 enable_default_icon
 enable_dynamic_notify
+enable_embedded_plugins
 enable_system_jpeg
 enable_system_png
 enable_system_zlib
@@ -1388,9 +1393,12 @@ Optional Features:
   --disable-dynamic-notify
                           disable dynamically loading libnotify (link directly
                           against shared or static library)
+  --disable-embedded-plugins
+                          don't embed Qt file chooser plugins into executable
+                          but load them from LIBDIR/fltk-dialog
   --enable-system-jpeg    link against system libjpeg
-  --disable-system-png    link against system libpng
-  --disable-system-zlib   link against system zlib
+  --enable-system-png     link against system libpng
+  --enable-system-zlib    link against system zlib
 
 Some influential environment variables:
   CC          C compiler command
@@ -3688,6 +3696,13 @@ else
   dynamic_notify="yes"
 fi
 
+# Check whether --enable-embedded-plugins was given.
+if test "${enable_embedded_plugins+set}" = set; then :
+  enableval=$enable_embedded_plugins; use_embedded_plugins="no"
+else
+  use_embedded_plugins="yes"
+fi
+
 
 # Check whether --enable-system-jpeg was given.
 if test "${enable_system_jpeg+set}" = set; then :
@@ -4592,7 +4607,21 @@ fi
 fi
 
 
+if test "$prefix" = NONE; then :
+  prefix=/usr/local
+fi
+if test "$exec_prefix" = NONE; then :
+  exec_prefix=/usr/local
+fi
+
+
 # substitute variables
+PREFIX=$prefix
+
+EPREFIX=$exec_prefix
+
+LIBDIR=$libdir
+
 SYSTEM_JPEG=$use_system_jpeg
 
 SYSTEM_PNG=$use_system_png
@@ -4640,6 +4669,8 @@ WITH_TEXTINFO=$use_textinfo
 WITH_WINDOW_ICON=$use_window_icon
 
 DYNAMIC_NOTIFY=$dynamic_notify
+
+EMBEDDED_PLUGINS=$use_embedded_plugins
 
 
 

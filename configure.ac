@@ -98,6 +98,9 @@ AC_ARG_ENABLE([default-icon],
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
+AC_ARG_ENABLE([embedded-plugins],
+  [AS_HELP_STRING([--disable-embedded-plugins], [don't embed Qt file chooser plugins into executable but load them from LIBDIR/fltk-dialog])],
+  [use_embedded_plugins="no"], [use_embedded_plugins="yes"])
 
 AC_ARG_ENABLE([system-jpeg],
   [AS_HELP_STRING([--enable-system-jpeg], [link against system libjpeg])],
@@ -209,7 +212,14 @@ AS_IF([test "x$ac_cv_header_sys_time_h" != "xyes" \
 ])
 
 
+AS_IF([test "$prefix" = NONE], [prefix=/usr/local])
+AS_IF([test "$exec_prefix" = NONE], [exec_prefix=/usr/local])
+
+
 # substitute variables
+AC_SUBST([PREFIX], [$prefix])
+AC_SUBST([EPREFIX], [$exec_prefix])
+AC_SUBST([LIBDIR], [$libdir])
 AC_SUBST([SYSTEM_JPEG], [$use_system_jpeg])
 AC_SUBST([SYSTEM_PNG], [$use_system_png])
 AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
@@ -234,6 +244,7 @@ AC_SUBST([WITH_RADIOLIST], [$use_radiolist])
 AC_SUBST([WITH_TEXTINFO], [$use_textinfo])
 AC_SUBST([WITH_WINDOW_ICON], [$use_window_icon])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
+AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 
 
 AC_CONFIG_FILES([config.mak])
