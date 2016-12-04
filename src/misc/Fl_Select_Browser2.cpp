@@ -122,18 +122,24 @@ void Fl_Select_Browser2::item_draw(void *v, int X, int Y, int, int) const {
 	X += 2;
 
 	fl_color(active_r() ? FL_FOREGROUND_COLOR : fl_inactive(FL_FOREGROUND_COLOR));
-  fl_circle(X + (CHECK_SIZE)/2, Y + (CHECK_SIZE)/2, (CHECK_SIZE)/2);
 //	fl_loop(X, cy, X, cy + CHECK_SIZE,
 //	        X + CHECK_SIZE, cy + CHECK_SIZE, X + CHECK_SIZE, cy);
+
+	int ox = X + CHECK_SIZE/2;
+	int oy = Y + CHECK_SIZE/2;
+	int r = CHECK_SIZE/2 - 1;
+	fl_circle(ox+2, oy+2, r);
+
 	if (i->checked) {
-	  int tx = X + 3;
+	  //int tx = X + 3;
 	  int tw = CHECK_SIZE - 4;
 	  int d1 = tw/3;
 	  int d2 = tw-d1;
 	  int ty = cy + (CHECK_SIZE+d2)/2-d1-2;
 	  for (int n = 0; n < 3; n++, ty++) {
-	    fl_line(tx, ty, tx+d1, ty+d1);
-	    fl_line(tx+d1, ty+d1, tx+tw-1, ty+d1-d2+1);
+	    fl_pie(ox, oy, r, r, 0, 360);
+	    //fl_line(tx, ty, tx+d1, ty+d1);
+	    //fl_line(tx+d1, ty+d1, tx+tw-1, ty+d1-d2+1);
 	  }
 	}
 	fl_font(textfont(), tsize);
