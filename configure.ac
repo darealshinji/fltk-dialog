@@ -103,10 +103,10 @@ AC_ARG_ENABLE([system-jpeg],
   [AS_HELP_STRING([--enable-system-jpeg], [link against system libjpeg])],
   [use_system_jpeg="yes"], [use_system_jpeg="no"])
 AC_ARG_ENABLE([system-png],
-  [AS_HELP_STRING([--disable-system-png], [link against system libpng])],
+  [AS_HELP_STRING([--enable-system-png], [link against system libpng])],
   [use_system_png="yes"], [use_system_png="no"])
 AC_ARG_ENABLE([system-zlib],
-  [AS_HELP_STRING([--disable-system-zlib], [link against system zlib])],
+  [AS_HELP_STRING([--enable-system-zlib], [link against system zlib])],
   [use_system_zlib="yes"], [use_system_zlib="no"])
 
 

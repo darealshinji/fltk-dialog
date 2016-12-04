@@ -154,11 +154,11 @@ int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
   {
     if (mode == DIR_CHOOSER)
     {
-      ret = dialog_fl_dir_chooser();
+      ret = dialog_dir_chooser();
     }
     else
     {
-      ret = dialog_fl_file_chooser();
+      ret = dialog_file_chooser();
     }
   }
   return ret;

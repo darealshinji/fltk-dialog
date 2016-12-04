@@ -31,10 +31,13 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifndef USE_SYSTEM_PLUGINS
 /* xxd -i qt4gui.so > qtgui_so.h
  * xxd -i qt5gui.so >> qtgui_so.h
  */
-#include "qtgui_so.h"
+# include "qtgui_so.h"
+#endif
+
 #include "fltk-dialog.hpp"
 
 
