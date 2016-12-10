@@ -1093,9 +1093,9 @@ int main(int argc, char **argv)
       return about();
     case DIALOG_MESSAGE:
       return dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO, with_icon_box);
-    case DIALOG_ALERT:
+    case DIALOG_WARNING:
       return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_WARNING, with_icon_box);
-    case DIALOG_CHOICE:
+    case DIALOG_QUESTION:
       return dialog_message(fl_yes, fl_no, but_alt, MESSAGE_TYPE_QUESTION, with_icon_box);
 
 #ifdef WITH_DND
