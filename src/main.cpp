@@ -233,6 +233,7 @@ static void print_usage(char *prog)
   "  --no-escape                Don't close window on hitting ESC button\n"
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
   "                             gleam, plastic or simple; default is gtk+\n"
+  "  --no-system-colors         Use FLTK's default gray color scheme\n"
   "  --message                  Display message dialog\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
@@ -386,6 +387,7 @@ int main(int argc, char **argv)
   const char *scheme = "default";
   const char *scheme_default = "gtk+";
   int dialog = DIALOG_MESSAGE;  /* default message type */
+  bool system_colors = true;
   bool with_icon_box = true;
 
   std::string geometry;
@@ -458,8 +460,6 @@ int main(int argc, char **argv)
   Fl_Window::default_icon(&win_icon);
 #endif
 
-  Fl::get_system_colors();
-
   /* localize buttons */
 #ifdef WITH_L10N
   l10n();
@@ -475,6 +475,7 @@ int main(int argc, char **argv)
     /* disable fltk's '@' symbols */
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
     Fl::scheme(scheme_default);
+    Fl::get_system_colors();
     return about();
   }
 
@@ -497,6 +498,7 @@ int main(int argc, char **argv)
     { "about",           no_argument,        0,  LO_ABOUT           },
     { "no-escape",       no_argument,        0,  LO_NO_ESCAPE       },
     { "scheme",          required_argument,  0,  LO_SCHEME          },
+    { "no-system-colors",no_argument,        0,  LO_NO_SYSTEM_COLORS},
     { "text",            required_argument,  0,  LO_TEXT            },
     { "title",           required_argument,  0,  LO_TITLE           },
     { "ok-label",        required_argument,  0,  LO_OK_LABEL        },
@@ -633,6 +635,9 @@ int main(int argc, char **argv)
         break;
       case LO_SCHEME:
         scheme = optarg;
+        break;
+      case LO_NO_SYSTEM_COLORS:
+        system_colors = false;
         break;
       case LO_TEXT:
         msg = optarg;
@@ -1085,6 +1090,11 @@ int main(int argc, char **argv)
     std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
       << "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
+  }
+
+  if (system_colors)
+  {
+    Fl::get_system_colors();
   }
 
   switch (dialog)
