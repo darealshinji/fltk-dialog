@@ -38,9 +38,71 @@
 #include "fltk.xpm"
 #include "fltk-dialog.hpp"
 
-// TODO: uri mouseover effect
+//#define PATCHES_TAB
+#include "about.hpp"
+
 
 static Fl_Double_Window *about_win;
+
+static std::string about_text = "\n"
+    "- FLTK dialog -\n"
+    "run dialog boxes from shell scripts\n"
+    "\n"
+    "Using FLTK version " + get_fltk_version() + "\n"
+    "\n" //http://www.fltk.org\n"
+    "\n"
+    /* http://www.utf8-chartable.de/ */
+    "Copyright \xc2\xa9 2016 djcj <djcj@gmx.de>\n"
+    "\n" //https://github.com/darealshinji/fltk-dialog\n"
+    "\n"
+#ifdef WITH_FONT
+    "The FLTK library and the font widget are\n"
+    "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
+#else
+    "The FLTK library is copyright \xc2\xa9 1998-2016 by\n"
+    "Bill Spitzak and others.\n"
+#endif
+    "\n"
+    "The calendar widget is copyright \xc2\xa9 1999-2000\n"
+    "by the Flek development team and\n"
+    "copyright \xc2\xa9 2016 by djcj <djcj@gmx.de>\n"
+    "\n"
+#ifdef WITH_DEFAULT_ICON
+    "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
+#else
+    "\n"
+#endif
+/* about_text end */;
+
+class uri_box : public Fl_Box
+{
+  public:
+
+    uri_box(int X, int Y, int W, int H, const char *L=0)
+      : Fl_Box(X, Y, W, H, L) { }
+
+    virtual ~uri_box() { }
+
+    int handle(int event);
+};
+
+int uri_box::handle(int event)
+{
+  int ret = Fl_Box::handle(event);
+  switch (event)
+  {
+    case FL_PUSH:
+      do_callback();
+      break;
+    case FL_MOVE:
+      fl_cursor(FL_CURSOR_HAND);
+      break;
+    case FL_LEAVE:
+      fl_cursor(FL_CURSOR_DEFAULT);
+      break;
+  }
+  return ret;
+}
 
 static void open_uri_cb(Fl_Widget *, void *p)
 {
@@ -65,322 +127,22 @@ static void about_close_cb(Fl_Widget *)
 int about()
 {
   Fl_Tabs          *about_tab;
-  Fl_Group         *g_about, *g_license, *g_patches;
+  Fl_Group         *g_about, *g_license;
   Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
-  Fl_Text_Buffer   *license_buffer, *patches_buffer;
-  Fl_Text_Display  *license_display, *patches_display;
-  Fl_Button        *uri_button1, *uri_button2;
+  Fl_Text_Buffer   *license_buffer;
+  Fl_Text_Display  *license_display;
+  uri_box          *uri_button1, *uri_button2;
   Fl_Return_Button *but_close;
+#ifdef PATCHES_TAB
+  Fl_Group *g_patches;
+  Fl_Text_Buffer *patches_buffer;
+  Fl_Text_Display *patches_display;
+#endif
 
   const char *uri1 = "http://www.fltk.org";
   const char *uri2 = "https://github.com/darealshinji/fltk-dialog";
-  int but_w;
-
-  std::string getver = get_fltk_version();
-  std::string about_text = "\n"
-    "- FLTK dialog -\n"
-    "run dialog boxes from shell scripts\n"
-    "\n"
-    "Using FLTK version " + getver + "\n"
-    "\n" //http://www.fltk.org\n"
-    "\n"
-    /* http://www.utf8-chartable.de/ */
-    "Copyright \xc2\xa9 2016 djcj <djcj@gmx.de>\n"
-    "\n" //https://github.com/darealshinji/fltk-dialog\n"
-    "\n"
-#ifdef WITH_FONT
-    "The FLTK library and the font widget are\n"
-    "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
-#else
-    "The FLTK library is copyright \xc2\xa9 1998-2016 by\n"
-    "Bill Spitzak and others.\n"
-#endif
-    "\n"
-    "The calendar widget is copyright \xc2\xa9 1999-2000\n"
-    "by the Flek development team and\n"
-    "copyright \xc2\xa9 2016 by djcj <djcj@gmx.de>\n"
-    "\n"
-#ifdef WITH_DEFAULT_ICON
-    "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
-#else
-    "\n"
-#endif
-    /* about_text end */;
   const char *about_text_c = about_text.c_str();
-
-  const char *license_buffer_text =
-    /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' LICENSE */
-    "The MIT License (MIT)\n"
-    "\n"
-    "Copyright (c) 2016  djcj <djcj@gmx.de>\n"
-    "\n"
-    "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-    "of this software and associated documentation files (the \"Software\"), to deal\n"
-    "in the Software without restriction, including without limitation the rights\n"
-    "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
-    "copies of the Software, and to permit persons to whom the Software is\n"
-    "furnished to do so, subject to the following conditions:\n"
-    "\n"
-    "The above copyright notice and this permission notice shall be included in all\n"
-    "copies or substantial portions of the Software.\n"
-    "\n"
-    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-    "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
-    "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-    "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-    "SOFTWARE.\n"
-    "\n"
-    "\n"
-    "\n"
-    "Copyright (c) 1998-2016  Bill Spitzak and others.\n"
-    "\n"
-    "The FLTK library and included programs are provided under the terms of the\n"
-    "GNU Library General Public License (LGPL) with the following exceptions:\n"
-    "\n"
-    "1. Modifications to the FLTK configure script, config header file, and\n"
-    "makefiles by themselves to support a specific platform do not constitute a\n"
-    "modified or derivative work.\n"
-    "The authors do request that such modifications be contributed to the FLTK\n"
-    "project - send all contributions to \"fltk-bugs@fltk.org\".\n"
-    "\n"
-    "2. Widgets that are subclassed from FLTK widgets do not constitute a\n"
-    "derivative work.\n"
-    "\n"
-    "3. Static linking of applications and widgets to the FLTK library does not\n"
-    "constitute a derivative work and does not require the author to provide\n"
-    "source code for the application or widget, use the shared FLTK libraries, or\n"
-    "link their applications or widgets against a user-supplied version of FLTK.\n"
-    "If you link the application or widget to a modified version of FLTK, then\n"
-    "the changes to FLTK must be provided under the terms of the LGPL in sections\n"
-    "1, 2, and 4.\n"
-    "\n"
-    "4. You do not have to provide a copy of the FLTK license with programs that\n"
-    "are linked to the FLTK library, nor do you have to identify the FLTK license\n"
-    "in your program or documentation as required by section 6 of the LGPL.\n"
-    "However, programs must still identify their use of FLTK. The following example\n"
-    "statement can be included in user documentation to satisfy this requirement:\n"
-    "[program/widget] is based in part on the work of the FLTK project (http://www.fltk.org).\n"
-    "\n"
-    "    This library is free software; you can redistribute it and/or\n"
-    "    modify it under the terms of the GNU Library General Public\n"
-    "    License as published by the Free Software Foundation; either\n"
-    "    version 2 of the License, or (at your option) any later version.\n"
-    "\n"
-    "    This library is distributed in the hope that it will be useful,\n"
-    "    but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-    "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n"
-    "    Library General Public License for more details.\n"
-    "\n"
-    "    You should have received a copy of the GNU Library General Public License\n"
-    "    along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
-    "\n"
-    "\n"
-    "\n"
-    "Copyright (c) 1999-2000  the Flek development team\n"
-    "Copyright (c) 2016  djcj <djcj@gmx.de>\n"
-    "\n"
-    "This library is free software; you can redistribute it and/or\n"
-    "modify it under the terms of the GNU Library General Public\n"
-    "License as published by the Free Software Foundation; either\n"
-    "version 2 of the License, or (at your option) any later version.\n"
-    "\n"
-    "This library is distributed in the hope that it will be useful,\n"
-    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n"
-    "Library General Public License for more details.\n"
-    "\n"
-    "You should have received a copy of the GNU Library General Public\n"
-    "License along with this library; if not, write to the Free Software\n"
-    "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n"
-    "USA.\n"
-#ifdef WITH_DEFAULT_ICON
-    "\n"
-    "\n"
-    "\n"
-    "The MIT License (MIT)\n"
-    "\n"
-    "Copyright (c) 2016  Haiku, Inc.\n"
-    "\n"
-    "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-    "of this software and associated documentation files (the \"Software\"), to deal\n"
-    "in the Software without restriction, including without limitation the rights\n"
-    "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
-    "copies of the Software, and to permit persons to whom the Software is\n"
-    "furnished to do so, subject to the following conditions:\n"
-    "\n"
-    "The above copyright notice and this permission notice shall be included in all\n"
-    "copies or substantial portions of the Software.\n"
-    "\n"
-    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-    "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
-    "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-    "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-    "SOFTWARE.\n"
-#endif  /* WITH_ICON */
-    /* license_buffer_text end */;
-
-  const char *patches_buffer_text =
-    /* sed 's|\\|\\\\|g; s|"|\\"|g; s|^|    "|g; s|$|\\n"|g' diff-file */
-    "--- a/3rdparty/fltk/src/Fl_Choice.cxx\n"
-    "+++ b/3rdparty/fltk/src/Fl_Choice.cxx\n"
-    "@@ -186,13 +186,21 @@ int Fl_Choice::handle(int e) {\n"
-    "   J1:\n"
-    "     if (Fl::scheme()\n"
-    " 	|| fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {\n"
-    "-      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);\n"
-    "+      // 2016/11/09  djcj <djcj@gmx.de>\n"
-    "+      // Set 5th parameter to 0 to change the dropdown menu behavior\n"
-    "+      // to that of Fl_Menu_Button().  Original line:\n"
-    "+      // v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);\n"
-    "+      v = menu()->pulldown(x(), y(), w(), h(), 0, this);\n"
-    "     } else {\n"
-    "       // In order to preserve the old look-n-feel of \"white\" menus,\n"
-    "       // temporarily override the color() of this widget...\n"
-    "       Fl_Color c = color();\n"
-    "       color(FL_BACKGROUND2_COLOR);\n"
-    "-      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);\n"
-    "+      // 2016/11/09  djcj <djcj@gmx.de>\n"
-    "+      // Set 5th parameter to 0 to change the dropdown menu behavior\n"
-    "+      // to that of Fl_Menu_Button().  Original line:\n"
-    "+      // v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);\n"
-    "+      v = menu()->pulldown(x(), y(), w(), h(), 0, this);\n"
-    "       color(c);\n"
-    "     }\n"
-    "     if (!v || v->submenu()) return 1;\n"
-    "--- a/3rdparty/fltk/FL/Fl_Color_Chooser.H\n"
-    "+++ b/3rdparty/fltk/FL/Fl_Color_Chooser.H\n"
-    "@@ -183,6 +183,9 @@ public:\n"
-    " FL_EXPORT int fl_color_chooser(const char* name, double& r, double& g, double& b, int m=-1);\n"
-    " FL_EXPORT int fl_color_chooser(const char* name, uchar& r, uchar& g, uchar& b, int m=-1);\n"
-    " \n"
-    "+// 2016/12/10  djcj <djcj@gmx.de>\n"
-    "+FL_EXPORT int fl_color_chooser_nodeco(const char* name, double& r, double& g, double& b, int m=-1);\n"
-    "+\n"
-    " #endif\n"
-    " \n"
-    " //\n"
-    "--- a/3rdparty/fltk/src/Fl_Color_Chooser.cxx\n"
-    "+++ b/3rdparty/fltk/src/Fl_Color_Chooser.cxx\n"
-    "@@ -617,6 +617,39 @@ int fl_color_chooser(const char* name, uchar& r, uchar& g, uchar& b, int cmode)\n"
-    "   return 0;\n"
-    " }\n"
-    " \n"
-    "+// 2016/12/10  djcj <djcj@gmx.de>\n"
-    "+int fl_color_chooser_nodeco(const char* name, double& r, double& g, double& b, int cmode) {\n"
-    "+  int ret = 0;\n"
-    "+  Fl_Window window(215,200,name);\n"
-    "+  window.callback(cc_cancel_cb,&ret);\n"
-    "+  Fl_Color_Chooser chooser(10, 10, 195, 115);\n"
-    "+  ColorChip ok_color(10, 130, 95, 25);\n"
-    "+  Fl_Return_Button ok_button(10, 165, 95, 25, fl_ok);\n"
-    "+  ok_button.callback(cc_ok_cb,&ret);\n"
-    "+  ColorChip cancel_color(110, 130, 95, 25);\n"
-    "+  cancel_color.r = uchar(255*r+.5); ok_color.r = cancel_color.r;\n"
-    "+  ok_color.g = cancel_color.g = uchar(255*g+.5);\n"
-    "+  ok_color.b = cancel_color.b = uchar(255*b+.5);\n"
-    "+  Fl_Button cancel_button(110, 165, 95, 25, fl_cancel);\n"
-    "+  cancel_button.callback(cc_cancel_cb,&ret);\n"
-    "+  window.resizable(chooser);\n"
-    "+  chooser.rgb(r,g,b);\n"
-    "+  chooser.callback(chooser_cb, &ok_color);\n"
-    "+  if (cmode!=-1) chooser.mode(cmode);\n"
-    "+  window.end();\n"
-    "+  window.set_modal();\n"
-    "+  window.hotspot(window);\n"
-    "+  window.show();\n"
-    "+  window.border(0);  // 2016/12/10  djcj <djcj@gmx.de>\n"
-    "+  while (window.shown()) Fl::wait();\n"
-    "+  if (ret) { // ok_button or Enter\n"
-    "+    r = chooser.r();\n"
-    "+    g = chooser.g();\n"
-    "+    b = chooser.b();\n"
-    "+  }\n"
-    "+  return ret;\n"
-    "+}\n"
-    "+\n"
-    " /** @} */\n"
-    " //\n"
-    " // End of \"$Id: Fl_Color_Chooser.cxx 10234 2014-08-21 12:18:32Z cand $\".\n"
-    "--- a/3rdparty/fltk/FL/Fl_Help_Dialog.H\n"
-    "+++ b/3rdparty/fltk/FL/Fl_Help_Dialog.H\n"
-    "@@ -63,6 +63,11 @@ private:\n"
-    "   Fl_Help_View *view_;\n"
-    "   inline void cb_view__i(Fl_Help_View*, void*);\n"
-    "   static void cb_view_(Fl_Help_View*, void*);\n"
-    "+\n"
-    "+  // 2016-12-11 djcj <djcj@gmx.de>\n"
-    "+  Fl_Button *close_;\n"
-    "+  static void cb_close_(Fl_Button*, void*);\n"
-    "+\n"
-    " public:\n"
-    "   ~Fl_Help_Dialog();\n"
-    "   int h();\n"
-    "@@ -82,6 +87,7 @@ public:\n"
-    "   int w();\n"
-    "   int x();\n"
-    "   int y();\n"
-    "+  void set_undecorated();  // 2016-12-11 djcj <djcj@gmx.de>\n"
-    " };\n"
-    " #endif\n"
-    " \n"
-    "--- a/3rdparty/fltk/src/Fl_Help_Dialog.cxx\n"
-    "+++ b/3rdparty/fltk/src/Fl_Help_Dialog.cxx\n"
-    "@@ -144,6 +144,11 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {\n"
-    "   ((Fl_Help_Dialog*)(o->parent()->user_data()))->cb_view__i(o,v);\n"
-    " }\n"
-    " \n"
-    "+// 2016-12-11 djcj <djcj@gmx.de>\n"
-    "+void Fl_Help_Dialog::cb_close_(Fl_Button* o, void* v) {\n"
-    "+  ((Fl_Help_Dialog*)(o->parent()->parent()->user_data()))->hide();\n"
-    "+}\n"
-    "+\n"
-    " Fl_Help_Dialog::Fl_Help_Dialog() {\n"
-    "   { window_ = new Fl_Double_Window(530, 385, \"Help Dialog\");\n"
-    "     window_->user_data((void*)(this));\n"
-    "@@ -172,10 +177,10 @@ Fl_Help_Dialog::Fl_Help_Dialog() {\n"
-    "         larger_->labelsize(16);\n"
-    "         larger_->callback((Fl_Callback*)cb_larger_);\n"
-    "       } // Fl_Button* larger_\n"
-    "-      { Fl_Group* o = new Fl_Group(350, 10, 171, 25);\n"
-    "+      { Fl_Group* o = new Fl_Group(350, 10, 141 /*171*/, 25);  // 2016-12-11 djcj <djcj@gmx.de>\n"
-    "         o->box(FL_DOWN_BOX);\n"
-    "         o->color(FL_BACKGROUND2_COLOR);\n"
-    "-        { find_ = new Fl_Input(375, 12, 143, 21, \"@search\");\n"
-    "+        { find_ = new Fl_Input(375, 12, 113 /*143*/, 21, \"@search\");  // 2016-12-11 djcj <djcj@gmx.de>\n"
-    "           find_->tooltip(\"find text in document\");\n"
-    "           find_->box(FL_FLAT_BOX);\n"
-    "           find_->labelsize(13);\n"
-    "@@ -185,6 +190,12 @@ Fl_Help_Dialog::Fl_Help_Dialog() {\n"
-    "         } // Fl_Input* find_\n"
-    "         o->end();\n"
-    "       } // Fl_Group* o\n"
-    "+      { close_ = new Fl_Button(495, 10, 25, 25, \"X\");\n"
-    "+        close_->tooltip(\"Close the window.\");\n"
-    "+        close_->labelfont(1);\n"
-    "+        close_->labelsize(16);\n"
-    "+        close_->callback((Fl_Callback*)cb_close_);\n"
-    "+      } // Fl_Button* close_ -- 2016-12-11 djcj <djcj@gmx.de>\n"
-    "       { Fl_Box* o = new Fl_Box(150, 10, 190, 25);\n"
-    "         Fl_Group::current()->resizable(o);\n"
-    "       } // Fl_Box* o\n"
-    "@@ -294,6 +305,11 @@ int Fl_Help_Dialog::y() {\n"
-    "   return (window_->y());\n"
-    " }\n"
-    " \n"
-    "+// 2016-12-11 djcj <djcj@gmx.de>\n"
-    "+void Fl_Help_Dialog::set_undecorated() {\n"
-    "+  return (window_->border(0));\n"
-    "+}\n"
-    "+\n"
-    " //\n"
-    " // End of \"$Id: Fl_Help_Dialog.cxx 10612 2015-03-10 01:41:55Z AlbrechtS $\".\n"
-    " //\n"
-    /* patches_buffer_text end */;
 
   about_pixmap = new Fl_Pixmap(fltk_xpm);
 
@@ -395,16 +157,15 @@ int about()
         box->box(FL_NO_BOX);
         box->image(about_pixmap);
 
-        uri_button1 = new Fl_Button(74, 210, 302, 22, uri1);
+        /* x = (winw/2) - (boxw/2) */
+        uri_button1 = new uri_box(157, 210, 136, 22, uri1);
         uri_button1->box(FL_NO_BOX);
-        uri_button1->down_box(FL_NO_BOX);
         uri_button1->labelcolor(FL_BLUE);
         uri_button1->clear_visible_focus();
         uri_button1->callback(open_uri_cb, (void *)uri1);
 
-        uri_button2 = new Fl_Button(74, 260, 302, 22, uri2);
+        uri_button2 = new uri_box(75, 260, 300, 22, uri2);
         uri_button2->box(FL_NO_BOX);
-        uri_button2->down_box(FL_NO_BOX);
         uri_button2->labelcolor(FL_BLUE);
         uri_button2->clear_visible_focus();
         uri_button2->callback(open_uri_cb, (void *)uri2);
@@ -420,6 +181,7 @@ int about()
       }
       g_license->end();
 
+#ifdef PATCHES_TAB
       g_patches = new Fl_Group(10, 40, 430, 404, "Patches");
       {
         patches_buffer = new Fl_Text_Buffer();
@@ -429,10 +191,13 @@ int about()
         patches_buffer->text(patches_buffer_text);
       }
       g_patches->end();
+#endif
+
     }
     about_tab->end();
 
     but_close = new Fl_Return_Button(0,0,0,0, fl_close);
+    int but_w;
     measure_button_width(but_close, but_w, 40);
     but_close = new Fl_Return_Button(440 - but_w, 454, but_w, 28, fl_close);
     but_close->callback(about_close_cb);
