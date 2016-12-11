@@ -356,7 +356,7 @@ int dialog_message(
   set_position(message_win);
   message_win->end();
   message_win->show();
-
+  set_undecorated(message_win);
   Fl::run();
 
   if (ret == 0)

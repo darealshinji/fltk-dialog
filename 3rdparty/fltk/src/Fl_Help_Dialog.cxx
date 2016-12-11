@@ -144,6 +144,11 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
   ((Fl_Help_Dialog*)(o->parent()->user_data()))->cb_view__i(o,v);
 }
 
+// 2016-12-11 djcj <djcj@gmx.de>
+void Fl_Help_Dialog::cb_close_(Fl_Button* o, void* v) {
+  ((Fl_Help_Dialog*)(o->parent()->parent()->user_data()))->hide();
+}
+
 Fl_Help_Dialog::Fl_Help_Dialog() {
   { window_ = new Fl_Double_Window(530, 385, "Help Dialog");
     window_->user_data((void*)(this));
@@ -172,10 +177,10 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
         larger_->labelsize(16);
         larger_->callback((Fl_Callback*)cb_larger_);
       } // Fl_Button* larger_
-      { Fl_Group* o = new Fl_Group(350, 10, 171, 25);
+      { Fl_Group* o = new Fl_Group(350, 10, 141 /*171*/, 25);  // 2016-12-11 djcj <djcj@gmx.de>
         o->box(FL_DOWN_BOX);
         o->color(FL_BACKGROUND2_COLOR);
-        { find_ = new Fl_Input(375, 12, 143, 21, "@search");
+        { find_ = new Fl_Input(375, 12, 113 /*143*/, 21, "@search");  // 2016-12-11 djcj <djcj@gmx.de>
           find_->tooltip("find text in document");
           find_->box(FL_FLAT_BOX);
           find_->labelsize(13);
@@ -185,6 +190,12 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
         } // Fl_Input* find_
         o->end();
       } // Fl_Group* o
+      { close_ = new Fl_Button(495, 10, 25, 25, "X");
+        close_->tooltip("Close the window.");
+        close_->labelfont(1);
+        close_->labelsize(16);
+        close_->callback((Fl_Callback*)cb_close_);
+      } // Fl_Button* close_ -- 2016-12-11 djcj <djcj@gmx.de>
       { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
         Fl_Group::current()->resizable(o);
       } // Fl_Box* o
@@ -292,6 +303,11 @@ int Fl_Help_Dialog::x() {
 
 int Fl_Help_Dialog::y() {
   return (window_->y());
+}
+
+// 2016-12-11 djcj <djcj@gmx.de>
+void Fl_Help_Dialog::set_undecorated() {
+  return (window_->border(0));
 }
 
 //

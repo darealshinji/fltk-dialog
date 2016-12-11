@@ -71,6 +71,12 @@ int dialog_html_viewer(const char *file)
 
   v->resize(new_x, new_y, new_w, new_h);
   v->show();
+
+  if (!window_decoration)
+  {
+    v->set_undecorated();
+  }
+
   Fl::run();
 
   return 0;

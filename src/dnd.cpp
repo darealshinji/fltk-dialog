@@ -148,6 +148,7 @@ int dialog_dnd()
   set_position(dnd_win);
   dnd_win->end();
   dnd_win->show();
+  set_undecorated(dnd_win);
   Fl::run();
 
   return ret;

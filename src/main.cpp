@@ -105,6 +105,7 @@ int override_w = -1;
 int override_h = -1;
 bool resizable = true;
 bool position_center = false;
+bool window_decoration = true;
 
 double scale_min = 0;
 double scale_max = 100;
@@ -164,6 +165,16 @@ void set_position(Fl_Double_Window *o)
   if (override_x >= 0 && override_y >= 0)
   {
     o->position(override_x, override_y);
+  }
+}
+
+/* Use this _after_ show() to remove the WM decoration
+ * but keep the taskbar entry */
+void set_undecorated(Fl_Double_Window *o)
+{
+  if (!window_decoration)
+  {
+    o->border(0);
   }
 }
 
@@ -234,6 +245,8 @@ static void print_usage(char *prog)
   "  --scheme=NAME              Set the window scheme to use: default, gtk+,\n"
   "                             gleam, plastic or simple; default is gtk+\n"
   "  --no-system-colors         Use FLTK's default gray color scheme\n"
+  "  --undecorated              Set window undecorated (doesn't work on\n"
+  "                             file/directory selection)\n"
   "  --message                  Display message dialog\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
@@ -499,6 +512,7 @@ int main(int argc, char **argv)
     { "no-escape",       no_argument,        0,  LO_NO_ESCAPE       },
     { "scheme",          required_argument,  0,  LO_SCHEME          },
     { "no-system-colors",no_argument,        0,  LO_NO_SYSTEM_COLORS},
+    { "undecorated",     no_argument,        0,  LO_UNDECORATED     },
     { "text",            required_argument,  0,  LO_TEXT            },
     { "title",           required_argument,  0,  LO_TITLE           },
     { "ok-label",        required_argument,  0,  LO_OK_LABEL        },
@@ -638,6 +652,9 @@ int main(int argc, char **argv)
         break;
       case LO_NO_SYSTEM_COLORS:
         system_colors = false;
+        break;
+      case LO_UNDECORATED:
+        window_decoration = false;
         break;
       case LO_TEXT:
         msg = optarg;

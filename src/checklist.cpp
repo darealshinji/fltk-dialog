@@ -126,6 +126,7 @@ int dialog_checklist(std::string checklist_options,
   set_position(check_button_win);
   check_button_win->end();
   check_button_win->show();
+  set_undecorated(check_button_win);
   Fl::run();
 
   if (ret == 0)

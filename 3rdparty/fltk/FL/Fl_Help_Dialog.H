@@ -63,6 +63,11 @@ private:
   Fl_Help_View *view_;
   inline void cb_view__i(Fl_Help_View*, void*);
   static void cb_view_(Fl_Help_View*, void*);
+
+  // 2016-12-11 djcj <djcj@gmx.de>
+  Fl_Button *close_;
+  static void cb_close_(Fl_Button*, void*);
+
 public:
   ~Fl_Help_Dialog();
   int h();
@@ -82,6 +87,7 @@ public:
   int w();
   int x();
   int y();
+  void set_undecorated();  // 2016-12-11 djcj <djcj@gmx.de>
 };
 #endif
 

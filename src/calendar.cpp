@@ -70,6 +70,7 @@ int dialog_calendar(std::string format)
   set_position(calendar_win);
   calendar_win->end();
   calendar_win->show();
+  set_undecorated(calendar_win);
   Fl::run();
 
   if (ret == 0)

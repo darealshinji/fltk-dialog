@@ -35,7 +35,7 @@ extern const char *title, *msg;
 extern char separator;
 extern std::string separator_s;
 extern int ret;
-extern bool resizable, position_center, scale_val_set;
+extern bool resizable, position_center, window_decoration, scale_val_set;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, min_w, min_h, max_w, max_h;
 extern double scale_value, scale_min, scale_max, scale_step, scale_init;
@@ -43,6 +43,7 @@ extern double scale_value, scale_min, scale_max, scale_step, scale_init;
 /* main.cpp */
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
 void set_position(Fl_Double_Window *o);
+void set_undecorated(Fl_Double_Window *o);
 
 /* about.cpp */
 int about(void);

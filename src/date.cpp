@@ -169,6 +169,7 @@ int dialog_date(std::string format)
   set_position(fdate_win);
   fdate_win->end();
   fdate_win->show();
+  set_undecorated(fdate_win);
   Fl::run();
 
   if (ret == 0)

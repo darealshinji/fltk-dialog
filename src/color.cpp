@@ -38,13 +38,23 @@ int dialog_color()
   double r = 1;
   double g = 1;
   double b = 1;
+  int ret;
 
   if (title == NULL)
   {
     title = "FLTK color chooser";
   }
 
-  if (fl_color_chooser(title, r,g,b, 1))
+  if (window_decoration)
+  {
+    ret = fl_color_chooser(title, r,g,b, 1);
+  }
+  else
+  {
+    ret = fl_color_chooser_nodeco(title, r,g,b, 1);
+  }
+
+  if (ret)
   {
     size_t colr = round(255 * r);
     size_t colg = round(255 * g);

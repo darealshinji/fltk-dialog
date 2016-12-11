@@ -183,6 +183,9 @@ public:
 FL_EXPORT int fl_color_chooser(const char* name, double& r, double& g, double& b, int m=-1);
 FL_EXPORT int fl_color_chooser(const char* name, uchar& r, uchar& g, uchar& b, int m=-1);
 
+// 2016/12/10  djcj <djcj@gmx.de>
+FL_EXPORT int fl_color_chooser_nodeco(const char* name, double& r, double& g, double& b, int m=-1);
+
 #endif
 
 //

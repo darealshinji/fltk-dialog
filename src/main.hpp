@@ -85,6 +85,7 @@ enum longOpts {
   LO_TEXT_INFO,
   LO_TIMEOUT,
   LO_TITLE,
+  LO_UNDECORATED,
   LO_VALUE,
   LO_WARNING,
   LO_WIDTH,

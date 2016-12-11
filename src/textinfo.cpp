@@ -161,6 +161,7 @@ int dialog_textinfo(      bool  autoscroll,
   }
 
   textinfo_win->show();
+  set_undecorated(textinfo_win);
   Fl::run();
 
   return ret;

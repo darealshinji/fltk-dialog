@@ -237,6 +237,7 @@ int dialog_progress(bool pulsate,
   set_position(progress_win);
   progress_win->end();
   progress_win->show();
+  set_undecorated(progress_win);
 
   /* initialize with 0% bar */
   progress_win->wait_for_expose();

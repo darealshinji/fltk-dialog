@@ -133,6 +133,7 @@ int dialog_dropdown(std::string dropdown_list,
   set_position(dropdown_win);
   dropdown_win->end();
   dropdown_win->show();
+  set_undecorated(dropdown_win);
   Fl::run();
 
   if (ret == 0)

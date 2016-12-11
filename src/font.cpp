@@ -352,6 +352,7 @@ int dialog_font()
   fd_fonts->value(1);
   fd_fonts_cb(fd_fonts);
   font_win->show();
+  set_undecorated(font_win);
   Fl::run();
 
   if (ret == 0)
