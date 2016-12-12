@@ -168,6 +168,7 @@ int dialog_date(std::string format)
   set_size(fdate_win, g);
   set_position(fdate_win);
   fdate_win->end();
+  set_taskbar(fdate_win);
   fdate_win->show();
   set_undecorated(fdate_win);
   Fl::run();

@@ -236,6 +236,7 @@ int dialog_progress(bool pulsate,
   set_size(progress_win, g);
   set_position(progress_win);
   progress_win->end();
+  set_taskbar(progress_win);
   progress_win->show();
   set_undecorated(progress_win);
 

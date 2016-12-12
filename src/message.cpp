@@ -355,6 +355,7 @@ int dialog_message(
   set_size(message_win, g_box);
   set_position(message_win);
   message_win->end();
+  set_taskbar(message_win);
   message_win->show();
   set_undecorated(message_win);
   Fl::run();

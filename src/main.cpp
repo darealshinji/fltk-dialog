@@ -105,6 +105,7 @@ int override_w = -1;
 int override_h = -1;
 bool resizable = true;
 bool position_center = false;
+bool window_taskbar = true;
 bool window_decoration = true;
 
 double scale_min = 0;
@@ -168,11 +169,23 @@ void set_position(Fl_Double_Window *o)
   }
 }
 
-/* Use this _after_ show() to remove the WM decoration
- * but keep the taskbar entry */
+/* place before show() */
+void set_taskbar(Fl_Double_Window *o)
+{
+  if (!window_taskbar)
+  {
+    o->border(0);
+  }
+}
+
+/* place after show() */
 void set_undecorated(Fl_Double_Window *o)
 {
-  if (!window_decoration)
+  if (window_decoration)
+  {
+    o->border(1);
+  }
+  else
   {
     o->border(0);
   }
@@ -247,6 +260,7 @@ static void print_usage(char *prog)
   "  --no-system-colors         Use FLTK's default gray color scheme\n"
   "  --undecorated              Set window undecorated (doesn't work on\n"
   "                             file/directory selection)\n"
+  "  --skip-taskbar             Don't show window in taskbar\n"
   "  --message                  Display message dialog\n"
   "  --warning                  Display warning dialog\n"
   "  --question                 Display question dialog\n"
@@ -513,6 +527,7 @@ int main(int argc, char **argv)
     { "scheme",          required_argument,  0,  LO_SCHEME          },
     { "no-system-colors",no_argument,        0,  LO_NO_SYSTEM_COLORS},
     { "undecorated",     no_argument,        0,  LO_UNDECORATED     },
+    { "skip-taskbar",    no_argument,        0,  LO_SKIP_TASKBAR    },
     { "text",            required_argument,  0,  LO_TEXT            },
     { "title",           required_argument,  0,  LO_TITLE           },
     { "ok-label",        required_argument,  0,  LO_OK_LABEL        },
@@ -655,6 +670,9 @@ int main(int argc, char **argv)
         break;
       case LO_UNDECORATED:
         window_decoration = false;
+        break;
+      case LO_SKIP_TASKBAR:
+        window_taskbar = false;
         break;
       case LO_TEXT:
         msg = optarg;

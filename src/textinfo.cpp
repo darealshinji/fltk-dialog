@@ -160,6 +160,7 @@ int dialog_textinfo(      bool  autoscroll,
     ti_browser->add("error: no input");
   }
 
+  set_taskbar(textinfo_win);
   textinfo_win->show();
   set_undecorated(textinfo_win);
   Fl::run();

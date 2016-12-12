@@ -80,6 +80,7 @@ enum longOpts {
   LO_SCALE,
   LO_SCHEME,
   LO_SEPARATOR,
+  LO_SKIP_TASKBAR,
   LO_STEP,
   LO_TEXT,
   LO_TEXT_INFO,

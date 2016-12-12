@@ -87,7 +87,7 @@ public:
   int w();
   int x();
   int y();
-  void set_undecorated();  // 2016-12-11 djcj <djcj@gmx.de>
+  void set_border(int b);  // 2016-12-12 djcj <djcj@gmx.de>
 };
 #endif
 

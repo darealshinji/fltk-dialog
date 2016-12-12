@@ -134,6 +134,7 @@ int dialog_radiolist(std::string radiolist_options,
   set_size(radio_round_button_win, g);
   set_position(radio_round_button_win);
   radio_round_button_win->end();
+  set_taskbar(radio_round_button_win);
   radio_round_button_win->show();
   set_undecorated(radio_round_button_win);
   Fl::run();

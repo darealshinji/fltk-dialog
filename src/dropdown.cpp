@@ -132,6 +132,7 @@ int dialog_dropdown(std::string dropdown_list,
   set_size(dropdown_win, g);
   set_position(dropdown_win);
   dropdown_win->end();
+  set_taskbar(dropdown_win);
   dropdown_win->show();
   set_undecorated(dropdown_win);
   Fl::run();

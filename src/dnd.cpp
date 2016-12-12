@@ -147,6 +147,7 @@ int dialog_dnd()
   set_size(dnd_win, box);
   set_position(dnd_win);
   dnd_win->end();
+  set_taskbar(dnd_win);
   dnd_win->show();
   set_undecorated(dnd_win);
   Fl::run();

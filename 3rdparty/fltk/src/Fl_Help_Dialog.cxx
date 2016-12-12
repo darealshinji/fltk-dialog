@@ -305,9 +305,9 @@ int Fl_Help_Dialog::y() {
   return (window_->y());
 }
 
-// 2016-12-11 djcj <djcj@gmx.de>
-void Fl_Help_Dialog::set_undecorated() {
-  return (window_->border(0));
+// 2016-12-12 djcj <djcj@gmx.de>
+void Fl_Help_Dialog::set_border(int b) {
+  return (window_->border(b));
 }
 
 //

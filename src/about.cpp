@@ -204,6 +204,7 @@ int about()
   }
   set_position(about_win);
   about_win->end();
+  set_taskbar(about_win);
   about_win->show();
   set_undecorated(about_win);
   Fl::run();
