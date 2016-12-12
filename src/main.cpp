@@ -97,8 +97,6 @@ bool kill_parent = false;
 int max_w = Fl::w();
 int max_h = Fl::h();
 
-int min_w = 60;
-int min_h = 40;
 int override_x = -1;
 int override_y = -1;
 int override_w = -1;
