@@ -16,11 +16,84 @@
 //     http://www.fltk.org/str.php
 //
 
+/*                              FLTK License
+ *                            December 11, 2001
+ *
+ * The FLTK library and included programs are provided under the terms
+ * of the GNU Library General Public License (LGPL) with the following
+ * exceptions:
+ *
+ *     1. Modifications to the FLTK configure script, config
+ *        header file, and makefiles by themselves to support
+ *        a specific platform do not constitute a modified or
+ *        derivative work.
+ *
+ *       The authors do request that such modifications be
+ *       contributed to the FLTK project - send all contributions
+ *       through the "Software Trouble Report" on the following page:
+ *
+ *            http://www.fltk.org/str.php
+ *
+ *     2. Widgets that are subclassed from FLTK widgets do not
+ *        constitute a derivative work.
+ *
+ *     3. Static linking of applications and widgets to the
+ *        FLTK library does not constitute a derivative work
+ *        and does not require the author to provide source
+ *        code for the application or widget, use the shared
+ *        FLTK libraries, or link their applications or
+ *        widgets against a user-supplied version of FLTK.
+ *
+ *        If you link the application or widget to a modified
+ *        version of FLTK, then the changes to FLTK must be
+ *        provided under the terms of the LGPL in sections
+ *        1, 2, and 4.
+ *
+ *     4. You do not have to provide a copy of the FLTK license
+ *        with programs that are linked to the FLTK library, nor
+ *        do you have to identify the FLTK license in your
+ *        program or documentation as required by section 6
+ *        of the LGPL.
+ * 
+ *        However, programs must still identify their use of FLTK.
+ *        The following example statement can be included in user
+ *        documentation to satisfy this requirement:
+ *
+ *            [program/widget] is based in part on the work of
+ *            the FLTK project (http://www.fltk.org).
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA.
+ */
+
+/**
+  modified version of Fl_Color_Chooser.cxx
+  2016/12/12 djcj <djcj@gmx.de>
+ */
+
 #include <FL/Fl.H>
-#include <FL/Fl_Color_Chooser.H>
+#include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/math.h>
 #include <stdio.h>
+#include "Fl_Color_Chooser2.H"
+#include "fltk-dialog.hpp"
 
 // Besides being a useful object on it's own, the Fl_Color_Chooser was
 // an attempt to make a complex composite object that could be easily
@@ -91,12 +164,14 @@ enum {
   M_HEX,	/**< mode() of Fl_Color_Chooser showing hex values */
   M_HSV		/**< mode() of Fl_Color_Chooser showing HSV values */
 };
+/* 2016/12/12 djcj <djcj@gmx.de> */
+#define ITEM(x) { x, 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 }
 static const Fl_Menu_Item mode_menu[] = {
-  {"rgb"},
-  {"byte"},
-  {"hex"},
-  {"hsv"},
-  {0}
+  ITEM("rgb"),
+  ITEM("byte"),
+  ITEM("hex"),
+  ITEM("hsv"),
+  { 0,0,0,0,0,0,0,0,0 }
 };
 
 #ifndef FL_DOXYGEN
@@ -470,10 +545,22 @@ Fl_Color_Chooser::Fl_Color_Chooser(int X, int Y, int W, int H, const char* L)
     rvalue(140,30,55,25),
     gvalue(140,60,55,25),
     bvalue(140,90,55,25),
-    resize_box(0,0,115,115)
+    resize_box(0,0,115,115),
+
+    /* 2016/12/12 djcj <djcj@gmx.de> */
+    //resize_box_r(135,114,70,1),
+    g_left(0,0,115,115)
+    //g_right(135,0,60,115)
 {
+  /* 2016/12/12 djcj <djcj@gmx.de> */
+  g_left.end();
+  g_left.resizable(resize_box);
+  //g_right.end();
+  //g_right.resizable(resize_box_r);
   end();
-  resizable(resize_box);
+  resizable(g_left);
+
+  //resizable(resize_box);
   resize(X,Y,W,H);
   r_ = g_ = b_ = 0;
   hue_ = 0.0;
@@ -523,8 +610,9 @@ static void chooser_cb(Fl_Widget* o, void* vv) {
   v->damage(FL_DAMAGE_EXPOSE);
 }
 
-extern const char* fl_ok;
-extern const char* fl_cancel;
+/* 2016/12/12 djcj <djcj@gmx.de> */
+//extern const char* fl_ok;
+//extern const char* fl_cancel;
 
 // fl_color_chooser's callback for ok_button (below)
 //  [in] o is a pointer to okay_button (below) 
@@ -547,47 +635,70 @@ static void cc_cancel_cb (Fl_Widget *o, void *p) {
     o->hide();
 }
 
-/** \addtogroup  group_comdlg 
-    @{ */
-/**
-  \brief Pops up a window to let the user pick an arbitrary RGB color.
-  \note \#include <FL/Fl_Color_Chooser.H>
-  \image html fl_color_chooser.jpg 
-  \image latex  fl_color_chooser.jpg "fl_color_chooser" width=8cm
-  \param[in] name Title label for the window
-  \param[in,out] r, g, b Color components in the range 0.0 to 1.0.
-  \param[in] cmode Optional mode for color chooser. See mode(int). Default -1 if none (rgb mode).
-  \retval 1 if user confirms the selection 
-  \retval 0 if user cancels the dialog
-  \relates Fl_Color_Chooser
- */
-int fl_color_chooser(const char* name, double& r, double& g, double& b, int cmode) {
-  int ret = 0;
-  Fl_Window window(215,200,name);
-  window.callback(cc_cancel_cb,&ret);
-  Fl_Color_Chooser chooser(10, 10, 195, 115);
-  ColorChip ok_color(10, 130, 95, 25);
-  Fl_Return_Button ok_button(10, 165, 95, 25, fl_ok);
-  ok_button.callback(cc_ok_cb,&ret);
-  ColorChip cancel_color(110, 130, 95, 25);
-  cancel_color.r = uchar(255*r+.5); ok_color.r = cancel_color.r;
-  ok_color.g = cancel_color.g = uchar(255*g+.5);
-  ok_color.b = cancel_color.b = uchar(255*b+.5);
-  Fl_Button cancel_button(110, 165, 95, 25, fl_cancel);
-  cancel_button.callback(cc_cancel_cb,&ret);
-  window.resizable(chooser);
-  chooser.rgb(r,g,b);
-  chooser.callback(chooser_cb, &ok_color);
-  if (cmode!=-1) chooser.mode(cmode);
-  window.end();
-  window.set_modal();
-  window.hotspot(window);
-  window.show();
-  while (window.shown()) Fl::wait();
-  if (ret) { // ok_button or Enter
-    r = chooser.r();
-    g = chooser.g();
-    b = chooser.b();
+/* 2016/12/12 djcj <djcj@gmx.de> */
+int fl_color_chooser2(const char *title, double &r, double &g, double &b, int cmode)
+{
+  Fl_Double_Window *cc2_win;
+  Fl_Color_Chooser *chooser;
+  ColorChip        *ok_color, *cancel_color;
+  //Fl_Box           *dummy1;
+  //Fl_Group         *buttongroup;
+  Fl_Return_Button *ok_button;
+  Fl_Button        *cancel_button;
+
+  cc2_win = new Fl_Double_Window(215, 200, title);
+  cc2_win->size_range(215, 200, max_w, max_h);;
+  cc2_win->callback(cc_cancel_cb, &ret);
+  {
+    chooser = new Fl_Color_Chooser(10, 10, 195, 115);
+
+    //buttongroup = new Fl_Group(0, 130, 200, 50);
+    //{
+    //  dummy1 = new Fl_Box(0, 129, 1, 1);
+    //  dummy1->box(FL_NO_BOX);
+
+      ok_color = new ColorChip(10, 130, 95, 25);
+      cancel_color = new ColorChip(110, 130, 95, 25);
+      cancel_color->r = uchar(255*r+.5);
+      ok_color->r = cancel_color->r;
+      ok_color->g = cancel_color->g = uchar(255*g+.5);
+      ok_color->b = cancel_color->b = uchar(255*b+.5);
+
+      ok_button = new Fl_Return_Button(10, 165, 95, 25, fl_ok);
+      ok_button->callback(cc_ok_cb, &ret);
+      cancel_button = new Fl_Button(110, 165, 95, 25, fl_cancel);
+      cancel_button->callback(cc_cancel_cb, &ret);
+    //}
+    //buttongroup->resizable(dummy1);
+    //buttongroup->end();
+
+    chooser->rgb(r,g,b);
+    chooser->callback(chooser_cb, ok_color);
+
+    if (cmode != -1)
+    {
+      chooser->mode(cmode);
+    }
+  }
+  cc2_win->end();
+  cc2_win->set_modal();
+  cc2_win->hotspot(cc2_win);
+  set_size(cc2_win, chooser);
+  set_position(cc2_win);
+  set_taskbar(cc2_win);
+  cc2_win->show();
+  set_undecorated(cc2_win);
+
+  while (cc2_win->shown())
+  {
+    Fl::wait();
+  }
+
+  if (ret)
+  {
+    r = chooser->r();
+    g = chooser->g();
+    b = chooser->b();
   }
   return ret;
 }
@@ -604,6 +715,7 @@ int fl_color_chooser(const char* name, double& r, double& g, double& b, int cmod
   \retval 0 if user cancels the dialog
   \relates Fl_Color_Chooser
  */
+/* 2016/12/12 djcj <djcj@gmx.de> */ /*
 int fl_color_chooser(const char* name, uchar& r, uchar& g, uchar& b, int cmode) {
   double dr = r/255.0;
   double dg = g/255.0;
@@ -616,6 +728,7 @@ int fl_color_chooser(const char* name, uchar& r, uchar& g, uchar& b, int cmode) 
   }
   return 0;
 }
+*/
 
 /** @} */
 //

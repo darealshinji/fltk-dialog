@@ -87,7 +87,7 @@ HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_COLOR),no)
 main_CXXFLAGS += -DWITH_COLOR
-OBJS          += src/color.o
+OBJS          += src/color.o src/misc/Fl_Color_Chooser2.o
 endif
 ifneq ($(WITH_DATE),no)
 main_CXXFLAGS += -DWITH_DATE
@@ -378,7 +378,10 @@ src/file_qtplugin.cpp: $(libfltk)
 endif
 
 
-src/about.o src/font.o src/html.o src/main.o src/message.o src/window_icon.o src/misc/Fl_Select_Browser2.o: main_CXXFLAGS+=-Wno-unused-parameter
+src/about.o src/font.o src/html.o src/main.o \
+src/message.o src/window_icon.o \
+src/misc/Fl_Select_Browser2.o \
+src/misc/Fl_Color_Chooser2.o: main_CXXFLAGS+=-Wno-unused-parameter
 
 
 DISTFILES = 3rdparty/ patches/ src/ \

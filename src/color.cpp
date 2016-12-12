@@ -23,7 +23,6 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/Fl_Color_Chooser.H>
 
 #include <iostream>
 #include <iomanip>
@@ -31,6 +30,7 @@
 #include <math.h>
 
 #include "fltk-dialog.hpp"
+#include "misc/Fl_Color_Chooser2.H"
 
 
 int dialog_color()
@@ -38,23 +38,13 @@ int dialog_color()
   double r = 1;
   double g = 1;
   double b = 1;
-  int ret;
 
   if (title == NULL)
   {
-    title = "FLTK color chooser";
+    title = "color chooser";
   }
 
-  if (window_decoration)
-  {
-    ret = fl_color_chooser(title, r,g,b, 1);
-  }
-  else
-  {
-    ret = fl_color_chooser_nodeco(title, r,g,b, 1);
-  }
-
-  if (ret)
+  if (fl_color_chooser2(title, r,g,b, 1))
   {
     size_t colr = round(255 * r);
     size_t colg = round(255 * g);
