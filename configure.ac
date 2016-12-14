@@ -17,8 +17,9 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 
 
 : ${CFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
-: ${CXXFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
+: ${CXXFLAGS="-std=c++11 -Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
 : ${LDFLAGS="-s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections"}
+# TODO: check for C++11
 
 
 # check for programs

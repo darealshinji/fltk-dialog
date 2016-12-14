@@ -119,7 +119,7 @@ int dialog_native_file_chooser_gtk(int mode)
  * If it fails (i.e. because Qt5 libraries are missing) try the same with the Qt4 module.
  * If that fails too, fall back to Fl_Native_File_Chooser();
  */
-int dialog_native_file_chooser(int mode, int argc, char **argv)
+int dialog_native_file_chooser(int mode, int argc, const char **argv)
 {
 #ifdef HAVE_QT
   ret = -1;
@@ -155,7 +155,7 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 
 #ifdef HAVE_QT
 /* the Qt equivalent to Fl_Native_File_Chooser() */
-int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
+int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, const char **argv)
 {
   ret = dlopen_getfilenameqt(qt_major, mode, argc, argv);
 
