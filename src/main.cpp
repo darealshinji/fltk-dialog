@@ -443,7 +443,7 @@ static void print_usage(const char *prog)
     << std::endl;
 }
 
-int main(int argc, const char **argv)
+int main(int argc, char **argv)
 {
 #ifdef WITH_DEFAULT_ICON
   Fl_Pixmap win_pixmap(icon_xpm);
@@ -468,7 +468,7 @@ int main(int argc, const char **argv)
     return about();
   }
 
-  struct getopt args(argc, argv);
+  struct getopt args(argc, (const char **)argv);
 
   std::string args_noparam[] = {
 #ifdef WITH_DND
@@ -682,14 +682,14 @@ int main(int argc, const char **argv)
 
     if (!in_array(arg, args_noparam, args_noparamc) && !in_array(arg, args_param, args_paramc))
     {
-      std::cerr << argv[0] << ":\nerror: \"" << arg << "\" is NOT a valid command!\n"
+      std::cerr << argv[0] << ": `" << arg << "' is NOT a valid command!\n"
         << "See `" << argv[0] << " --help' for available commands" << std::endl;
       return 1;
     }
 
     if (has_parameter && in_array(arg, args_noparam, args_noparamc))
     {
-      std::cerr << argv[0] << ":\nerror: \"" << arg << "\" doesn't take any arguments!\n"
+      std::cerr << argv[0] << ": `" << arg << "' doesn't take any arguments!\n"
         << "See `" << argv[0] << " --help' for more information" << std::endl;
       return 1;
     }
@@ -697,7 +697,7 @@ int main(int argc, const char **argv)
     if ((!has_parameter && in_array(arg, args_param, args_paramc)) ||
         (has_parameter && in_array(arg, args_param, args_paramc) && v[1] == ""))
     {
-      std::cerr << argv[0] << ":\nerror: \"" << arg << "\" requires an argument!\n"
+      std::cerr << argv[0] << ": `" << arg << "' requires an argument!\n"
         << "See `" << argv[0] << " --help' for more information" << std::endl;
       return 1;
     }
@@ -1244,7 +1244,7 @@ int main(int argc, const char **argv)
   }
   else
   {
-    std::cerr << "\"" << scheme << "\" is not a valid scheme!\n"
+    std::cerr << argv[0] << ": \"" << scheme << "\" is not a valid scheme!\n"
       << "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
   }

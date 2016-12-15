@@ -41,7 +41,7 @@
 #include "fltk-dialog.hpp"
 
 
-int dlopen_getfilenameqt(int qt_major, int mode, int argc, const char **argv)
+int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 {
 #ifdef USE_SYSTEM_PLUGINS
 
@@ -113,7 +113,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, const char **argv)
 
   dlerror();
 
-  int (*getfilenameqt) (int, const char*, int, const char **);
+  int (*getfilenameqt) (int, const char*, int, char **);
   *(void **)(&getfilenameqt) = dlsym(handle, "getfilenameqt");
 
   dlsym_error = dlerror();

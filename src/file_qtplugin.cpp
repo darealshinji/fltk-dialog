@@ -39,10 +39,9 @@
 
 
 extern "C"
-int getfilenameqt(int mode, const char *separator, int argc, const char **argv)
+int getfilenameqt(int mode, const char *separator, int argc, char **argv)
 {
-  char **_argv = (char **)argv;
-  QScopedPointer<QCoreApplication> app(new QApplication(argc, _argv));
+  QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
   QFileDialog *dialog = new QFileDialog();
 
   if (mode == DIR_CHOOSER)
