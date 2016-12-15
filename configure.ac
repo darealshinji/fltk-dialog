@@ -1,3 +1,5 @@
+m4_include([ax_check_compile_flag.m4])
+m4_include([ax_cxx_compile_stdcxx.m4])
 
 # AX_PKG_CHECK_MODULES_SIMPLE(prefix, pkg-module)
 m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
@@ -16,10 +18,9 @@ AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issue
 AC_CONFIG_SRCDIR([src/main.cpp])
 
 
-: ${CFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
-: ${CXXFLAGS="-std=c++11 -Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
-: ${LDFLAGS="-s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections"}
-# TODO: check for C++11
+#: ${CFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
+#: ${CXXFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
+#: ${LDFLAGS="-s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections"}
 
 
 # check for programs
@@ -34,7 +35,21 @@ AC_CHECK_PROG([CMAKE], [cmake], [yes])
 AS_IF([test "x$CMAKE" != "xyes"], [exit 1])
 
 
+# check for c++11 (required by getopt.hpp)
+CXX_bak="$CXX"
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+CXX="$CXX_bak"
+CXXFLAGS="$CXXFLAGS -std=c++11"
+
+
 # additional configure options
+AC_ARG_ENABLE([hardening],
+  [AS_HELP_STRING([--enable-hardening], [use hardening build flags])],
+  [enable_hardening="yes"], [enable_hardening="no"])
+AC_ARG_ENABLE([small],
+  [AS_HELP_STRING([--enable-small], [optimize for small size])],
+  [enable_small="yes"], [enable_small="no"])
+
 AC_ARG_ENABLE([calendar],
   [AS_HELP_STRING([--disable-calendar], [disable calendar dialog])],
   [use_calendar="no"], [use_calendar="yes"])
@@ -112,6 +127,24 @@ AC_ARG_ENABLE([system-png],
 AC_ARG_ENABLE([system-zlib],
   [AS_HELP_STRING([--enable-system-zlib], [link against system zlib])],
   [use_system_zlib="yes"], [use_system_zlib="no"])
+
+
+# check build flags
+AS_IF([test "x$enable_small" = "xyes"], [
+  CFLAGS="$CFLAGS -g0 -Os -ffunction-sections -fdata-sections"
+  CXXFLAGS="$CXXFLAGS -g0 -Os -ffunction-sections -fdata-sections"
+  LDFLAGS="$LDFLAGS -s -Wl,--gc-sections"
+])
+AS_IF([test "x$enable_hardening" = "xyes"], [
+  _sps="-fstack-protector-strong"
+  _sp="-fstack-protector --param=ssp-buffer-size=4"
+  AX_CHECK_COMPILE_FLAG([$_sps], [CFLAGS="$CFLAGS $_sps" CXXFLAGS="$CXXFLAGS $_sps"],
+    [AX_CHECK_COMPILE_FLAG([$_sp], [CFLAGS="$CFLAGS $_sp" CXXFLAGS="$CXXFLAGS $_sp"], [])
+  ])
+  CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=2"
+  CXXFLAGS="$CXXFLAGS -D_FORTIFY_SOURCE=2"
+  LDFLAGS="$LDFLAGS -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed"
+])
 
 
 # libnotify checks
