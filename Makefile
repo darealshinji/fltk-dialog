@@ -52,7 +52,7 @@ OBJS = $(addprefix src/,about.o message.o misc/translate.o version.o main.o)
 # default build flags
 common_CFLAGS := -Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections
 CFLAGS        ?= $(common_CFLAGS)
-CXXFLAGS      ?= $(common_CFLAGS)
+CXXFLAGS      ?= -std=c++11 $(common_CFLAGS)
 LDFLAGS       ?= -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
 
 # fltk-dialog build flags

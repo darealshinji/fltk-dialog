@@ -18,12 +18,7 @@ AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issue
 AC_CONFIG_SRCDIR([src/main.cpp])
 
 
-#: ${CFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
-#: ${CXXFLAGS="-Os -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections"}
-#: ${LDFLAGS="-s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections"}
-
-
-# check for programs
+## check for programs
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
@@ -35,14 +30,7 @@ AC_CHECK_PROG([CMAKE], [cmake], [yes])
 AS_IF([test "x$CMAKE" != "xyes"], [exit 1])
 
 
-# check for c++11 (required by getopt.hpp)
-CXX_bak="$CXX"
-AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
-CXX="$CXX_bak"
-CXXFLAGS="$CXXFLAGS -std=c++11"
-
-
-# additional configure options
+## additional configure options
 AC_ARG_ENABLE([hardening],
   [AS_HELP_STRING([--enable-hardening], [use hardening build flags])],
   [enable_hardening="yes"], [enable_hardening="no"])
@@ -129,7 +117,12 @@ AC_ARG_ENABLE([system-zlib],
   [use_system_zlib="yes"], [use_system_zlib="no"])
 
 
-# check build flags
+## check build flags
+# getopt.hpp requires C++11 or higher
+AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
+AS_IF([test "x$HAVE_CXX14" = "x0"], [
+  AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+])
 AS_IF([test "x$enable_small" = "xyes"], [
   CFLAGS="$CFLAGS -g0 -Os -ffunction-sections -fdata-sections"
   CXXFLAGS="$CXXFLAGS -g0 -Os -ffunction-sections -fdata-sections"
@@ -147,7 +140,7 @@ AS_IF([test "x$enable_hardening" = "xyes"], [
 ])
 
 
-# libnotify checks
+## libnotify checks
 have_libnotify="yes"
 AS_IF([test "x$use_notify" = "xno"], [
   dynamic_notify="no"
@@ -187,7 +180,7 @@ AS_IF([test "x$use_notify" = "xno"], [
 ])
 
 
-# Qt checks
+## Qt checks
 have_qt="no"
 have_qt4="no"
 have_qt5="no"
@@ -211,7 +204,7 @@ AS_IF([test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"], [
 ])
 
 
-# Xft
+## Xft
 have_xft="no"
 CFLAGS_backup="$CFLAGS"
 CPPFLAGS_backup="$CPPFLAGS"
@@ -225,7 +218,7 @@ CPPFLAGS="$CPPFLAGS_backup"
 AS_IF([test "x$have_xft" != "xyes"], [exit 1])
 
 
-# select(2) (used by READSTDIO macros)
+## select(2) (used by READSTDIO macros)
 AC_CHECK_HEADER([sys/time.h], [], [missing="sys/time.h"])
 AC_CHECK_HEADER([sys/types.h], [], [missing="sys/types.h $missing"])
 AC_CHECK_HEADER([unistd.h], [], [missing="unistd.h $missing"])
@@ -250,7 +243,7 @@ AS_IF([test "$prefix" = NONE], [prefix=/usr/local])
 AS_IF([test "$exec_prefix" = NONE], [exec_prefix=/usr/local])
 
 
-# substitute variables
+## substitute variables
 AC_SUBST([PREFIX], [$prefix])
 AC_SUBST([EPREFIX], [$exec_prefix])
 AC_SUBST([LIBDIR], [$libdir])
