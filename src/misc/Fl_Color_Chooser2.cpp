@@ -681,8 +681,8 @@ int fl_color_chooser2(const char *title, double &r, double &g, double &b, int cm
     }
   }
   cc2_win->end();
-  cc2_win->set_modal();
-  cc2_win->hotspot(cc2_win);
+  //cc2_win->set_modal();
+  //cc2_win->hotspot(cc2_win);
   set_size(cc2_win, chooser);
   set_position(cc2_win);
   set_taskbar(cc2_win);
