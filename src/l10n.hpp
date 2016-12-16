@@ -42,28 +42,57 @@
 #define FDATE_MON_OCT_ ""
 #define FDATE_MON_NOV_ ""
 #define FDATE_MON_DEC_ ""
-*/
+***/
 
-/* http://www.endmemo.com/unicode/unicodeconverter.php */
+/* utf8-hex converter: https://mothereff.in/utf-8
+ *
+ * Resources:
+ * https://www.facebook.com/translations/style_guides
+ * https://dict.leo.org
+ * https://translate.google.com
+ * https://ar.wikipedia.org/wiki/%D9%8A%D9%86%D8%A7%D9%8A%D8%B1_(%D8%B4%D9%87%D8%B1)
+ * https://ar.wikipedia.org/wiki/%D8%A7%D9%84%D8%B3%D8%A8%D8%AA
+ */
 
 
 /*** ar ***/
 
-#define FL_OK_AR        "\xd8\xad" "\xd8\xb3" "\xd9\x86" "\xd8\xa7"  /* حسنا */
-#define FL_CANCEL_AR    "\xd8\xa3" "\xd9\x84" "\xd8\xba"  /* ألغ */
-#define FL_YES_AR       "\xd9\x86" "\xd8\xb9" "\xd9\x85"  /* نعم*/
-#define FL_NO_AR        "\xd9\x84" "\xd8\xa7"  /* لا */
-#define FL_CLOSE_AR     "\xd8\xa3" "\xd8\xba" "\xd9\x84" "\xd9\x82"  /* أغلق */
+#define FL_OK_AR     "\xD8\xAD\xD8\xB3\xD9\x86\xD8\xA7"  /* حسنا */
+#define FL_CANCEL_AR "\xD8\xA3\xD9\x84\xD8\xBA"  /* ألغ */
+#define FL_YES_AR    "\xD9\x86\xD8\xB9\xD9\x85"  /* نعم*/
+#define FL_NO_AR     "\xD9\x84\xD8\xA7"  /* لا */
+#define FL_CLOSE_AR  "\xD8\xA3\xD8\xBA\xD9\x84\xD9\x82"  /* أغلق */
+
+#define FDATE_MO_AR "\xD9\x86"  /* ن */
+#define FDATE_TU_AR "\xD8\xAB"  /* ث */
+#define FDATE_WE_AR "\xD8\xA8"  /* ب */
+#define FDATE_TH_AR "\xD8\xAE"  /* خ */
+#define FDATE_FR_AR "\xD8\xAC"  /* ج */
+#define FDATE_SA_AR "\xD8\xB3"  /* س */
+#define FDATE_SU_AR "\xD8\xAD"  /* ح */
+
+#define FDATE_MON_JAN_AR "\xD9\x8A\xD9\x86\xD8\xA7\xD9\x8A\xD8\xB1"  /* يناير */
+#define FDATE_MON_FEB_AR "\xD9\x81\xD8\xA8\xD8\xB1\xD8\xA7\xD9\x8A\xD8\xB1"  /* فبراير */
+#define FDATE_MON_MAR_AR "\xD9\x85\xD8\xA7\xD8\xB1\xD8\xB3"  /* مارس */
+#define FDATE_MON_APR_AR "\xD8\xA3\xD8\xA8\xD8\xB1\xD9\x8A\xD9\x84"  /* أبريل */
+#define FDATE_MON_MAY_AR "\xD9\x85\xD8\xA7\xD9\x8A\xD9\x88"  /* مايو */
+#define FDATE_MON_JUN_AR "\xD9\x8A\xD9\x88\xD9\x86\xD9\x8A\xD9\x88"  /* يونيو */
+#define FDATE_MON_JUL_AR "\xD9\x8A\xD9\x88\xD9\x84\xD9\x8A\xD9\x88"  /* يوليو */
+#define FDATE_MON_AUG_AR "\xD8\xA3\xD8\xBA\xD8\xB3\xD8\xB7\xD8\xB3"  /* أغسطس */
+#define FDATE_MON_SEP_AR "\xD8\xB3\xD8\xA8\xD8\xAA\xD9\x85\xD8\xA8\xD8\xB1"  /* سبتمبر */
+#define FDATE_MON_OCT_AR "\xD8\xA3\xD9\x83\xD8\xAA\xD9\x88\xD8\xA8\xD8\xB1"  /* أكتوبر */
+#define FDATE_MON_NOV_AR "\xD9\x86\xD9\x88\xD9\x81\xD9\x85\xD8\xA8\xD8\xB1"  /* نوفمبر */
+#define FDATE_MON_DEC_AR "\xD8\xAF\xD9\x8A\xD8\xB3\xD9\x85\xD8\xA8\xD8\xB1"  /* ديسمبر */
 
 
 /*** de ***/
 
-#define FL_OK_DE        "OK"
-#define FL_CANCEL_DE    "Abbrechen"
-#define FL_YES_DE       "Ja"
-#define FL_NO_DE        "Nein"
-#define FL_CLOSE_DE     "Schlie" "\xc3\x9f" "en"  /* Schließen */
-#define FL_CLOSE_DE_CH  "Schliessen"
+#define FL_OK_DE       "OK"
+#define FL_CANCEL_DE   "Abbrechen"
+#define FL_YES_DE      "Ja"
+#define FL_NO_DE       "Nein"
+#define FL_CLOSE_DE    "Schlie" "\xC3\x9F" "en"  /* Schließen */
+#define FL_CLOSE_DE_CH "Schliessen"
 
 #define FDATE_MO_DE "Mo"
 #define FDATE_TU_DE "Di"
@@ -74,10 +103,10 @@
 #define FDATE_SU_DE "So"
 
 #define FDATE_MON_JAN_DE    "Januar"
-#define FDATE_MON_JAN_DE_AT "J" "\xc3\xa4" "nnar"  /* Jänner */
-#define FDATE_MON_JAN_DE_CH FDATE_MON_JAN_DE_AT  /* Jänner */
+#define FDATE_MON_JAN_DE_AT "J" "\xC3\xA4" "nnar"  /* Jänner */
+#define FDATE_MON_JAN_DE_CH "J" "\xC3\xA4" "nnar"  /* Jänner */
 #define FDATE_MON_FEB_DE    "Februar"
-#define FDATE_MON_MAR_DE    "M" "\xc3\xa4" "rz"  /* März */
+#define FDATE_MON_MAR_DE    "M" "\xC3\xA4" "rz"  /* März */
 #define FDATE_MON_APR_DE    "April"
 #define FDATE_MON_MAY_DE    "Mai"
 #define FDATE_MON_JUN_DE    "Juni"
@@ -93,17 +122,17 @@
 
 #define FL_OK_ES     "Aceptar"
 #define FL_CANCEL_ES "Cancelar"
-#define FL_YES_ES    "S" "\xc3\xad"  /* Sí */
+#define FL_YES_ES    "S" "\xC3\xAD"  /* Sí */
 #define FL_NO_ES     "No"
 #define FL_CLOSE_ES  "Cerrar"
 
-#define FDATE_MO_ES "Lu"
-#define FDATE_TU_ES "Ma"
-#define FDATE_WE_ES "Mi"
-#define FDATE_TH_ES "Ju"
-#define FDATE_FR_ES "Vi"
-#define FDATE_SA_ES "S" "\xc3\xa1"  /* Sá */
-#define FDATE_SU_ES "Do"
+#define FDATE_MO_ES "lu"
+#define FDATE_TU_ES "ma"
+#define FDATE_WE_ES "mi"
+#define FDATE_TH_ES "ju"
+#define FDATE_FR_ES "vi"
+#define FDATE_SA_ES "s" "\xC3\xA1"  /* Sá */
+#define FDATE_SU_ES "do"
 
 #define FDATE_MON_JAN_ES "Enero"
 #define FDATE_MON_FEB_ES "Febrero"
@@ -127,43 +156,43 @@
 #define FL_NO_FR     "Non"
 #define FL_CLOSE_FR  "Fermer"
 
-#define FDATE_MO_FR "Lu"
-#define FDATE_TU_FR "Ma"
-#define FDATE_WE_FR "Me"
-#define FDATE_TH_FR "Je"
-#define FDATE_FR_FR "Ve"
-#define FDATE_SA_FR "Sa"
-#define FDATE_SU_FR "Di"
+#define FDATE_MO_FR "lun"
+#define FDATE_TU_FR "mar"
+#define FDATE_WE_FR "mer"
+#define FDATE_TH_FR "jeu"
+#define FDATE_FR_FR "ven"
+#define FDATE_SA_FR "sam"
+#define FDATE_SU_FR "dim"
 
 #define FDATE_MON_JAN_FR "Janvier"
-#define FDATE_MON_FEB_FR "F" "\xc3\xa9" "vrier"  /* Février */
+#define FDATE_MON_FEB_FR "F" "\xC3\xA9" "vrier"  /* Février */
 #define FDATE_MON_MAR_FR "Mars"
 #define FDATE_MON_APR_FR "Avril"
 #define FDATE_MON_MAY_FR "Mai"
 #define FDATE_MON_JUN_FR "Juin"
 #define FDATE_MON_JUL_FR "Julliet"
-#define FDATE_MON_AUG_FR "Ao" "\xc3\xbb" "t"  /* Août */
+#define FDATE_MON_AUG_FR "Ao" "\xC3\xBB" "t"  /* Août */
 #define FDATE_MON_SEP_FR "Septembre"
 #define FDATE_MON_OCT_FR "Octobre"
 #define FDATE_MON_NOV_FR "Novembre"
-#define FDATE_MON_DEC_FR "D" "\xc3\xa9" "cembre"  /* Décembre */
+#define FDATE_MON_DEC_FR "D" "\xC3\xA9" "cembre"  /* Décembre */
 
 
 /*** it ***/
 
 #define FL_OK_IT     "OK"
 #define FL_CANCEL_IT "Annulla"
-#define FL_YES_IT    "S" "\xc3\xac"  /* Sì */
+#define FL_YES_IT    "S" "\xC3\xAC"  /* Sì */
 #define FL_NO_IT     "No"
 #define FL_CLOSE_IT  "Chiudi"
 
-#define FDATE_MO_IT "Lu"
-#define FDATE_TU_IT "Ma"
-#define FDATE_WE_IT "Me"
-#define FDATE_TH_IT "Gi"
-#define FDATE_FR_IT "Ve"
-#define FDATE_SA_IT "Sa"
-#define FDATE_SU_IT "Do"
+#define FDATE_MO_IT "lun"
+#define FDATE_TU_IT "mar"
+#define FDATE_WE_IT "mer"
+#define FDATE_TH_IT "gio"
+#define FDATE_FR_IT "ven"
+#define FDATE_SA_IT "sab"
+#define FDATE_SU_IT "dom"
 
 #define FDATE_MON_JAN_IT "Gennaio"
 #define FDATE_MON_FEB_IT "Febbraio"
@@ -181,11 +210,11 @@
 
 /*** ja ***/
 
-#define FL_OK_JA     "\xe3\x82\xaa" "\xe3\x83\xbc" "\xe3\x82\xb1" "\xe3\x83\xbc"  /* オーケー */
-#define FL_CANCEL_JA "\xe3\x82\xad" "\xe3\x83\xa3" "\xe3\x83\xb3" "\xe3\x82\xbb" "\xe3\x83\xab"  /* キャンセル */
-#define FL_YES_JA    "\xe3\x81\xaf" "\xe3\x81\x84"  /* はい */
-#define FL_NO_JA     "\xe3\x81\x84" "\xe3\x81\x84" "\xe3\x81\x88"  /* いいえ */
-#define FL_CLOSE_JA  "\xe9\x96\x89" "\xe3\x81\x98" "\xe3\x82\x8b"  /* 閉じる */
+#define FL_OK_JA     "\xE3\x82\xAA\xE3\x83\xBC\xE3\x82\xB1\xE3\x83\xBC"  /* オーケー */
+#define FL_CANCEL_JA "\xE3\x82\xAD\xE3\x83\xA3\xE3\x83\xB3\xE3\x82\xBB\xE3\x83\xAB"  /* キャンセル */
+#define FL_YES_JA    "\xE3\x81\xAF\xE3\x81\x84"  /* はい */
+#define FL_NO_JA     "\xE3\x81\x84\xE3\x81\x84\xE3\x81\x88"  /* いいえ */
+#define FL_CLOSE_JA  "\xE9\x96\x89\xE3\x81\x98\xE3\x82\x8B"  /* 閉じる */
 
 #define FDATE_MO_JA  "\xE6\x9C\x88"  /* 月 */
 #define FDATE_TU_JA  "\xE7\x81\xAB"  /* 火 */
@@ -195,52 +224,39 @@
 #define FDATE_SA_JA  "\xE5\x9C\x9F"  /* 土 */
 #define FDATE_SU_JA  "\xE6\x97\xA5"  /* 日 */
 
-#define _JA1  "\xE4\xB8\x80"
-#define _JA2  "\xE4\xBA\x8C"
-#define _JA3  "\xE4\xB8\x89"
-#define _JA4  "\xE5\x9B\x9B"
-#define _JA5  "\xE4\xBA\x94"
-#define _JA6  "\xE5\x85\xAD"
-#define _JA7  "\xE4\xB8\x83"
-#define _JA8  "\xE5\x85\xAB"
-#define _JA9  "\xE4\xB9\x9D"
-#define _JA10 "\xE5\x8D\x81"
-#define _JA11 _JA10 _JA1
-#define _JA12 _JA10 _JA2
-#define _JA_MON(x) _JA##x "\xE6\x9C\x88"
+#define FDATE_MON_JAN_JA "\xE4\xB8\x80\xE6\x9C\x88"  /* 一月 */
+#define FDATE_MON_FEB_JA "\xE4\xBA\x8C\xE6\x9C\x88"  /* 二月 */
+#define FDATE_MON_MAR_JA "\xE4\xB8\x89\xE6\x9C\x88"  /* 三月 */
+#define FDATE_MON_APR_JA "\xE5\x9B\x9B\xE6\x9C\x88"  /* 四月 */
+#define FDATE_MON_MAY_JA "\xE4\xBA\x94\xE6\x9C\x88"  /* 五月 */
+#define FDATE_MON_JUN_JA "\xE5\x85\xAD\xE6\x9C\x88"  /* 六月 */
+#define FDATE_MON_JUL_JA "\xE4\xB8\x83\xE6\x9C\x88"  /* 七月 */
+#define FDATE_MON_AUG_JA "\xE5\x85\xAB\xE6\x9C\x88"  /* 八月 */
+#define FDATE_MON_SEP_JA "\xE4\xB9\x9D\xE6\x9C\x88"  /* 九月 */
+#define FDATE_MON_OCT_JA "\xE5\x8D\x81\xE6\x9C\x88"  /* 十月 */
+#define FDATE_MON_NOV_JA "\xE5\x8D\x81\xE4\xB8\x80\xE6\x9C\x88"  /* 十一月 */
+#define FDATE_MON_DEC_JA "\xE5\x8D\x81\xE4\xBA\x8C\xE6\x9C\x88"  /* 十二月 */
 
-#define FDATE_MON_JAN_JA _JA_MON(1)  /* 一月 */
-#define FDATE_MON_FEB_JA _JA_MON(2)  /* 二月 */
-#define FDATE_MON_MAR_JA _JA_MON(3)  /* 三月 */
-#define FDATE_MON_APR_JA _JA_MON(4)  /* 四月 */
-#define FDATE_MON_MAY_JA _JA_MON(5)  /* 五月 */
-#define FDATE_MON_JUN_JA _JA_MON(6)  /* 六月 */
-#define FDATE_MON_JUL_JA _JA_MON(7)  /* 七月 */
-#define FDATE_MON_AUG_JA _JA_MON(8)  /* 八月 */
-#define FDATE_MON_SEP_JA _JA_MON(9)  /* 九月 */
-#define FDATE_MON_OCT_JA _JA_MON(10)  /* 十月 */
-#define FDATE_MON_NOV_JA _JA_MON(11)  /* 十一月 */
-#define FDATE_MON_DEC_JA _JA_MON(12)  /* 十二月 */
 
 /*** pt ***/
 
 #define FL_OK_PT     "OK"
 #define FL_CANCEL_PT "Cancelar"
 #define FL_YES_PT    "Sim"
-#define FL_NO_PT     "N" "\xc3\xa3" "o"  /* não */
+#define FL_NO_PT     "N" "\xC3\xA3" "o"  /* não */
 #define FL_CLOSE_PT  "Fechar"
 
-#define FDATE_MO_PT "Seg"
-#define FDATE_TU_PT "Te"
-#define FDATE_WE_PT "Qua"
-#define FDATE_TH_PT "Qui"
-#define FDATE_FR_PT "Sex"
-#define FDATE_SA_PT "S" "\xc3\xa1"  /* Sá */
-#define FDATE_SU_PT "Do"
+#define FDATE_MO_PT "seg"
+#define FDATE_TU_PT "ter"
+#define FDATE_WE_PT "qua"
+#define FDATE_TH_PT "qui"
+#define FDATE_FR_PT "sex"
+#define FDATE_SA_PT "s" "\xC3\xA1" "b"  /* Sáb */
+#define FDATE_SU_PT "dom"
 
 #define FDATE_MON_JAN_PT "Janeiro"
 #define FDATE_MON_FEB_PT "Fevereiro"
-#define FDATE_MON_MAR_PT "Mar" "\xc3\xa7" "o"  /* Março */
+#define FDATE_MON_MAR_PT "Mar" "\xC3\xA7" "o"  /* Março */
 #define FDATE_MON_APR_PT "Abril"
 #define FDATE_MON_MAY_PT "Maio"
 #define FDATE_MON_JUN_PT "Junho"
@@ -254,51 +270,70 @@
 
 /*** ru ***/
 
-#define FL_OK_RU        "OK"
-#define FL_CANCEL_RU    "\xd0\x9e" "\xd1\x82" "\xd0\xbc" "\xd0\xb5" "\xd0\xbd" "\xd0\xb0"  /* Отмена */
-#define FL_YES_RU       "\xd0\x94" "\xd0\xb0"  /* Да */
-#define FL_NO_RU        "\xd0\x9d" "\xd0\xb5" "\xd1\x82"  /* Нет */
-#define FL_CLOSE_RU     "\xd0\x97" "\xd0\xb0" "\xd0\xba" "\xd1\x80" "\xd1\x8b" "\xd1\x82" "\xd1\x8c"  /* Закрыть */
+#define FL_OK_RU     "OK"
+#define FL_CANCEL_RU "\xD0\x9E\xD1\x82\xD0\xBC\xD0\xB5\xD0\xBD\xD0\xB0"  /* Отмена */
+#define FL_YES_RU    "\xD0\x94\xD0\xB0"  /* Да */
+#define FL_NO_RU     "\xD0\x9D\xD0\xB5\xD1\x82"  /* Нет */
+#define FL_CLOSE_RU  "\xD0\x97\xD0\xB0\xD0\xBA\xD1\x80\xD1\x8B\xD1\x82\xD1\x8C"  /* Закрыть */
+
+#define FDATE_MO_RU "\xD0\x9F\xD0\xBE\xD0\xBD"  /* Пон */
+#define FDATE_TU_RU "\xD0\x92\xD1\x82\xD0\xBE"  /* Вто */
+#define FDATE_WE_RU "\xD0\xA1\xD1\x80\xD0\xB5"  /* Сре */
+#define FDATE_TH_RU "\xD0\xA7\xD0\xB5\xD1\x82"  /* Чет */
+#define FDATE_FR_RU "\xD0\x9F\xD1\x8F\xD1\x82"  /* Пят */
+#define FDATE_SA_RU "\xD0\xA1\xD1\x83\xD0\xB1"  /* Суб */
+#define FDATE_SU_RU "\xD0\x92\xD0\xBE\xD1\x81"  /* Вос */
+
+#define FDATE_MON_JAN_RU "\xD0\xAF\xD0\xBD\xD0\xB2\xD0\xB0\xD1\x80\xD1\x8C"  /* Январь */
+#define FDATE_MON_FEB_RU "\xD0\xA4\xD0\xB5\xD0\xB2\xD1\x80\xD0\xB0\xD0\xBB\xD1\x8C"  /* Февраль */
+#define FDATE_MON_MAR_RU "\xD0\x9C\xD0\xB0\xD1\x80\xD1\x82"  /* Март */
+#define FDATE_MON_APR_RU "\xD0\x90\xD0\xBF\xD1\x80\xD0\xB5\xD0\xBB\xD1\x8C"  /* Апрель */
+#define FDATE_MON_MAY_RU "\xD0\x9C\xD0\xB0\xD0\xB9"  /* Май */
+#define FDATE_MON_JUN_RU "\xD0\x98\xD1\x8E\xD0\xBD\xD1\x8C"  /* Июнь */
+#define FDATE_MON_JUL_RU "\xD0\x98\xD1\x8E\xD0\xBB\xD1\x8C"  /* Июль */
+#define FDATE_MON_AUG_RU "\xD0\x90\xD0\xB2\xD0\xB3\xD1\x83\xD1\x81\xD1\x82"  /* Август */
+#define FDATE_MON_SEP_RU "\xD0\xA1\xD0\xB5\xD0\xBD\xD1\x82\xD1\x8F\xD0\xB1\xD1\x80\xD1\x8C"  /* Сентябрь */
+#define FDATE_MON_OCT_RU "\xD0\x9E\xD0\xBA\xD1\x82\xD1\x8F\xD0\xB1\xD1\x80\xD1\x8C"  /* Октябрь */
+#define FDATE_MON_NOV_RU "\xD0\x9D\xD0\xBE\xD1\x8F\xD0\xB1\xD1\x80\xD1\x8C"  /* Ноябрь */
+#define FDATE_MON_DEC_RU "\xD0\x94\xD0\xB5\xD0\xBA\xD0\xB0\xD0\xB1\xD1\x80\xD1\x8C"  /* Декабрь */
 
 
 /*** zh ***/
 
-#define FL_OK_ZH        "\xe7\xa1\xae" "\xe5\xae\x9a"  /* 确定 */
-#define FL_OK_ZH_TW     "\xe7\xa2\xba" "\xe5\xae\x9a"  /* 確定 */
-#define FL_CANCEL_ZH    "\xe5\x8f\x96" "\xe6\xb6\x88"  /* 取消 */
-#define FL_YES_ZH       "\xe6\x98\xaf"  /* 是 */
-#define FL_NO_ZH        "\xe5\x90\xa6"  /* 否 */
-#define FL_CLOSE_ZH     "\xe5\x85\xb3" "\xe9\x97\xad"  /* 关闭 */
-#define FL_CLOSE_ZH_TW  "\xe9\x97\x9c" "\xe9\x96\x89"  /* 關閉 */
+#define FL_OK_ZH       "\xE7\xA1\xAE\xE5\xAE\x9A"  /* 确定 */
+#define FL_OK_ZH_TW    "\xE7\xA2\xBA\xE5\xAE\x9A"  /* 確定 */
+#define FL_CANCEL_ZH   "\xE5\x8F\x96\xE6\xB6\x88"  /* 取消 */
+#define FL_YES_ZH      "\xE6\x98\xAF"  /* 是 */
+#define FL_NO_ZH       "\xE5\x90\xA6"  /* 否 */
+#define FL_CLOSE_ZH    "\xE5\x85\xB3\xE9\x97\xAD"  /* 关闭 */
+#define FL_CLOSE_ZH_TW "\xE9\x97\x9C\xE9\x96\x89"  /* 關閉 */
 
-#define _ZH_WEEK(x)  "\xE5\x91\xA8" _JA##x
-#define _TW_WEEK(x)  "\xE9\x80\xB1" _JA##x
+#define FDATE_MO_ZH    "\xE5\x91\xA8\xE4\xB8\x80"  /* 周一 */
+#define FDATE_MO_ZH_TW "\xE9\x80\xB1\xE4\xB8\x80"  /* 週一 */
+#define FDATE_TU_ZH    "\xE5\x91\xA8\xE4\xBA\x8C"  /* 周二 */
+#define FDATE_TU_ZH_TW "\xE9\x80\xB1\xE4\xBA\x8C"  /* 週二 */
+#define FDATE_WE_ZH    "\xE5\x91\xA8\xE4\xB8\x89"  /* 周三 */
+#define FDATE_WE_ZH_TW "\xE9\x80\xB1\xE4\xB8\x89"  /* 週三 */
+#define FDATE_TH_ZH    "\xE5\x91\xA8\xE5\x9B\x9B"  /* 周四 */
+#define FDATE_TH_ZH_TW "\xE9\x80\xB1\xE5\x9B\x9B"  /* 週四 */
+#define FDATE_FR_ZH    "\xE5\x91\xA8\xE4\xBA\x94"  /* 周五 */
+#define FDATE_FR_ZH_TW "\xE9\x80\xB1\xE4\xBA\x94"  /* 週五 */
+#define FDATE_SA_ZH    "\xE5\x91\xA8\xE5\x85\xAD"  /* 周六 */
+#define FDATE_SA_ZH_TW "\xE9\x80\xB1\xE5\x85\xAD"  /* 週六 */
+#define FDATE_SU_ZH    "\xE5\x91\xA8\xE6\x97\xA5"  /* 周日 */
+#define FDATE_SU_ZH_TW "\xE9\x80\xB1\xE6\x97\xA5"  /* 週日 */
 
-#define FDATE_MO_ZH     _ZH_WEEK(1)  /* 周一 */
-#define FDATE_MO_ZH_TW  _TW_WEEK(1)  /* 週一 */
-#define FDATE_TU_ZH     _ZH_WEEK(2)  /* 周二 */
-#define FDATE_TU_ZH_TW  _TW_WEEK(2)  /* 週二 */
-#define FDATE_WE_ZH     _ZH_WEEK(3)  /* 周三 */
-#define FDATE_WE_ZH_TW  _TW_WEEK(3)  /* 週三 */
-#define FDATE_TH_ZH     _ZH_WEEK(4)  /* 周四 */
-#define FDATE_TH_ZH_TW  _TW_WEEK(4)  /* 週四 */
-#define FDATE_FR_ZH     _ZH_WEEK(5)  /* 周五 */
-#define FDATE_FR_ZH_TW  _TW_WEEK(5)  /* 週五 */
-#define FDATE_SA_ZH     _ZH_WEEK(6)  /* 周六 */
-#define FDATE_SA_ZH_TW  _TW_WEEK(6)  /* 週六 */
-#define FDATE_SU_ZH     "\xE5\x91\xA8" "\xE6\x97\xA5"  /* 周日 */
-#define FDATE_SU_ZH_TW  "\xE9\x80\xB1" "\xE6\x97\xA5"  /* 週日 */
-
-#define FDATE_MON_JAN_ZH _JA_MON(1)  /* 一月 */
-#define FDATE_MON_FEB_ZH _JA_MON(2)  /* 二月 */
-#define FDATE_MON_MAR_ZH _JA_MON(3)  /* 三月 */
-#define FDATE_MON_APR_ZH _JA_MON(4)  /* 四月 */
-#define FDATE_MON_MAY_ZH _JA_MON(5)  /* 五月 */
-#define FDATE_MON_JUN_ZH _JA_MON(6)  /* 六月 */
-#define FDATE_MON_JUL_ZH _JA_MON(7)  /* 七月 */
-#define FDATE_MON_AUG_ZH _JA_MON(8)  /* 八月 */
-#define FDATE_MON_SEP_ZH _JA_MON(9)  /* 九月 */
-#define FDATE_MON_OCT_ZH _JA_MON(10)  /* 十月 */
-#define FDATE_MON_NOV_ZH _JA_MON(11)  /* 十一月 */
-#define FDATE_MON_DEC_ZH _JA_MON(12)  /* 十二月 */
+/* same as in Japanese */
+#define FDATE_MON_JAN_ZH "\xE4\xB8\x80\xE6\x9C\x88"  /* 一月 */
+#define FDATE_MON_FEB_ZH "\xE4\xBA\x8C\xE6\x9C\x88"  /* 二月 */
+#define FDATE_MON_MAR_ZH "\xE4\xB8\x89\xE6\x9C\x88"  /* 三月 */
+#define FDATE_MON_APR_ZH "\xE5\x9B\x9B\xE6\x9C\x88"  /* 四月 */
+#define FDATE_MON_MAY_ZH "\xE4\xBA\x94\xE6\x9C\x88"  /* 五月 */
+#define FDATE_MON_JUN_ZH "\xE5\x85\xAD\xE6\x9C\x88"  /* 六月 */
+#define FDATE_MON_JUL_ZH "\xE4\xB8\x83\xE6\x9C\x88"  /* 七月 */
+#define FDATE_MON_AUG_ZH "\xE5\x85\xAB\xE6\x9C\x88"  /* 八月 */
+#define FDATE_MON_SEP_ZH "\xE4\xB9\x9D\xE6\x9C\x88"  /* 九月 */
+#define FDATE_MON_OCT_ZH "\xE5\x8D\x81\xE6\x9C\x88"  /* 十月 */
+#define FDATE_MON_NOV_ZH "\xE5\x8D\x81\xE4\xB8\x80\xE6\x9C\x88"  /* 十一月 */
+#define FDATE_MON_DEC_ZH "\xE5\x8D\x81\xE4\xBA\x8C\xE6\x9C\x88"  /* 十二月 */
 

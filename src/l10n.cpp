@@ -136,13 +136,13 @@ void l10n()
         WEEKDAYS_L10N_(ZH);
       }
     }
-    else if (lang == "ar") { FL_L10N_(AR); }
+    else if (lang == "ar") { FL_L10N_(AR); WEEKDAYS_L10N_(AR); MONTHS_L10N_(AR); }
     else if (lang == "es") { FL_L10N_(ES); WEEKDAYS_L10N_(ES); MONTHS_L10N_(ES); }
     else if (lang == "fr") { FL_L10N_(FR); WEEKDAYS_L10N_(FR); MONTHS_L10N_(FR); }
     else if (lang == "it") { FL_L10N_(IT); WEEKDAYS_L10N_(IT); MONTHS_L10N_(IT); }
     else if (lang == "ja") { FL_L10N_(JA); WEEKDAYS_L10N_(JA); MONTHS_L10N_(JA); }
     else if (lang == "pt") { FL_L10N_(PT); WEEKDAYS_L10N_(PT); MONTHS_L10N_(PT); }
-    else if (lang == "ru") { FL_L10N_(RU); }
+    else if (lang == "ru") { FL_L10N_(RU); WEEKDAYS_L10N_(RU); MONTHS_L10N_(RU); }
   }
 }
 
