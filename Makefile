@@ -324,7 +324,8 @@ $(zlib)/build/Makefile:
 $(libpng_a): $(png)/build/Makefile
 	$(MAKE) -C $(png)/build V=$(make_verbose) && \
   cd $(png)/build && ln -fs .libs/libpng16.a libpng.a
-	ln -fs .. $(png)/build/libpng
+	ln -fs .. $(png)/build/libpng && \
+	rm -f $(png)/build/config.h
 
 $(libz_a): $(zlib)/build/Makefile
 	$(MAKE) -C $(zlib)/build zlibstatic
