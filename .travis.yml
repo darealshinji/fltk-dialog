@@ -20,9 +20,10 @@ script:
   - make -j1 V=1
 
 after_success:
-  - tar cJ fltk-dialog-x86_64_linux.tar.xz fltk-dialog
+  - mkdir out
+  - cd out && tar cJ fltk-dialog-x86_64_linux.tar.xz ../fltk-dialog
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  - bash ./upload.sh fltk-dialog-x86_64_linux.tar.xz
+  - bash ./upload.sh out/*
 
 branches:
   except:
