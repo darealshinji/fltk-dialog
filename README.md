@@ -1,5 +1,4 @@
-fltk-dialog
-===========
+#fltk-dialog [![Build Status](https://travis-ci.org/darealshinji/fltk-dialog.svg?branch=master)](https://travis-ci.org/darealshinji/fltk-dialog)
 
 This is a simple [FLTK](http://www.fltk.org/)-based dialog application.
 
