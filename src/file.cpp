@@ -131,6 +131,7 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 
     if (ret == -1)
     {
+      std::cerr << "warning: falling back to Qt4" << std::endl;
       ret = dlopen_getfilenameqt(4, mode, argc, argv);
     }
 #elif defined(HAVE_QT5)
@@ -142,6 +143,7 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 
   if (ret == -1)
   {
+    std::cerr << "warning: falling back to gtk" << std::endl;
     ret = dialog_native_file_chooser_gtk(mode);
   }
 
@@ -161,6 +163,8 @@ int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
 
   if (ret == -1)
   {
+    std::cerr << "warning: falling back to fltk" << std::endl;
+
     if (mode == DIR_CHOOSER)
     {
       ret = dialog_dir_chooser();
