@@ -124,7 +124,7 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 #ifdef HAVE_QT
   ret = -1;
 
-  if (getenv("KDE_FULL_SESSION"))
+  if (getenv("KDE_FULL_SESSION") != NULL)
   {
 #if defined(HAVE_QT5) && defined(HAVE_QT4)
     ret = dlopen_getfilenameqt(5, mode, argc, argv);
@@ -139,11 +139,15 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 #elif defined(HAVE_QT4)
     ret = dlopen_getfilenameqt(4, mode, argc, argv);
 #endif  /* HAVE_QT5 && HAVE_QT4 */
+
+    if (ret == -1)
+    {
+      std::cerr << "warning: falling back to gtk" << std::endl;
+    }
   }
 
   if (ret == -1)
   {
-    std::cerr << "warning: falling back to gtk" << std::endl;
     ret = dialog_native_file_chooser_gtk(mode);
   }
 
