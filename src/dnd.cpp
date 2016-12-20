@@ -29,6 +29,7 @@
 #include <FL/Fl_Double_Window.H>
 
 #include <iostream>
+#include <string>
 #include <stdio.h>
 
 #include "fltk-dialog.hpp"
@@ -75,22 +76,24 @@ static void dnd_close_cb(Fl_Widget *)
 
 static void dnd_callback(const char *items)
 {
-  const char *ch;
   static char newtext[128];
 
-  for (ch = items; *ch != '\0'; ++ch)
-  {
-    if (*ch == '\n')
-    {
-      ++dnd_count_val;
-    }
-  }
-
+  ++dnd_count_val;
   sprintf(newtext, "%d", dnd_count_val);
   dnd_count->label(newtext);
   dnd_win->redraw();
 
   std::cout << items;
+  std::string s(items);
+
+  if (s.substr(s.length()-1, 1) == "\n")
+  {
+    std::cout << std::flush;
+  }
+  else
+  {
+    std::cout << std::endl;
+  }
 }
 
 int dialog_dnd()
@@ -121,14 +124,20 @@ int dialog_dnd()
 
     g = new Fl_Group(0, 244, 400, 56);
     {
-      text = new Fl_Box(10, 264, 120, 26);
-      text->label("Items dropped:");
+      text = new Fl_Box(0,0,0,0);
+      dnd_count = new Fl_Box(0,0,0,0);
+
+      measure_button_width(text, but_w, 40);
+      text = new Fl_Box(10, 264, but_w, 26);
+      measure_button_width(dnd_count, but_w, 40);
+      dnd_count = new Fl_Box(10, 264, but_w, 26);
+
+      text->label("Drop count:");
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
 
       /* the dnd_count widget has the same size and position as the
        * text widget, but its label text is placed right to it */
-      dnd_count = new Fl_Box(10, 264, 120, 26);
       dnd_count->label("0");
       dnd_count->box(FL_NO_BOX);
       dnd_count->align(FL_ALIGN_RIGHT);
