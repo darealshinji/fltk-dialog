@@ -166,7 +166,7 @@ int dialog_progress(bool pulsate,
     return 1;
   }
 
-  if (check_pid() == 1)
+  if (kill_pid_set && check_pid() == 1)
   {
     return 1;
   }

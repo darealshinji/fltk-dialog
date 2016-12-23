@@ -115,6 +115,7 @@ std::string separator_s = "|";
 
 #ifdef WITH_PROGRESS
 int kill_pid = -1;
+bool kill_pid_set = false;
 bool kill_parent = false;
 #endif
 
@@ -968,6 +969,8 @@ int main(int argc, char **argv)
   }
 
   if (args.has("--auto-kill")) {
+    kill_pid_set = true;
+
     if (args["--auto-kill"] == "parent")
     {
       kill_parent = true;

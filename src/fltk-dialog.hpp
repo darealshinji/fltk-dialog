@@ -140,7 +140,7 @@ int dialog_notify(const char *appname,
 /* progress.cpp */
 #ifdef WITH_PROGRESS
 extern int kill_pid;
-extern bool kill_parent;
+extern bool kill_pid_set, kill_parent;
 int dialog_progress(bool pulsate,
                     bool autoclose,
                     bool hide_cancel);
