@@ -23,7 +23,7 @@
  */
 
 /* to run a test:
-( (for n in `seq 1 100`; do echo "$n" && sleep 0.0$n; done) & echo $! >&3 ) 3>/tmp/mypid | \
+( (for n in `seq 1 100`; do echo "$n" && sleep 0.04; done) & echo $! >&3 ) 3>/tmp/mypid | \
   ./fltk-dialog --progress --auto-kill=$(cat /tmp/mypid); echo "exit: $?"
  */
 
