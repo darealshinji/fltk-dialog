@@ -310,7 +310,7 @@ static void print_usage(const char *prog)
   "  --entry                    Display text entry dialog\n"
   "  --password                 Display password dialog\n"
 #ifdef WITH_PROGRESS
-  "  --progress                 Display progress indication dialog\n"
+  "  --progress                 Display progress indication dialog (experimental)\n"
 #endif
 #ifdef WITH_CALENDAR
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
