@@ -115,8 +115,6 @@ std::string separator_s = "|";
 
 #ifdef WITH_PROGRESS
 int kill_pid = -1;
-bool kill_pid_set = false;
-bool kill_parent = false;
 #endif
 
 /* get dimensions of the main screen work area */
@@ -310,7 +308,7 @@ static void print_usage(const char *prog)
   "  --entry                    Display text entry dialog\n"
   "  --password                 Display password dialog\n"
 #ifdef WITH_PROGRESS
-  "  --progress                 Display progress indication dialog (experimental)\n"
+  "  --progress=COMMAND         Display progress indication dialog for COMMAND\n"
 #endif
 #ifdef WITH_CALENDAR
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
@@ -374,9 +372,6 @@ static void print_usage(const char *prog)
   "Progress options:\n"
   "  --pulsate                  Pulsate progress bar\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
-  "  --auto-kill=PID            Kill the process with the specified PID if cancel\n"
-  "                             button is pressed; if the given parameter is \"parent\"\n"
-  "                             the parent process will be determined and killed\n"
   "  --no-cancel                Hide cancel button\n"
 #endif
 
@@ -500,7 +495,6 @@ int main(int argc, char **argv)
     "--notify-icon",
 #endif
 #ifdef WITH_PROGRESS
-    "--progress",
     "--pulsate",
     "--auto-close",
     "--no-cancel",
@@ -569,7 +563,7 @@ int main(int argc, char **argv)
   args_noparamc += 3;
 #endif
 #ifdef WITH_PROGRESS
-  args_noparamc += 4;
+  args_noparamc += 3;
 #endif
 #ifdef WITH_CHECKLIST
   args_noparamc += 2;
@@ -598,7 +592,7 @@ int main(int argc, char **argv)
     "--checklist",
 #endif
 #ifdef WITH_PROGRESS
-    "--auto-kill",
+    "--progress",
 #endif
 #ifdef WITH_RADIOLIST
     "--radiolist",
@@ -951,12 +945,14 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
+  std::string progress_command = "";
   bool pulsate = false;
   bool autoclose = false;
   bool hide_cancel = false;
 
   if (args.has("--progress")) {
     dialog = DIALOG_PROGRESS;
+    progress_command = args["--progress"];
     dialog_count++;
   }
 
@@ -966,19 +962,6 @@ int main(int argc, char **argv)
 
   if (args.has("--auto-close")) {
     autoclose = true;
-  }
-
-  if (args.has("--auto-kill")) {
-    kill_pid_set = true;
-
-    if (args["--auto-kill"] == "parent")
-    {
-      kill_parent = true;
-    }
-    else
-    {
-      ARGTOINT(kill_pid, "--auto-kill");
-    }
   }
 
   if (args.has("--no-cancel")) {
@@ -1165,11 +1148,6 @@ int main(int argc, char **argv)
     if (autoclose)
     {
       return use_only_with(argv[0], "--auto-close", "--progress");
-    }
-
-    if (kill_pid != -1 || kill_parent)
-    {
-      return use_only_with(argv[0], "--auto-kill", "--progress");
     }
 
     if (hide_cancel)
@@ -1362,7 +1340,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, autoclose, hide_cancel);
+      return dialog_progress(progress_command, pulsate, autoclose, hide_cancel);
 #endif
 
     case DIALOG_SCALE:

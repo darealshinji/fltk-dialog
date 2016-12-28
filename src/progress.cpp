@@ -22,11 +22,6 @@
  * SOFTWARE.
  */
 
-/* to run a test:
-( (for n in `seq 1 100`; do echo "$n" && sleep 0.04; done) & echo $! >&3 ) 3>/tmp/mypid | \
-  ./fltk-dialog --progress --auto-kill=$(cat /tmp/mypid); echo "exit: $?"
- */
-
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
@@ -36,6 +31,7 @@
 #include <FL/Fl_Slider.H>
 #include <FL/Fl_Double_Window.H>
 
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -49,12 +45,11 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "misc/readstdio.hpp"
 
 
 static Fl_Double_Window *progress_win;
 
-static int check_pid()
+static int check_pid(void)
 {
   char errstr[512];
   int kill_ret = 0;
@@ -84,7 +79,7 @@ static int check_pid()
     }
 
     msg = errstr;
-    title = "Error: auto-kill PID";
+    title = "Error: PID";
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
@@ -100,11 +95,6 @@ static void progress_close_cb(Fl_Widget *, long p)
 
 static void progress_cancel_cb(Fl_Widget *o)
 {
-  if (kill_parent)
-  {
-    kill_pid = (int) getppid();
-  }
-
   if (kill_pid > 1)
   {
     kill((pid_t) kill_pid, 1);
@@ -113,7 +103,8 @@ static void progress_cancel_cb(Fl_Widget *o)
   progress_close_cb(o, 1);
 }
 
-int dialog_progress(bool pulsate,
+int dialog_progress(std::string progress_command,
+                    bool pulsate,
                     bool autoclose,
                     bool hide_cancel)
 {
@@ -124,18 +115,28 @@ int dialog_progress(bool pulsate,
   Fl_Return_Button *but_ok = NULL;
   Fl_Button        *but_cancel = NULL;
 
-  std::string s, line, linesubstr;
+  FILE *fpipe;
+  std::string progress_msg, script, s, linesubstr;
   int percent = 0;
+  int pulsate_val = 1;
   int textlines = 1;
   char percent_label[5];
+  char line[256];
+  bool full_percentage = false;
+
+  std::string pid_line = "PID=";
+  size_t pid_len = pid_line.size();
+
+  std::string return_code_line = "RETURN_CODE=";
+  size_t ret_len = return_code_line.size();
 
   if (msg == NULL)
   {
-    s = "Simple FLTK progress bar";
+    progress_msg = "Simple FLTK progress bar";
   }
   else
   {
-    s = translate(msg);
+    progress_msg = translate(msg);
     for (size_t i = 0; i < strlen(msg); i++)
     {
       if (msg[i] == '\n')
@@ -150,30 +151,10 @@ int dialog_progress(bool pulsate,
     title = "FLTK progress window";
   }
 
-  int stdin;
-  READSTDIO(stdin);
-
-  if (stdin == -1)
-  {
-    msg = "ERROR: select()";
-    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
-    return 1;
-  }
-  else if (!stdin)
-  {
-    msg = "ERROR: no input data receiving";
-    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
-    return 1;
-  }
-
-  if (kill_pid_set && check_pid() == 1)
-  {
-    return 1;
-  }
-
   int box_h = (textlines * 18) + 20;
   int mod_h = box_h + 44;
   int win_h = 0;
+
   if (!autoclose)
   {
     win_h = box_h + 81;
@@ -188,7 +169,7 @@ int dialog_progress(bool pulsate,
   {
     g = new Fl_Group(0, 0, 320, win_h);
     {
-      box = new Fl_Box(0, 0, 10, box_h, s.c_str());
+      box = new Fl_Box(0, 0, 10, box_h, progress_msg.c_str());
       box->box(FL_NO_BOX);
       box->align(FL_ALIGN_RIGHT);
 
@@ -198,6 +179,7 @@ int dialog_progress(bool pulsate,
         slider->type(1);
         slider->minimum(0);
         slider->maximum(100);
+        slider->color(fl_darker(FL_GRAY));
         slider->value(0);
         slider->slider_size(0.25);
       }
@@ -206,9 +188,9 @@ int dialog_progress(bool pulsate,
         progress_bar = new Fl_Progress(10, box_h, 300, 30);
         progress_bar->minimum(0);
         progress_bar->maximum(100);
-        progress_bar->color(0x88888800);  /* background color */
-        progress_bar->selection_color(0x4444ff00);  /* progress bar color */
-        progress_bar->labelcolor(FL_WHITE);  /* percent text color */
+        progress_bar->color(fl_darker(FL_GRAY));
+        progress_bar->selection_color(fl_lighter(FL_BLUE));
+        progress_bar->labelcolor(FL_WHITE);
         progress_bar->value(0);
         progress_bar->label("0%");
       }
@@ -221,6 +203,7 @@ int dialog_progress(bool pulsate,
         {
           but_cancel = new Fl_Button(210, mod_h, 100, 28, fl_cancel);
           but_cancel->callback(progress_cancel_cb);
+          but_cancel->deactivate();
           but_ok_x = 100;
         }
         but_ok = new Fl_Return_Button(but_ok_x, mod_h, 100, 28, fl_ok);
@@ -246,73 +229,102 @@ int dialog_progress(bool pulsate,
 
   if (pulsate)
   {
-    char c;
-    int a = 2;
-    std::ifstream stdin("/dev/stdin");  /* TODO: make more portable */
+    script = "(" + progress_command + ") >/dev/null & "
+      "PID=$! ; "
+      "echo " + pid_line + "$PID ; "
+      "while ps -p$PID >/dev/null ; "
+      "do "
+      "  echo ; "  /* print a line for fgets(3) */
+      "  sleep 0.003 ; "  /* sleep(1) adjusts the pulsating speed */
+      "done ; "
+      "wait $PID ; "
+      "echo " + return_code_line + "$? ; ";
+  }
+  else
+  {
+    script = "log=$(mktemp " P_tmpdir "/fltk-dialog-XXXXXXXX) ; "
+      "( (" + progress_command + ") >$log) & "
+      "PID=$! ; "
+      "echo " + pid_line + "$PID ; "
+      "while ps -p$PID >/dev/null ; "
+      "do "
+      /* repeat last line; a hack to get non-blocking stdin */
+      "  tail -n1 $log 2>/dev/null ; "
+      "done ; "
+      "rm -f $log ; "
+      "wait $PID ; "
+      "echo " + return_code_line + "$? ; ";
+  }
 
-    while (stdin.get(c))
+  if ((fpipe = (FILE *)popen(script.c_str(), "r")) == NULL)
+  {
+    perror("problems with pipe");
+    return 1;
+  }
+
+  while (fgets(line, sizeof(line), fpipe))
+  {
+    std::string s(line);
+
+    if (s.size() > pid_len && s.substr(0, pid_len) == pid_line)
+    {
+      /* get PID */
+      s = s.substr(pid_len, s.size() - pid_len);
+      kill_pid = atoi(s.c_str());
+
+      if (check_pid() == 0)
+      {
+        if (!hide_cancel)
+        {
+          but_cancel->activate();
+        }
+      }
+      else
+      {
+        progress_win->hide();
+        pclose(fpipe);
+        return 1;
+      }
+    }
+    else if (s.size() > ret_len && s.substr(0, ret_len) == return_code_line)
+    {
+      /* get return code */
+      s = s.substr(ret_len, s.size() - ret_len);
+      ret = atoi(s.c_str());
+    }
+
+    if (pulsate)
     {
       if (percent >= 100)
       {
-        a = -2;
+        pulsate_val = -1;
       }
       else if (percent <= 0)
       {
-        a = 2;
+        pulsate_val = 1;
       }
-      percent += a;
+      percent += pulsate_val;
 
       slider->value(percent);
       Fl::check();  /* update the screen */
     }
-
-    slider->value(100);
-    slider->deactivate();
-    Fl::check();
-
-    if (autoclose)
-    {
-      progress_win->hide();
-    }
     else
     {
-      progress_win->callback(progress_close_cb, 0);
-      but_ok->activate();
-
-      if (!hide_cancel)
+      if (s.compare(0, 1, "#") != 0)  /* ignore lines beginning with a '#' */
       {
-        but_cancel->deactivate();
-      }
-    }
-
-    if (!stdin.eof())
-    {
-      title = "error";
-      msg = "Error: stdin";
-      dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
-    }
-
-    stdin.close();
-  }
-  else /* if (!pulsate) */
-  {
-    /* get stdin line by line */
-    for (/**/; std::getline(std::cin, line); /**/)
-    {
-      /* ignore lines beginning with a '#' */
-      if (line.compare(0, 1, "#") != 0)
-      {
-        linesubstr = line.substr(0, 3);
+        linesubstr = s.substr(0, 3);
         percent = atoi(linesubstr.c_str());
+
         if (percent >= 0 && percent <= 100)
         {
           progress_bar->value(percent);
           sprintf(percent_label, "%d%%", percent);
           progress_bar->label(percent_label);
-          Fl::check();
 
           if (percent == 100)
           {
+            full_percentage = true;
+
             if (autoclose)
             {
               progress_win->hide();
@@ -328,7 +340,44 @@ int dialog_progress(bool pulsate,
               }
             }
           }
+
+          Fl::check();
         }
+      }
+    }
+  } /* while fgets(...) */
+
+  if (pulsate)
+  {
+    slider->value(100);
+    slider->deactivate();
+  }
+  else
+  {
+    if (full_percentage)
+    {
+      progress_bar->value(100);
+      progress_bar->label("100%");
+    }
+  }
+
+  pclose(fpipe);
+  Fl::check();
+
+  if (pulsate)
+  {
+    if (autoclose)
+    {
+      progress_win->hide();
+    }
+    else
+    {
+      progress_win->callback(progress_close_cb, 0);
+      but_ok->activate();
+
+      if (!hide_cancel)
+      {
+        but_cancel->deactivate();
       }
     }
   }

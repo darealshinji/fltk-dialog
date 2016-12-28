@@ -66,7 +66,6 @@ fltk_CXXFLAGS := -Wall $(CXXFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missin
 
 HAVE_ITOSTR     = no
 HAVE_PRINT_DATE = no
-HAVE_READSTDIO  = no
 HAVE_SPLIT      = no
 ifneq ($(WITH_L10N),no)
 main_CXXFLAGS += -DWITH_L10N
@@ -141,7 +140,6 @@ endif
 ifneq ($(WITH_PROGRESS),no)
 main_CXXFLAGS += -DWITH_PROGRESS
 OBJS          += src/progress.o
-HAVE_READSTDIO = yes
 endif
 ifneq ($(WITH_RADIOLIST),no)
 main_CXXFLAGS += -DWITH_RADIOLIST
@@ -150,8 +148,7 @@ HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_TEXTINFO),no)
 main_CXXFLAGS += -DWITH_TEXTINFO
-OBJS          += src/textinfo.o
-HAVE_READSTDIO = yes
+OBJS          += src/textinfo.o src/misc/readstdio.o
 endif
 ifneq ($(WITH_WINDOW_ICON),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON
@@ -159,9 +156,6 @@ OBJS          += src/window_icon.o
 endif
 ifneq ($(HAVE_PRINT_DATE),no)
 OBJS          += src/misc/print_date.o src/Flek/FDate.o
-endif
-ifneq ($(HAVE_READSTDIO),no)
-OBJS          += src/misc/readstdio.o
 endif
 ifneq ($(HAVE_SPLIT),no)
 OBJS          += src/misc/split.o
