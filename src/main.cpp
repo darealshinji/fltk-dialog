@@ -229,7 +229,7 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
   return 0;
 }
 
-#define ARGTODOUBLE(a, b)  if (_argtodouble(b, a, argv[0], b)) { return 1; }
+#define ARGTODOUBLE(a, b)  if (_argtodouble(args[b].c_str(), a, argv[0], b)) { return 1; }
 static int _argtodouble(const char *arg, double &val, const char *self, std::string cmd)
 {
   char *p;
