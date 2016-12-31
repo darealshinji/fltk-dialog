@@ -33,13 +33,33 @@
 
 #include <iostream>
 #include <string>
+#if _POSIX_C_SOURCE >= 200112L
+# include <sys/select.h>
+#else
+# include <sys/time.h>
+# include <sys/types.h>
+#endif
+#include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "misc/readstdio.hpp"
 
 static Fl_Double_Window *textinfo_win;
 static Fl_Return_Button *ti_but_ok;
 static bool ti_checkbutton_set = false;
+
+/* check if stdin returns any data */
+#define READSTDIO(x)  fd_set readfds; _readstdio(readfds, x)
+static void _readstdio(fd_set readfds, int &isStdio)
+{
+  FD_ZERO(&readfds);
+  FD_SET(STDIN_FILENO, &readfds);
+  struct timeval timeout;
+
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 0;
+
+  isStdio = select(1, &readfds, NULL, NULL, &timeout);
+}
 
 static void textinfo_close_cb(Fl_Widget *, long p)
 {
