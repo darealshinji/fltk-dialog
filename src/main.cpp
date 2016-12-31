@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,8 +133,7 @@ bool window_decoration = true;
 double scale_min = 0;
 double scale_max = 100;
 double scale_step = 1;
-double scale_init = 0;
-double scale_value = 0;
+double scale_init = scale_min;
 bool scale_val_set = false;
 
 /* don't use fltk's '@' symbols */
@@ -974,13 +973,9 @@ int main(int argc, char **argv)
     dialog_count++;
   }
 
-  if (args.has("--value")) {
-    ARGTODOUBLE(scale_init, "--value");
-    scale_val_set = true;
-  }
-
   if (args.has("--min-value")) {
     ARGTODOUBLE(scale_min, "--min-value");
+    scale_init = scale_min;
     scale_val_set = true;
   }
 
@@ -989,9 +984,25 @@ int main(int argc, char **argv)
     scale_val_set = true;
   }
 
+  if (args.has("--value")) {
+    ARGTODOUBLE(scale_init, "--value");
+    scale_val_set = true;
+  }
+
   if (args.has("--step")) {
     ARGTODOUBLE(scale_step, "--step");
     scale_val_set = true;
+
+    if (scale_step < 0)
+    {
+      std::cerr << argv[0] << ": error `--step': value cannot be negative" << std::endl;
+      return 1;
+    }
+    else if (scale_step == 0)
+    {
+      std::cerr << argv[0] << ": error `--step': value cannot be zero" << std::endl;
+      return 1;
+    }
   }
 
 #ifdef WITH_CHECKLIST

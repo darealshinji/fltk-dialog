@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
@@ -5,18 +29,44 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Slider.H>
 #include <FL/Fl_Valuator.H>
-#include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Double_Window.H>
 
 #include <iostream>
+#include <sstream>
 #include <string>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *message_win;
+static char scale_ch[1024];
+static double scale_value = 0;
+
+static char *message_scale_double_to_char(double d)
+{
+  char format[1024];
+
+  if (scale_step == (float)((int) scale_step))
+  {
+    /* integer value */
+    sprintf(scale_ch, "%d", (int) d);
+  }
+  else
+  {
+    /* floating point value;
+     * convert into char with fixed positions after decimal point */
+    std::stringstream ss;
+    ss << (scale_step - (float)((int) scale_step));
+    int precision = ss.str().size() - 2;
+    sprintf(format, "\%\%0.%df", precision);
+    sprintf(scale_ch, format, d);
+  }
+  return scale_ch;
+}
 
 static void message_close_cb(Fl_Widget *, long p)
 {
@@ -27,6 +77,8 @@ static void message_close_cb(Fl_Widget *, long p)
 static void message_scale_cb(Fl_Widget *o)
 {
   scale_value = ((Fl_Valuator *)o)->value();
+  ((Fl_Slider *)o)->label(message_scale_double_to_char(scale_value));
+  Fl::redraw();
 }
 
 void measure_button_width(Fl_Widget *o, int &w, int off)
@@ -53,7 +105,7 @@ int dialog_message(
   Fl_Group         *g_icon, *g_box, *g_middle, *g_buttons;
   Fl_Box           *tmp, *icon, *box, *dummy;
   Fl_Input         *input = NULL;
-  Fl_Value_Slider  *scale = NULL;
+  Fl_Slider        *slider = NULL;
   Fl_Return_Button *but_ret;
   Fl_Button        *but, *but_alt;
 
@@ -149,16 +201,20 @@ int dialog_message(
     min_h += 40;
   }
 
-  if (input_field || scaler_field)
+  if (input_field)
   {
     input_off = 40;
-    win_h += input_off;
-    min_h += input_off;
+  }
+  else if (scaler_field)
+  {
+    input_off = 60;
   }
   else
   {
     input_off = 0;
   }
+  win_h += input_off;
+  min_h += input_off;
 
   if (label_but_alt == NULL)
   {
@@ -245,7 +301,7 @@ int dialog_message(
     g_box->resizable(box);
     g_box->end();
 
-    /* extra group for input field or scaler */
+    /* input field / scaler */
     if (input_field)
     {
       g_middle = new Fl_Group(/*x*/ 0,
@@ -272,21 +328,21 @@ int dialog_message(
                               /*w*/ win_w,
                               /*h*/ 30);
       {
-        scale = new Fl_Value_Slider(/*x*/ 10,
-                                    /*y*/ win_h - input_off - 38,
-                                    /*w*/ win_w - 20,
-                                    /*h*/ 30,
-                                    /*l*/ NULL);
-        scale->type(FL_HOR_NICE_SLIDER);
-        scale->box(FL_FLAT_BOX);
-        scale->minimum(scale_min);
-        scale->maximum(scale_max);
-        scale->step(scale_step);
-        scale_value = scale->round(scale_init);
-        scale->value(scale_value);
-        scale->callback(message_scale_cb);
+        slider = new Fl_Slider(/*x*/ 10,
+                               /*y*/ win_h - input_off - 38,
+                               /*w*/ win_w - 20,
+                               /*h*/ 30,
+                               /*l*/ message_scale_double_to_char(scale_init));
+        slider->type(FL_HOR_NICE_SLIDER);
+        slider->box(FL_FLAT_BOX);
+        slider->align(FL_ALIGN_BOTTOM_RIGHT);
+        slider->bounds(scale_min, scale_max);
+        slider->step(scale_step);
+        scale_value = slider->round(scale_init);
+        slider->value(scale_value);
+        slider->callback(message_scale_cb);
       }
-      g_middle->resizable(scale);
+      g_middle->resizable(slider);
       g_middle->end();
     }
 
@@ -368,7 +424,7 @@ int dialog_message(
     }
     else if (scaler_field)
     {
-      std::cout << scale_value << std::endl;
+      std::cout << slider->label() << std::endl;
     }
   }
   return ret;

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ extern int ret;
 extern bool resizable, position_center, window_decoration, window_taskbar, scale_val_set;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;
-extern double scale_value, scale_min, scale_max, scale_step, scale_init;
+extern double scale_min, scale_max, scale_step, scale_init;
 
 /* main.cpp */
 void set_size(Fl_Double_Window *o, Fl_Widget *w);

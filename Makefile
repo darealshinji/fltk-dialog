@@ -148,7 +148,7 @@ HAVE_SPLIT = yes
 endif
 ifneq ($(WITH_TEXTINFO),no)
 main_CXXFLAGS += -DWITH_TEXTINFO
-OBJS          += src/textinfo.o src/misc/readstdio.o
+OBJS          += src/textinfo.o
 endif
 ifneq ($(WITH_WINDOW_ICON),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON
