@@ -74,10 +74,10 @@ static void message_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-static void message_scale_cb(Fl_Widget *o)
+static void message_scale_cb(Fl_Widget *o, void *v)
 {
   scale_value = ((Fl_Valuator *)o)->value();
-  ((Fl_Slider *)o)->label(message_scale_double_to_char(scale_value));
+  ((Fl_Box *)v)->label(message_scale_double_to_char(scale_value));
   Fl::redraw();
 }
 
@@ -103,7 +103,7 @@ int dialog_message(
   bool with_icon_box)
 {
   Fl_Group         *g_icon, *g_box, *g_middle, *g_buttons;
-  Fl_Box           *tmp, *icon, *box, *dummy;
+  Fl_Box           *tmp, *icon, *box, *slider_box = NULL, *dummy;
   Fl_Input         *input = NULL;
   Fl_Slider        *slider = NULL;
   Fl_Return_Button *but_ret;
@@ -328,19 +328,25 @@ int dialog_message(
                               /*w*/ win_w,
                               /*h*/ 30);
       {
+        slider_box = new Fl_Box(/*x*/ 10,
+                                /*y*/ win_h - input_off - 8,
+                                /*w*/ win_w - 20,
+                                /*h*/ 30,
+                                /*l*/ message_scale_double_to_char(scale_init));
+        slider_box->box(FL_FLAT_BOX);
+        slider_box->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
+
         slider = new Fl_Slider(/*x*/ 10,
                                /*y*/ win_h - input_off - 38,
                                /*w*/ win_w - 20,
-                               /*h*/ 30,
-                               /*l*/ message_scale_double_to_char(scale_init));
+                               /*h*/ 30);
         slider->type(FL_HOR_NICE_SLIDER);
-        slider->box(FL_FLAT_BOX);
-        slider->align(FL_ALIGN_BOTTOM_RIGHT);
+        slider->box(FL_NO_BOX);
         slider->bounds(scale_min, scale_max);
         slider->step(scale_step);
         scale_value = slider->round(scale_init);
         slider->value(scale_value);
-        slider->callback(message_scale_cb);
+        slider->callback(message_scale_cb, slider_box);
       }
       g_middle->resizable(slider);
       g_middle->end();
@@ -424,7 +430,7 @@ int dialog_message(
     }
     else if (scaler_field)
     {
-      std::cout << slider->label() << std::endl;
+      std::cout << slider_box->label() << std::endl;
     }
   }
   return ret;
