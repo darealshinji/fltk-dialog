@@ -43,12 +43,12 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *message_win;
-static char scale_ch[1024];
+static char scale_ch[255];
 static double scale_value = 0;
 
 static char *message_scale_double_to_char(double d)
 {
-  char format[1024];
+  char format[32];
 
   if (scale_step == (float)((int) scale_step))
   {
