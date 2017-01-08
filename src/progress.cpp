@@ -340,10 +340,9 @@ int dialog_progress(std::string progress_command,
               }
             }
           }
-
-          Fl::check();
         }
       }
+      Fl::check();
     }
   } /* while fgets(...) */
 
