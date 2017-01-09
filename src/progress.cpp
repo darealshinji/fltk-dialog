@@ -277,6 +277,7 @@ int dialog_progress(std::string progress_command,
         if (!hide_cancel)
         {
           but_cancel->activate();
+          Fl::check();
         }
       }
       else
@@ -306,7 +307,6 @@ int dialog_progress(std::string progress_command,
       percent += pulsate_val;
 
       slider->value(percent);
-      Fl::check();  /* update the screen */
     }
     else
     {
@@ -315,69 +315,51 @@ int dialog_progress(std::string progress_command,
         linesubstr = s.substr(0, 3);
         percent = atoi(linesubstr.c_str());
 
-        if (percent >= 0 && percent <= 100)
+        if (percent >= 0 && percent < 100)
         {
+          if (!hide_cancel)
+          {
+            but_cancel->activate();
+          }
+          but_ok->deactivate();
           progress_bar->value(percent);
           sprintf(percent_label, "%d%%", percent);
           progress_bar->label(percent_label);
-
-          if (percent == 100)
-          {
-            full_percentage = true;
-
-            if (autoclose)
-            {
-              progress_win->hide();
-            }
-            else
-            {
-              progress_win->callback(progress_close_cb, 0);
-              but_ok->activate();
-
-              if (!hide_cancel)
-              {
-                but_cancel->deactivate();
-              }
-            }
-          }
+        }
+        else if (percent >= 100)
+        {
+          full_percentage = true;
         }
       }
-      Fl::check();
     }
+    Fl::check();
   } /* while fgets(...) */
+
+  pclose(fpipe);
 
   if (pulsate)
   {
     slider->value(100);
     slider->deactivate();
   }
-  else
+  else if (!pulsate && full_percentage)
   {
-    if (full_percentage)
-    {
-      progress_bar->value(100);
-      progress_bar->label("100%");
-    }
+    progress_bar->value(100);
+    progress_bar->label("100%");
   }
 
-  pclose(fpipe);
-  Fl::check();
-
-  if (pulsate)
+  if (autoclose)
   {
-    if (autoclose)
-    {
-      progress_win->hide();
-    }
-    else
-    {
-      progress_win->callback(progress_close_cb, 0);
-      but_ok->activate();
+    progress_win->hide();
+  }
+  else
+  {
+    progress_win->callback(progress_close_cb, 0);
+    but_ok->activate();
 
-      if (!hide_cancel)
-      {
-        but_cancel->deactivate();
-      }
+    if (!hide_cancel)
+    {
+      but_cancel->deactivate();
     }
   }
 
