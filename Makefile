@@ -224,7 +224,7 @@ fltk_cmake_config += \
   -DZLIB_LIBRARY_RELEASE="$(CURDIR)/$(libz_a)" \
   -DLIB_zlib="$(CURDIR)/$(libz_a)"
 main_LIBS         += $(libz_a)
-extra_include     += -I"$(CURDIR)/$(zlib)"
+extra_include     += -I"$(CURDIR)/$(zlib)" -I"$(CURDIR)/$(zlib)/build"
 extra_libdirs     += -L"$(CURDIR)/$(zlib)/build"
 endif
 
@@ -301,6 +301,7 @@ $(png)/build/Makefile: $(libpng_build_Makefile_dep)
 	cd $(png)/build && \
   CC="$(CC)" \
   CFLAGS="-Wall $(CFLAGS) $(CPPFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
+  CPPFLAGS="$(CPPFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
   LDFLAGS="$(LDFLAGS) -L$(CURDIR)/$(zlib)/build" \
   ../configure --disable-shared \
     --with-zlib-prefix="fltk_dialog_" \
