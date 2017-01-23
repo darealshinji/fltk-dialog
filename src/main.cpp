@@ -115,6 +115,10 @@ std::string separator_s = "|";
 
 #ifdef WITH_PROGRESS
 int kill_pid = -1;
+bool autoclose = false;
+bool hide_cancel = false;
+bool pulsate = false;
+std::string watchfile;
 #endif
 
 /* get dimensions of the main screen work area */
@@ -307,7 +311,7 @@ static void print_usage(const char *prog)
   "  --entry                    Display text entry dialog\n"
   "  --password                 Display password dialog\n"
 #ifdef WITH_PROGRESS
-  "  --progress=COMMAND         Display progress indication dialog for COMMAND\n"
+  "  --progress                 Display progress indication dialog\n"
 #endif
 #ifdef WITH_CALENDAR
   "  --calendar                 Display calendar dialog; returns date as Y-M-D\n"
@@ -370,6 +374,8 @@ static void print_usage(const char *prog)
   "\n"
   "Progress options:\n"
   "  --pulsate                  Pulsate progress bar\n"
+  "  --watch-pid=PID            Process ID to watch\n"
+  "  --watch-file=FILE          Process logfile to watch\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --no-cancel                Hide cancel button\n"
 #endif
@@ -494,6 +500,7 @@ int main(int argc, char **argv)
     "--notify-icon",
 #endif
 #ifdef WITH_PROGRESS
+    "--progress",
     "--pulsate",
     "--auto-close",
     "--no-cancel",
@@ -562,7 +569,7 @@ int main(int argc, char **argv)
   args_noparamc += 3;
 #endif
 #ifdef WITH_PROGRESS
-  args_noparamc += 3;
+  args_noparamc += 4;
 #endif
 #ifdef WITH_CHECKLIST
   args_noparamc += 2;
@@ -590,14 +597,15 @@ int main(int argc, char **argv)
 #ifdef WITH_CHECKLIST
     "--checklist",
 #endif
-#ifdef WITH_PROGRESS
-    "--progress",
-#endif
 #ifdef WITH_RADIOLIST
     "--radiolist",
 #endif
 #ifdef WITH_DROPDOWN
     "--dropdown",
+#endif
+#ifdef WITH_PROGRESS
+    "--watch-pid",
+    "--watch-file",
 #endif
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
     "--format",
@@ -635,14 +643,14 @@ int main(int argc, char **argv)
 #ifdef WITH_CHECKLIST
   args_paramc += 1;
 #endif
-#ifdef WITH_PROGRESS
-  args_paramc += 1;
-#endif
 #ifdef WITH_RADIOLIST
   args_paramc += 1;
 #endif
 #ifdef WITH_DROPDOWN
   args_paramc += 1;
+#endif
+#ifdef WITH_PROGRESS
+  args_paramc += 2;
 #endif
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
   args_paramc += 1;
@@ -944,15 +952,17 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
-  std::string progress_command = "";
-  bool pulsate = false;
-  bool autoclose = false;
-  bool hide_cancel = false;
-
   if (args.has("--progress")) {
     dialog = DIALOG_PROGRESS;
-    progress_command = args["--progress"];
     dialog_count++;
+  }
+
+  if (args.has("--watch-pid")) {
+    ARGTOINT(kill_pid, "--watch-pid");
+  }
+
+  if (args.has("--watch-file")) {
+    watchfile = args["--watch-file"];
   }
 
   if (args.has("--pulsate")) {
@@ -1351,7 +1361,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     case DIALOG_PROGRESS:
-      return dialog_progress(progress_command, pulsate, autoclose, hide_cancel);
+      return dialog_progress();
 #endif
 
     case DIALOG_SCALE:
