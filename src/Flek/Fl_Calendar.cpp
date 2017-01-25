@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
- *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
+ *          2016-2017 djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #include <FL/Fl.H>
@@ -94,13 +94,54 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
   }
 }
 
+bool Fl_Calendar_Base::have_l10n_arabic ()
+{
+  char *l = getenv("LANG");
+  if (l == NULL || l[0] == '\0') {
+    l = getenv("LANGUAGE");
+  }
+  if (l != NULL && l[0] == 'a' && l[1] == 'r') {
+    return true;
+  }
+  return false;
+}
+
+void
+Fl_Calendar_Base::eastern_arabic_numbers (bool arabic, char *t, int n)
+{
+  if (!arabic) {
+    sprintf (t, "%d", n);
+  } else {
+    const char *f;
+    char c[8];
+    sprintf (c, "%d", n);
+    memset (t, '\0', strlen(t));
+
+    for (size_t i = 0; i < strlen (c) && c[i] != '\0'; ++i) {
+      if (c[i] == '0') f = "\xD9\xA0";
+      if (c[i] == '1') f = "\xD9\xA1";
+      if (c[i] == '2') f = "\xD9\xA2";
+      if (c[i] == '3') f = "\xD9\xA3";
+      if (c[i] == '4') f = "\xD9\xA4";
+      if (c[i] == '5') f = "\xD9\xA5";
+      if (c[i] == '6') f = "\xD9\xA6";
+      if (c[i] == '7') f = "\xD9\xA7";
+      if (c[i] == '8') f = "\xD9\xA8";
+      if (c[i] == '9') f = "\xD9\xA9";
+      strcat (t, f);
+    }
+    t[strlen (t) + 1] = '\0';
+  }
+}
+
 void
 Fl_Calendar_Base::update ()
 {
   int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
-  char t[8];
+  char t[32];
+  bool ar = have_l10n_arabic ();
 
   int dipm_month;  /* previous month */
   int dipm_year;   /* year of previous month */
@@ -115,7 +156,8 @@ Fl_Calendar_Base::update ()
 
   /* last days of previous month */
   for (i = 0; i < dow; i++) {
-    sprintf (t, "%d", (i-dow+dipm+1));
+    //sprintf (t, "%d", (i-dow+dipm+1));
+    eastern_arabic_numbers (ar, t, (i-dow+dipm+1));
     days[i]->label (strdup(t));
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
@@ -125,7 +167,8 @@ Fl_Calendar_Base::update ()
 
   /* current month */
   for (i = dow; i < (dim+dow); i++) {
-    sprintf (t, "%d", (i+1-dow));
+    //sprintf (t, "%d", (i+1-dow));
+    eastern_arabic_numbers (ar, t, (i+1-dow));
     days[i]->label (strdup(t));
     days[i]->down_box (FL_THIN_DOWN_BOX);
     days[i]->box (FL_THIN_UP_BOX);
@@ -139,7 +182,8 @@ Fl_Calendar_Base::update ()
 
   /* first days of next month */
   for (i = (dim+dow); i < (6*7); i++) {
-    sprintf (t, "%d", (i+1-dow-dim));
+    //sprintf (t, "%d", (i+1-dow-dim));
+    eastern_arabic_numbers (ar, t, (i+1-dow-dim));
     days[i]->label (strdup(t));
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
@@ -236,7 +280,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                                     y,
                                     w/14,
                                     h/8,
-                                    "\xc2\xab");  /* http://www.utf8-chartable.de/ */
+                                    "\xc2\xab");
   prv_month->box (FL_FLAT_BOX);
   prv_month->down_box (FL_FLAT_BOX);
   prv_month->labelsize (calendar_labelsize);
@@ -316,7 +360,8 @@ Fl_Calendar::update ()
   };
 
   sprintf (tmp_m, "%s", _month_name[month ()-1]);
-  sprintf (tmp_y, "%d", year ());
+  //sprintf (tmp_y, "%d", year ());
+  eastern_arabic_numbers (have_l10n_arabic (), tmp_y, year ());
 
   Fl_Calendar_Base::update ();
 

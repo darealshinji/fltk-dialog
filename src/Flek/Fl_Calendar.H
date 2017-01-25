@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
- *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
+ *          2016-2017 djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #ifndef _FL_CALENDAR_H_
@@ -60,6 +60,9 @@ public:
    * @param ch The calendar height.
    */
   void csize (int cx, int cy, int cw, int ch);
+
+  bool have_l10n_arabic ();
+  void eastern_arabic_numbers (bool arabic, char *t, int n);
 
   /**
    * Returns a pointer to the button for the day D in the Fl_Calendar.
