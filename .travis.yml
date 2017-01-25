@@ -17,7 +17,7 @@ addons:
 
 script:
   - ./configure --enable-hardening
-  - make -j1 V=1
+  - ( make -j1 V=1 ; strip --strip-all fltk-dialog )
 
 after_success:
   - ( mkdir out ; cd out ; tar cfJ fltk-dialog-x86_64_linux.tar.xz ../fltk-dialog )
