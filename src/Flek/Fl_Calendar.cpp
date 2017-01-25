@@ -118,16 +118,16 @@ Fl_Calendar_Base::eastern_arabic_numbers (bool arabic, char *t, int n)
     memset (t, '\0', strlen(t));
 
     for (size_t i = 0; i < strlen (c) && c[i] != '\0'; ++i) {
-      if (c[i] == '0') f = "\xD9\xA0";
-      if (c[i] == '1') f = "\xD9\xA1";
-      if (c[i] == '2') f = "\xD9\xA2";
-      if (c[i] == '3') f = "\xD9\xA3";
-      if (c[i] == '4') f = "\xD9\xA4";
-      if (c[i] == '5') f = "\xD9\xA5";
-      if (c[i] == '6') f = "\xD9\xA6";
-      if (c[i] == '7') f = "\xD9\xA7";
-      if (c[i] == '8') f = "\xD9\xA8";
-      if (c[i] == '9') f = "\xD9\xA9";
+      if      (c[i] == '1') { f = "\xD9\xA1"; }
+      else if (c[i] == '2') { f = "\xD9\xA2"; }
+      else if (c[i] == '3') { f = "\xD9\xA3"; }
+      else if (c[i] == '4') { f = "\xD9\xA4"; }
+      else if (c[i] == '5') { f = "\xD9\xA5"; }
+      else if (c[i] == '6') { f = "\xD9\xA6"; }
+      else if (c[i] == '7') { f = "\xD9\xA7"; }
+      else if (c[i] == '8') { f = "\xD9\xA8"; }
+      else if (c[i] == '9') { f = "\xD9\xA9"; }
+      else /*if (c[i] == '0')*/{ f = "\xD9\xA0"; }
       strcat (t, f);
     }
     t[strlen (t) + 1] = '\0';
