@@ -16,7 +16,7 @@ addons:
       - qtbase5-dev
 
 script:
-  - ./configure --enable-hardening --enable-small
+  - ./configure --enable-hardening
   - make -j1 V=1
 
 after_success:
