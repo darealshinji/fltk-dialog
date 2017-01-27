@@ -32,6 +32,7 @@
 #include <FL/Fl_Repeat_Button.H>
 
 int calendar_labelsize = 12;
+bool Fl_Calendar_Arabic = false;
 
 static void fl_calendar_button_cb (Fl_Button *a, void *b)
 {
@@ -94,22 +95,10 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
   }
 }
 
-bool Fl_Calendar_Base::have_l10n_arabic ()
-{
-  char *l = getenv("LANG");
-  if (l == NULL || l[0] == '\0') {
-    l = getenv("LANGUAGE");
-  }
-  if (l != NULL && l[0] == 'a' && l[1] == 'r') {
-    return true;
-  }
-  return false;
-}
-
 void
-Fl_Calendar_Base::eastern_arabic_numbers (bool arabic, char *t, int n)
+Fl_Calendar_Base::eastern_arabic_numbers (char *t, int n)
 {
-  if (!arabic) {
+  if (!Fl_Calendar_Arabic) {
     sprintf (t, "%d", n);
   } else {
     const char *f;
@@ -141,7 +130,6 @@ Fl_Calendar_Base::update ()
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
   char t[32];
-  bool ar = have_l10n_arabic ();
 
   int dipm_month;  /* previous month */
   int dipm_year;   /* year of previous month */
@@ -157,7 +145,7 @@ Fl_Calendar_Base::update ()
   /* last days of previous month */
   for (i = 0; i < dow; i++) {
     //sprintf (t, "%d", (i-dow+dipm+1));
-    eastern_arabic_numbers (ar, t, (i-dow+dipm+1));
+    eastern_arabic_numbers (t, (i-dow+dipm+1));
     days[i]->label (strdup(t));
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
@@ -168,7 +156,7 @@ Fl_Calendar_Base::update ()
   /* current month */
   for (i = dow; i < (dim+dow); i++) {
     //sprintf (t, "%d", (i+1-dow));
-    eastern_arabic_numbers (ar, t, (i+1-dow));
+    eastern_arabic_numbers (t, (i+1-dow));
     days[i]->label (strdup(t));
     days[i]->down_box (FL_THIN_DOWN_BOX);
     days[i]->box (FL_THIN_UP_BOX);
@@ -183,7 +171,7 @@ Fl_Calendar_Base::update ()
   /* first days of next month */
   for (i = (dim+dow); i < (6*7); i++) {
     //sprintf (t, "%d", (i+1-dow-dim));
-    eastern_arabic_numbers (ar, t, (i+1-dow-dim));
+    eastern_arabic_numbers (t, (i+1-dow-dim));
     days[i]->label (strdup(t));
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
@@ -361,7 +349,7 @@ Fl_Calendar::update ()
 
   sprintf (tmp_m, "%s", _month_name[month ()-1]);
   //sprintf (tmp_y, "%d", year ());
-  eastern_arabic_numbers (have_l10n_arabic (), tmp_y, year ());
+  eastern_arabic_numbers (tmp_y, year ());
 
   Fl_Calendar_Base::update ();
 
