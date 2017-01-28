@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+
 /*****
 
 # usage example 1:
@@ -31,13 +32,28 @@
   sleep 2 && echo 91 && \
   sleep 1 && echo '100#Done.' \
 ) \
->/tmp/log & pid=$!
-./fltk-dialog --progress --watch-file=/tmp/log --watch-pid=$pid
+>/tmp/log &
+pid=$!; ./fltk-dialog --progress --watch-file=/tmp/log --watch-pid=$pid
+
 
 # usage example 2:
-sleep 5 & pid=$!; ./fltk-dialog --progress --pulsate --watch-pid=$pid
+sleep 5 &
+pid=$!; ./fltk-dialog --progress --pulsate --watch-pid=$pid
+
+
+# usage example 3:
+( \
+  echo '#Working on it...' && \
+  sleep 4 && \
+  echo '#Working on it... almost finished...' && \
+  sleep 2 && \
+  echo 'EOL#Working on it... almost finished... Done.' \
+) \
+>/tmp/log &
+./fltk-dialog --progress --pulsate --watch-file=/tmp/log
 
 *****/
+
 
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
@@ -59,6 +75,7 @@ sleep 5 & pid=$!; ./fltk-dialog --progress --pulsate --watch-pid=$pid
 #include "fltk-dialog.hpp"
 
 #define FGETS_LIMIT 256
+#define INTERVAL_SEC 0.01 /* 10ms; has an effect on pulsating speed */
 
 static Fl_Double_Window *progress_win;
 static Fl_Box           *progress_box;
@@ -69,7 +86,6 @@ static Fl_Progress      *progress_bar;
 
 static int pulsate_val = 0;
 static int progress_percent = 0;
-static double interval_sec = 0.01; /* 10ms */
 static bool progress_running = true;
 
 static void progress_close_cb(Fl_Widget *, long p)
@@ -141,8 +157,6 @@ static void set_progress_box_label(char *ch)
   }
 }
 
-// investigate time-based pulsating effect using ftime(3)
-
 static void progress_cb(void *)
 {
   char line[FGETS_LIMIT];
@@ -169,14 +183,15 @@ static void progress_cb(void *)
       {
         while (fgets(line, FGETS_LIMIT, stream))
         {
-          if (STREQ(line, "END") || STREQ(line, "EOF") || STREQ(line, "EOL") || STREQ(line, "100"))
+          std::string s(line);
+          s = s.substr(0, 3);
+
+          if (s == "END" || s == "EOF" || s == "EOL" || s == "100")
           {
             progress_running = false;
           }
-          else
-          {
-            set_progress_box_label(line);
-          }
+
+          set_progress_box_label(line);
         }
 
         if (progress_percent >= 100)
@@ -246,7 +261,7 @@ static void progress_cb(void *)
     }
   }
 
-  Fl::repeat_timeout(interval_sec, progress_cb);
+  Fl::repeat_timeout(INTERVAL_SEC, progress_cb);
 }
 
 int dialog_progress()
@@ -321,7 +336,7 @@ int dialog_progress()
   progress_win->show();
   set_undecorated(progress_win);
 
-  Fl::add_timeout(interval_sec, progress_cb);
+  Fl::add_timeout(INTERVAL_SEC, progress_cb);
   Fl::run();
   return ret;
 }
