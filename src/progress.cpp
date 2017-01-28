@@ -26,10 +26,10 @@
 
 # usage example 1:
 ( \
-  sleep 3 && echo 5 && \
+  sleep 3 && echo '5#Working on it...' && \
   sleep 1 && echo 30 && \
   sleep 2 && echo 91 && \
-  sleep 1 && echo 100 \
+  sleep 1 && echo '100#Done.' \
 ) \
 >/tmp/log & pid=$!
 ./fltk-dialog --progress --watch-file=/tmp/log --watch-pid=$pid
@@ -48,14 +48,17 @@ sleep 5 & pid=$!; ./fltk-dialog --progress --pulsate --watch-pid=$pid
 #include <FL/Fl_Slider.H>
 #include <FL/Fl_Double_Window.H>
 
-#include <iostream>
-#include <thread>
+#include <string>
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "fltk-dialog.hpp"
+
+#define FGETS_LIMIT 256
 
 static Fl_Double_Window *progress_win;
 static Fl_Box           *progress_box;
@@ -124,9 +127,25 @@ static int check_pid()
   return 0;
 }
 
+static void set_progress_box_label(char *ch)
+{
+  for (int i = 0; (i <= 3 || ch[i] == '\0'); ++i)
+  {
+    if (ch[i] == '#')
+    {
+      char *l = ch + i + 1;
+      progress_box->label(strdup(l));
+      Fl::redraw();
+      i = 3;
+    }
+  }
+}
+
+// investigate time-based pulsating effect using ftime(3)
+
 static void progress_cb(void *)
 {
-  char line[256];
+  char line[FGETS_LIMIT];
 
   if (progress_running)
   {
@@ -135,7 +154,7 @@ static void progress_cb(void *)
       progress_running = false;
     }
 
-    std::string command = "test ! -f '" + watchfile + "' || (tail -n1 '" + watchfile + "' | head -c3)";
+    std::string command = "test ! -f '" + watchfile + "' || tail -n1 '" + watchfile + "'";
     FILE *stream = popen(command.c_str(), "r");
 
     if (stream == NULL)
@@ -148,11 +167,15 @@ static void progress_cb(void *)
     {
       if (pulsate)
       {
-        while (fgets(line, sizeof(line), stream))
+        while (fgets(line, FGETS_LIMIT, stream))
         {
           if (STREQ(line, "END") || STREQ(line, "EOF") || STREQ(line, "EOL") || STREQ(line, "100"))
           {
             progress_running = false;
+          }
+          else
+          {
+            set_progress_box_label(line);
           }
         }
 
@@ -164,18 +187,28 @@ static void progress_cb(void *)
         {
           pulsate_val = 1;
         }
+
         progress_percent += pulsate_val;
         slider->value(progress_percent);
       }
       else
       {
-        while (fgets(line, sizeof(line), stream))
+        while (fgets(line, FGETS_LIMIT, stream))
         {
-          int i = atoi(line);
+          std::string s(line);
+          s.substr(0, 3);
+          int i = atoi(s.c_str());
+
           if (i > progress_percent && i <= 100)
           {
             progress_percent = i;
           }
+          else if (i > 100)
+          {
+            progress_percent = 100;
+          }
+
+          set_progress_box_label(line);
         }
 
         if (progress_percent == 100)
@@ -226,18 +259,23 @@ int dialog_progress()
     title = "FLTK progress window";
   }
 
-  progress_win = new Fl_Double_Window(320, 240, title);
+  if (msg == NULL)
+  {
+    msg = "Progress indicator";
+  }
+
+  progress_win = new Fl_Double_Window(320, 140, title);
   progress_win->callback(progress_cancel_cb);
   {
-    g = new Fl_Group(0, 0, 320, 240);
+    g = new Fl_Group(0, 0, 320, 140);
     {
-      progress_box = new Fl_Box(0, 0, 10, 30);
+      progress_box = new Fl_Box(0, 10, 10, 30, msg);
       progress_box->box(FL_NO_BOX);
       progress_box->align(FL_ALIGN_RIGHT);
 
       if (pulsate)
       {
-        slider = new Fl_Slider(10, 40, 300, 30);
+        slider = new Fl_Slider(10, 50, 300, 30);
         slider->type(1);
         slider->minimum(0);
         slider->maximum(100);
@@ -247,7 +285,7 @@ int dialog_progress()
       }
       else
       {
-        progress_bar = new Fl_Progress(10, 40, 300, 30, "0%");
+        progress_bar = new Fl_Progress(10, 50, 300, 30, "0%");
         progress_bar->minimum(0);
         progress_bar->maximum(100);
         progress_bar->color(fl_darker(FL_GRAY));
@@ -262,15 +300,15 @@ int dialog_progress()
       {
         if (!hide_cancel)
         {
-          progress_but_cancel = new Fl_Button(210, 200, 100, 28, fl_cancel);
+          progress_but_cancel = new Fl_Button(210, 104, 100, 26, fl_cancel);
           progress_but_cancel->callback(progress_cancel_cb);
           but_ok_x = 100;
         }
-        progress_but_ok = new Fl_Return_Button(but_ok_x, 200, 100, 28, fl_ok);
+        progress_but_ok = new Fl_Return_Button(but_ok_x, 104, 100, 26, fl_ok);
         progress_but_ok->deactivate();
         progress_but_ok->callback(progress_close_cb, 0);
       }
-      dummy = new Fl_Box(but_ok_x - 1, 200 - 1, 1, 1);
+      dummy = new Fl_Box(but_ok_x - 1, 103, 1, 1);
       dummy->box(FL_NO_BOX);
     }
     g->resizable(dummy);
