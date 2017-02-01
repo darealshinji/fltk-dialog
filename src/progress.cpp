@@ -105,41 +105,10 @@ static void progress_cancel_cb(Fl_Widget *o)
 
 static int check_pid()
 {
-  //char errstr[512];
-  int kill_ret = 0;
-
-  if (kill_pid <= 1)
+  if (kill_pid > 1 && kill((pid_t) kill_pid, 0) == -1)
   {
     return 1;
   }
-  else
-  {
-    kill_ret = kill((pid_t) kill_pid, 0);
-  }
-
-  if (kill_ret == -1)
-  {
-    /*
-    if (errno == EPERM)
-    {
-      sprintf(errstr, "PID %d: no permission to kill the target process", kill_pid);
-    }
-    else if (errno == ESRCH)
-    {
-      sprintf(errstr, "PID %d: the PID or process group does not exist", kill_pid);
-    }
-    else
-    {
-      sprintf(errstr, "PID %d: errno %d", kill_pid, errno);
-    }
-
-    msg = errstr;
-    title = "Error: PID";
-    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
-    */
-    return 1;
-  }
-
   return 0;
 }
 
@@ -163,11 +132,6 @@ static void progress_cb(void *)
 
   if (progress_running)
   {
-    if (kill_pid != -1 && check_pid() != 0)
-    {
-      progress_running = false;
-    }
-
     std::string command = "test ! -f '" + watchfile + "' || tail -n1 '" + watchfile + "'";
     FILE *stream = popen(command.c_str(), "r");
 
@@ -238,6 +202,11 @@ static void progress_cb(void *)
       }
     }
     pclose(stream);
+
+    if (check_pid() == 1)
+    {
+      progress_running = false;
+    }
   }
   else
   {
