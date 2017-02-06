@@ -101,7 +101,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
   /* dlopen() library */
 
-  void *handle = dlopen(filename, RTLD_NOW);
+  void *handle = dlopen(filename, RTLD_LAZY);
   const char *dlsym_error = dlerror();
 
   if (!handle)
