@@ -85,15 +85,14 @@ int dialog_notify(const char *appname,
 
 #  define STRINGIFY(x) #x
 #  define LOAD_SYMBOL(x) \
-  *(void **)(&x) = dlsym(handle, STRINGIFY(x)); \
+  *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
   dlsym_error = dlerror(); \
   if (dlsym_error) \
   { \
     std::cerr << "error: cannot load symbol\n" << dlsym_error \
       << std::endl; \
     return 1; \
-  } \
-  dlerror()
+  }
 
   LOAD_SYMBOL(notify_init);
   LOAD_SYMBOL(notify_is_initted);
