@@ -1402,10 +1402,13 @@ int main(int argc, char **argv)
       return dialog_textinfo(autoscroll, checkbox);
 #endif
 
-    /* debug */
-    //default:
-    //  std::cerr << argv[0] << ":\nmain(): error: unknown or unused dialog" << std::endl;
-    //  return 1;
+    /* should never be reached */
+    default:
+      std::cerr << argv[0] << ":\nmain(): error: unknown or unused dialog" << std::endl;
+      return 1;
   }
+
+  /* should never be reached */
+  return 1;
 }
 
