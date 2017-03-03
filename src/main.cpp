@@ -320,11 +320,12 @@ static void print_usage(const char *prog)
   "  --date                     Display date dialog; returns date as Y-M-D\n"
 #endif
 #ifdef WITH_COLOR
-  "  --color                    Display color selection dialog\n"
+  "  --color                    Display color selection dialog; returns color\n"
+  "                             as \"RGB [0.000-1.000]|RGB [0-255]|HTML hex|HSV\"\n"
 #endif
   "  --scale                    Display scale dialog\n"
 #ifdef WITH_CHECKLIST
-  "  --checklist=OPT1[|..]      Display a check button list\n"
+  "  --checklist=OPT1|OPT2[|..] Display a check button list\n"
 #endif
 #ifdef WITH_RADIOLIST
   "  --radiolist=OPT1|OPT2[|..] Display a radio button list\n"
