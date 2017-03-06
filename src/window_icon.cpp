@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,19 @@
 #include <FL/Fl_GIF_Image.H>
 #include <FL/Fl_JPEG_Image.H>
 #include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_PNM_Image.H>
 #include <FL/Fl_RGB_Image.H>
 #include <FL/Fl_XBM_Image.H>
 #include <FL/Fl_XPM_Image.H>
 
 #include <algorithm>
+#include <fstream>
 #include <locale>
 #include <string>
+#include <string.h>
 
 #include "fltk-dialog.hpp"
+
+#define BYTES_BUF 16
 
 
 struct to_lower {
@@ -49,25 +52,51 @@ struct to_lower {
   }
 };
 
-static std::string get_ext(const char *input, unsigned int n=4)
+static std::string get_ext(const char *input)
 {
   std::string s = std::string(input);
 
-  if (s.size() <= n)
+  if (s.size() <= 4)
   {
     return "";
   }
-  s = s.substr(s.size() - n);
+  s = s.substr(s.size() - 4);
   std::transform(s.begin(), s.end(), s.begin(), to_lower());
   return s;
 }
 
 void set_window_icon(const char *file)
 {
-  if (get_ext(file) == ".png")
+  char bytes[BYTES_BUF];
+
+  std::ifstream ifs(file, std::ifstream::binary);
+  std::streambuf *pbuf = ifs.rdbuf();
+  pbuf->pubseekoff(0, ifs.beg);
+  pbuf->sgetn(bytes, BYTES_BUF);
+
+  if (strncmp(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8) == 0)
   {
     Fl_PNG_Image in(file);
     Fl_Window::default_icon(&in);
+  }
+  else if (strncmp(bytes, "\xFF\xD8\xFF\xDB", 4) == 0 ||
+          (strncmp(bytes, "\xFF\xD8\xFF\xE0", 4) == 0 && strncmp(bytes + 6, "JFIF\x00\x01", 6) == 0) ||
+          (strncmp(bytes, "\xFF\xD8\xFF\xE1", 4) == 0 && strncmp(bytes + 6, "Exif\x00\x00", 6) == 0))
+  {
+    Fl_JPEG_Image in(file);
+    Fl_Window::default_icon(&in);
+  }
+  else if (strncmp(bytes, "BM", 2) == 0)
+  {
+    Fl_BMP_Image in(file);
+    Fl_Window::default_icon(&in);
+  }
+  else if (strncmp(bytes, "GIF87a", 6) == 0 ||
+           strncmp(bytes, "GIF89a", 6) == 0)
+  {
+    Fl_GIF_Image in(file);
+    Fl_RGB_Image rgb(&in, Fl_Color(0));
+    Fl_Window::default_icon(&rgb);
   }
   else if (get_ext(file) == ".xpm")
   {
@@ -87,26 +116,7 @@ void set_window_icon(const char *file)
     Fl_RGB_Image *rgb = surf.image();
     Fl_Window::default_icon(rgb);
   }
-  else if (get_ext(file) == ".jpg" || get_ext(file, 5) == ".jpeg")
-  {
-    Fl_JPEG_Image in(file);
-    Fl_Window::default_icon(&in);
-  }
-  else if (get_ext(file) == ".bmp")
-  {
-    Fl_BMP_Image in(file);
-    Fl_Window::default_icon(&in);
-  }
-  else if (get_ext(file) == ".gif")
-  {
-    Fl_GIF_Image in(file);
-    Fl_RGB_Image rgb(&in, Fl_Color(0));
-    Fl_Window::default_icon(&rgb);
-  }
-  else if (get_ext(file) == ".pnm")
-  {
-    Fl_PNM_Image in(file);
-    Fl_Window::default_icon(&in);
-  }
+
+  ifs.close();
 }
 
