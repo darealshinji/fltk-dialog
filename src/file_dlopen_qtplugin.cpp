@@ -51,12 +51,14 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 #   define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 # endif
 
-  char filename[255] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
+  char filename[256] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
 
+#ifdef HAVE_QT4
   if (qt_major == 4)
   {
     sprintf(filename, FLTK_DIALOG_MODULE_PATH "/qt4gui.so");
   }
+#endif
 
 #else
 
@@ -68,6 +70,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   const char *array_data;
   std::streamsize array_length;
 
+#ifdef HAVE_QT4
   if (qt_major == 4)
   {
     sprintf(filename, "/tmp/qt4gui.so.XXXXXX");
@@ -76,9 +79,12 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   }
   else /* if (qt_major == 5) */
   {
+#endif
     array_data = (char *)qt5gui_so;
     array_length = (std::streamsize) qt5gui_so_len;
+#ifdef HAVE_QT4
   }
+#endif
 
   if (mkstemp(filename) == -1)
   {
