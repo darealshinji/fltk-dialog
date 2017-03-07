@@ -104,7 +104,6 @@
 
 #define FDATE_MON_JAN_DE    "Januar"
 #define FDATE_MON_JAN_DE_AT "J" "\xC3\xA4" "nnar"  /* Jänner */
-#define FDATE_MON_JAN_DE_CH "J" "\xC3\xA4" "nnar"  /* Jänner */
 #define FDATE_MON_FEB_DE    "Februar"
 #define FDATE_MON_MAR_DE    "M" "\xC3\xA4" "rz"  /* März */
 #define FDATE_MON_APR_DE    "April"

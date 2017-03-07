@@ -115,7 +115,6 @@ void l10n()
       if (region == "de_CH")
       {
         FL_CLOSE_(DE_CH);
-        FDATE_MON_JAN_(DE_CH);
       }
       else if (region == "de_AT")
       {
