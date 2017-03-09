@@ -712,7 +712,7 @@ int main(int argc, char **argv)
   }
 
   if (args.has("-v") || args.has("--version") || args.size() == 1) {
-    print_fltk_version();
+    std::cout << "using FLTK version " << get_fltk_version() << " - http://www.fltk.org" << std::endl;
     return 0;
   }
 

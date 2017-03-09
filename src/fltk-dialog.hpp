@@ -180,7 +180,6 @@ void repstr(const std::string &from,
 std::string translate(const char *inputText);
 
 /* version.cpp */
-void print_fltk_version(void);
 std::string get_fltk_version(void);
 
 #endif  /* !FLTK_DIALOG_HPP */

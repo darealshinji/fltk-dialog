@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,54 +28,34 @@
 #include <sstream>
 #include <string>
 
+#ifdef PRINT_VERSION
+# define RETURN_VERSION PRINT_VERSION
+#else
+# ifdef FLTK_VERSION
+#  ifdef REVISION
+#   define RETURN_VERSION FLTK_VERSION " (SVN r" REVISION ")"
+#  else
+#   define RETURN_VERSION FLTK_VERSION
+#  endif
+# endif
+#endif
+
 
 std::string get_fltk_version()
 {
-#ifdef FLTK_VERSION
-
-#  ifdef REVISION
-  return FLTK_VERSION " (SVN r" REVISION ")";
-#  else
-  return FLTK_VERSION;
-#  endif
-
-#else  /* FLTK_VERSION */
-
-  /* get the version strings from the linked in static or
-   * the runtime library without leading zeros */
-  std::stringstream ss;
-  std::string ver, maj, min1, min2, pat1, pat2;
-
-  int api = Fl::api_version();
-  ss << api;
-  ver  = ss.str();
-  maj  = ver.substr(0,1);
-  min1 = ver.substr(1,1);
-  min2 = ver.substr(2,1);
-  pat1 = ver.substr(3,1);
-  pat2 = ver.substr(4,1);
-
-  if (min1 == "0")
-  {
-    min1 = "";
-  }
-
-  if (pat1 == "0")
-  {
-    pat1 = "";
-  }
-
-  return maj + "." + min1 + min2 + "." + pat1 + pat2;
-
-#endif  /* FLTK_VERSION */
-}
-
-void print_fltk_version()
-{
-#ifdef PRINT_VERSION
-  std::cout << "using FLTK version " PRINT_VERSION << std::endl;
+#ifdef RETURN_VERSION
+  return RETURN_VERSION;
 #else
-  std::cout << "using FLTK version " << get_fltk_version() << std::endl;
+  int version, major, minor, patch;
+  std::stringstream ss;
+
+  version = Fl::api_version();
+  major = version / 10000;
+  minor = (version % 10000) / 100;
+  patch = version % 100;
+
+  ss << major << "." << minor << "." << patch;
+  return ss.str();
 #endif
 }
 
