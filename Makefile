@@ -185,7 +185,8 @@ fltk_cmake_config = \
   -DCMAKE_C_FLAGS="$(fltk_CFLAGS) $(extra_include)" \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(extra_libdirs)" \
   -DOPTION_USE_GL="OFF" \
-  -DOPTION_OPTIM=""
+  -DOPTION_OPTIM="" \
+  -DOPTION_BUILD_EXAMPLES="OFF"
 
 
 main_LIBS += $(fltk)/build/lib/libfltk_images.a
@@ -317,10 +318,11 @@ $(zlib)/build/Makefile:
 
 
 $(libpng_a): $(png)/build/Makefile
-	$(MAKE) -C $(png)/build V=$(make_verbose) && \
-  cd $(png)/build && ln -fs .libs/libpng16.a libpng.a
-	ln -fs .. $(png)/build/libpng && \
-	rm -f $(png)/build/config.h
+	$(MAKE) -C $(png)/build V=$(make_verbose)
+	(cd $(png)/build && \
+  ln -fs .libs/libpng16.a libpng.a && \
+  ln -fs .. libpng && \
+  rm -f config.h)
 
 $(libz_a): $(zlib)/build/Makefile
 	$(MAKE) -C $(zlib)/build zlibstatic
@@ -381,6 +383,8 @@ src/misc/Fl_Color_Chooser2.o: main_CXXFLAGS+=-Wno-unused-parameter
 
 
 DISTFILES = 3rdparty/ patches/ src/ \
+	ax_check_compile_flag.m4 \
+	ax_cxx_compile_stdcxx.m4 \
 	config.mak.in \
 	configure \
 	configure.ac \
