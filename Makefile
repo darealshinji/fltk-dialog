@@ -56,7 +56,8 @@ CXXFLAGS      ?= -std=c++11 $(common_CFLAGS)
 LDFLAGS       ?= -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
 
 # fltk-dialog build flags
-main_CXXFLAGS := -Wall -Wextra $(CXXFLAGS) $(CPPFLAGS) -I. -Isrc -I$(fltk)/build -I$(fltk) -DFLTK_VERSION=\"$(FLTK_VERSION)\"
+main_CXXFLAGS := -Wall -Wextra -Wno-unused-parameter $(CXXFLAGS) $(CPPFLAGS)
+main_CXXFLAGS += -I. -Isrc -I$(fltk)/build -I$(fltk) -DFLTK_VERSION=\"$(FLTK_VERSION)\"
 main_CXXFLAGS += $(shell $(fltk)/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
 
 # libfltk build flags
@@ -172,7 +173,8 @@ endif
 
 
 # Qt plugin CXXFLAGS
-plugin_CXXFLAGS := -std=c++0x -fPIC -DPIC $(main_CXXFLAGS)
+plugin_CXXFLAGS := -std=c++0x  # adjust if required
+plugin_CXXFLAGS += -fPIC -DPIC $(main_CXXFLAGS)
 
 
 extra_include :=
@@ -374,12 +376,6 @@ endif
 
 src/file_qtplugin.cpp: $(libfltk)
 endif
-
-
-src/about.o src/font.o src/html.o src/main.o \
-src/message.o src/window_icon.o \
-src/misc/Fl_Select_Browser2.o \
-src/misc/Fl_Color_Chooser2.o: main_CXXFLAGS+=-Wno-unused-parameter
 
 
 DISTFILES = 3rdparty/ patches/ src/ \
