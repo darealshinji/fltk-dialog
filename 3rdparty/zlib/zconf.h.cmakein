@@ -1,5 +1,5 @@
 /* zconf.h -- configuration of the zlib compression library
- * Copyright (C) 1995-2016 Jean-loup Gailly, Mark Adler
+ * Copyright (C) 1995-2013 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -22,7 +22,7 @@
 #ifdef Z_PREFIX     /* may be set to #if 1 by ./configure */
 #  define Z_PREFIX_SET
 
-/* all linked symbols and init macros */
+/* all linked symbols */
 #  define _dist_code            fltk_dialog__dist_code
 #  define _length_code          fltk_dialog__length_code
 #  define _tr_align             fltk_dialog__tr_align
@@ -34,7 +34,6 @@
 #  define adler32               fltk_dialog_adler32
 #  define adler32_combine       fltk_dialog_adler32_combine
 #  define adler32_combine64     fltk_dialog_adler32_combine64
-#  define adler32_z             fltk_dialog_adler32_z
 #  ifndef Z_SOLO
 #    define compress              fltk_dialog_compress
 #    define compress2             fltk_dialog_compress2
@@ -43,14 +42,10 @@
 #  define crc32                 fltk_dialog_crc32
 #  define crc32_combine         fltk_dialog_crc32_combine
 #  define crc32_combine64       fltk_dialog_crc32_combine64
-#  define crc32_z               fltk_dialog_crc32_z
 #  define deflate               fltk_dialog_deflate
 #  define deflateBound          fltk_dialog_deflateBound
 #  define deflateCopy           fltk_dialog_deflateCopy
 #  define deflateEnd            fltk_dialog_deflateEnd
-#  define deflateGetDictionary  fltk_dialog_deflateGetDictionary
-#  define deflateInit           fltk_dialog_deflateInit
-#  define deflateInit2          fltk_dialog_deflateInit2
 #  define deflateInit2_         fltk_dialog_deflateInit2_
 #  define deflateInit_          fltk_dialog_deflateInit_
 #  define deflateParams         fltk_dialog_deflateParams
@@ -77,8 +72,6 @@
 #    define gzeof                 fltk_dialog_gzeof
 #    define gzerror               fltk_dialog_gzerror
 #    define gzflush               fltk_dialog_gzflush
-#    define gzfread               fltk_dialog_gzfread
-#    define gzfwrite              fltk_dialog_gzfwrite
 #    define gzgetc                fltk_dialog_gzgetc
 #    define gzgetc_               fltk_dialog_gzgetc_
 #    define gzgets                fltk_dialog_gzgets
@@ -90,6 +83,7 @@
 #      define gzopen_w              fltk_dialog_gzopen_w
 #    endif
 #    define gzprintf              fltk_dialog_gzprintf
+#    define gzvprintf             fltk_dialog_gzvprintf
 #    define gzputc                fltk_dialog_gzputc
 #    define gzputs                fltk_dialog_gzputs
 #    define gzread                fltk_dialog_gzread
@@ -100,39 +94,32 @@
 #    define gztell                fltk_dialog_gztell
 #    define gztell64              fltk_dialog_gztell64
 #    define gzungetc              fltk_dialog_gzungetc
-#    define gzvprintf             fltk_dialog_gzvprintf
 #    define gzwrite               fltk_dialog_gzwrite
 #  endif
 #  define inflate               fltk_dialog_inflate
 #  define inflateBack           fltk_dialog_inflateBack
 #  define inflateBackEnd        fltk_dialog_inflateBackEnd
-#  define inflateBackInit       fltk_dialog_inflateBackInit
 #  define inflateBackInit_      fltk_dialog_inflateBackInit_
-#  define inflateCodesUsed      fltk_dialog_inflateCodesUsed
 #  define inflateCopy           fltk_dialog_inflateCopy
 #  define inflateEnd            fltk_dialog_inflateEnd
-#  define inflateGetDictionary  fltk_dialog_inflateGetDictionary
 #  define inflateGetHeader      fltk_dialog_inflateGetHeader
-#  define inflateInit           fltk_dialog_inflateInit
-#  define inflateInit2          fltk_dialog_inflateInit2
 #  define inflateInit2_         fltk_dialog_inflateInit2_
 #  define inflateInit_          fltk_dialog_inflateInit_
 #  define inflateMark           fltk_dialog_inflateMark
 #  define inflatePrime          fltk_dialog_inflatePrime
 #  define inflateReset          fltk_dialog_inflateReset
 #  define inflateReset2         fltk_dialog_inflateReset2
-#  define inflateResetKeep      fltk_dialog_inflateResetKeep
 #  define inflateSetDictionary  fltk_dialog_inflateSetDictionary
+#  define inflateGetDictionary  fltk_dialog_inflateGetDictionary
 #  define inflateSync           fltk_dialog_inflateSync
 #  define inflateSyncPoint      fltk_dialog_inflateSyncPoint
 #  define inflateUndermine      fltk_dialog_inflateUndermine
-#  define inflateValidate       fltk_dialog_inflateValidate
+#  define inflateResetKeep      fltk_dialog_inflateResetKeep
 #  define inflate_copyright     fltk_dialog_inflate_copyright
 #  define inflate_fast          fltk_dialog_inflate_fast
 #  define inflate_table         fltk_dialog_inflate_table
 #  ifndef Z_SOLO
 #    define uncompress            fltk_dialog_uncompress
-#    define uncompress2           fltk_dialog_uncompress2
 #  endif
 #  define zError                fltk_dialog_zError
 #  ifndef Z_SOLO
@@ -242,19 +229,9 @@
 #  define z_const
 #endif
 
-#ifdef Z_SOLO
-   typedef unsigned long z_size_t;
-#else
-#  define z_longlong long long
-#  if defined(NO_SIZE_T)
-     typedef unsigned NO_SIZE_T z_size_t;
-#  elif defined(STDC)
-#    include <stddef.h>
-     typedef size_t z_size_t;
-#  else
-     typedef unsigned long z_size_t;
-#  endif
-#  undef z_longlong
+/* Some Mac compilers merge all .h files incorrectly: */
+#if defined(__MWERKS__)||defined(applec)||defined(THINK_C)||defined(__SC__)
+#  define NO_DUMMY_DECL
 #endif
 
 /* Maximum value for memLevel in deflateInit2 */
@@ -284,7 +261,7 @@
  Of course this will generally degrade compression (there's no free lunch).
 
    The memory requirements for inflate are (in bytes) 1 << windowBits
- that is, 32K for windowBits=15 (default value) plus about 7 kilobytes
+ that is, 32K for windowBits=15 (default value) plus a few kilobytes
  for small objects.
 */
 
