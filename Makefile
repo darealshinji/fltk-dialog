@@ -6,7 +6,7 @@ endif
 # against system libraries
 SYSTEM_JPEG ?= no
 SYSTEM_PNG  ?= no
-SYSTEM_ZLIB ?= no
+SYSTEM_ZLIB ?= yes
 
 # set to "no" if you don't want an embedded FLKT
 # icon to appear in taskbar and windows
@@ -42,7 +42,6 @@ FLTK_VERSION = 1.3.4
 # source directories
 fltk = 3rdparty/fltk
 png  = 3rdparty/libpng
-zlib = 3rdparty/zlib
 
 
 BIN  = fltk-dialog
@@ -218,17 +217,10 @@ extra_libdirs     += -L"$(CURDIR)/$(png)/build"
 endif
 
 ifneq ($(SYSTEM_ZLIB),no)
-main_LIBS         += -lz
+main_LIBS += -lz
 else
-libz_a             = $(zlib)/build/libz.a
-fltk_cmake_config += \
-  -DOPTION_USE_SYSTEM_ZLIB="ON" \
-  -DZLIB_INCLUDE_DIR="$(CURDIR)/$(zlib)" \
-  -DZLIB_LIBRARY_RELEASE="$(CURDIR)/$(libz_a)" \
-  -DLIB_zlib="$(CURDIR)/$(libz_a)"
-main_LIBS         += $(libz_a)
-extra_include     += -I"$(CURDIR)/$(zlib)" -I"$(CURDIR)/$(zlib)/build"
-extra_libdirs     += -L"$(CURDIR)/$(zlib)/build"
+fltk_cmake_config += -DOPTION_USE_SYSTEM_ZLIB="OFF"
+main_LIBS += $(fltk)/build/lib/libfltk_z.a
 endif
 
 libfltk    = $(fltk)/build/lib/libfltk.a
@@ -253,10 +245,8 @@ XXD   ?= xxd
 define MAKE_CLEAN
   [ ! -f $(fltk)/makeinclude ] || $(MAKE) -C $(fltk) $@
   [ ! -f $(png)/Makefile ] || $(MAKE) -C $(png) $@
-  $(MAKE) -C $(zlib) -f Makefile.in $@
-  $(foreach DIR,\
-    $(fltk)/build $(png)/build $(zlib)/build,\
-    [ ! -f $(DIR)/Makefile ] || $(MAKE) -C $(DIR) clean;)
+  [ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
+  [ ! -f $(png)/build/Makefile ] || $(MAKE) -C $(png)/build clean
 endef
 
 
@@ -267,7 +257,7 @@ clean: mostlyclean
 	$(MAKE_CLEAN)
 
 distclean: mostlyclean
-	-rm -rf $(fltk)/build $(png)/build $(zlib)/build autom4te.cache
+	-rm -rf $(fltk)/build $(png)/build autom4te.cache
 	-rm -f config.mak config.log config.status
 	$(MAKE_CLEAN)
 
@@ -295,29 +285,11 @@ $(fltk)/build/Makefile: $(fltk)
 	cd $(fltk)/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_verbose)
 
 
-ifeq ($(SYSTEM_ZLIB),no)
-libpng_build_Makefile_dep = $(libz_a)
-endif
-
-$(png)/build/Makefile: $(libpng_build_Makefile_dep)
+$(png)/build/Makefile:
 	mkdir -p $(png)/build
 	cd $(png)/build && \
-  CC="$(CC)" \
-  CFLAGS="-Wall $(CFLAGS) $(CPPFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
-  CPPFLAGS="$(CPPFLAGS) -I$(CURDIR)/$(zlib) -I$(CURDIR)/$(zlib)/build" \
-  LDFLAGS="$(LDFLAGS) -L$(CURDIR)/$(zlib)/build" \
-  ../configure --disable-shared \
-    --with-zlib-prefix="fltk_dialog_" \
-    --with-libpng-prefix="fltk_dialog_"
-
-$(zlib)/build/Makefile:
-	mkdir -p $(zlib)/build
-	cd $(zlib)/build && $(CMAKE) .. $(cmake_verbose) \
-  -DCMAKE_BUILD_TYPE="None" \
-  -DCMAKE_C_COMPILER="$(CC)" \
-  -DCMAKE_C_FLAGS="-Wall $(CFLAGS) $(CPPFLAGS)" \
-  -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
-
+  CC="$(CC)" CFLAGS="-Wall $(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+  ../configure --disable-shared --with-libpng-prefix="fltk_dialog_"
 
 $(libpng_a): $(png)/build/Makefile
 	$(MAKE) -C $(png)/build V=$(make_verbose)
@@ -325,9 +297,6 @@ $(libpng_a): $(png)/build/Makefile
   ln -fs .libs/libpng16.a libpng.a && \
   ln -fs .. libpng && \
   rm -f config.h)
-
-$(libz_a): $(zlib)/build/Makefile
-	$(MAKE) -C $(zlib)/build zlibstatic
 
 $(libfltk): $(libpng_a) $(fltk)/build/Makefile
 	$(MAKE) -C $(fltk)/build

@@ -1406,7 +1406,7 @@ Optional Features:
                           but load them from LIBDIR/fltk-dialog
   --enable-system-jpeg    link against system libjpeg
   --enable-system-png     link against system libpng
-  --enable-system-zlib    link against system zlib
+  --disable-system-zlib   don't link against system zlib
 
 Some influential environment variables:
   CC          C compiler command
@@ -3745,9 +3745,9 @@ fi
 
 # Check whether --enable-system-zlib was given.
 if test "${enable_system_zlib+set}" = set; then :
-  enableval=$enable_system_zlib; use_system_zlib="yes"
+  enableval=$enable_system_zlib; use_system_zlib="no"
 else
-  use_system_zlib="no"
+  use_system_zlib="yes"
 fi
 
 

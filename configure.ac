@@ -116,8 +116,8 @@ AC_ARG_ENABLE([system-png],
   [AS_HELP_STRING([--enable-system-png], [link against system libpng])],
   [use_system_png="yes"], [use_system_png="no"])
 AC_ARG_ENABLE([system-zlib],
-  [AS_HELP_STRING([--enable-system-zlib], [link against system zlib])],
-  [use_system_zlib="yes"], [use_system_zlib="no"])
+  [AS_HELP_STRING([--disable-system-zlib], [don't link against system zlib])],
+  [use_system_zlib="no"], [use_system_zlib="yes"])
 
 
 ## check build flags
