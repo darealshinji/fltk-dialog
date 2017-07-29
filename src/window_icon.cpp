@@ -54,7 +54,7 @@ struct to_lower {
 
 static std::string get_ext(const char *input)
 {
-  std::string s = std::string(input);
+  std::string s(input);
 
   if (s.size() <= 4)
   {
@@ -73,6 +73,7 @@ void set_window_icon(const char *file)
   std::streambuf *pbuf = ifs.rdbuf();
   pbuf->pubseekoff(0, ifs.beg);
   pbuf->sgetn(bytes, BYTES_BUF);
+  ifs.close();
 
   if (strncmp(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8) == 0)
   {
@@ -116,7 +117,5 @@ void set_window_icon(const char *file)
     Fl_RGB_Image *rgb = surf.image();
     Fl_Window::default_icon(rgb);
   }
-
-  ifs.close();
 }
 
