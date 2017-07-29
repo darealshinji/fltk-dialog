@@ -1,5 +1,5 @@
---- a/3rdparty/fltk/src/Fl_Choice.cxx
-+++ b/3rdparty/fltk/src/Fl_Choice.cxx
+--- a/fltk/src/Fl_Choice.cxx
++++ b/fltk/src/Fl_Choice.cxx
 @@ -186,13 +186,21 @@ int Fl_Choice::handle(int e) {
    J1:
      if (Fl::scheme()

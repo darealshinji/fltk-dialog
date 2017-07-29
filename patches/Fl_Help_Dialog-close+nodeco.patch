@@ -1,5 +1,5 @@
---- a/3rdparty/fltk/FL/Fl_Help_Dialog.H
-+++ b/3rdparty/fltk/FL/Fl_Help_Dialog.H
+--- a/fltk/FL/Fl_Help_Dialog.H
++++ b/fltk/FL/Fl_Help_Dialog.H
 @@ -63,6 +63,11 @@ private:
    Fl_Help_View *view_;
    inline void cb_view__i(Fl_Help_View*, void*);
@@ -20,8 +20,8 @@
  };
  #endif
  
---- a/3rdparty/fltk/src/Fl_Help_Dialog.cxx
-+++ b/3rdparty/fltk/src/Fl_Help_Dialog.cxx
+--- a/fltk/src/Fl_Help_Dialog.cxx
++++ b/fltk/src/Fl_Help_Dialog.cxx
 @@ -144,6 +144,11 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
    ((Fl_Help_Dialog*)(o->parent()->user_data()))->cb_view__i(o,v);
  }

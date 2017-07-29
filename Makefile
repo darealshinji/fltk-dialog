@@ -38,12 +38,6 @@ EMBEDDED_PLUGINS ?= yes
 
 FLTK_VERSION = 1.3.4
 
-
-# source directories
-fltk = 3rdparty/fltk
-png  = 3rdparty/libpng
-
-
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o message.o misc/translate.o version.o main.o)
 
@@ -56,8 +50,8 @@ LDFLAGS       ?= -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-se
 
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra -Wno-unused-parameter $(CXXFLAGS) $(CPPFLAGS)
-main_CXXFLAGS += -I. -Isrc -I$(fltk)/build -I$(fltk) -DFLTK_VERSION=\"$(FLTK_VERSION)\"
-main_CXXFLAGS += $(shell $(fltk)/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
+main_CXXFLAGS += -I. -Isrc -Ifltk/build -Ifltk -DFLTK_VERSION=\"$(FLTK_VERSION)\"
+main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
 
 # libfltk build flags
 fltk_CFLAGS   := -Wall $(CFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
@@ -190,41 +184,31 @@ fltk_cmake_config = \
   -DOPTION_BUILD_EXAMPLES="OFF"
 
 
-main_LIBS += $(fltk)/build/lib/libfltk_images.a
+main_LIBS += fltk/build/lib/libfltk_images.a
 
 ifneq ($(SYSTEM_JPEG),no)
 main_LIBS += -ljpeg
 else
 fltk_cmake_config += -DOPTION_USE_SYSTEM_LIBJPEG="OFF"
-main_LIBS += $(fltk)/build/lib/libfltk_jpeg.a
+main_LIBS += fltk/build/lib/libfltk_jpeg.a
 endif
 
 ifneq ($(SYSTEM_PNG),no)
 main_LIBS         += -lpng
 else
-libpng_a           = $(png)/build/libpng.a
-fltk_cmake_config += \
-  -DOPTION_USE_SYSTEM_LIBPNG="ON" \
-  -DHAVE_LIBPNG_PNG_H="$(CURDIR)/$(png)/build/png.h" \
-  -DLIB_png="$(CURDIR)/$(libpng_a)" \
-  -DPNG_LIBRARY_RELEASE="$(CURDIR)/$(libpng_a)" \
-  -DPNG_PNG_INCLUDE_DIR="$(CURDIR)/$(png)/build;$(CURDIR)/$(png)"
-main_LIBS         += $(libpng_a)
-# don't fail if fltk added '-lpng'
-main_LIBS         += -L$(CURDIR)/$(png)/build
-extra_include     += -I"$(CURDIR)/$(png)/build" -I"$(CURDIR)/$(png)"
-extra_libdirs     += -L"$(CURDIR)/$(png)/build"
+fltk_cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="OFF"
+main_LIBS += fltk/build/lib/libfltk_png.a
 endif
 
 ifneq ($(SYSTEM_ZLIB),no)
 main_LIBS += -lz
 else
 fltk_cmake_config += -DOPTION_USE_SYSTEM_ZLIB="OFF"
-main_LIBS += $(fltk)/build/lib/libfltk_z.a
+main_LIBS += fltk/build/lib/libfltk_z.a
 endif
 
-libfltk    = $(fltk)/build/lib/libfltk.a
-main_LIBS += $(libfltk) $(shell $(fltk)/build/fltk-config --use-images --ldflags)
+libfltk    = fltk/build/lib/libfltk.a
+main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags)
 
 ifeq ($(V),1)
 cmake_verbose = -DCMAKE_VERBOSE_MAKEFILE="ON"
@@ -243,10 +227,8 @@ CMAKE ?= cmake
 XXD   ?= xxd
 
 define MAKE_CLEAN
-  [ ! -f $(fltk)/makeinclude ] || $(MAKE) -C $(fltk) $@
-  [ ! -f $(png)/Makefile ] || $(MAKE) -C $(png) $@
-  [ ! -f $(fltk)/build/Makefile ] || $(MAKE) -C $(fltk)/build clean
-  [ ! -f $(png)/build/Makefile ] || $(MAKE) -C $(png)/build clean
+  [ ! -f fltk/makeinclude ] || $(MAKE) -C fltk $@
+  [ ! -f fltk/build/Makefile ] || $(MAKE) -C fltk/build clean
 endef
 
 
@@ -257,9 +239,12 @@ clean: mostlyclean
 	$(MAKE_CLEAN)
 
 distclean: mostlyclean
-	-rm -rf $(fltk)/build $(png)/build autom4te.cache
+	-rm -rf fltk/build autom4te.cache
 	-rm -f config.mak config.log config.status
 	$(MAKE_CLEAN)
+	[ ! -f fltk/src/Fl_Choice.cxx.orig ] || mv -f fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Choice.cxx
+	[ ! -f fltk/FL/Fl_Help_Dialog.H.orig ] || mv -f fltk/FL/Fl_Help_Dialog.H.orig fltk/FL/Fl_Help_Dialog.H
+	[ ! -f fltk/src/Fl_Help_Dialog.cxx.orig ] || mv -f fltk/src/Fl_Help_Dialog.cxx.orig fltk/src/Fl_Help_Dialog.cxx
 
 mostlyclean:
 	-rm -f $(BIN) *.so qtgui_so.h src/*.o src/Flek/*.o src/misc/*.o
@@ -267,7 +252,7 @@ mostlyclean:
 maintainer-clean: distclean
 	-rm -f configure
 
-$(OBJS): $(libpng_a) $(libfltk)
+$(OBJS): $(libfltk)
 
 $(BIN): $(OBJS)
 	$(msg_CXXLD)
@@ -278,28 +263,18 @@ $(BIN): $(OBJS)
 	$(silent)$(CXX) $(main_CXXFLAGS) -c -o $@ $<
 
 
-$(fltk)/build/fltk-config: $(libfltk)
+fltk/build/fltk-config: $(libfltk)
 
-$(fltk)/build/Makefile: $(fltk)
-	mkdir -p $(fltk)/build
-	cd $(fltk)/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_verbose)
+fltk/src/Fl_Choice.cxx.orig fltk/FL/Fl_Help_Dialog.H.orig fltk/src/Fl_Help_Dialog.cxx.orig:
+	patch -p1 --backup < patches/Fl_Choice-pulldown.patch
+	patch -p1 --backup < patches/Fl_Help_Dialog-close+nodeco.patch
 
+fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/FL/Fl_Help_Dialog.H.orig fltk/src/Fl_Help_Dialog.cxx.orig
+	mkdir -p fltk/build
+	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_verbose)
 
-$(png)/build/Makefile:
-	mkdir -p $(png)/build
-	cd $(png)/build && \
-  CC="$(CC)" CFLAGS="-Wall $(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-  ../configure --disable-shared --with-libpng-prefix="fltk_dialog_"
-
-$(libpng_a): $(png)/build/Makefile
-	$(MAKE) -C $(png)/build V=$(make_verbose)
-	(cd $(png)/build && \
-  ln -fs .libs/libpng16.a libpng.a && \
-  ln -fs .. libpng && \
-  rm -f config.h)
-
-$(libfltk): $(libpng_a) $(fltk)/build/Makefile
-	$(MAKE) -C $(fltk)/build
+$(libfltk): $(libpng_a) fltk/build/Makefile
+	$(MAKE) -C fltk/build
 
 
 ifneq ($(HAVE_QT),no)
@@ -347,7 +322,7 @@ src/file_qtplugin.cpp: $(libfltk)
 endif
 
 
-DISTFILES = 3rdparty/ patches/ src/ \
+DISTFILES = fltk/ patches/ src/ \
 	ax_check_compile_flag.m4 \
 	ax_cxx_compile_stdcxx.m4 \
 	config.mak.in \
