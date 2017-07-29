@@ -265,11 +265,13 @@ $(BIN): $(OBJS)
 
 fltk/build/fltk-config: $(libfltk)
 
-fltk/src/Fl_Choice.cxx.orig fltk/FL/Fl_Help_Dialog.H.orig fltk/src/Fl_Help_Dialog.cxx.orig:
+fltk/src/Fl_Choice.cxx.orig:
 	patch -p1 --backup < patches/Fl_Choice-pulldown.patch
+
+fltk/src/Fl_Help_Dialog.cxx.orig:
 	patch -p1 --backup < patches/Fl_Help_Dialog-close+nodeco.patch
 
-fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/FL/Fl_Help_Dialog.H.orig fltk/src/Fl_Help_Dialog.cxx.orig
+fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
 	mkdir -p fltk/build
 	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_verbose)
 
