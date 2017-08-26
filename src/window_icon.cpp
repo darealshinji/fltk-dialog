@@ -42,6 +42,11 @@
 
 #include "fltk-dialog.hpp"
 
+#define NANOSVG_IMPLEMENTATION
+#include "nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "nanosvgrast.h"
+
 #define BYTES_BUF 16
 
 
@@ -63,6 +68,39 @@ static std::string get_ext(const char *input)
   s = s.substr(s.size() - 4);
   std::transform(s.begin(), s.end(), s.begin(), to_lower());
   return s;
+}
+
+static void default_icon_svg(const char *filename)
+{
+  NSVGimage *nsvg = NULL;
+  NSVGrasterizer *rast = NULL;
+  unsigned char *img = NULL;
+  Fl_RGB_Image *rgb = NULL;
+  int w = 0;
+  int h = 0;
+
+  if ((nsvg = nsvgParseFromFile(filename, "px", 96)) != NULL)
+  {
+    w = (int)nsvg->width;
+    h = (int)nsvg->height;
+    rast = nsvgCreateRasterizer();
+  }
+
+  if ((img = (unsigned char *)malloc(w*h*4)) != NULL)
+  {
+    nsvgRasterize(rast, nsvg, 0, 0, 1, img, w, h, w*4);
+    rgb = new Fl_RGB_Image(img, w, h, 4, 0);
+  }
+
+  if (rgb != NULL)
+  {
+    Fl_Window::default_icon(rgb);
+    delete rgb;
+  }
+
+  nsvgDeleteRasterizer(rast);
+	nsvgDelete(nsvg);
+  if (img != NULL) { free(img); }
 }
 
 void set_window_icon(const char *file)
@@ -98,6 +136,10 @@ void set_window_icon(const char *file)
     Fl_GIF_Image in(file);
     Fl_RGB_Image rgb(&in, Fl_Color(0));
     Fl_Window::default_icon(&rgb);
+  }
+  else if (get_ext(file) == ".svg")
+  {
+    default_icon_svg(file);
   }
   else if (get_ext(file) == ".xpm")
   {

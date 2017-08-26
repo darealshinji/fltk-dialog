@@ -8,4 +8,5 @@ To enable native Qt file choosers you must install `libqt4-dev` and/or `qtbase5-
 
 If you don't want dynamic notification support, install `libnotify-dev` and run `./configure --disable-dynamic-notify`.
 
+First initialize the submodules with `git submodule init && git submodule update`.
 You can run `make` without running `./configure` first. This will build fltk-dialog with default build settings.

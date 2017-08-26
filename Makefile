@@ -50,7 +50,7 @@ LDFLAGS       ?= -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-se
 
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra -Wno-unused-parameter $(CXXFLAGS) $(CPPFLAGS)
-main_CXXFLAGS += -I. -Isrc -Ifltk/build -Ifltk -DFLTK_VERSION=\"$(FLTK_VERSION)\"
+main_CXXFLAGS += -I. -Isrc -Isrc/misc -Ifltk/build -Ifltk -DFLTK_VERSION=\"$(FLTK_VERSION)\"
 main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
 
 # libfltk build flags
