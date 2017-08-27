@@ -99,7 +99,7 @@ static void default_icon_svg(const char *filename)
   }
 
   nsvgDeleteRasterizer(rast);
-	nsvgDelete(nsvg);
+  nsvgDelete(nsvg);
   if (img != NULL) { free(img); }
 }
 
