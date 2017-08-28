@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 #ifdef HAVE_QT4
   if (qt_major == 4)
   {
-    sprintf(filename, FLTK_DIALOG_MODULE_PATH "/qt4gui.so");
+    snprintf(filename, 256, FLTK_DIALOG_MODULE_PATH "/qt4gui.so");
   }
 #endif
 
@@ -73,7 +73,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 #ifdef HAVE_QT4
   if (qt_major == 4)
   {
-    sprintf(filename, "/tmp/qt4gui.so.XXXXXX");
+    snprintf(filename, 22, "/tmp/qt4gui.so.XXXXXX");
     array_data = (char *)qt4gui_so;
     array_length = (std::streamsize) qt4gui_so_len;
   }
