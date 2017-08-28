@@ -89,8 +89,8 @@ int dialog_notify(const char *appname,
   dlsym_error = dlerror(); \
   if (dlsym_error) \
   { \
-    std::cerr << "error: cannot load symbol\n" << dlsym_error \
-      << std::endl; \
+    std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl; \
+    dlclose(handle); \
     return 1; \
   }
 
