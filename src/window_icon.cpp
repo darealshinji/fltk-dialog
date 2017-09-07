@@ -47,7 +47,10 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
-#define BYTES_BUF 16
+#define SVG_UNITS  "px"    /* units passed to NanoSVG */
+#define SVG_DPI    96.0f   /* DPI (dots-per-inch) used for unit conversion */
+#define SVG_DEPTH  4       /* image depth */
+#define BYTES_BUF  16      /* magic bytes length */
 
 
 struct to_lower {
@@ -79,17 +82,21 @@ static void default_icon_svg(const char *filename)
   int w = 0;
   int h = 0;
 
-  if ((nsvg = nsvgParseFromFile(filename, "px", 96)) != NULL)
+  nsvg = nsvgParseFromFile(filename, SVG_UNITS, SVG_DPI);
+
+  if (nsvg != NULL)
   {
     w = (int)nsvg->width;
     h = (int)nsvg->height;
     rast = nsvgCreateRasterizer();
   }
 
-  if ((img = (unsigned char *)malloc(w*h*4)) != NULL)
+  img = new unsigned char[w*h*SVG_DEPTH];
+
+  if (img != NULL)
   {
-    nsvgRasterize(rast, nsvg, 0, 0, 1, img, w, h, w*4);
-    rgb = new Fl_RGB_Image(img, w, h, 4, 0);
+    nsvgRasterize(rast, nsvg, 0, 0, 1, img, w, h, w*SVG_DEPTH);
+    rgb = new Fl_RGB_Image(img, w, h, SVG_DEPTH, 0);
   }
 
   if (rgb != NULL)
@@ -100,7 +107,7 @@ static void default_icon_svg(const char *filename)
 
   nsvgDeleteRasterizer(rast);
   nsvgDelete(nsvg);
-  if (img != NULL) { free(img); }
+  if (img != NULL) { delete img; }
 }
 
 void set_window_icon(const char *file)
