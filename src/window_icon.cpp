@@ -60,15 +60,15 @@ struct to_lower {
   }
 };
 
-static std::string get_ext(const char *input)
+static std::string get_ext_lower(const char *input, size_t length)
 {
   std::string s(input);
 
-  if (s.size() <= 4)
+  if (s.size() <= length)
   {
     return "";
   }
-  s = s.substr(s.size() - 4);
+  s = s.substr(s.size() - length);
   std::transform(s.begin(), s.end(), s.begin(), to_lower());
   return s;
 }
@@ -84,30 +84,35 @@ static void default_icon_svg(const char *filename)
 
   nsvg = nsvgParseFromFile(filename, SVG_UNITS, SVG_DPI);
 
-  if (nsvg != NULL)
+  if (!nsvg)
   {
-    w = (int)nsvg->width;
-    h = (int)nsvg->height;
-    rast = nsvgCreateRasterizer();
+    return;
   }
 
+  w = (int)nsvg->width;
+  h = (int)nsvg->height;
   img = new unsigned char[w*h*SVG_DEPTH];
 
-  if (img != NULL)
+  if (!img)
   {
-    nsvgRasterize(rast, nsvg, 0, 0, 1, img, w, h, w*SVG_DEPTH);
-    rgb = new Fl_RGB_Image(img, w, h, SVG_DEPTH, 0);
+    if (img) { delete img; }
+    nsvgDelete(nsvg);
+    return;
   }
 
-  if (rgb != NULL)
+  rast = nsvgCreateRasterizer();
+  nsvgRasterize(rast, nsvg, 0, 0, 1, img, w, h, w*SVG_DEPTH);
+  rgb = new Fl_RGB_Image(img, w, h, SVG_DEPTH, 0);
+
+  if (rgb)
   {
     Fl_Window::default_icon(rgb);
     delete rgb;
   }
 
+  if (img) { delete img; }
   nsvgDeleteRasterizer(rast);
   nsvgDelete(nsvg);
-  if (img != NULL) { delete img; }
 }
 
 void set_window_icon(const char *file)
@@ -144,17 +149,17 @@ void set_window_icon(const char *file)
     Fl_RGB_Image rgb(&in, Fl_Color(0));
     Fl_Window::default_icon(&rgb);
   }
-  else if (get_ext(file) == ".svg")
+  else if (get_ext_lower(file, 4) == ".svg")
   {
     default_icon_svg(file);
   }
-  else if (get_ext(file) == ".xpm")
+  else if (get_ext_lower(file, 4) == ".xpm")
   {
     Fl_XPM_Image in(file);
     Fl_RGB_Image rgb(&in, Fl_Color(0));
     Fl_Window::default_icon(&rgb);
   }
-  else if (get_ext(file) == ".xbm")
+  else if (get_ext_lower(file, 4) == ".xbm")
   {
     Fl_XBM_Image in(file);
     Fl_Image_Surface surf(in.w(), in.h());
