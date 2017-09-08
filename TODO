@@ -1,3 +1,3 @@
- * write --forms dialog
+ * use pipe(2) on --text-info and --progress
  * finish documentation
- * update --text-info to read from pipe (non-blocking) and/or file
+ * write --forms dialog
