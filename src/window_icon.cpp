@@ -76,21 +76,20 @@ static std::string get_ext_lower(const char *input, size_t length)
 static void default_icon_svg(const char *filename)
 {
   NSVGimage *nsvg = NULL;
-  NSVGrasterizer *rast = NULL;
+  NSVGrasterizer *r = NULL;
   unsigned char *img = NULL;
   Fl_RGB_Image *rgb = NULL;
-  int w = 0;
-  int h = 0;
+  int w, h;
 
   nsvg = nsvgParseFromFile(filename, SVG_UNITS, SVG_DPI);
+  w = (int)nsvg->width;
+  h = (int)nsvg->height;
 
-  if (!nsvg)
+  if (!nsvg->shapes || w < 1 || h < 1)
   {
     return;
   }
 
-  w = (int)nsvg->width;
-  h = (int)nsvg->height;
   img = new unsigned char[w*h*SVG_DEPTH];
 
   if (!img)
@@ -100,8 +99,8 @@ static void default_icon_svg(const char *filename)
     return;
   }
 
-  rast = nsvgCreateRasterizer();
-  nsvgRasterize(rast, nsvg, 0, 0, 1, img, w, h, w*SVG_DEPTH);
+  r = nsvgCreateRasterizer();
+  nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*SVG_DEPTH);
   rgb = new Fl_RGB_Image(img, w, h, SVG_DEPTH, 0);
 
   if (rgb)
@@ -111,7 +110,7 @@ static void default_icon_svg(const char *filename)
   }
 
   if (img) { delete img; }
-  nsvgDeleteRasterizer(rast);
+  nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
 }
 
