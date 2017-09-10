@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,33 +33,18 @@
 
 #include <iostream>
 #include <string>
-#if _POSIX_C_SOURCE >= 200112L
-# include <sys/select.h>
-#else
-# include <sys/time.h>
-# include <sys/types.h>
-#endif
+#include <pthread.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *textinfo_win;
+static Fl_Multi_Browser *ti_browser;
 static Fl_Return_Button *ti_but_ok;
 static bool ti_checkbutton_set = false;
-
-/* check if stdin returns any data */
-#define READSTDIO(x)  fd_set readfds; _readstdio(readfds, x)
-static void _readstdio(fd_set readfds, int &isStdio)
-{
-  FD_ZERO(&readfds);
-  FD_SET(STDIN_FILENO, &readfds);
-  struct timeval timeout;
-
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 0;
-
-  isStdio = select(1, &readfds, NULL, NULL, &timeout);
-}
+static bool ti_autoscroll = false;
 
 static void textinfo_close_cb(Fl_Widget *, long p)
 {
@@ -81,18 +66,44 @@ static void ti_checkbutton_cb(Fl_Widget *)
   }
 }
 
+/* pthread needs C interface */
+extern "C"
+void *ti_getline(void *)
+{
+  std::string line;
+  int linecount = 0;
+
+  for (/**/; std::getline(std::cin, line); /**/)
+  {
+    Fl::lock();
+    ti_browser->add(line.c_str());
+
+    if (ti_autoscroll)
+    {
+      ++linecount;
+      ti_browser->bottomline(linecount);
+    }
+
+    Fl::unlock();
+    Fl::awake(textinfo_win);
+  }
+
+  return nullptr;
+}
+
 int dialog_textinfo(      bool  autoscroll,
                     const char *checkbox)
 {
-  Fl_Multi_Browser *ti_browser;
   Fl_Group         *buttongroup;
   Fl_Box           *dummy;
   Fl_Check_Button  *checkbutton;
   Fl_Button        *ti_but_cancel;
 
-  std::string line, checkbox_s;
-  int browser_h, stdin;
-  int linecount = 0;
+  std::string checkbox_s;
+  int browser_h;
+  pthread_t ti_thread;
+
+  ti_autoscroll = autoscroll;
 
   if (title == NULL)
   {
@@ -155,34 +166,14 @@ int dialog_textinfo(      bool  autoscroll,
   set_position(textinfo_win);
   textinfo_win->end();
 
-  READSTDIO(stdin);
-  if (stdin)
-  {
-    textinfo_win->wait_for_expose();
-    Fl::flush();
-    for (/**/; std::getline(std::cin, line); /**/)
-    {
-      ti_browser->add(line.c_str());
-      if (autoscroll)
-      {
-        ++linecount;
-        ti_browser->bottomline(linecount);
-      }
-      Fl::check();
-    }
-  }
-  else if (stdin == -1)
-  {
-    ti_browser->add("error: select()");
-  }
-  else
-  {
-    ti_browser->add("error: no input");
-  }
+  Fl::lock();
 
   set_taskbar(textinfo_win);
   textinfo_win->show();
   set_undecorated(textinfo_win);
+
+  pthread_create(&ti_thread, 0, &ti_getline, nullptr);
+
   Fl::run();
 
   return ret;

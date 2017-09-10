@@ -151,16 +151,7 @@ AS_IF([test "x$use_notify" = "xno"], [
   dynamic_notify="no"
   have_libnotify="no"
 ], [
-  # libdl
-  have_dlopen="no"
   AS_IF([test "x$dynamic_notify" = "xyes"], [
-    AC_CHECK_HEADER([dlfcn.h], [
-      AC_CHECK_LIB([dl], [dlopen], [have_dlopen="yes"], [
-        AC_CHECK_LIB([c], [dlopen], [have_dlopen="yes"])
-      ])
-    ])
-  ])
-  AS_IF([test "x$have_dlopen" = "xyes"], [dynamic_notify="yes"], [
     # libnotify headers
     AX_PKG_CHECK_MODULES_SIMPLE([libnotify], [libnotify])
     AS_IF([test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"], [
@@ -221,27 +212,6 @@ AC_CHECK_HEADER([X11/Xft/Xft.h], [
 CFLAGS="$CFLAGS_backup"
 CPPFLAGS="$CPPFLAGS_backup"
 AS_IF([test "x$have_xft" != "xyes"], [exit 1])
-
-
-## select(2) (used by READSTDIO macros)
-AC_CHECK_HEADER([sys/time.h], [], [missing="sys/time.h"])
-AC_CHECK_HEADER([sys/types.h], [], [missing="sys/types.h $missing"])
-AC_CHECK_HEADER([unistd.h], [], [missing="unistd.h $missing"])
-AC_CHECK_FUNC([select])
-AS_IF([test "x$ac_cv_header_sys_time_h" != "xyes" \
-         -o "x$ac_cv_header_sys_types_h" != "xyes" \
-         -o "x$ac_cv_header_unistd_h" != "xyes" \
-         -o "x$ac_cv_func_select" != "xyes"],
-[
-  AS_IF([test "x$use_progress" != "xno"], [
-    AC_MSG_WARN([disabling progress dialog! headers missing: $missing])
-    use_progress="no"
-  ])
-  AS_IF([test "x$use_textinfo" != "xno"], [
-    AC_MSG_WARN([disabling textinfo dialog! headers missing: $missing])
-    use_textinfo="no"
-  ])
-])
 
 
 AS_IF([test "$prefix" = NONE], [prefix=/usr/local])

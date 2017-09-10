@@ -240,7 +240,7 @@ clean: mostlyclean
 
 distclean: mostlyclean
 	-rm -rf fltk/build autom4te.cache
-	-rm -f config.mak config.log config.status
+	-rm -f aclocal.m4 config.mak config.log config.status
 	$(MAKE_CLEAN)
 	[ ! -f fltk/src/Fl_Choice.cxx.orig ] || mv -f fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Choice.cxx
 	[ ! -f fltk/FL/Fl_Help_Dialog.H.orig ] || mv -f fltk/FL/Fl_Help_Dialog.H.orig fltk/FL/Fl_Help_Dialog.H
