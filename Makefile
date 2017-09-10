@@ -208,7 +208,7 @@ main_LIBS += fltk/build/lib/libfltk_z.a
 endif
 
 libfltk    = fltk/build/lib/libfltk.a
-main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags)
+main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lpthread
 
 ifeq ($(V),1)
 cmake_verbose = -DCMAKE_VERBOSE_MAKEFILE="ON"
