@@ -70,7 +70,7 @@ void print_date(std::string format, int y, int m, int d)
   str = ss.str();
   memset(&time, 0, sizeof(struct tm));
   strptime(str.c_str(), "%Y-%m-%d", &time);
-  strftime(date, sizeof(date), format.c_str(), &time);
+  strftime(date, sizeof(date)-1, format.c_str(), &time);
 
   std::cout << date << std::endl;
 }
