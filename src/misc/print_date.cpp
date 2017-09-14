@@ -33,7 +33,6 @@
 void print_date(std::string format, int y, int m, int d)
 {
   std::stringstream ss;
-  std::string str;
 
   char date[512] = {0};
   struct tm time;
@@ -67,9 +66,8 @@ void print_date(std::string format, int y, int m, int d)
   }
 
   ss << y << "-" << m << "-" << d;
-  str = ss.str();
   memset(&time, 0, sizeof(struct tm));
-  strptime(str.c_str(), "%Y-%m-%d", &time);
+  strptime(ss.str().c_str(), "%Y-%m-%d", &time);
   strftime(date, sizeof(date)-1, format.c_str(), &time);
 
   std::cout << date << std::endl;

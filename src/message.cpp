@@ -49,7 +49,6 @@ static double scale_value = 0;
 static char *message_scale_double_to_char(double d)
 {
   std::stringstream ss;
-  std::string str;
 
   if (scale_step == (float)((int) scale_step))
   {
@@ -67,8 +66,7 @@ static char *message_scale_double_to_char(double d)
     ss << std::fixed << std::setprecision(precision) << d;
   }
 
-  str = ss.str();
-  return strdup(str.c_str());
+  return strdup(ss.str().c_str());
 }
 
 static void message_close_cb(Fl_Widget *, long p)

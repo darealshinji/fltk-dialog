@@ -133,7 +133,7 @@ static void set_progress_box_label(char *ch)
 
 static void progress_cb(void *)
 {
-  char line[FGETS_LIMIT];
+  char line[FGETS_LIMIT] = {0};
 
   if (progress_running)
   {

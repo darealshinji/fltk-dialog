@@ -30,7 +30,6 @@
 #include <FL/Fl_Double_Window.H>
 
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 

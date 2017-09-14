@@ -31,7 +31,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <stdio.h>
+#include <string.h>
 
 #include "fltk-dialog.hpp"
 
@@ -78,18 +78,16 @@ static void dnd_close_cb(Fl_Widget *)
 static void dnd_callback(const char *items)
 {
   std::stringstream ss;
-  std::string str;
 
   ++dnd_count_val;
   ss << dnd_count_val;
-  str = ss.str();
-  dnd_count->label(strdup(str.c_str()));
+  dnd_count->label(strdup(ss.str().c_str()));
   dnd_win->redraw();
 
   std::cout << items;
-  str = std::string(items);
+  std::string s(items);
 
-  if (str.substr(str.length()-1, 1) == "\n")
+  if (s.substr(s.length()-1, 1) == "\n")
   {
     std::cout << std::flush;
   }
