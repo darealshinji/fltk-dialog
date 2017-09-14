@@ -87,21 +87,19 @@ int dialog_dir_chooser()
 int dialog_native_file_chooser_gtk(int mode)
 {
   Fl_Native_File_Chooser fnfc;
-  char *fnfc_def_title = NULL;
 
   if (title == NULL)
   {
-    if (mode == DIR_CHOOSER)
-    {
-      fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
-      fnfc_def_title = (char *)"Select a directory";
-    }
-    else
-    {
-      fnfc.type(Fl_Native_File_Chooser::BROWSE_FILE);
-      fnfc_def_title = (char *)"Select a file";
-    }
-    title = fnfc_def_title;
+    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
+  }
+
+  if (mode == DIR_CHOOSER)
+  {
+    fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
+  }
+  else
+  {
+    fnfc.type(Fl_Native_File_Chooser::BROWSE_FILE);
   }
 
   fnfc.title(title);
@@ -121,11 +119,6 @@ int dialog_native_file_chooser_gtk(int mode)
  */
 int dialog_native_file_chooser(int mode, int argc, char **argv)
 {
-  if (title == NULL)
-  {
-    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
-  }
-
 #ifdef HAVE_QT
   ret = -1;
 
@@ -168,11 +161,6 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 /* the Qt equivalent to Fl_Native_File_Chooser() */
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
 {
-  if (title == NULL)
-  {
-    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
-  }
-
   ret = dlopen_getfilenameqt(qt_major, mode, argc, argv);
 
   if (ret == -1)
