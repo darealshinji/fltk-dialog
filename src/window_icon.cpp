@@ -116,7 +116,7 @@ static void default_icon_svg(const char *filename)
 
 void set_window_icon(const char *file)
 {
-  char bytes[BYTES_BUF];
+  char bytes[BYTES_BUF] = {0};
 
   std::ifstream ifs(file, std::ifstream::binary);
   std::streambuf *pbuf = ifs.rdbuf();

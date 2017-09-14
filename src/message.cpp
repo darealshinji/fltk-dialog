@@ -34,38 +34,41 @@
 #include <FL/Fl_Double_Window.H>
 
 #include <iostream>
+#include <iomanip>
+#include <ios>
 #include <sstream>
 #include <string>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *message_win;
-static char scale_ch[255];
 static double scale_value = 0;
 
 static char *message_scale_double_to_char(double d)
 {
-  char format[32];
+  std::stringstream ss;
+  std::string str;
 
   if (scale_step == (float)((int) scale_step))
   {
     /* integer value */
-    sprintf(scale_ch, "%d", (int) d);
+    ss << (int) d;
   }
   else
   {
     /* floating point value;
      * convert into char with fixed positions after decimal point */
-    std::stringstream ss;
     ss << (scale_step - (float)((int) scale_step));
     int precision = ss.str().size() - 2;
-    sprintf(format, "\%\%0.%df", precision);
-    sprintf(scale_ch, format, d);
+    ss.str("");
+    ss.clear();
+    ss << std::fixed << std::setprecision(precision) << d;
   }
-  return scale_ch;
+
+  str = ss.str();
+  return strdup(str.c_str());
 }
 
 static void message_close_cb(Fl_Widget *, long p)

@@ -219,14 +219,14 @@ int uri_box::handle(int event)
 static void open_uri_cb(Fl_Widget *, void *p)
 {
   const char *uri = (char *)p;
-  char errmsg[512];
-  char warnmsg[768];
+  char errmsg[512] = {0};
+  std::string warnmsg;
 
   if (!fl_open_uri(uri, errmsg, sizeof(errmsg)))
   {
-    sprintf(warnmsg, "Error: %s", errmsg);
     title = "Error";
-    msg = warnmsg;
+    warnmsg = "Error: " + std::string(errmsg);
+    msg = warnmsg.c_str();
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
   }
 }

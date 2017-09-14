@@ -23,8 +23,8 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include <string>
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -32,9 +32,11 @@
 
 void print_date(std::string format, int y, int m, int d)
 {
+  std::stringstream ss;
+  std::string str;
+
+  char date[512] = {0};
   struct tm time;
-  char tmp[31];
-  char date[255];
 
   if (format == "")
   {
@@ -64,9 +66,10 @@ void print_date(std::string format, int y, int m, int d)
     repstr("u",   "%u",  format);  /* day of the week, Monday being 1 (7) */
   }
 
-  sprintf(tmp, "%d-%d-%d", y, m, d);
+  ss << y << "-" << m << "-" << d;
+  str = ss.str();
   memset(&time, 0, sizeof(struct tm));
-  strptime(tmp, "%Y-%m-%d", &time);
+  strptime(str.c_str(), "%Y-%m-%d", &time);
   strftime(date, sizeof(date), format.c_str(), &time);
 
   std::cout << date << std::endl;

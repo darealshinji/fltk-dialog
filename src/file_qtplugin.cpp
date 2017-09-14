@@ -59,9 +59,11 @@ int getfilenameqt(int mode, const char *separator, int argc, char **argv)
     strList << dialog->selectedFiles();
     QString str = strList.join(QString::fromLatin1(separator));
     std::cout << str.toUtf8().constData() << std::endl;
+    delete dialog;
     return 0;
   }
 
+  delete dialog;
   return 1;
 }
 

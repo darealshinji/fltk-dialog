@@ -50,7 +50,7 @@ int dialog_dropdown(std::string dropdown_list,
                            bool return_number)
 {
   Fl_Group         *g;
-  Fl_Menu_Item      menu_items[1024];
+  Fl_Menu_Item      menu_items[1024] = { 0,0,0,0,0,0,0,0,0 };
   Fl_Choice        *entries;
   Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
@@ -78,33 +78,11 @@ int dialog_dropdown(std::string dropdown_list,
     return 1;
   }
 
-  for (size_t i = 0; i <= count; ++i)
+  for (size_t i = 0; i < count; ++i)
   {
-    if (i < count)
-    {
-      if (itemlist_v[i] == "")
-      {
-        menu_items[i].text = "<EMPTY>";
-      }
-      else
-      {
-        menu_items[i].text = itemlist_v[i].c_str();
-      }
-    }
-    else
-    {
-      /* { 0,0,0,0,0,0,0,0,0 } */
-      menu_items[i].text = 0;
-    }
-
-    menu_items[i].shortcut_ = 0;
-    menu_items[i].callback_ = 0;
-    menu_items[i].user_data_ = 0;
-    menu_items[i].flags = 0;
-    menu_items[i].labeltype_ = (i == count) ? 0 : FL_NORMAL_LABEL;
-    menu_items[i].labelfont_ = 0;
-    menu_items[i].labelsize_ = (i == count) ? 0 : 14;
-    menu_items[i].labelcolor_ = 0;
+    menu_items[i].text = (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str();
+    menu_items[i].labeltype_ = FL_NORMAL_LABEL;
+    menu_items[i].labelsize_ = 14;
   }
 
   dropdown_win = new Fl_Double_Window(320, 110, title);

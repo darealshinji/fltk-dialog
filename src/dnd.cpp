@@ -29,6 +29,7 @@
 #include <FL/Fl_Double_Window.H>
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <stdio.h>
 
@@ -76,17 +77,19 @@ static void dnd_close_cb(Fl_Widget *)
 
 static void dnd_callback(const char *items)
 {
-  static char newtext[128];
+  std::stringstream ss;
+  std::string str;
 
   ++dnd_count_val;
-  sprintf(newtext, "%d", dnd_count_val);
-  dnd_count->label(newtext);
+  ss << dnd_count_val;
+  str = ss.str();
+  dnd_count->label(strdup(str.c_str()));
   dnd_win->redraw();
 
   std::cout << items;
-  std::string s(items);
+  str = std::string(items);
 
-  if (s.substr(s.length()-1, 1) == "\n")
+  if (str.substr(str.length()-1, 1) == "\n")
   {
     std::cout << std::flush;
   }
