@@ -113,14 +113,6 @@ int ret = 0;
 char separator = '|';
 std::string separator_s = "|";
 
-#ifdef WITH_PROGRESS
-//int kill_pid = -1;
-bool autoclose = false;
-bool hide_cancel = false;
-//bool pulsate = false;
-//std::string watchfile;
-#endif
-
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
 int max_h = Fl::h();
@@ -955,6 +947,8 @@ int main(int argc, char **argv)
 #ifdef WITH_PROGRESS
   int kill_pid = -1;
   bool pulsate = false;
+  bool autoclose = false;
+  bool hide_cancel = false;
   std::string watchfile;
 
   if (args.has("--progress")) {
@@ -1366,7 +1360,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, kill_pid, watchfile);
+      return dialog_progress(pulsate, kill_pid, watchfile, autoclose, hide_cancel);
 #endif
 
     case DIALOG_SCALE:
