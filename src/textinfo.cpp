@@ -66,9 +66,7 @@ static void ti_checkbutton_cb(Fl_Widget *)
   }
 }
 
-/* pthread needs C interface */
-extern "C"
-void *ti_getline(void *)
+extern "C" void *ti_getline(void *)
 {
   std::string line;
   int linecount = 0;
