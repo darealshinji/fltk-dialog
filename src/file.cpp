@@ -121,6 +121,11 @@ int dialog_native_file_chooser_gtk(int mode)
  */
 int dialog_native_file_chooser(int mode, int argc, char **argv)
 {
+  if (title == NULL)
+  {
+    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
+  }
+
 #ifdef HAVE_QT
   ret = -1;
 
@@ -163,6 +168,11 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 /* the Qt equivalent to Fl_Native_File_Chooser() */
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
 {
+  if (title == NULL)
+  {
+    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
+  }
+
   ret = dlopen_getfilenameqt(qt_major, mode, argc, argv);
 
   if (ret == -1)

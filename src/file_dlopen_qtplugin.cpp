@@ -42,8 +42,6 @@
 
 int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 {
-  char *filename;
-
 #ifdef USE_SYSTEM_PLUGINS
 
 # define DELETE(x)
@@ -52,20 +50,13 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 #   define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 # endif
 
-#ifdef HAVE_QT4
-  std::string filename_tmp = FLTK_DIALOG_MODULE_PATH;
+  char filename[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
 
+#ifdef HAVE_QT4
   if (qt_major == 4)
   {
-    filename_tmp += "/qt4gui.so";
+    filename[strlen(filename)-7] = '4';
   }
-  else
-  {
-    filename_tmp += "/qt5gui.so";
-  }
-  filename = (char *)filename_tmp.c_str();
-#else
-  filename = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
 #endif
 
 #else
@@ -74,20 +65,20 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
 # define DELETE(x) unlink(x)
 
+  char filename[] = "/tmp/qt5gui.so.XXXXXX";
   const char *array_data;
   std::streamsize array_length;
 
 #ifdef HAVE_QT4
   if (qt_major == 4)
   {
-    filename = (char *)"/tmp/qt4gui.so.XXXXXX";
+    filename[7] = '4';
     array_data = (char *)qt4gui_so;
     array_length = (std::streamsize) qt4gui_so_len;
   }
   else
   {
 #endif
-    filename = (char *)"/tmp/qt5gui.so.XXXXXX";
     array_data = (char *)qt5gui_so;
     array_length = (std::streamsize) qt5gui_so_len;
 #ifdef HAVE_QT4
@@ -127,7 +118,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
   dlerror();
 
-  int (*getfilenameqt) (int, const char*, int, char **);
+  int (*getfilenameqt) (int, const char*, const char*, int, char **);
   *(void **)(&getfilenameqt) = dlsym(handle, "getfilenameqt");
 
   dlsym_error = dlerror();
@@ -141,7 +132,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   }
 
   const char *separator_c = separator_s.c_str();
-  int ret = getfilenameqt(mode, separator_c, argc, argv);
+  int ret = getfilenameqt(mode, separator_c, title, argc, argv);
   dlclose(handle);
   DELETE(filename);
 
