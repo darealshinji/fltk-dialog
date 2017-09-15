@@ -92,8 +92,8 @@ static void set_progress_box_label(const char *ch)
   }
   else if (!progress_pulsate && progress_running)
   {
-    char tmp[3] = {0};
-    char l[5] = {0};
+    char tmp[4] = {0};
+    char l[6] = {0};
     int i;
 
     snprintf(tmp, 3, "%s", ch);
