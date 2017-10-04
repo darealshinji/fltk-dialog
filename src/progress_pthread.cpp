@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+// Test:
+// (echo 40; sleep 1; echo 80; sleep 1; echo 99; sleep 1; echo '#Done' && echo '100') | ./fltk-dialog --progress
+
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
@@ -93,17 +96,12 @@ static void set_progress_box_label(const char *ch)
   else if (!progress_pulsate && progress_running)
   {
     char tmp[4] = {0};
-    char l[6] = {0};
-    int i;
+    char l[5] = {0};
 
-    snprintf(tmp, 3, "%s", ch);
-    i = atoi(tmp);
+    snprintf(tmp, 4, "%s", ch);
+    progress_percent = atoi(tmp);
 
-    if (i > progress_percent && i <= 100)
-    {
-      progress_percent = i;
-    }
-    else if (i > 100)
+    if (progress_percent >= 100)
     {
       progress_percent = 100;
       progress_running = false;
@@ -112,6 +110,15 @@ static void set_progress_box_label(const char *ch)
     snprintf(l, 5, "%d%%", progress_percent);
     progress_bar->value(progress_percent);
     progress_bar->label(strdup(l));
+  }
+
+  if (!progress_running)
+  {
+    if (!hide_cancel)
+    {
+      progress_but_cancel->deactivate();
+    }
+    progress_but_ok->activate();
   }
 
   Fl::redraw();
