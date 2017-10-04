@@ -94,7 +94,6 @@ static void default_icon_svg(const char *filename)
 
   if (!img)
   {
-    if (img) { delete img; }
     nsvgDelete(nsvg);
     return;
   }
@@ -109,7 +108,7 @@ static void default_icon_svg(const char *filename)
     delete rgb;
   }
 
-  if (img) { delete img; }
+  delete img;
   nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
 }
