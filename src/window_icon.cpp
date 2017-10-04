@@ -87,6 +87,7 @@ static void default_icon_svg(const char *filename)
 
   if (!nsvg->shapes || w < 1 || h < 1)
   {
+    nsvgDelete(nsvg);
     return;
   }
 
