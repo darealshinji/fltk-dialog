@@ -339,6 +339,13 @@ int nsvg__parseXML(char* input,
 	int state = NSVG_XML_CONTENT;
 	while (*s) {
 		if (*s == '<' && state == NSVG_XML_CONTENT) {
+			// skip cdata
+			if (strncmp(s, "<![CDATA[", 9) == 0) {
+				s += 9;
+				char* rv = strstr(s, "]]>");
+				if (rv) s = rv + 3;
+				continue;
+			}
 			// Start of a tag
 			*s++ = '\0';
 			nsvg__parseContent(mark, contentCb, ud);
@@ -1886,6 +1893,8 @@ static void nsvg__parseStyle(NSVGparser* p, const char* str)
 	const char* start;
 	const char* end;
 
+	if (str == NULL) return;
+
 	while (*str) {
 		// Left Trim
 		while(*str && nsvg__isspace(*str)) ++str;
@@ -2721,6 +2730,8 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 			nsvg__parseGradient(p, attr, NSVG_PAINT_RADIAL_GRADIENT);
 		} else if (strcmp(el, "stop") == 0) {
 			nsvg__parseGradientStop(p, attr);
+		} else if (strcmp(el, "style") == 0) {
+			p->styleFlag = 1;
 		}
 		return;
 	}
@@ -2846,26 +2857,46 @@ static void nsvg__content(void* ud, const char* s)
 			memset(attr->title + len, 0, lim-len);
 		}
 	} else if (p->styleFlag) {
-		int state = 0;
+		// decrease string to cdata content (if present)
+		char* rv = strstr(s, "<![CDATA[");
+		if (rv) {
+			s = rv + 9;
+			rv = strstr(s, "]]>");
+			if (!rv)
+				return;
+			else *rv = '\0';
+		}
+
 		const char* start = NULL;
+		int state = 0;
 		while (*s) {
 			char c = *s;
-			if (nsvg__isspace(c) || c == '{') {
-				if (state == 1) {
+			if (state == 1) {
+				if (nsvg__isspace(c) || c == '{') {
 					NSVGstyles* next = p->styles;
 					p->styles = (NSVGstyles*)malloc(sizeof(NSVGstyles));
 					p->styles->next = next;
 					p->styles->name = nsvg__strndup(start, (size_t)(s - start));
-					start = s + 1;
-					state = 2;
+					p->styles->description = NULL;
+					if (c == '{') {
+						start = s + 1;
+						state = 3;
+					} else {
+						state = 2;
+					}
 				}
-			} else if (state == 2 && c == '}') {
+			} else if (state == 2 && c == '{') {
+				start = s + 1;
+				state = 3;
+			} else if (state == 3 && c == '}') {
 				p->styles->description = nsvg__strndup(start, (size_t)(s - start));
 				state = 0;
 			}
 			else if (state == 0) {
-				start = s;
-				state = 1;
+				if (!nsvg__isspace(c)) {
+					start = s;
+					state = 1;
+				}
 			}
 			s++;
 		}
