@@ -183,6 +183,10 @@ void nsvgDelete(NSVGimage* image);
 
 #ifdef NANOSVG_IMPLEMENTATION
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -3162,4 +3166,9 @@ void nsvgDelete(NSVGimage* image)
 	free(image);
 }
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif // NANOSVG_IMPLEMENTATION
+
