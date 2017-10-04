@@ -183,10 +183,6 @@ void nsvgDelete(NSVGimage* image);
 
 #ifdef NANOSVG_IMPLEMENTATION
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -2839,6 +2835,11 @@ static char *nsvg__strndup(const char *s, size_t n)
 	return (char *)memcpy(result, s, len);
 }
 
+#ifdef __cplusplus
+#define STRDUP(x) strdup(x)
+#else
+#define STRDUP(x)
+#endif
 static void nsvg__content(void* ud, const char* s)
 {
 	NSVGparser* p = (NSVGparser*)ud;
@@ -2862,10 +2863,10 @@ static void nsvg__content(void* ud, const char* s)
 		}
 	} else if (p->styleFlag) {
 		// decrease string to cdata content (if present)
-		char* rv = strstr(s, "<![CDATA[");
+		char* rv = STRDUP(strstr(s, "<![CDATA["));
 		if (rv) {
 			s = rv + 9;
-			rv = strstr(s, "]]>");
+			rv = STRDUP(strstr(s, "]]>"));
 			if (!rv)
 				return;
 			else *rv = '\0';
@@ -2924,6 +2925,7 @@ static void nsvg__content(void* ud, const char* s)
 		//}
 	}
 }
+#undef STRDUP
 
 static void nsvg__imageBounds(NSVGparser* p, float* bounds)
 {
@@ -3165,10 +3167,6 @@ void nsvgDelete(NSVGimage* image)
 	}
 	free(image);
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // NANOSVG_IMPLEMENTATION
 
