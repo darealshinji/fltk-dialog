@@ -166,9 +166,14 @@ void set_size(Fl_Double_Window *o, Fl_Widget *w)
     o->resizable(w);
   }
 
-  if (override_w > 0 || override_h > 0)
+  if (override_w > 0)
   {
-    o->size(override_w, override_h);
+    o->size(override_w, o->h());
+  }
+
+  if (override_h > 0)
+  {
+    o->size(o->w(), override_h);
   }
 }
 
@@ -180,9 +185,14 @@ void set_position(Fl_Double_Window *o)
     override_y = (max_h - o->h()) / 2;
   }
 
-  if (override_x >= 0 && override_y >= 0)
+  if (override_x >= 0)
   {
-    o->position(override_x, override_y);
+    o->position(override_x, o->y());
+  }
+
+  if (override_y >= 0)
+  {
+    o->position(o->x(), override_y);
   }
 }
 
@@ -376,8 +386,8 @@ static void print_usage(const char *prog)
 #ifdef WITH_CHECKLIST
   "\n"
   "Checklist options:\n"
-  " --check-all                 Start with all items selected\n"
-  " --return-value              Return list of selected items instead of a \"TRUE|FALSE\" list\n"
+  "  --check-all                 Start with all items selected\n"
+  "  --return-value              Return list of selected items instead of a \"TRUE|FALSE\" list\n"
 #endif
 
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
