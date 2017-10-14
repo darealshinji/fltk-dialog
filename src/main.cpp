@@ -248,6 +248,20 @@ static int _argtodouble(const char *arg, double &val, const char *self, std::str
   return 0;
 }
 
+#define ARGTOLONG(a, b)  if (_argtolong(args[b].c_str(), a, argv[0], b)) { return 1; }
+static int _argtolong(const char *arg, long &val, const char *self, std::string cmd)
+{
+  char *p;
+  val = strtol(arg, &p, 10);
+
+  if (*p)
+  {
+    std::cerr << self << ": " << cmd << ": input is not a long integer number" << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
 static bool in_array(std::string value, std::string *array, int size)
 {
   for (int i = 0; i < size; ++i)
@@ -955,7 +969,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
-  int kill_pid = -1;
+  long kill_pid = -1;
   bool pulsate = false;
   bool autoclose = false;
   bool hide_cancel = false;
@@ -967,7 +981,7 @@ int main(int argc, char **argv)
   }
 
   if (args.has("--watch-pid")) {
-    ARGTOINT(kill_pid, "--watch-pid");
+    ARGTOLONG(kill_pid, "--watch-pid");
   }
 
   if (args.has("--watch-file")) {

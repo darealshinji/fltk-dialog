@@ -64,7 +64,7 @@ static bool progress_pulsate = false;
 static bool progress_running = true;
 static bool progress_autoclose = false;
 static bool progress_hide_cancel = false;
-static int progress_kill_pid = -1;
+static long progress_kill_pid = -1;
 static char *progress_box_label = NULL;
 
 static void progress_close_cb(Fl_Widget *, long p)
@@ -87,13 +87,26 @@ static void progress_cancel_cb(Fl_Widget *o)
   progress_close_cb(o, 1);
 }
 
-static int check_pid(void)
+static void progress_finished(void)
 {
-  if (progress_kill_pid > 1 && kill((pid_t) progress_kill_pid, 0) == -1)
+  if (progress_autoclose)
   {
-    return 1;
+    progress_close_cb(nullptr, 0);
   }
-  return 0;
+  else
+  {
+    if (!progress_hide_cancel)
+    {
+      progress_but_cancel->deactivate();
+    }
+    progress_but_ok->activate();
+  }
+
+  if (progress_pulsate)
+  {
+    slider->value(100);
+    slider->deactivate();
+  }
 }
 
 static void progress_parse_line(const char *ch)
@@ -134,24 +147,7 @@ static void progress_parse_line(const char *ch)
 
   if (!progress_running)
   {
-    if (progress_autoclose)
-    {
-      progress_close_cb(nullptr, 0);
-    }
-    else
-    {
-      if (!progress_hide_cancel)
-      {
-        progress_but_cancel->deactivate();
-      }
-      progress_but_ok->activate();
-    }
-
-    if (progress_pulsate)
-    {
-      slider->value(100);
-      slider->deactivate();
-    }
+    progress_finished();
   }
 
   Fl::redraw();
@@ -206,7 +202,7 @@ extern "C" void *pulsate_bar_thread(void *)
     Fl::lock();
     slider->value(progress_percent);
 
-    if (check_pid() == 1)
+    if (progress_kill_pid > 1 && kill((pid_t) progress_kill_pid, 0) == -1)
     {
       progress_running = false;
     }
@@ -217,10 +213,16 @@ extern "C" void *pulsate_bar_thread(void *)
     usleep(PULSATE_USLEEP);
   }
 
+  if (!progress_running)
+  {
+    progress_finished();
+    Fl::redraw();
+  }
+
   return nullptr;
 }
 
-int dialog_progress(bool pulsate, int kill_pid, std::string watchfile, bool autoclose, bool hide_cancel)
+int dialog_progress(bool pulsate, long kill_pid, std::string watchfile, bool autoclose, bool hide_cancel)
 {
   Fl_Group  *g;
   Fl_Box    *dummy;
