@@ -65,11 +65,17 @@ static bool progress_running = true;
 static bool progress_autoclose = false;
 static bool progress_hide_cancel = false;
 static int progress_kill_pid = -1;
+static char *progress_box_label = NULL;
 
 static void progress_close_cb(Fl_Widget *, long p)
 {
   progress_win->hide();
   ret = (int) p;
+
+  if (progress_box_label)
+  {
+    free(progress_box_label);
+  }
 }
 
 static void progress_cancel_cb(Fl_Widget *o)
@@ -96,7 +102,12 @@ static void progress_parse_line(const char *ch)
   {
     if (ch[0] == '#' && ch[1] != '\0')
     {
-      progress_box->label(strdup(ch + 1));
+      if (progress_box_label)
+      {
+        free(progress_box_label);
+      }
+      progress_box_label = strdup(ch + 1);
+      progress_box->label(progress_box_label);
     }
     else if (!progress_pulsate && ch[0] >= '0' && ch[0] <= '9')
     {

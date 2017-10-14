@@ -40,6 +40,7 @@ static Fl_Double_Window *dnd_win;
 static Fl_Box *dnd_count;
 static void dnd_callback(const char *items);
 static int dnd_count_val = 0;
+static char *dnd_count_label = NULL;
 
 class dnd_box : public Fl_Box
 {
@@ -73,6 +74,11 @@ int dnd_box::handle(int event)
 static void dnd_close_cb(Fl_Widget *)
 {
   dnd_win->hide();
+
+  if (dnd_count_label)
+  {
+    free(dnd_count_label);
+  }
 }
 
 static void dnd_callback(const char *items)
@@ -81,7 +87,13 @@ static void dnd_callback(const char *items)
 
   ++dnd_count_val;
   ss << dnd_count_val;
-  dnd_count->label(strdup(ss.str().c_str()));
+
+  if (dnd_count_label)
+  {
+    free(dnd_count_label);
+  }
+  dnd_count_label = strdup(ss.str().c_str());
+  dnd_count->label(dnd_count_label);
   dnd_win->redraw();
 
   std::cout << items;

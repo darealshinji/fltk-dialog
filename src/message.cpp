@@ -45,6 +45,7 @@
 
 static Fl_Double_Window *message_win;
 static double scale_value = 0;
+static char *slider_box_label = NULL;
 
 static char *message_scale_double_to_char(double d)
 {
@@ -75,10 +76,16 @@ static void message_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-static void message_scale_cb(Fl_Widget *o, void *v)
+static void message_scale_cb(Fl_Widget *o, void *p)
 {
   scale_value = ((Fl_Valuator *)o)->value();
-  ((Fl_Box *)v)->label(message_scale_double_to_char(scale_value));
+
+  if (slider_box_label)
+  {
+    free(slider_box_label);
+  }
+  slider_box_label = message_scale_double_to_char(scale_value);
+  ((Fl_Box *)p)->label(slider_box_label);
   Fl::redraw();
 }
 
@@ -329,11 +336,12 @@ int dialog_message(
                               /*w*/ win_w,
                               /*h*/ 30);
       {
+        slider_box_label = message_scale_double_to_char(scale_init);
         slider_box = new Fl_Box(/*x*/ 10,
                                 /*y*/ win_h - input_off - 8,
                                 /*w*/ win_w - 20,
                                 /*h*/ 30,
-                                /*l*/ message_scale_double_to_char(scale_init));
+                                /*l*/ slider_box_label);
         slider_box->box(FL_FLAT_BOX);
         slider_box->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
 
@@ -433,6 +441,11 @@ int dialog_message(
     {
       std::cout << slider_box->label() << std::endl;
     }
+  }
+
+  if (slider_box_label)
+  {
+    free(slider_box_label);
   }
   return ret;
 }

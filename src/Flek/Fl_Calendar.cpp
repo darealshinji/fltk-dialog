@@ -129,7 +129,7 @@ Fl_Calendar_Base::update ()
   int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
   int i;
-  char t[32];
+  char tmp_d[32];
 
   int dipm_month;  /* previous month */
   int dipm_year;   /* year of previous month */
@@ -144,9 +144,11 @@ Fl_Calendar_Base::update ()
 
   /* last days of previous month */
   for (i = 0; i < dow; i++) {
-    //sprintf (t, "%d", (i-dow+dipm+1));
-    eastern_arabic_numbers (t, (i-dow+dipm+1));
-    days[i]->label (strdup(t));
+    eastern_arabic_numbers (tmp_d, (i-dow+dipm+1));
+    if (days[i]->label ()) {
+      free ((void *) days[i]->label ());
+    }
+    days[i]->label (strdup(tmp_d));
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
@@ -155,9 +157,11 @@ Fl_Calendar_Base::update ()
 
   /* current month */
   for (i = dow; i < (dim+dow); i++) {
-    //sprintf (t, "%d", (i+1-dow));
-    eastern_arabic_numbers (t, (i+1-dow));
-    days[i]->label (strdup(t));
+    eastern_arabic_numbers (tmp_d, (i+1-dow));
+    if (days[i]->label ()) {
+      free ((void *) days[i]->label ());
+    }
+    days[i]->label (strdup(tmp_d));
     days[i]->down_box (FL_THIN_DOWN_BOX);
     days[i]->box (FL_THIN_UP_BOX);
     days[i]->color (52);
@@ -170,9 +174,11 @@ Fl_Calendar_Base::update ()
 
   /* first days of next month */
   for (i = (dim+dow); i < (6*7); i++) {
-    //sprintf (t, "%d", (i+1-dow-dim));
-    eastern_arabic_numbers (t, (i+1-dow-dim));
-    days[i]->label (strdup(t));
+    eastern_arabic_numbers (tmp_d, (i+1-dow-dim));
+    if (days[i]->label ()) {
+      free ((void *) days[i]->label ());
+    }
+    days[i]->label (strdup(tmp_d));
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
