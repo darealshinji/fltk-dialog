@@ -139,11 +139,10 @@ int dialog_notify(const char *appname,
 
 /* progress.cpp */
 #ifdef WITH_PROGRESS
-int dialog_progress(       bool pulsate,
-                           long kill_pid,
-                    std::string watchfile,
-                           bool autoclose,
-                           bool hide_cancel);
+int dialog_progress(bool pulsate,
+                    long kill_pid,
+                    bool autoclose,
+                    bool hide_cancel);
 #endif
 
 /* textinfo.cpp */

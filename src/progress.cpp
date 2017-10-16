@@ -153,33 +153,17 @@ static void progress_parse_line(const char *ch)
   Fl::redraw();
 }
 
-extern "C" void *progress_getline(void *p)
+extern "C" void *progress_getline(void *)
 {
-  const char *watchfile = (char *)p;
   std::fstream fs;
   std::string line;
 
-  if (watchfile == NULL)
+  for (/**/; std::getline(std::cin, line); /**/)
   {
-    for (/**/; std::getline(std::cin, line); /**/)
-    {
-      Fl::lock();
-      progress_parse_line(line.c_str());
-      Fl::unlock();
-      Fl::awake(progress_win);
-    }
-  }
-  else
-  {
-    fs.open(watchfile, std::fstream::in);
-    for (/**/; std::getline(fs, line); /**/)
-    {
-      Fl::lock();
-      progress_parse_line(line.c_str());
-      Fl::unlock();
-      Fl::awake(progress_win);
-    }
-    fs.close();
+    Fl::lock();
+    progress_parse_line(line.c_str());
+    Fl::unlock();
+    Fl::awake(progress_win);
   }
 
   return nullptr;
@@ -222,12 +206,11 @@ extern "C" void *pulsate_bar_thread(void *)
   return nullptr;
 }
 
-int dialog_progress(bool pulsate, long kill_pid, std::string watchfile, bool autoclose, bool hide_cancel)
+int dialog_progress(bool pulsate, long kill_pid, bool autoclose, bool hide_cancel)
 {
   Fl_Group  *g;
   Fl_Box    *dummy;
   int        win_h = 140;
-  char      *watchfile_c = NULL;
   pthread_t  progress_thread_1, progress_thread_2;
 
   if (title == NULL)
@@ -238,11 +221,6 @@ int dialog_progress(bool pulsate, long kill_pid, std::string watchfile, bool aut
   if (msg == NULL)
   {
     msg = "Progress indicator";
-  }
-
-  if (watchfile != "")
-  {
-    watchfile_c = (char *)watchfile.c_str();
   }
 
   progress_pulsate = pulsate;
@@ -321,7 +299,7 @@ int dialog_progress(bool pulsate, long kill_pid, std::string watchfile, bool aut
   {
     pthread_create(&progress_thread_1, 0, &pulsate_bar_thread, nullptr);
   }
-  pthread_create(&progress_thread_2, 0, &progress_getline, watchfile_c);
+  pthread_create(&progress_thread_2, 0, &progress_getline, nullptr);
 
   Fl::run();
 

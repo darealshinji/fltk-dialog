@@ -392,7 +392,6 @@ static void print_usage(const char *prog)
   "Progress options:\n"
   "  --pulsate                  Pulsate progress bar\n"
   "  --watch-pid=PID            Process ID to watch\n"
-  "  --watch-file=FILE          Process logfile to watch\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --no-cancel                Hide cancel button\n"
 #endif
@@ -622,7 +621,6 @@ int main(int argc, char **argv)
 #endif
 #ifdef WITH_PROGRESS
     "--watch-pid",
-    "--watch-file",
 #endif
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
     "--format",
@@ -973,7 +971,6 @@ int main(int argc, char **argv)
   bool pulsate = false;
   bool autoclose = false;
   bool hide_cancel = false;
-  std::string watchfile;
 
   if (args.has("--progress")) {
     dialog = DIALOG_PROGRESS;
@@ -982,10 +979,6 @@ int main(int argc, char **argv)
 
   if (args.has("--watch-pid")) {
     ARGTOLONG(kill_pid, "--watch-pid");
-  }
-
-  if (args.has("--watch-file")) {
-    watchfile = args["--watch-file"];
   }
 
   if (args.has("--pulsate")) {
@@ -1384,7 +1377,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, kill_pid, watchfile, autoclose, hide_cancel);
+      return dialog_progress(pulsate, kill_pid, autoclose, hide_cancel);
 #endif
 
     case DIALOG_SCALE:
