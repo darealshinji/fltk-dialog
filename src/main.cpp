@@ -298,7 +298,7 @@ static void print_usage(const char *prog)
   "  --separator=SEPARATOR      Set common separator character\n"
 #ifdef WITH_WINDOW_ICON
   "  --window-icon=FILE         Set the window icon; supported are: bmp gif\n"
-  "                             jpg png svg xbm xpm\n"
+  "                             jpg png svg svgz xbm xpm\n"
 #endif
   "  --width=WIDTH              Set the window width\n"
   "  --height=HEIGHT            Set the window height\n"

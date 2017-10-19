@@ -38,7 +38,9 @@
 #include <fstream>
 #include <locale>
 #include <string>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "fltk-dialog.hpp"
 
@@ -47,11 +49,13 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
-#define SVG_UNITS  "px"    /* units passed to NanoSVG */
-#define SVG_DPI    96.0f   /* DPI (dots-per-inch) used for unit conversion */
-#define SVG_DEPTH  4       /* image depth */
-#define BYTES_BUF  16      /* magic bytes length */
+#define SVG_BUF_MAX  1048576 /* maximum accepted SVG data size, 1 MiB */
+#define SVG_UNITS    "px"    /* units passed to NanoSVG */
+#define SVG_DPI      96.0f   /* DPI (dots-per-inch) used for unit conversion */
+#define SVG_DEPTH    4       /* image depth */
+#define BYTES_BUF    16      /* magic bytes length */
 
+static char *_svg_data = NULL;
 
 struct to_lower {
   int operator() (int ch)
@@ -73,15 +77,57 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
-static void default_icon_svg(const char *filename)
+/* piping seems to be easier and safer than directly using zlib */
+static char *gunzip_svg(const char *filename)
+{
+  FILE *fd;
+  size_t size;
+  std::string command;
+  _svg_data = new char[SVG_BUF_MAX]();
+
+  command = "gzip -cd '" + std::string(filename) + "'";
+  fd = popen(command.c_str(), "re");
+  size = fread(_svg_data, 1, SVG_BUF_MAX - 1, fd);
+  pclose(fd);
+
+  if (size == 0 || feof(fd) == 0)
+  {
+    delete _svg_data;
+    return NULL;
+  }
+  return _svg_data;
+}
+
+static void default_icon_svg(const char *filename, bool gunzip)
 {
   NSVGimage *nsvg = NULL;
   NSVGrasterizer *r = NULL;
+  char *data = NULL;
   unsigned char *img = NULL;
   Fl_RGB_Image *rgb = NULL;
   int w, h;
 
-  nsvg = nsvgParseFromFile(filename, SVG_UNITS, SVG_DPI);
+  if (access(filename, R_OK) != 0)
+  {
+    return;
+  }
+
+  if (gunzip)
+  {
+    data = gunzip_svg(filename);
+
+    if (!data)
+    {
+      return;
+    }
+    nsvg = nsvgParse(data, SVG_UNITS, SVG_DPI);
+    delete data;
+  }
+  else
+  {
+    nsvg = nsvgParseFromFile(filename, SVG_UNITS, SVG_DPI);
+  }
+
   w = (int)nsvg->width;
   h = (int)nsvg->height;
 
@@ -150,7 +196,12 @@ void set_window_icon(const char *file)
   }
   else if (get_ext_lower(file, 4) == ".svg")
   {
-    default_icon_svg(file);
+    default_icon_svg(file, false);
+  }
+  else if (get_ext_lower(file, 5) == ".svgz" ||
+           get_ext_lower(file, 7) == ".svg.gz")
+  {
+    default_icon_svg(file, true);
   }
   else if (get_ext_lower(file, 4) == ".xpm")
   {
