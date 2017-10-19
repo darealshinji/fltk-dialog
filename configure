@@ -6689,6 +6689,15 @@ fi
 fi
 
 fi
+  if test "x$have_qt" = "xyes" -a "x$have_qt5" != "xyes"; then :
+
+    have_qt="no"
+    have_qt4="no"
+    have_qt5="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Currently Qt4 cannot be used without Qt5 -> disabling Qt completely" >&5
+$as_echo "$as_me: Currently Qt4 cannot be used without Qt5 -> disabling Qt completely" >&6;}
+
+fi
 
 fi
 
