@@ -36,6 +36,7 @@
 #include <string>
 #include <vector>
 #include <stdlib.h>
+#include <string.h>
 
 #include "fltk-dialog.hpp"
 #include "misc/getopt.hpp"
@@ -262,18 +263,6 @@ static int _argtolong(const char *arg, long &val, const char *self, std::string 
   return 0;
 }
 
-static bool in_array(std::string value, std::string *array, int size)
-{
-  for (int i = 0; i < size; ++i)
-  {
-    if (value == array[i])
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
 static int use_only_with(const char *self, std::string a, std::string b)
 {
   std::cerr << self << ": " << a << " can only be used with " << b << "\n"
@@ -487,201 +476,130 @@ int main(int argc, char **argv)
 
   struct getopt args(argc, (const char **)argv);
 
-  std::string args_noparam[] = {
+  const char *args_noparam =
 #ifdef WITH_DND
-    "--dnd",
+    " --dnd"
 #endif
 #ifdef WITH_FILE
-    "--file",
-    "--directory",
+    " --file"
+    " --directory"
 # ifdef WITH_NATIVE_FILE_CHOOSER
-    "--native",
+    " --native"
 #  ifdef HAVE_QT
-    "--native-gtk",
+    " --native-gtk"
 #   ifdef HAVE_QT4
-    "--native-qt4",
+    " --native-qt4"
 #   endif
 #   ifdef HAVE_QT5
-    "--native-qt5",
+    " --native-qt5"
 #   endif
 #  endif
 # endif
 #endif
 #ifdef WITH_COLOR
-    "--color",
+    " --color"
 #endif
 #ifdef WITH_NOTIFY
-    "--notification",
-    "--timeout",
-    "--notify-icon",
+    " --notification"
+    " --timeout"
+    " --notify-icon"
 #endif
 #ifdef WITH_PROGRESS
-    "--progress",
-    "--pulsate",
-    "--auto-close",
-    "--no-cancel",
+    " --progress"
+    " --pulsate"
+    " --auto-close"
+    " --no-cancel"
 #endif
 #ifdef WITH_CHECKLIST
-    "--check-all",
-    "--return-value",
+    " --check-all"
+    " --return-value"
 #endif
 #if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
-    "--return-number",
+    " --return-number"
 #endif
 #ifdef WITH_CALENDAR
-    "--calendar",
+    " --calendar"
 #endif
 #ifdef WITH_DATE
-    "--date",
+    " --date"
 #endif
 #ifdef WITH_TEXTINFO
-    "--text-info",
-    "--auto-scroll",
+    " --text-info"
+    " --auto-scroll"
 #endif
 #ifdef WITH_FONT
-    "--font",
+    " --font"
 #endif
-    "--help", "-h",
-    "--version", "-v",
-    "--about",
-    "--no-escape",
-    "--no-system-colors",
-    "--undecorated",
-    "--skip-taskbar",
-    "--fixed",
-    "--center",
-    "--message",
-    "--warning",
-    "--question",
-    "--entry",
-    "--password",
-    "--no-symbol",
-    "--scale"
-  };  /* args_noparam */
+    " --help"
+    " -h"
+    " --version"
+    " -v"
+    " --about"
+    " --no-escape"
+    " --no-system-colors"
+    " --undecorated"
+    " --skip-taskbar"
+    " --fixed"
+    " --center"
+    " --message"
+    " --warning"
+    " --question"
+    " --entry"
+    " --password"
+    " --no-symbol"
+    " --scale"
+    " ";
 
-  int args_noparamc = 18;
-#ifdef WITH_DND
-  args_noparamc += 1;
-#endif
-#ifdef WITH_FILE
-  args_noparamc += 2;
-# ifdef WITH_NATIVE_FILE_CHOOSER
-  args_noparamc += 1;
-#  ifdef HAVE_QT
-  args_noparamc += 1;
-#   ifdef HAVE_QT4
-  args_noparamc += 1;
-#   endif
-#   ifdef HAVE_QT5
-  args_noparamc += 1;
-#   endif
-#  endif
-# endif
-#endif
-#ifdef WITH_COLOR
-  args_noparamc += 1;
-#endif
-#ifdef WITH_NOTIFY
-  args_noparamc += 3;
-#endif
-#ifdef WITH_PROGRESS
-  args_noparamc += 4;
-#endif
-#ifdef WITH_CHECKLIST
-  args_noparamc += 2;
-#endif
-#if defined(WITH_RADIOLIST) || defined(WITH_DROPDOWN)
-  args_noparamc += 1;
-#endif
-#ifdef WITH_CALENDAR
-  args_noparamc += 1;
-#endif
-#ifdef WITH_DATE
-  args_noparamc += 1;
-#endif
-#ifdef WITH_TEXTINFO
-  args_noparamc += 2;
-#endif
-#ifdef WITH_FONT
-  args_noparamc += 1;
-#endif
-
-  std::string args_param[] = {
+  const char *args_param =
 #ifdef WITH_HTML
-    "--html",
+    " --html"
 #endif
 #ifdef WITH_CHECKLIST
-    "--checklist",
+    " --checklist"
 #endif
 #ifdef WITH_RADIOLIST
-    "--radiolist",
+    " --radiolist"
 #endif
 #ifdef WITH_DROPDOWN
-    "--dropdown",
+    " --dropdown"
 #endif
 #ifdef WITH_PROGRESS
-    "--watch-pid",
+    " --watch-pid"
 #endif
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
-    "--format",
+    " --format"
 #endif
 #ifdef WITH_TEXTINFO
-    "--checkbox",
+    " --checkbox"
 #endif
 #ifdef WITH_WINDOW_ICON
-    "--window-icon",
+    " --window-icon"
 #endif
-    "--scheme",
-    "--text",
-    "--title",
-    "--ok-label",
-    "--close-label",
-    "--cancel-label",
-    "--yes-label",
-    "--no-label",
-    "--alt-label",
-    "--width",
-    "--height",
-    "--posx",
-    "--posy",
-    "--geometry",
-    "--value",
-    "--min-value",
-    "--max-value",
-    "--step"
-  };  /* args_param */
+    " --scheme"
+    " --text"
+    " --title"
+    " --ok-label"
+    " --close-label"
+    " --cancel-label"
+    " --yes-label"
+    " --no-label"
+    " --alt-label"
+    " --width"
+    " --height"
+    " --posx"
+    " --posy"
+    " --geometry"
+    " --value"
+    " --min-value"
+    " --max-value"
+    " --step"
+    " ";
 
-  int args_paramc = 18;
-#ifdef WITH_HTML
-  args_paramc += 1;
-#endif
-#ifdef WITH_CHECKLIST
-  args_paramc += 1;
-#endif
-#ifdef WITH_RADIOLIST
-  args_paramc += 1;
-#endif
-#ifdef WITH_DROPDOWN
-  args_paramc += 1;
-#endif
-#ifdef WITH_PROGRESS
-  args_paramc += 2;
-#endif
-#if defined(WITH_CALENDAR) || defined(WITH_DATE)
-  args_paramc += 1;
-#endif
-#ifdef WITH_TEXTINFO
-  args_paramc += 1;
-#endif
-#ifdef WITH_WINDOW_ICON
-  args_paramc += 1;
-#endif
-
-  for (unsigned int i = 1; i < args.size(); ++i)
+  for (size_t i = 1; i < args.size(); ++i)
   {
     std::stringstream ss;
     std::vector<std::string> v;
-    std::string arg;
+    std::string arg, needle;
     bool has_parameter = false;
 
     ss << i;
@@ -697,22 +615,23 @@ int main(int argc, char **argv)
       arg = args[ss.str()];
     }
 
-    if (!in_array(arg, args_noparam, args_noparamc) && !in_array(arg, args_param, args_paramc))
+    needle = " " + arg + " ";
+
+    if (!strstr(args_noparam, needle.c_str()) && !strstr(args_param, needle.c_str()))
     {
       std::cerr << argv[0] << ": `" << arg << "' is NOT a valid command!\n"
         << "See `" << argv[0] << " --help' for available commands" << std::endl;
       return 1;
     }
 
-    if (has_parameter && in_array(arg, args_noparam, args_noparamc))
+    if (has_parameter && strstr(args_noparam, needle.c_str()))
     {
       std::cerr << argv[0] << ": `" << arg << "' doesn't take any arguments!\n"
         << "See `" << argv[0] << " --help' for more information" << std::endl;
       return 1;
     }
 
-    if ((!has_parameter && in_array(arg, args_param, args_paramc)) ||
-        (has_parameter && in_array(arg, args_param, args_paramc) && v[1] == ""))
+    if (strstr(args_param, needle.c_str()) && (!has_parameter || (has_parameter && v[1] == "")))
     {
       std::cerr << argv[0] << ": `" << arg << "' requires an argument!\n"
         << "See `" << argv[0] << " --help' for more information" << std::endl;
@@ -795,8 +714,7 @@ int main(int argc, char **argv)
 
   if (args.has("--separator")) {
     separator_s = args["--separator"].substr(0,1);
-    const char *tmp = separator_s.c_str();
-    separator = tmp[0];
+    separator = separator_s.c_str()[0];
   }
 
   if (args.has("--width")) {

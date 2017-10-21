@@ -136,8 +136,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
   }
 
-  const char *separator_c = separator_s.c_str();
-  int ret = getfilenameqt(mode, separator_c, title, argc, argv);
+  int ret = getfilenameqt(mode, separator_s.c_str(), title, argc, argv);
   dlclose(handle);
   DELETE(filename);
 
