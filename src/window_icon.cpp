@@ -55,7 +55,7 @@
 #define SVG_DEPTH    4       /* image depth */
 #define BYTES_BUF    16      /* magic bytes length */
 
-static char *_svg_data = NULL;
+static char *icon_svg_data;
 
 struct to_lower {
   int operator() (int ch)
@@ -83,19 +83,19 @@ static char *gunzip_svg(const char *filename)
   FILE *fd;
   size_t size;
   std::string command;
-  _svg_data = new char[SVG_BUF_MAX]();
+  icon_svg_data = new char[SVG_BUF_MAX]();
 
-  command = "gzip -cd '" + std::string(filename) + "'";
+  command = "gzip -cd \"" + std::string(filename) + "\"";
   fd = popen(command.c_str(), "re");
-  size = fread(_svg_data, 1, SVG_BUF_MAX - 1, fd);
+  size = fread(icon_svg_data, 1, SVG_BUF_MAX - 1, fd);
   pclose(fd);
 
   if (size == 0 || feof(fd) == 0)
   {
-    delete _svg_data;
+    delete icon_svg_data;
     return NULL;
   }
-  return _svg_data;
+  return icon_svg_data;
 }
 
 static void default_icon_svg(const char *filename, bool gunzip)
