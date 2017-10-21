@@ -31,16 +31,16 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <ctype.h>
 #include <string.h>
 
 #include "fltk-dialog.hpp"
 
-
 static Fl_Double_Window *dnd_win;
 static Fl_Box *dnd_count;
-static void dnd_callback(const char *items);
 static int dnd_count_val = 0;
-static char *dnd_count_label = NULL;
+static std::string dnd_count_label;
+static void dnd_callback(const char *items);
 
 class dnd_box : public Fl_Box
 {
@@ -71,41 +71,73 @@ int dnd_box::handle(int event)
   return handle_ret;
 }
 
+/* http://www.geekhideout.com/urlcode.shtml */
+
+static char from_hex(char ch)
+{
+  return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}
+
+static char *url_decode(char *str)
+{
+  char *pstr = str;
+  char *buf = new char[strlen(str) + 1];
+  char *pbuf = buf;
+
+  while (*pstr)
+  {
+    if (*pstr == '%')
+    {
+      if (pstr[1] && pstr[2])
+      {
+        *pbuf++ = from_hex(pstr[1]) << 4 | from_hex(pstr[2]);
+        pstr += 2;
+      }
+    }
+    else if (*pstr == '+')
+    {
+      *pbuf++ = ' ';
+    }
+    else
+    {
+      *pbuf++ = *pstr;
+    }
+    pstr++;
+  }
+  *pbuf = '\0';
+
+  return buf;
+}
+
 static void dnd_close_cb(Fl_Widget *)
 {
   dnd_win->hide();
-
-  if (dnd_count_label)
-  {
-    free(dnd_count_label);
-  }
 }
 
 static void dnd_callback(const char *items)
 {
   std::stringstream ss;
+  std::string s;
+  char *line;
 
   ++dnd_count_val;
   ss << dnd_count_val;
 
-  if (dnd_count_label)
-  {
-    free(dnd_count_label);
-  }
-  dnd_count_label = strdup(ss.str().c_str());
-  dnd_count->label(dnd_count_label);
+  dnd_count_label = ss.str();
+  dnd_count->label(dnd_count_label.c_str());
   dnd_win->redraw();
 
-  std::cout << items;
-  std::string s(items);
-
-  if (s.substr(s.length()-1, 1) == "\n")
+  if (strncmp(items, "file:///", 8) == 0)
   {
-    std::cout << std::flush;
+    s = std::string(items + 7);
+    repstr("\nfile://", "\n", s);
+    line = url_decode((char *)s.c_str());
+    std::cout << line;
+    delete line;
   }
   else
   {
-    std::cout << std::endl;
+    std::cout << items << std::endl;
   }
 }
 
