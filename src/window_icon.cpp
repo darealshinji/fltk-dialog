@@ -43,6 +43,7 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
+#include "gunzip_n.hpp"
 
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"
@@ -54,8 +55,6 @@
 #define SVG_DPI      96.0f   /* DPI (dots-per-inch) used for unit conversion */
 #define SVG_DEPTH    4       /* image depth */
 #define BYTES_BUF    16      /* magic bytes length */
-
-static char *icon_svg_data;
 
 struct to_lower {
   int operator() (int ch)
@@ -77,27 +76,6 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
-/* piping seems to be easier and safer than directly using zlib */
-static char *gunzip_svg(const char *filename)
-{
-  FILE *fd;
-  size_t size;
-  std::string command;
-  icon_svg_data = new char[SVG_BUF_MAX]();
-
-  command = "gzip -cd \"" + std::string(filename) + "\"";
-  fd = popen(command.c_str(), "re");
-  size = fread(icon_svg_data, 1, SVG_BUF_MAX - 1, fd);
-  pclose(fd);
-
-  if (size == 0 || feof(fd) == 0)
-  {
-    delete icon_svg_data;
-    return NULL;
-  }
-  return icon_svg_data;
-}
-
 static void default_icon_svg(const char *filename, bool gunzip)
 {
   NSVGimage *nsvg = NULL;
@@ -114,7 +92,7 @@ static void default_icon_svg(const char *filename, bool gunzip)
 
   if (gunzip)
   {
-    data = gunzip_svg(filename);
+    data = gunzip_n(filename, SVG_BUF_MAX);
 
     if (!data)
     {
