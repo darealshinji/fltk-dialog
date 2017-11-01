@@ -29,7 +29,8 @@
 #include <FL/Fl_Double_Window.H>
 #include <string>
 
-#define STREQ(x, y) (strcmp(x, y) == 0)
+#define STREQ(x, y)      (strcmp(x, y) == 0)
+#define SSTREQ(x, y, n)  (strncmp(x, y, n) == 0)
 
 extern const char *title, *msg;
 extern char separator;
