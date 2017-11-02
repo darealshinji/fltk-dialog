@@ -43,7 +43,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "misc/split.hpp"
 #include "fltk-dialog.hpp"
 
 #define NANOSVG_IMPLEMENTATION
@@ -77,60 +76,14 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
-static const char *which(const char *cmd)
-{
-  char *env;
-  std::string path;
-  std::vector<std::string> itemlist_v;
-  size_t count, i;
-
-  if (!cmd)
-  {
-    return NULL;
-  }
-
-  env = getenv("PATH");
-
-  if (!env)
-  {
-    return NULL;
-  }
-
-  split(std::string(env), ':', itemlist_v);
-  count = itemlist_v.size();
-
-  for (i = 0; count > 0 && i < count; ++i)
-  {
-    if (itemlist_v[i] != "")
-    {
-      path = itemlist_v[i] + "/" + std::string(cmd);
-
-      if (access(path.c_str(), R_OK|X_OK) == 0)
-      {
-        return path.c_str();
-      }
-    }
-  }
-
-  return NULL;
-}
-
 static FILE *popen_gzip(const char *file)
 {
   enum { r = 0, w = 1 };
   int fd[2];
-  const char *path;
 
   if (pipe(fd) == -1)
   {
     perror("pipe()");
-    return NULL;
-  }
-
-  path = which("gzip");
-
-  if (!path)
-  {
     return NULL;
   }
 
@@ -139,7 +92,7 @@ static FILE *popen_gzip(const char *file)
     close(fd[r]);
     dup2(fd[w], 1);
     close(fd[w]);
-    execl(path, "gzip", "-cd", file, NULL);
+    execl("/bin/gzip", "gzip", "-cd", file, NULL);
     _exit(127);
   }
   else

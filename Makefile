@@ -147,7 +147,6 @@ endif
 ifneq ($(WITH_WINDOW_ICON),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS          += src/window_icon.o
-HAVE_SPLIT = yes
 endif
 ifneq ($(HAVE_PRINT_DATE),no)
 OBJS          += src/misc/print_date.o src/Flek/FDate.o
