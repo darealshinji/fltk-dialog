@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,7 +127,7 @@ static void dnd_callback(const char *items)
   dnd_count->label(dnd_count_label.c_str());
   dnd_win->redraw();
 
-  if (strncmp(items, "file:///", 8) == 0)
+  if (SSTREQ(items, "file:///", 8))
   {
     s = std::string(items + 7);
     repstr("\nfile://", "\n", s);
