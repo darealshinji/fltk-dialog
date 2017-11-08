@@ -300,11 +300,11 @@ endif
 
 qt4gui.so: src/file_qtplugin_qt4.o
 	$(msg_CXXLDSO)
-	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs QtGui QtCore)
+	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs QtGui QtCore)
 
 qt5gui.so: src/file_qtplugin_qt5.o
 	$(msg_CXXLDSO)
-	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) $(shell pkg-config --libs Qt5Widgets Qt5Core)
+	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs Qt5Widgets Qt5Core)
 
 src/file_qtplugin_qt4.o: src/file_qtplugin.cpp
 	$(msg_CXX)
