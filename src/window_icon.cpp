@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
@@ -49,12 +51,6 @@
 #include "nanosvg.h"
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
-
-#define SVG_BUF_MAX  1048576 /* maximum accepted SVG data size, 1 MiB */
-#define SVG_UNITS    "px"    /* units passed to NanoSVG */
-#define SVG_DPI      96.0f   /* DPI (dots-per-inch) used for unit conversion */
-#define SVG_DEPTH    4       /* image depth */
-#define MAGIC_LEN    16      /* magic bytes length */
 
 struct to_lower {
   int operator() (int ch)
@@ -137,24 +133,19 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
   Fl_RGB_Image *rgb = NULL;
   int w, h;
 
-  if (access(file, R_OK) != 0)
-  {
-    return NULL;
-  }
-
   if (compressed)
   {
-    data = gunzip(file, SVG_BUF_MAX);
+    data = gunzip(file, 1024*1024);
     if (!data)
     {
       return NULL;
     }
-    nsvg = nsvgParse(data, SVG_UNITS, SVG_DPI);
+    nsvg = nsvgParse(data, "px", 96.0f);
     delete data;
   }
   else
   {
-    nsvg = nsvgParseFromFile(file, SVG_UNITS, SVG_DPI);
+    nsvg = nsvgParseFromFile(file, "px", 96.0f);
   }
 
   w = (int)nsvg->width;
@@ -166,7 +157,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
     return NULL;
   }
 
-  img = new unsigned char[w*h*SVG_DEPTH];
+  img = new unsigned char[w*h*4];
 
   if (!img)
   {
@@ -175,8 +166,8 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
   }
 
   r = nsvgCreateRasterizer();
-  nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*SVG_DEPTH);
-  rgb = new Fl_RGB_Image(img, w, h, SVG_DEPTH, 0);
+  nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*4);
+  rgb = new Fl_RGB_Image(img, w, h, 4, 0);
 
   delete img;
   nsvgDeleteRasterizer(r);
@@ -185,10 +176,18 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
   return rgb;
 }
 
+#define MAGIC_LEN 16
+
 void set_window_icon(const char *file)
 {
   char bytes[MAGIC_LEN] = {0};
   Fl_RGB_Image *rgb = NULL;
+  struct stat st;
+
+  if (stat(file, &st) == -1 || st.st_size > 10*1024*1024)
+  {
+    return;
+  }
 
   std::ifstream ifs(file, std::ifstream::binary);
   std::streambuf *pbuf = ifs.rdbuf();
@@ -219,8 +218,9 @@ void set_window_icon(const char *file)
   {
     rgb = svg_to_rgb(file, false);
   }
-  else if (get_ext_lower(file, 5) == ".svgz" ||
-           get_ext_lower(file, 7) == ".svg.gz")
+  else if ((get_ext_lower(file, 5) == ".svgz" ||
+            get_ext_lower(file, 7) == ".svg.gz") && \
+           st.st_size < 1024*1024)
   {
     rgb = svg_to_rgb(file, true);
   }
