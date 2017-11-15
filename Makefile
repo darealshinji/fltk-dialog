@@ -146,7 +146,7 @@ OBJS          += src/textinfo.o
 endif
 ifneq ($(WITH_WINDOW_ICON),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON
-OBJS          += src/window_icon.o
+OBJS          += src/window_icon.o src/misc/gunzip.o
 endif
 ifneq ($(HAVE_PRINT_DATE),no)
 OBJS          += src/misc/print_date.o src/Flek/FDate.o
@@ -208,7 +208,7 @@ main_LIBS += fltk/build/lib/libfltk_z.a
 endif
 
 libfltk    = fltk/build/lib/libfltk.a
-main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lpthread
+main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lm -lpthread
 
 ifeq ($(V),1)
 cmake_verbose = -DCMAKE_VERBOSE_MAKEFILE="ON"

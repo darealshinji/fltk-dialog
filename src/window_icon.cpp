@@ -46,6 +46,7 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
+#include "misc/gunzip.hpp"
 
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"
@@ -72,58 +73,6 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
-static FILE *popen_gzip(const char *file)
-{
-  enum { r = 0, w = 1 };
-  int fd[2];
-
-  if (pipe(fd) == -1)
-  {
-    perror("pipe()");
-    return NULL;
-  }
-
-  if (fork() == 0)
-  {
-    close(fd[r]);
-    dup2(fd[w], 1);
-    close(fd[w]);
-    execl("/bin/gzip", "gzip", "-cd", file, NULL);
-    _exit(127);
-  }
-  else
-  {
-    close(fd[w]);
-    return fdopen(fd[r], "r");
-  }
-
-  return NULL;
-}
-
-static char *gunzip(const char *file, size_t max)
-{
-  FILE *fd;
-  size_t size;
-  char *data = new char[max + 1]();
-
-  fd = popen_gzip(file);
-
-  if (fd == NULL)
-  {
-    return NULL;
-  }
-
-  size = fread(data, 1, max, fd);
-  pclose(fd);
-
-  if (size == 0)
-  {
-    delete data;
-    return NULL;
-  }
-  return data;
-}
-
 static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
 {
   NSVGimage *nsvg = NULL;
@@ -141,7 +90,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
       return NULL;
     }
     nsvg = nsvgParse(data, "px", 96.0f);
-    delete data;
+    free(data);
   }
   else
   {
