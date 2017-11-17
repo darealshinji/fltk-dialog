@@ -34,6 +34,14 @@
 #include <iostream>
 #include <QApplication>
 #include <QFileDialog>
+#include <QIcon>
+
+#include <QtGlobal>
+#if QT_VERSION >= 0x050000
+# include "icon_qrc_qt5.cpp"
+#else
+# include "icon_qrc_qt4.cpp"
+#endif
 
 #include "fltk-dialog.hpp"
 
@@ -44,6 +52,7 @@ int getfilenameqt(int mode, const char *separator, const char *title, int argc, 
   QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
   QFileDialog *dialog = new QFileDialog();
 
+  dialog->setWindowIcon(QIcon(":/icon.png"));  /* not shown in Qt5? */
   dialog->setWindowTitle(title);
 
   if (mode == DIR_CHOOSER)

@@ -166,7 +166,8 @@ endif
 
 
 # Qt plugin CXXFLAGS
-plugin_CXXFLAGS := -std=c++0x  # adjust if required
+#plugin_CXXFLAGS := -std=c++0x  # adjust if required
+plugin_CXXFLAGS :=
 plugin_CXXFLAGS += -fPIC -DPIC $(main_CXXFLAGS)
 
 
@@ -308,7 +309,7 @@ qt5gui.so: src/file_qtplugin_qt5.o
 
 src/file_qtplugin_qt4.o: src/file_qtplugin.cpp
 	$(msg_CXX)
-	$(silent)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
+	$(silent)$(CXX) $(plugin_CXXFLAGS) -Wno-unused-variable $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
 
 src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
 	$(msg_CXX)
