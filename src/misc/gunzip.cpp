@@ -22,14 +22,24 @@
  * SOFTWARE.
  */
 
-#include <sstream>
+/* define to use zlib directly, otherwise /bin/gzip will be fork()ed */
+//#define GUNZIP_USE_ZLIB
+
 #include <stdio.h>
 #include <string.h>
-#include <zlib.h>
+#ifdef GUNZIP_USE_ZLIB
+# include <string>
+# include <zlib.h>
+#else
+# include <stdlib.h>
+# include <unistd.h>
+#endif
+
+
+#ifdef GUNZIP_USE_ZLIB
 
 #define CHUNK 16384
 
-/* must be free()d later */
 char *gunzip(const char *file, size_t limit)
 {
   FILE *fp;
@@ -37,10 +47,10 @@ char *gunzip(const char *file, size_t limit)
   z_stream strm;
   Bytef in[CHUNK];
   Bytef out[CHUNK];
-  Bytef tmp[CHUNK];
+  char buf[CHUNK];
   uInt have;
   char *str = NULL;
-  std::stringstream ss;
+  std::string s;
 
   strm.zalloc = Z_NULL;
   strm.zfree = Z_NULL;
@@ -89,13 +99,11 @@ char *gunzip(const char *file, size_t limit)
       }
 
       have = CHUNK - strm.avail_out;
-      memset(tmp, 0, CHUNK);
-      if (memcpy(tmp, out, have))
-      {
-        ss << tmp;
-      }
+      memset(buf, 0, CHUNK);
+      memcpy(buf, out, have);
+      s += std::string(buf);
 
-      if (ss.str().length() >= limit)
+      if (s.size() >= limit)
       {
         goto clean;
       }
@@ -104,7 +112,7 @@ char *gunzip(const char *file, size_t limit)
   }
   while (ret != Z_STREAM_END);
 
-  str = strdup(ss.str().c_str());
+  str = strdup(s.c_str());
 
 clean:
   inflateEnd(&strm);
@@ -112,4 +120,62 @@ close:
   fclose(fp);
   return str;
 }
+
+#else  /* fork() /bin/gzip */
+
+static FILE *popen_gzip(const char *file)
+{
+  enum { r = 0, w = 1 };
+  int fd[2];
+
+  if (pipe(fd) == -1)
+  {
+    perror("pipe()");
+    return NULL;
+  }
+
+  if (fork() == 0)
+  {
+    close(fd[r]);
+    dup2(fd[w], 1);
+    close(fd[w]);
+    execl("/bin/gzip", "gzip", "-cd", file, NULL);
+    _exit(127);
+  }
+  else
+  {
+    close(fd[w]);
+    return fdopen(fd[r], "r");
+  }
+
+  return NULL;
+}
+
+char *gunzip(const char *file, size_t limit)
+{
+  FILE *fd;
+  size_t size;
+  char *data = NULL;
+
+  fd = popen_gzip(file);
+
+  if (fd == NULL)
+  {
+    return NULL;
+  }
+
+  data = (char *)malloc(limit + 1);
+  memset(data, 0, limit + 1);
+  size = fread(data, 1, limit, fd);
+  pclose(fd);
+
+  if (size == 0)
+  {
+    free(data);
+    return NULL;
+  }
+  return data;
+}
+
+#endif  /* !GUNZIP_USE_ZLIB */
 

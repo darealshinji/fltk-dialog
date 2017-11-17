@@ -25,6 +25,7 @@
 #ifndef FLTK_DIALOG_GUNZIP_HPP
 #define FLTK_DIALOG_GUNZIP_HPP
 
+/* must be free()d later */
 char *gunzip(const char *file, size_t limit);
 
 #endif  /* !FLTK_DIALOG_GUNZIP_HPP */
