@@ -35,11 +35,9 @@
 #include <FL/Fl_XPM_Image.H>
 
 #include <algorithm>
-#include <fstream>
-#include <locale>
 #include <string>
+#include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -53,10 +51,15 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
-struct to_lower {
+#define IMGFILE_MAX  10*1024*1024  /* 10 MB */
+#define SVGZ_MAX        1024*1024  /*  1 MB */
+#define SVG_MAX       3*1024*1024  /*  3 MB */
+
+struct to_lower
+{
   int operator() (int ch)
   {
-    return std::tolower(ch);
+    return tolower(ch);
   }
 };
 
@@ -84,7 +87,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
 
   if (compressed)
   {
-    data = gunzip(file, 1024*1024);
+    data = gunzip(file, SVG_MAX);
     if (!data)
     {
       return NULL;
@@ -129,53 +132,37 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
 
 void set_window_icon(const char *file)
 {
-  char bytes[MAGIC_LEN] = {0};
+  FILE *fp;
+  size_t len;
+  unsigned char bytes[MAGIC_LEN] = {0};
   Fl_RGB_Image *rgb = NULL;
   struct stat st;
 
-  if (stat(file, &st) == -1 || st.st_size > 10*1024*1024)
+  if (stat(file, &st) == -1 || st.st_size > IMGFILE_MAX)
   {
     return;
   }
 
-  std::ifstream ifs(file, std::ifstream::binary);
-  std::streambuf *pbuf = ifs.rdbuf();
-  pbuf->pubseekoff(0, ifs.beg);
-  pbuf->sgetn(bytes, MAGIC_LEN);
-  ifs.close();
+  /* get filetype from extension */
 
-  if (SSTREQ(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8))
-  {
-    rgb = new Fl_PNG_Image(file);
-  }
-  else if (SSTREQ(bytes, "\xFF\xD8\xFF\xDB", 4) ||
-          (SSTREQ(bytes, "\xFF\xD8\xFF\xE0", 4) && SSTREQ(bytes + 6, "JFIF\x00\x01", 6)) ||
-          (SSTREQ(bytes, "\xFF\xD8\xFF\xE1", 4) && SSTREQ(bytes + 6, "Exif\x00\x00", 6)))
-  {
-    rgb = new Fl_JPEG_Image(file);
-  }
-  else if (SSTREQ(bytes, "BM", 2))
-  {
-    rgb = new Fl_BMP_Image(file);
-  }
-  else if (SSTREQ(bytes, "GIF87a", 6) ||
-           SSTREQ(bytes, "GIF89a", 6))
-  {
-    rgb = new Fl_RGB_Image(new Fl_GIF_Image(file), Fl_Color(0));
-  }
-  else if (get_ext_lower(file, 4) == ".svg")
+  if (get_ext_lower(file, 4) == ".svg" && st.st_size <= SVG_MAX)
   {
     rgb = svg_to_rgb(file, false);
   }
   else if ((get_ext_lower(file, 5) == ".svgz" ||
             get_ext_lower(file, 7) == ".svg.gz") && \
-           st.st_size < 1024*1024)
+           st.st_size < SVGZ_MAX)
   {
     rgb = svg_to_rgb(file, true);
   }
   else if (get_ext_lower(file, 4) == ".xpm")
   {
-    rgb = new Fl_RGB_Image(new Fl_XPM_Image(file), Fl_Color(0));
+    Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
+    if (xpm)
+    {
+      rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
+      delete xpm;
+    }
   }
   else if (get_ext_lower(file, 4) == ".xbm")
   {
@@ -187,6 +174,49 @@ void set_window_icon(const char *file)
     fl_color(FL_BLACK);
     in.draw(0, 0);
     rgb = surf.image();
+  }
+
+  /* get filetype from magic bytes */
+
+  if (!rgb)
+  {
+    fp = fopen(file, "r");
+    if (fp == NULL)
+    {
+      return;
+    }
+
+    len = fread(bytes, 1, MAGIC_LEN, fp);
+    if (ferror(fp) || len < MAGIC_LEN)
+    {
+      fclose(fp);
+      return;
+    }
+
+    if (MEMEQ(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8))
+    {
+      rgb = new Fl_PNG_Image(file);
+    }
+    else if (MEMEQ(bytes, "\xFF\xD8\xFF\xDB", 4) ||
+            (MEMEQ(bytes, "\xFF\xD8\xFF\xE0", 4) && MEMEQ(bytes + 6, "JFIF\x00\x01", 6)) ||
+            (MEMEQ(bytes, "\xFF\xD8\xFF\xE1", 4) && MEMEQ(bytes + 6, "Exif\x00\x00", 6)))
+    {
+      rgb = new Fl_JPEG_Image(file);
+    }
+    else if (MEMEQ(bytes, "BM", 2))
+    {
+      rgb = new Fl_BMP_Image(file);
+    }
+    else if (MEMEQ(bytes, "GIF87a", 6) ||
+             MEMEQ(bytes, "GIF89a", 6))
+    {
+      Fl_GIF_Image *gif = new Fl_GIF_Image(file);
+      if (gif)
+      {
+        rgb = new Fl_RGB_Image(gif, Fl_Color(0));
+        delete gif;
+      }
+    }
   }
 
   if (rgb)

@@ -31,6 +31,7 @@
 
 #define STREQ(x, y)      (strcmp(x, y) == 0)
 #define SSTREQ(x, y, n)  (strncmp(x, y, n) == 0)
+#define MEMEQ(x, y, n)   (memcmp(x, y, n) == 0)
 
 extern const char *title, *msg;
 extern char separator;
