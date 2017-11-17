@@ -197,12 +197,6 @@ AS_IF([test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"], [
             [have_qt="yes" have_qt5="yes"])
     ])
   ])
-  AS_IF([test "x$have_qt" = "xyes" -a "x$have_qt5" != "xyes"], [
-    have_qt="no"
-    have_qt4="no"
-    have_qt5="no"
-    AC_MSG_NOTICE([Currently Qt4 cannot be used without Qt5 -> disabling Qt completely])
-  ])
 ])
 
 

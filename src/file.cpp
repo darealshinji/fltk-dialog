@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,19 +124,15 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 
   if (getenv("KDE_FULL_SESSION") != NULL)
   {
-#if defined(HAVE_QT5) && defined(HAVE_QT4)
-    ret = dlopen_getfilenameqt(5, mode, argc, argv);
+    ret = dlopen_getfilenameqt(QTDEF, mode, argc, argv);
 
+# if (QTDEF == 5) && defined(HAVE_QT4)
     if (ret == -1)
     {
       std::cerr << "warning: falling back to Qt4" << std::endl;
       ret = dlopen_getfilenameqt(4, mode, argc, argv);
     }
-#elif defined(HAVE_QT5)
-    ret = dlopen_getfilenameqt(5, mode, argc, argv);
-#elif defined(HAVE_QT4)
-    ret = dlopen_getfilenameqt(4, mode, argc, argv);
-#endif  /* HAVE_QT5 && HAVE_QT4 */
+# endif
 
     if (ret == -1)
     {

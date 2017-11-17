@@ -373,6 +373,7 @@ static void print_usage(const char *prog)
 #    ifdef HAVE_QT5
   "  --native-qt5               Display the Qt5 native file chooser\n"
 #    endif
+  "  --native-qt                Alias for --native-qt" XSTRINGIFY(QTDEF) "\n"
 #  endif
 #endif
 
@@ -487,6 +488,7 @@ int main(int argc, char **argv)
     " --native"
 #  ifdef HAVE_QT
     " --native-gtk"
+    " --native-qt"
 #   ifdef HAVE_QT4
     " --native-qt4"
 #   endif
@@ -833,27 +835,36 @@ int main(int argc, char **argv)
     native_count++;
   }
 
-#  ifdef HAVE_QT
+# ifdef HAVE_QT
   if (args.has("--native-gtk")) {
     native_gtk = true;
     native_count++;
   }
 
-#   ifdef HAVE_QT4
+  if (args.has("--native-qt")) {
+# if (QTDEF == 5)
+    native_qt5 = true;
+# else
+    native_qt4 = true;
+# endif
+    native_count++;
+  }
+
+# ifdef HAVE_QT4
   if (args.has("--native-qt4")) {
     native_qt4 = true;
     native_count++;
   }
-#   endif
+# endif
 
-#   ifdef HAVE_QT5
+# ifdef HAVE_QT5
   if (args.has("--native-qt5")) {
     native_qt5 = true;
     native_count++;
   }
-#   endif
+# endif
 
-#  endif  /* HAVE_QT */
+# endif  /* HAVE_QT */
 # endif  /* WITH_NATIVE_FILE_CHOOSER */
 #endif  /* WITH_FILE */
 

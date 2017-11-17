@@ -33,6 +33,28 @@
 #define SSTREQ(x, y, n)  (strncmp(x, y, n) == 0)
 #define MEMEQ(x, y, n)   (memcmp(x, y, n) == 0)
 
+#define XSTRINGIFY(x)  STRINGIFY(x)
+#define STRINGIFY(x)   #x
+
+#ifdef HAVE_QT
+# if defined(HAVE_QT5) && defined(HAVE_QT4)
+#  define QTDEF 5
+# else
+#  if defined(HAVE_QT5) && !defined(HAVE_QT4)
+#   define QTDEF 5
+#  elif !defined(HAVE_QT5) && defined(HAVE_QT4)
+#   define QTDEF 4
+#  endif
+# endif
+# if (QTDEF == 4)
+#  define QTGUI_SO      qt4gui_so
+#  define QTGUI_SO_LEN  qt4gui_so_len
+# else
+#  define QTGUI_SO      qt5gui_so
+#  define QTGUI_SO_LEN  qt5gui_so_len
+# endif
+#endif
+
 extern const char *title, *msg;
 extern char separator;
 extern std::string separator_s;

@@ -83,7 +83,6 @@ int dialog_notify(const char *appname,
 
   dlerror();  /* clear/reset errors */
 
-#  define STRINGIFY(x) #x
 #  define LOAD_SYMBOL(x) \
   *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
   dlsym_error = dlerror(); \

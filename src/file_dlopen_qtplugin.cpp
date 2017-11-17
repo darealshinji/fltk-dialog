@@ -52,12 +52,12 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
   char filename[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
 
-#ifdef HAVE_QT4
+# ifdef HAVE_QT4
   if (qt_major == 4)
   {
     filename[strlen(filename)-7] = '4';
   }
-#endif
+# endif
 
 #else
 
@@ -65,25 +65,20 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
 # define DELETE(x) unlink(x)
 
-  char filename[] = "/tmp/qt5gui.so.XXXXXX";
+  char filename[] = "/tmp/qtgui.so.XXXXXX";
   const char *array_data;
   std::streamsize array_length;
 
-#ifdef HAVE_QT4
+  array_data = (char *)QTGUI_SO;
+  array_length = (std::streamsize) QTGUI_SO_LEN;
+
+# if (QTDEF == 5) && defined(HAVE_QT4)
   if (qt_major == 4)
   {
-    filename[7] = '4';
     array_data = (char *)qt4gui_so;
     array_length = (std::streamsize) qt4gui_so_len;
   }
-  else
-  {
-#endif
-    array_data = (char *)qt5gui_so;
-    array_length = (std::streamsize) qt5gui_so_len;
-#ifdef HAVE_QT4
-  }
-#endif
+# endif
 
   if (mkstemp(filename) == -1)
   {
