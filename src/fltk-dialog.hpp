@@ -164,6 +164,7 @@ int dialog_notify(const char *appname,
 /* progress.cpp */
 #ifdef WITH_PROGRESS
 int dialog_progress(bool pulsate,
+                     int multi,
                     long kill_pid,
                     bool autoclose,
                     bool hide_cancel);

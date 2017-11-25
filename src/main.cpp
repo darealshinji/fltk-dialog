@@ -381,6 +381,9 @@ static void print_usage(const char *prog)
   "\n"
   "Progress options:\n"
   "  --pulsate                  Pulsate progress bar\n"
+  "  --multi=NUMBER             Use 2 progress bars; the main bar, showing the overall\n"
+  "                             progress, will reach 100% if the other bar has reached 100%\n"
+  "                             after NUMBER iterations\n"
   "  --watch-pid=PID            Process ID to watch\n"
   "  --auto-close               Dismiss the dialog when 100% has been reached\n"
   "  --no-cancel                Hide cancel button\n"
@@ -566,6 +569,7 @@ int main(int argc, char **argv)
     " --dropdown"
 #endif
 #ifdef WITH_PROGRESS
+    " --multi"
     " --watch-pid"
 #endif
 #if defined(WITH_CALENDAR) || defined(WITH_DATE)
@@ -896,7 +900,10 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef WITH_PROGRESS
+  int multi = 1;  /* should I use uInt/uShort? */
+  bool has_multi = false;
   long kill_pid = -1;
+  bool has_watch_pid = false;
   bool pulsate = false;
   bool autoclose = false;
   bool hide_cancel = false;
@@ -906,8 +913,15 @@ int main(int argc, char **argv)
     dialog_count++;
   }
 
+  if (args.has("--multi")) {
+    ARGTOINT(multi, "--multi");
+    has_multi = true;
+    multi = (multi > 1) ? multi : 1;
+  }
+
   if (args.has("--watch-pid")) {
     ARGTOLONG(kill_pid, "--watch-pid");
+    has_watch_pid = true;
   }
 
   if (args.has("--pulsate")) {
@@ -1111,6 +1125,16 @@ int main(int argc, char **argv)
       return use_only_with(argv[0], "--pulsate", "--progress");
     }
 
+    if (has_multi)
+    {
+      return use_only_with(argv[0], "--multi", "--progress");
+    }
+
+    if (has_watch_pid)
+    {
+      return use_only_with(argv[0], "--watch-pid", "--progress");
+    }
+
     if (autoclose)
     {
       return use_only_with(argv[0], "--auto-close", "--progress");
@@ -1120,6 +1144,10 @@ int main(int argc, char **argv)
     {
       return use_only_with(argv[0], "--no-cancel", "--progress");
     }
+  }
+  else if (dialog == DIALOG_PROGRESS && pulsate && has_multi)
+  {
+    return use_only_with(argv[0], "--multi", "--progress, but not with --pulsate");
   }
 #endif
 
@@ -1306,7 +1334,7 @@ int main(int argc, char **argv)
 
 #ifdef WITH_PROGRESS
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, kill_pid, autoclose, hide_cancel);
+      return dialog_progress(pulsate, multi, kill_pid, autoclose, hide_cancel);
 #endif
 
     case DIALOG_SCALE:
