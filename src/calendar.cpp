@@ -34,12 +34,11 @@
 #include "Flek/Fl_Calendar.H"
 #include "fltk-dialog.hpp"
 
-
-static Fl_Double_Window *calendar_win;
+static Fl_Double_Window *cal_win;
 
 static void calendar_close_cb(Fl_Widget *, long p)
 {
-  calendar_win->hide();
+  cal_win->hide();
   ret = (int) p;
 }
 
@@ -57,21 +56,25 @@ int dialog_calendar(std::string format)
   /* one calendar unit = 32px
    * calendar widget width/height = 32px * 7 = 224px
    */
-  calendar_win = new Fl_Double_Window(244, 281, title);
+  cal_win = new Fl_Double_Window(244, 281, title);
   calendar = new Fl_Calendar(10, 10, 224, 224);
-  calendar_win->begin();  /* don't remove! */
-  calendar_win->callback(calendar_close_cb, 1);
+  if (arabic == true)
+  {
+    calendar->eastern_arabic_numbers(1);
+  }
+  cal_win->begin();  /* don't remove! */
+  cal_win->callback(calendar_close_cb, 1);
   {
     but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
     but_ok->callback(calendar_close_cb, 0);
     but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
     but_cancel->callback(calendar_close_cb, 1);
   }
-  set_position(calendar_win);
-  calendar_win->end();
-  set_taskbar(calendar_win);
-  calendar_win->show();
-  set_undecorated(calendar_win);
+  set_position(cal_win);
+  cal_win->end();
+  set_taskbar(cal_win);
+  cal_win->show();
+  set_undecorated(cal_win);
   Fl::run();
 
   if (ret == 0)

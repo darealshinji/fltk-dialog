@@ -31,9 +31,6 @@
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Repeat_Button.H>
 
-int calendar_labelsize = 12;
-bool Fl_Calendar_Arabic = false;
-
 static void fl_calendar_button_cb (Fl_Button *a, void *b)
 {
   long j = 0;
@@ -56,12 +53,14 @@ static void fl_calendar_button_cb (Fl_Button *a, void *b)
 Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
   : Fl_Group (x, y, w, h, l), FDate ()
 {
+  labelsize_ = 12;
+
   for (int i = 0; i < (7*6); i++) {
     days[i] = new Fl_Button ((w/7)*(i%7) + x,
                              (h/6)*(i/7) + y,
                              (w/7),
                              (h/6));
-    days[i]->labelsize (calendar_labelsize);
+    days[i]->labelsize (labelsize_);
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
@@ -96,17 +95,14 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
 }
 
 void
-Fl_Calendar_Base::eastern_arabic_numbers (char *t, int n)
+Fl_Calendar_Base::int_to_str (char *t, int n)
 {
-  if (!Fl_Calendar_Arabic) {
-    sprintf (t, "%d", n);
-  } else {
+  if (eastern_arabic_numbers_) {
     const char *f;
-    char c[8];
+    char c[32];
     sprintf (c, "%d", n);
     memset (t, '\0', strlen(t));
-
-    for (size_t i = 0; i < strlen (c) && c[i] != '\0'; ++i) {
+    for (size_t i = 0; i < strlen (c) && c[i] != '\0'; i++) {
       if      (c[i] == '1') { f = "\xD9\xA1"; }
       else if (c[i] == '2') { f = "\xD9\xA2"; }
       else if (c[i] == '3') { f = "\xD9\xA3"; }
@@ -119,7 +115,8 @@ Fl_Calendar_Base::eastern_arabic_numbers (char *t, int n)
       else /*if (c[i] == '0')*/{ f = "\xD9\xA0"; }
       strcat (t, f);
     }
-    t[strlen (t) + 1] = '\0';
+  } else {
+    sprintf (t, "%d", n);
   }
 }
 
@@ -144,7 +141,7 @@ Fl_Calendar_Base::update ()
 
   /* last days of previous month */
   for (i = 0; i < dow; i++) {
-    eastern_arabic_numbers (tmp_d, (i-dow+dipm+1));
+    int_to_str (tmp_d, (i-dow+dipm+1));
     if (days[i]->label ()) {
       free ((void *) days[i]->label ());
     }
@@ -157,7 +154,7 @@ Fl_Calendar_Base::update ()
 
   /* current month */
   for (i = dow; i < (dim+dow); i++) {
-    eastern_arabic_numbers (tmp_d, (i+1-dow));
+    int_to_str (tmp_d, (i+1-dow));
     if (days[i]->label ()) {
       free ((void *) days[i]->label ());
     }
@@ -174,7 +171,7 @@ Fl_Calendar_Base::update ()
 
   /* first days of next month */
   for (i = (dim+dow); i < (6*7); i++) {
-    eastern_arabic_numbers (tmp_d, (i+1-dow-dim));
+    int_to_str (tmp_d, (i+1-dow-dim));
     if (days[i]->label ()) {
       free ((void *) days[i]->label ());
     }
@@ -229,6 +226,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
 
   int title_height = h / 8;
   selected_day_ = 0;
+  eastern_arabic_numbers_ = 0;
 
   /**
    * If the Calendar width isn't divisible by 7 there will be a gap
@@ -256,7 +254,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                               (w/7) + wxi,
                               ((h - title_height)/7));
     weekdays[i]->box (FL_THIN_UP_BOX);
-    weekdays[i]->labelsize (calendar_labelsize);
+    weekdays[i]->labelsize (labelsize_);
     weekdays[i]->color (color());
   }
 
@@ -277,7 +275,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                                     "\xc2\xab");
   prv_month->box (FL_FLAT_BOX);
   prv_month->down_box (FL_FLAT_BOX);
-  prv_month->labelsize (calendar_labelsize);
+  prv_month->labelsize (labelsize_);
   prv_month->callback ((Fl_Callback*)&fl_calendar_prv_month_cb, (void *)this);
 
   caption_m = new Fl_Box (x + (w/14),  /* x - of + w - (w/7)*6 - (w/14) */
@@ -286,7 +284,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                           h/8);
   caption_m->box (FL_FLAT_BOX);  /* FL_THIN_UP_BOX */
   caption_m->labelfont (FL_HELVETICA_BOLD);
-  caption_m->labelsize (calendar_labelsize);
+  caption_m->labelsize (labelsize_);
 
   nxt_month = new Fl_Repeat_Button (x + (w/2),  /* x - of + w - (w/14)*7 */
                                     y,
@@ -295,7 +293,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                                     "\xc2\xbb");
   nxt_month->box (FL_FLAT_BOX);
   nxt_month->down_box (FL_FLAT_BOX);
-  nxt_month->labelsize (calendar_labelsize);
+  nxt_month->labelsize (labelsize_);
   nxt_month->callback ((Fl_Callback*)&fl_calendar_nxt_month_cb, (void *)this);
 
   /*  « YEAR »  */
@@ -307,7 +305,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                                    "\xc2\xab");
   prv_year->box (FL_FLAT_BOX);
   prv_year->down_box (FL_FLAT_BOX);
-  prv_year->labelsize (calendar_labelsize);
+  prv_year->labelsize (labelsize_);
   prv_year->callback ((Fl_Callback*)&fl_calendar_prv_year_cb, (void *)this);
 
   caption_y = new Fl_Box (x + (w/7)*5,  /* x - of + w - (w/14)*3 - (w/14) */
@@ -316,7 +314,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                           h/8);
   caption_y->box (FL_FLAT_BOX);
   caption_y->labelfont (FL_HELVETICA_BOLD);
-  caption_y->labelsize (calendar_labelsize);
+  caption_y->labelsize (labelsize_);
 
   nxt_year = new Fl_Repeat_Button (x + (w/14)*13,  /* x - of + w - (w/14) */
                                    y,
@@ -325,7 +323,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
                                    "\xc2\xbb");
   nxt_year->box (FL_FLAT_BOX);
   nxt_year->down_box (FL_FLAT_BOX);
-  nxt_year->labelsize (calendar_labelsize);
+  nxt_year->labelsize (labelsize_);
   nxt_year->callback ((Fl_Callback*)&fl_calendar_nxt_year_cb, (void *)this);
 
   Fl_Calendar_Base::csize (x, y + title_height + (h - title_height) / 7,
@@ -355,7 +353,7 @@ Fl_Calendar::update ()
 
   sprintf (tmp_m, "%s", _month_name[month ()-1]);
   //sprintf (tmp_y, "%d", year ());
-  eastern_arabic_numbers (tmp_y, year ());
+  int_to_str (tmp_y, year ());
 
   Fl_Calendar_Base::update ();
 
@@ -465,3 +463,36 @@ Fl_Calendar::handle (int event)
   }  /* switch (event) */
   return Fl_Group::handle (event);
 }
+
+void
+Fl_Calendar::selection_color(Fl_Color c)
+{
+  Fl_Widget::selection_color(c);
+  for (int i = 0; i < (6*7); i++) {
+    if (days[i]->color() == days[i]->selection_color()) {
+      days[i]->color(c);
+    }
+    days[i]->selection_color(c);
+  }
+}
+
+Fl_Calendar_Base::~Fl_Calendar_Base()
+{
+  for (int i = 0; i < (6*7); i++) {
+    if (days[i]->label ()) {
+      free ((void *) days[i]->label ());
+    }
+  }
+}
+
+Fl_Calendar::~Fl_Calendar()
+{
+  if (caption_m->label ()) {
+    free ((void *) caption_m->label ());
+  }
+
+  if (caption_y->label ()) {
+    free ((void *) caption_y->label ());
+  }
+}
+

@@ -114,6 +114,8 @@ int ret = 0;
 char separator = '|';
 std::string separator_s = "|";
 
+bool arabic = false;
+
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
 int max_h = Fl::h();

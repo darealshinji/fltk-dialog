@@ -36,8 +36,6 @@
 #define	YEAR_MIN	1
 #define	YEAR_MAX	9999
 
-extern bool Fl_Calendar_Arabic;
-
 /** @package libflek_ui
  * Fl_Calendar_Base is a widget that allows a user to select a date
  * (day, month, and year) with a wall style calendar.
@@ -63,21 +61,31 @@ public:
    */
   void csize (int cx, int cy, int cw, int ch);
 
-  void eastern_arabic_numbers (char *t, int n);
-
   /**
    * Returns a pointer to the button for the day D in the Fl_Calendar.
    */
   Fl_Button * day_button (int i);
 
+  void int_to_str (char *t, int n);
+
+  int eastern_arabic_numbers () {
+    return eastern_arabic_numbers_;
+  }
+
+  void eastern_arabic_numbers (int a) {
+    eastern_arabic_numbers_ = a;
+    if (a) update();
+  }
+
  protected:
 
-  int cal_x;
-  int cal_y;
-  int cal_w;
-  int cal_h;
+  int labelsize_;
+  int eastern_arabic_numbers_;
 
   Fl_Button * days[6*7];
+
+  ~Fl_Calendar_Base();
+
 };
 
 /**
@@ -137,15 +145,7 @@ class Fl_Calendar : public Fl_Calendar_Base
    *
    * @param color The calendar's selection color.
    */
-  void selection_color(Fl_Color c) {
-    Fl_Widget::selection_color(c);
-    for(int i = 0; i < 6*7; i++) {
-      if(days[i]->color() == days[i]->selection_color()) {
-        days[i]->color(c);
-      }
-      days[i]->selection_color(c);
-    }
-  }
+  void selection_color (Fl_Color c);
 
   /**
    * Gets the Calendar's selection color.
@@ -189,6 +189,8 @@ class Fl_Calendar : public Fl_Calendar_Base
   Fl_Repeat_Button * nxt_year;
   Fl_Repeat_Button * prv_year;
   int selected_day_;
+
+  ~Fl_Calendar();
 
 };
 
