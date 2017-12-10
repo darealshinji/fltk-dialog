@@ -45,6 +45,8 @@ static void calendar_close_cb(Fl_Widget *, long p)
 int dialog_calendar(std::string format)
 {
   Fl_Calendar      *calendar;
+  Fl_Group         *g;
+  Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
@@ -58,18 +60,27 @@ int dialog_calendar(std::string format)
    */
   cal_win = new Fl_Double_Window(244, 281, title);
   calendar = new Fl_Calendar(10, 10, 224, 224);
-  if (arabic == true)
-  {
-    calendar->eastern_arabic_numbers(1);
-  }
   cal_win->begin();  /* don't remove! */
+  cal_win->size_range(244, 281, max_w, max_h);
   cal_win->callback(calendar_close_cb, 1);
   {
-    but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
-    but_ok->callback(calendar_close_cb, 0);
-    but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
-    but_cancel->callback(calendar_close_cb, 1);
+    if (arabic == true)
+    {
+      calendar->eastern_arabic_numbers(1);
+    }
+    g = new Fl_Group(0, 244, 244, 37);
+    {
+      dummy = new Fl_Box(9, 244, 1, 1);
+      dummy->box(FL_NO_BOX);
+      but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
+      but_ok->callback(calendar_close_cb, 0);
+      but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
+      but_cancel->callback(calendar_close_cb, 1);
+    }
+    g->resizable(dummy);
+    g->end();
   }
+  set_size(cal_win, calendar);
   set_position(cal_win);
   cal_win->end();
   set_taskbar(cal_win);
