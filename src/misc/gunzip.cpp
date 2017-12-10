@@ -164,14 +164,13 @@ char *gunzip(const char *file, size_t limit)
     return NULL;
   }
 
-  data = (char *)malloc(limit + 1);
-  memset(data, 0, limit + 1);
+  data = new char[limit + 1]();
   size = fread(data, 1, limit, fd);
   pclose(fd);
 
   if (size == 0)
   {
-    free(data);
+    delete data;
     return NULL;
   }
   return data;

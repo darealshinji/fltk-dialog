@@ -93,7 +93,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
       return NULL;
     }
     nsvg = nsvgParse(data, "px", 96.0f);
-    free(data);
+    delete data;
   }
   else
   {
