@@ -34,7 +34,7 @@ void print_date(std::string format, int y, int m, int d)
 {
   std::stringstream ss;
 
-  char date[512] = {0};
+  char date[256] = {0};
   struct tm time;
 
   if (format == "")

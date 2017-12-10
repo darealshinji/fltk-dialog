@@ -31,7 +31,9 @@
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Repeat_Button.H>
 
-static void fl_calendar_button_cb (Fl_Button *a, void *b)
+bool fl_calendar_arabic = false;
+
+static void fl_calendar_button_cb (Fl_Widget *a, void *b)
 {
   long j = 0;
   Fl_Calendar *c = (Fl_Calendar *)b;
@@ -40,7 +42,7 @@ static void fl_calendar_button_cb (Fl_Button *a, void *b)
   for (int i = 1; i < numdays; i++) {
     sb = c->day_button(i);
     sb->color (52);
-    if (a == sb) {
+    if ((Fl_Button *)a == sb) {
       c->selected_day (i);
       j = i;
       sb->color (sb->selection_color());
@@ -69,11 +71,14 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
 
 void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
 {
-  int oi = (cw-(7*(int)(cw/7)))/2;
-  int of = (cw-(7*(int)(cw/7))) - oi;
+  /*
+  int oi = (cw-(7*(cw/7)))/2;
+  int of = (cw-(7*(cw/7))) - oi;
   int xi, wxi;
+  */
 
   for (int i = 0; i < (7*6); i++) {
+    /*
     if ((i%7) == 0) {
       xi = 0;
     } else {
@@ -86,10 +91,11 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
     } else {
       wxi = 0;
     }
+    */
 
-    days[i]->resize ((cw/7)*(i%7) + cx + xi,
+    days[i]->resize ((cw/7)*(i%7) + cx /* + xi */,
                      (ch/6)*(i/7) + cy,
-                     (cw/7) + wxi,
+                     (cw/7) /* + wxi */,
                      (ch/6));
   }
 }
@@ -97,7 +103,7 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
 void
 Fl_Calendar_Base::int_to_str (char *t, int n)
 {
-  if (eastern_arabic_numbers_) {
+  if (fl_calendar_arabic) {
     const char *f;
     char c[32];
     sprintf (c, "%d", n);
@@ -165,7 +171,7 @@ Fl_Calendar_Base::update ()
     if ((i-dow+1) == day ()) {
       days[i]->color (selection_color());
     }
-    days[i]->callback ((Fl_Callback*)&fl_calendar_button_cb, (void *)this);
+    days[i]->callback (fl_calendar_button_cb, this);
     days[i]->show ();
   }
 
@@ -193,50 +199,51 @@ Fl_Calendar_Base::day_button (int i)
 }
 
 static void
-fl_calendar_prv_month_cb (Fl_Button *, void *b) {
+fl_calendar_prv_month_cb (Fl_Widget *, void *b) {
   Fl_Calendar *c = (Fl_Calendar *)b;
   c->previous_month ();
-  c->do_callback(c, (long)0);
+  c->do_callback(c, 0L);
 }
 
 static void
-fl_calendar_nxt_month_cb (Fl_Button *, void *b) {
+fl_calendar_nxt_month_cb (Fl_Widget *, void *b) {
   Fl_Calendar *c = (Fl_Calendar *)b;
   c->next_month ();
-  c->do_callback(c, (long)0);
+  c->do_callback(c, 0L);
 }
 
 static void
-fl_calendar_prv_year_cb (Fl_Button *, void *b) {
+fl_calendar_prv_year_cb (Fl_Widget *, void *b) {
   Fl_Calendar *c = (Fl_Calendar *)b;
   c->previous_year ();
-  c->do_callback(c, (long)0);
+  c->do_callback(c, 0L);
 }
 
 static void
-fl_calendar_nxt_year_cb (Fl_Button *, void *b) {
+fl_calendar_nxt_year_cb (Fl_Widget *, void *b) {
   Fl_Calendar *c = (Fl_Calendar *)b;
   c->next_year ();
-  c->do_callback(c, (long)0);
+  c->do_callback(c, 0L);
 }
 
 Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   : Fl_Calendar_Base (x, y, w, h, l)
 {
-
   int title_height = h / 8;
   selected_day_ = 0;
-  eastern_arabic_numbers_ = 0;
 
   /**
    * If the Calendar width isn't divisible by 7 there will be a gap
    * on the right or left side, so we will distribute this extra space.
    */
-  int oi = (w-(7*(int)(w/7)))/2;
-  int of = (w-(7*(int)(w/7))) - oi;
+  /*
+  int oi = (w-(7*(w/7)))/2;
+  int of = (w-(7*(w/7))) - oi;
   int xi, wxi;
+  */
 
   for (int i = 0; i < 7; i++) {
+    /*
     if (i == 0) {
       xi = 0;
     } else {
@@ -249,10 +256,11 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
     } else {
       wxi = 0;
     }
-    weekdays[i] = new Fl_Box ((w/7)*(i%7) + x + xi,
-                              ((h - title_height)/7)*((i/7)) + y + title_height,
-                              (w/7) + wxi,
-                              ((h - title_height)/7));
+    */
+    weekdays[i] = new Fl_Box ((w/7)*(i%7) + x /* + xi */,
+                              ((h - title_height)/7)*(i/7) + y + title_height,
+                              (w/7) /* + wxi */,
+                              (h - title_height)/7);
     weekdays[i]->box (FL_THIN_UP_BOX);
     weekdays[i]->labelsize (labelsize_);
     weekdays[i]->color (color());
@@ -276,7 +284,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   prv_month->box (FL_FLAT_BOX);
   prv_month->down_box (FL_FLAT_BOX);
   prv_month->labelsize (labelsize_);
-  prv_month->callback ((Fl_Callback*)&fl_calendar_prv_month_cb, (void *)this);
+  prv_month->callback (fl_calendar_prv_month_cb, this);
 
   caption_m = new Fl_Box (x + (w/14),  /* x - of + w - (w/7)*6 - (w/14) */
                           y,
@@ -294,7 +302,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   nxt_month->box (FL_FLAT_BOX);
   nxt_month->down_box (FL_FLAT_BOX);
   nxt_month->labelsize (labelsize_);
-  nxt_month->callback ((Fl_Callback*)&fl_calendar_nxt_month_cb, (void *)this);
+  nxt_month->callback (fl_calendar_nxt_month_cb, this);
 
   /*  « YEAR »  */
 
@@ -306,7 +314,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   prv_year->box (FL_FLAT_BOX);
   prv_year->down_box (FL_FLAT_BOX);
   prv_year->labelsize (labelsize_);
-  prv_year->callback ((Fl_Callback*)&fl_calendar_prv_year_cb, (void *)this);
+  prv_year->callback (fl_calendar_prv_year_cb, this);
 
   caption_y = new Fl_Box (x + (w/7)*5,  /* x - of + w - (w/14)*3 - (w/14) */
                           y,
@@ -324,7 +332,7 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   nxt_year->box (FL_FLAT_BOX);
   nxt_year->down_box (FL_FLAT_BOX);
   nxt_year->labelsize (labelsize_);
-  nxt_year->callback ((Fl_Callback*)&fl_calendar_nxt_year_cb, (void *)this);
+  nxt_year->callback (fl_calendar_nxt_year_cb, this);
 
   Fl_Calendar_Base::csize (x, y + title_height + (h - title_height) / 7,
                            w, h - title_height - (h - title_height) / 7);
@@ -465,7 +473,7 @@ Fl_Calendar::handle (int event)
 }
 
 void
-Fl_Calendar::selection_color(Fl_Color c)
+Fl_Calendar::selection_color (Fl_Color c)
 {
   Fl_Widget::selection_color(c);
   for (int i = 0; i < (6*7); i++) {
@@ -476,7 +484,15 @@ Fl_Calendar::selection_color(Fl_Color c)
   }
 }
 
-Fl_Calendar_Base::~Fl_Calendar_Base()
+int
+Fl_Calendar::selected_day (int d)
+{
+  selected_day_ = d;
+  if (d) day(d);
+  return d;
+}
+
+Fl_Calendar_Base::~Fl_Calendar_Base ()
 {
   for (int i = 0; i < (6*7); i++) {
     if (days[i]->label ()) {
@@ -485,7 +501,7 @@ Fl_Calendar_Base::~Fl_Calendar_Base()
   }
 }
 
-Fl_Calendar::~Fl_Calendar()
+Fl_Calendar::~Fl_Calendar ()
 {
   if (caption_m->label ()) {
     free ((void *) caption_m->label ());

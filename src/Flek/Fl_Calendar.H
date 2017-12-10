@@ -36,6 +36,8 @@
 #define	YEAR_MIN	1
 #define	YEAR_MAX	9999
 
+extern bool fl_calendar_arabic;
+
 /** @package libflek_ui
  * Fl_Calendar_Base is a widget that allows a user to select a date
  * (day, month, and year) with a wall style calendar.
@@ -68,19 +70,9 @@ public:
 
   void int_to_str (char *t, int n);
 
-  int eastern_arabic_numbers () {
-    return eastern_arabic_numbers_;
-  }
-
-  void eastern_arabic_numbers (int a) {
-    eastern_arabic_numbers_ = a;
-    if (a) update();
-  }
-
  protected:
 
   int labelsize_;
-  int eastern_arabic_numbers_;
 
   Fl_Button * days[6*7];
 
@@ -173,11 +165,7 @@ class Fl_Calendar : public Fl_Calendar_Base
    *
    * @return The selected day if the user has selected a day, 0 otherwise.
    */
-  int selected_day(int d) {
-    selected_day_ = d;
-    if (d) day(d);
-    return d;
-  }
+  int selected_day(int d);
 
  protected:
 

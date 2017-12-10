@@ -64,10 +64,6 @@ int dialog_calendar(std::string format)
   cal_win->size_range(244, 281, max_w, max_h);
   cal_win->callback(calendar_close_cb, 1);
   {
-    if (arabic == true)
-    {
-      calendar->eastern_arabic_numbers(1);
-    }
     g = new Fl_Group(0, 244, 244, 37);
     {
       dummy = new Fl_Box(9, 244, 1, 1);
