@@ -55,6 +55,10 @@
 # endif
 #endif
 
+#ifndef FLTK_DIALOG_MODULE_PATH
+# define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
+#endif
+
 extern const char *title, *msg;
 extern char separator;
 extern std::string separator_s;
@@ -185,6 +189,9 @@ int dialog_radiolist(std::string radiolist_options,
 /* window_icon.cpp */
 #ifdef WITH_WINDOW_ICON
 void set_window_icon(const char *file);
+#ifdef WITH_RSVG
+int rsvg_default_icon(const char *file);
+#endif
 #endif
 
 /* l10n.cpp */

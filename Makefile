@@ -32,6 +32,7 @@ WITH_PROGRESS    ?= yes
 WITH_RADIOLIST   ?= yes
 WITH_TEXTINFO    ?= yes
 WITH_WINDOW_ICON ?= yes
+WITH_RSVG        ?= no
 
 DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
@@ -144,10 +145,16 @@ ifneq ($(WITH_TEXTINFO),no)
 main_CXXFLAGS += -DWITH_TEXTINFO
 OBJS          += src/textinfo.o
 endif
+
 ifneq ($(WITH_WINDOW_ICON),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON
 OBJS          += src/window_icon.o src/misc/gunzip.o
+ifneq ($(WITH_RSVG),no)
+main_CXXFLAGS += -DWITH_WINDOW_ICON -DWITH_RSVG
+OBJS          += src/window_icon_dlopen_rsvg_plugin.o
 endif
+endif
+
 ifneq ($(HAVE_PRINT_DATE),no)
 OBJS          += src/misc/print_date.o src/Flek/FDate.o
 endif
@@ -169,6 +176,9 @@ endif
 #plugin_CXXFLAGS := -std=c++0x  # adjust if required
 plugin_CXXFLAGS :=
 plugin_CXXFLAGS += -fPIC -DPIC $(main_CXXFLAGS)
+
+plugin_CFLAGS :=
+plugin_CFLAGS += -fPIC -DPIC $(CFLAGS)
 
 
 extra_include :=
@@ -211,8 +221,10 @@ endif
 libfltk    = fltk/build/lib/libfltk.a
 main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lm -lpthread
 
+librsvg = librsvg/.libs/librsvg-2.a
+
 ifeq ($(V),1)
-cmake_verbose = -DCMAKE_VERBOSE_MAKEFILE="ON"
+cmake_verbose = VERBOSE=1
 make_verbose  = 1
 else
 make_verbose  = 0
@@ -220,16 +232,18 @@ silent        = @
 endif
 
 msg_GENH    = @echo "Generating header file $@"
+msg_CC      = @echo "Building CC object $@"
+msg_CCLDSO  = @echo "Linking CC shared object $@"
 msg_CXX     = @echo "Building CXX object $@"
 msg_CXXLD   = @echo "Linking CXX executable $@"
 msg_CXXLDSO = @echo "Linking CXX shared object $@"
 
 CMAKE ?= cmake
-XXD   ?= xxd
 
 define MAKE_CLEAN
   [ ! -f fltk/makeinclude ] || $(MAKE) -C fltk $@
   [ ! -f fltk/build/Makefile ] || $(MAKE) -C fltk/build clean
+  [ ! -f librsvg/Makefile ] || $(MAKE) -C librsvg $@
 endef
 
 
@@ -248,12 +262,17 @@ distclean: mostlyclean
 	[ ! -f fltk/src/Fl_Help_Dialog.cxx.orig ] || mv -f fltk/src/Fl_Help_Dialog.cxx.orig fltk/src/Fl_Help_Dialog.cxx
 
 mostlyclean:
-	-rm -f $(BIN) *.so qtgui_so.h src/*.o src/Flek/*.o src/misc/*.o
+	-rm -f $(BIN) *.so *_so.h *.o src/*.o src/Flek/*.o src/misc/*.o
 
 maintainer-clean: distclean
 	-rm -f configure
+	-rm -rf librsvg
 
+ifneq ($(WITH_RSVG),no)
+$(OBJS): $(libfltk) $(librsvg)
+else
 $(OBJS): $(libfltk)
+endif
 
 $(BIN): $(OBJS)
 	$(msg_CXXLD)
@@ -274,10 +293,10 @@ fltk/src/Fl_Help_Dialog.cxx.orig:
 
 fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
 	mkdir -p fltk/build
-	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) $(cmake_verbose)
+	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) -DCMAKE_VERBOSE_MAKEFILE="OFF"
 
 $(libfltk): $(libpng_a) fltk/build/Makefile
-	$(MAKE) -C fltk/build
+	$(MAKE) -C fltk/build $(cmake_verbose)
 
 
 ifneq ($(HAVE_QT),no)
@@ -293,10 +312,10 @@ qtgui_so.h: $(qtplugins)
 	$(msg_GENH)
 	$(silent)rm -f $@
 ifneq ($(HAVE_QT4),no)
-	$(silent)$(XXD) -i qt4gui.so >> $@
+	$(silent)xxd -i qt4gui.so >> $@
 endif
 ifneq ($(HAVE_QT5),no)
-	$(silent)$(XXD) -i qt5gui.so >> $@
+	$(silent)xxd -i qt5gui.so >> $@
 endif
 
 qt4gui.so: src/file_qtplugin_qt4.o
@@ -315,17 +334,44 @@ src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
 	$(msg_CXX)
 	$(silent)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
 
+rsvg_convert_so.h: rsvg_convert.so
+	$(msg_GENH)
+	$(silent)xxd -i $< > $@
+
+rsvg_modules = glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6
+
+rsvg_convert.so: src/rsvg_convert.o rsvg-size-callback.o $(librsvg)
+	$(msg_CCLDSO)
+	$(silent)$(CC) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
+
+src/rsvg_convert.c: $(librsvg)
+src/rsvg_convert.o: src/rsvg_convert.c
+	$(msg_CC)
+	$(silent)$(CC) -I librsvg $(plugin_CFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
+
+rsvg-size-callback.o: librsvg/rsvg-size-callback.c
+	$(msg_CC)
+	$(silent)$(CC) -I librsvg $(plugin_CFLAGS) $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
+
+$(librsvg): librsvg/Makefile
+	$(MAKE) -C librsvg V=$(make_verbose)
+
+librsvg/Makefile:
+	cd librsvg && ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic
+
 ifneq ($(EMBEDDED_PLUGINS),no)
 src/file_dlopen_qtplugin.o: qtgui_so.h
+src/window_icon_dlopen_rsvg_plugin.o: rsvg_convert_so.h
 else
 src/file_dlopen_qtplugin.o: $(qtplugins)
+src/window_icon_dlopen_rsvg_plugin.o: rsvg_convert.so
 endif
 
 src/file_qtplugin.cpp: $(libfltk)
 endif
 
 
-DISTFILES = fltk/ patches/ src/ \
+DISTFILES = fltk/ librsvg/ patches/ src/ \
 	ax_check_compile_flag.m4 \
 	ax_cxx_compile_stdcxx.m4 \
 	config.mak.in \

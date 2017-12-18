@@ -35,9 +35,11 @@
 #include <FL/Fl_XPM_Image.H>
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -51,6 +53,7 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
+#define MAGIC_LEN              16
 #define IMGFILE_MAX  10*1024*1024  /* 10 MB */
 #define SVGZ_MAX        1024*1024  /*  1 MB */
 #define SVG_MAX       3*1024*1024  /*  3 MB */
@@ -76,7 +79,7 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
-static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
+static void nsvg_default_icon(const char *file, bool compressed)
 {
   NSVGimage *nsvg = NULL;
   NSVGrasterizer *r = NULL;
@@ -90,7 +93,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
     data = gunzip(file, SVG_MAX);
     if (!data)
     {
-      return NULL;
+      return;
     }
     nsvg = nsvgParse(data, "px", 96.0f);
     delete data;
@@ -106,7 +109,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
   if (!nsvg->shapes || w < 1 || h < 1)
   {
     nsvgDelete(nsvg);
-    return NULL;
+    return;
   }
 
   img = new unsigned char[w*h*4];
@@ -114,21 +117,33 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
   if (!img)
   {
     nsvgDelete(nsvg);
-    return NULL;
+    return;
   }
 
   r = nsvgCreateRasterizer();
   nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
 
+  Fl_Window::default_icon(rgb);
+
+  delete rgb;
   delete img;
   nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
-
-  return rgb;
 }
 
-#define MAGIC_LEN 16
+#ifdef WITH_RSVG
+static void svg_default_icon(const char *file, bool compressed)
+{
+  if (rsvg_default_icon(file) != 0)
+  {
+    //std::cout << "fall back to NanoSVG" << std::endl;
+    nsvg_default_icon(file, compressed);
+  }
+}
+#else
+# define svg_default_icon(a,b) nsvg_default_icon(a,b)
+#endif
 
 void set_window_icon(const char *file)
 {
@@ -147,13 +162,15 @@ void set_window_icon(const char *file)
 
   if (get_ext_lower(file, 4) == ".svg" && st.st_size <= SVG_MAX)
   {
-    rgb = svg_to_rgb(file, false);
+    svg_default_icon(file, false);
+    return;
   }
   else if ((get_ext_lower(file, 5) == ".svgz" ||
             get_ext_lower(file, 7) == ".svg.gz") && \
            st.st_size < SVGZ_MAX)
   {
-    rgb = svg_to_rgb(file, true);
+    svg_default_icon(file, true);
+    return;
   }
   else if (get_ext_lower(file, 4) == ".xpm")
   {

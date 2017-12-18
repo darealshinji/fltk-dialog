@@ -14,9 +14,20 @@ addons:
       - cmake
       - libqt4-dev
       - qtbase5-dev
+      - libglib2.0-dev
+      - libgdk-pixbuf2.0-dev
+      - libpango1.0-dev
+      - libcairo2-dev
+      - libxml2-dev
+      - libcroco3-dev
+
+before_script:
+  - wget -c http://http.debian.net/debian/pool/main/libr/librsvg/librsvg_2.40.18.orig.tar.xz
+  - tar xf librsvg_2.40.18.orig.tar.xz
+  - mv librsvg-2.40.18 librsvg
 
 script:
-  - ./configure --enable-hardening
+  - ./configure --enable-hardening --enable-rsvg
   - ( make -j4 V=1 ; strip --strip-all fltk-dialog )
 
 after_success:

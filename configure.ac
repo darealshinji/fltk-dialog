@@ -22,12 +22,14 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
-AC_CHECK_PROG([XXD], [xxd], [yes])
-AS_IF([test "x$XXD" != "xyes"], [exit 1])
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes])
 AS_IF([test "x$PKG_CONFIG" != "xyes"], [exit 1])
 AC_CHECK_PROG([CMAKE], [cmake], [yes])
 AS_IF([test "x$CMAKE" != "xyes"], [exit 1])
+AC_CHECK_PROG([XXD], [xxd], [yes])
+AS_IF([test "x$XXD" != "xyes"], [exit 1])
+AC_CHECK_PROG([PATCH], [patch], [yes])
+AS_IF([test "x$PATCH" != "xyes"], [exit 1])
 
 
 ## additional configure options
@@ -99,6 +101,9 @@ AC_ARG_ENABLE([l10n],
 AC_ARG_ENABLE([window-icon],
   [AS_HELP_STRING([--disable-window-icon], [disable option to set the window icon])],
   [use_window_icon="no"], [use_window_icon="yes"])
+AC_ARG_ENABLE([rsvg],
+  [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
+  [use_rsvg="yes"], [use_rsvg="no"])
 AC_ARG_ENABLE([default-icon],
   [AS_HELP_STRING([--disable-default-icon], [disable embedded default window icon])],
   [default_icon="no"], [default_icon="yes"])
@@ -245,13 +250,33 @@ AC_SUBST([WITH_PROGRESS], [$use_progress])
 AC_SUBST([WITH_RADIOLIST], [$use_radiolist])
 AC_SUBST([WITH_TEXTINFO], [$use_textinfo])
 AC_SUBST([WITH_WINDOW_ICON], [$use_window_icon])
+AC_SUBST([WITH_RSVG], [$use_rsvg])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 
 
+dnl Don't use AC_CONFIG_SUBDIRS
+AS_IF([test "x$use_rsvg" = "xyes"], [
+  for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
+    AC_MSG_CHECKING([for package $module])
+    AS_IF([test "x$(pkg-config --exists $module; echo $?)" = "x0"], [
+      AC_MSG_RESULT([yes])
+    ], [
+      AC_MSG_RESULT([no])
+      exit 1
+    ])
+  done
+  echo "=== configuring in librsvg ($PWD/librsvg)"
+  cd librsvg || exit 1
+  ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+  cd -
+])
+
 AC_CONFIG_FILES([config.mak])
 AC_OUTPUT
 
+# run cmake
+make fltk/build/Makefile || exit 1
 
 AC_MSG_RESULT([
 $(cat config.mak)

@@ -1,8 +1,3 @@
-/3rdparty/fltk/build/
-/3rdparty/libpng/build/
-/3rdparty/zlib/build
-/3rdparty/zlib/zconf.h
-
 /fltk-dialog
 /config.mak
 
@@ -11,7 +6,9 @@
 /config.log
 /config.status
 
-/qtgui_so.h
+/librsvg/
+
+/*_so.h
 
 *.o
 *.so

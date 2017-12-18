@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,77 +22,61 @@
  * SOFTWARE.
  */
 
+#include <FL/Fl_PNG_Image.H>
+
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <dlfcn.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 #ifndef USE_SYSTEM_PLUGINS
-/* xxd -i qt4gui.so > qtgui_so.h
- * xxd -i qt5gui.so >> qtgui_so.h
- */
-# include "qtgui_so.h"
+/* xxd -i rsvg_convert.so > rsvg_convert_so.h */
+# include "rsvg_convert_so.h"
 #endif
 
 #include "fltk-dialog.hpp"
 
-
-int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
+int rsvg_default_icon(const char *file)
 {
 #ifdef USE_SYSTEM_PLUGINS
 
 # define DELETE(x)
 
-  char plugin[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
-
-# ifdef HAVE_QT4
-  if (qt_major == 4)
-  {
-    plugin[strlen(plugin)-7] = '4';
-  }
-# endif
+  const char *plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
 
 #else
 
-  /* save attached libraries to disk */
+  /* save attached library to disk */
 
 # define DELETE(x) unlink(x)
 
-  char plugin[] = "/tmp/qtgui.so.XXXXXX";
+  char plugin[] = "/tmp/rsvg_convert.so.XXXXXX";
   const char *array_data;
   std::streamsize array_length;
 
-  array_data = (char *)QTGUI_SO;
-  array_length = (std::streamsize) QTGUI_SO_LEN;
-
-# if (QTDEF == 5) && defined(HAVE_QT4)
-  if (qt_major == 4)
-  {
-    array_data = (char *)qt4gui_so;
-    array_length = (std::streamsize) qt4gui_so_len;
-  }
-# endif
+  array_data = (char *)rsvg_convert_so;
+  array_length = (std::streamsize) rsvg_convert_so_len;
 
   if (mkstemp(plugin) == -1)
   {
     std::cerr << "error: cannot create temporary file: " << plugin << std::endl;
-    return -1;
+    return 1;
   }
 
   std::ofstream out(plugin, std::ios::out|std::ios::binary);
   if (!out)
   {
     std::cerr << "error: cannot open file: " << plugin << std::endl;
-    return -1;
+    return 1;
   }
 
   out.write(array_data, array_length);
   out.close();
 
-#endif  /* USE_SYSTEM_PLUGINS */
+#endif
 
   /* dlopen() library */
 
@@ -103,13 +87,13 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   {
     std::cerr << dlsym_error << std::endl;
     DELETE(plugin);
-    return -1;
+    return 1;
   }
 
   dlerror();
 
-  int (*getfilenameqt) (int, const char*, const char*, int, char **);
-  *(void **)(&getfilenameqt) = dlsym(handle, "getfilenameqt");
+  int (*rsvg_to_png) (const char *, const char *);
+  *(void **)(&rsvg_to_png) = dlsym(handle, "rsvg_to_png");
 
   dlsym_error = dlerror();
 
@@ -118,17 +102,25 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
     std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl;
     dlclose(handle);
     DELETE(plugin);
-    return -1;
+    return 1;
   }
 
-  if (title == NULL)
+  char png[] = "/tmp/icon-png-XXXXXX";
+  if (mkstemp(png) == -1)
   {
-    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
+    return 1;
   }
 
-  int ret = getfilenameqt(mode, separator_s.c_str(), title, argc, argv);
+  int ret = 1;
+  if (rsvg_to_png(file, png) == 0)
+  {
+    Fl_Window::default_icon(new Fl_PNG_Image(png));
+    ret = 0;
+  }
+
   dlclose(handle);
   DELETE(plugin);
+  unlink(png);
 
   return ret;
 }

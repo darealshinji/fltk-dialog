@@ -627,6 +627,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 EMBEDDED_PLUGINS
 DYNAMIC_NOTIFY
+WITH_RSVG
 WITH_WINDOW_ICON
 WITH_TEXTINFO
 WITH_RADIOLIST
@@ -657,9 +658,10 @@ EGREP
 GREP
 HAVE_CXX14
 HAVE_CXX11
+PATCH
+XXD
 CMAKE
 PKG_CONFIG
-XXD
 CPP
 ac_ct_CXX
 CXXFLAGS
@@ -735,6 +737,7 @@ enable_radiolist
 enable_textinfo
 enable_l10n
 enable_window_icon
+enable_rsvg
 enable_default_icon
 enable_dynamic_notify
 enable_embedded_plugins
@@ -1397,6 +1400,7 @@ Optional Features:
   --disable-textinfo      disable textinfo dialog
   --disable-l10n          disable localization
   --disable-window-icon   disable option to set the window icon
+  --enable-rsvg           build rsvg plugin
   --disable-default-icon  disable embedded default window icon
   --disable-dynamic-notify
                           disable dynamically loading libnotify (link directly
@@ -3361,46 +3365,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-# Extract the first word of "xxd", so it can be a program name with args.
-set dummy xxd; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_XXD+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$XXD"; then
-  ac_cv_prog_XXD="$XXD" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_XXD="yes"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-XXD=$ac_cv_prog_XXD
-if test -n "$XXD"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XXD" >&5
-$as_echo "$XXD" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-if test "x$XXD" != "xyes"; then :
-  exit 1
-fi
 # Extract the first word of "pkg-config", so it can be a program name with args.
 set dummy pkg-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -3479,6 +3443,86 @@ fi
 
 
 if test "x$CMAKE" != "xyes"; then :
+  exit 1
+fi
+# Extract the first word of "xxd", so it can be a program name with args.
+set dummy xxd; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XXD+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XXD"; then
+  ac_cv_prog_XXD="$XXD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XXD="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+XXD=$ac_cv_prog_XXD
+if test -n "$XXD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XXD" >&5
+$as_echo "$XXD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+if test "x$XXD" != "xyes"; then :
+  exit 1
+fi
+# Extract the first word of "patch", so it can be a program name with args.
+set dummy patch; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_PATCH+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$PATCH"; then
+  ac_cv_prog_PATCH="$PATCH" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PATCH="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PATCH=$ac_cv_prog_PATCH
+if test -n "$PATCH"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATCH" >&5
+$as_echo "$PATCH" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+if test "x$PATCH" != "xyes"; then :
   exit 1
 fi
 
@@ -3638,6 +3682,13 @@ if test "${enable_window_icon+set}" = set; then :
   enableval=$enable_window_icon; use_window_icon="no"
 else
   use_window_icon="yes"
+fi
+
+# Check whether --enable-rsvg was given.
+if test "${enable_rsvg+set}" = set; then :
+  enableval=$enable_rsvg; use_rsvg="yes"
+else
+  use_rsvg="no"
 fi
 
 # Check whether --enable-default-icon was given.
@@ -6814,11 +6865,38 @@ WITH_TEXTINFO=$use_textinfo
 
 WITH_WINDOW_ICON=$use_window_icon
 
+WITH_RSVG=$use_rsvg
+
 DYNAMIC_NOTIFY=$dynamic_notify
 
 EMBEDDED_PLUGINS=$use_embedded_plugins
 
 
+
+if test "x$use_rsvg" = "xyes"; then :
+
+  for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package $module" >&5
+$as_echo_n "checking for package $module... " >&6; }
+    if test "x$(pkg-config --exists $module; echo $?)" = "x0"; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      exit 1
+
+fi
+  done
+  echo "=== configuring in librsvg ($PWD/librsvg)"
+  cd librsvg || exit 1
+  ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+  cd -
+
+fi
 
 ac_config_files="$ac_config_files config.mak"
 
@@ -7978,6 +8056,8 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+# run cmake
+make fltk/build/Makefile || exit 1
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result:
 $(cat config.mak)
