@@ -718,6 +718,7 @@ enable_option_checking
 enable_hardening
 enable_small
 enable_cxx11
+enable_strip
 enable_calendar
 enable_checklist
 enable_color
@@ -1380,6 +1381,7 @@ Optional Features:
   --enable-hardening      use hardening build flags
   --enable-small          optimize for small size
   --enable-cxx11          use C++11 even if C++14 is available
+  --enable-strip          strip binary
   --disable-calendar      disable calendar dialog
   --disable-checklist     disable checklist dialog
   --disable-color         disable color dialog
@@ -3547,6 +3549,11 @@ if test "${enable_cxx11+set}" = set; then :
   enableval=$enable_cxx11; enable_cxx11="yes"
 else
   enable_cxx11="no"
+fi
+
+# Check whether --enable-strip was given.
+if test "${enable_strip+set}" = set; then :
+  enableval=$enable_strip; LDFLAGS="$LDFLAGS -s"
 fi
 
 
@@ -6893,7 +6900,7 @@ fi
   done
   echo "=== configuring in librsvg ($PWD/librsvg)"
   cd librsvg || exit 1
-  ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+  CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
   cd -
 
 fi

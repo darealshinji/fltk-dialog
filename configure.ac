@@ -42,6 +42,9 @@ AC_ARG_ENABLE([small],
 AC_ARG_ENABLE([cxx11],
   [AS_HELP_STRING([--enable-cxx11], [use C++11 even if C++14 is available])],
   [enable_cxx11="yes"], [enable_cxx11="no"])
+AC_ARG_ENABLE([strip],
+  [AS_HELP_STRING([--enable-strip], [strip binary])],
+  [LDFLAGS="$LDFLAGS -s"], [])
 
 AC_ARG_ENABLE([calendar],
   [AS_HELP_STRING([--disable-calendar], [disable calendar dialog])],
@@ -268,7 +271,7 @@ AS_IF([test "x$use_rsvg" = "xyes"], [
   done
   echo "=== configuring in librsvg ($PWD/librsvg)"
   cd librsvg || exit 1
-  ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+  CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
   cd -
 ])
 
