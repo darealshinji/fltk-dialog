@@ -34,9 +34,7 @@
 #include "fltk-dialog.hpp"
 
 
-int dialog_notify(const char *appname,
-                         int  timeout,
-                  const char *notify_icon)
+int dialog_notify(const char *appname, int  timeout, const char *notify_icon)
 {
   if (msg == NULL)
   {

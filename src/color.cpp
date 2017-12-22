@@ -30,7 +30,7 @@
 #include <math.h>
 
 #include "fltk-dialog.hpp"
-#include "misc/Fl_Color_Chooser2.H"
+#include "Fl_Color_Chooser2.H"
 
 
 int dialog_color()

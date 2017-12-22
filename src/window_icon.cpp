@@ -46,7 +46,6 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "misc/gunzip.hpp"
 
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"

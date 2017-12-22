@@ -35,7 +35,6 @@
 #include <vector>
 #include <stdlib.h>
 
-#include "misc/split.hpp"
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *dropdown_win;
@@ -46,8 +45,7 @@ static void dropdown_close_cb(Fl_Widget *, long p)
   ret = (int) p;
 }
 
-int dialog_dropdown(std::string dropdown_list,
-                           bool return_number)
+int dialog_dropdown(std::string dropdown_list, bool return_number)
 {
   Fl_Group         *g;
   Fl_Menu_Item      menu_items[1024] = { 0,0,0,0,0,0,0,0,0 };

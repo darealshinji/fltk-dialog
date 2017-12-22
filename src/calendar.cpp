@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string>
 
-#include "Flek/Fl_Calendar.H"
+#include "Fl_Calendar.H"
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *cal_win;

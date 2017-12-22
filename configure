@@ -627,24 +627,9 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 EMBEDDED_PLUGINS
 DYNAMIC_NOTIFY
-WITH_RSVG
-WITH_WINDOW_ICON
-WITH_TEXTINFO
-WITH_RADIOLIST
-WITH_PROGRESS
 WITH_NOTIFY
-WITH_HTML
-WITH_FONT
+WITH_RSVG
 WITH_NATIVE_FILE
-WITH_FILE
-WITH_DROPDOWN
-WITH_DND
-WITH_DATE
-WITH_COLOR
-WITH_CHECKLIST
-WITH_CALENDAR
-WITH_DEFAULT_ICON
-WITH_L10N
 HAVE_QT5
 HAVE_QT4
 HAVE_QT
@@ -719,28 +704,13 @@ enable_hardening
 enable_small
 enable_cxx11
 enable_strip
-enable_calendar
-enable_checklist
-enable_color
-enable_date
-enable_dnd
-enable_dropdown
-enable_file
 enable_native_file
 enable_qt
 enable_qt4
 enable_qt5
-enable_font
-enable_html
 enable_notify
-enable_progress
-enable_radiolist
-enable_textinfo
-enable_l10n
-enable_window_icon
-enable_rsvg
-enable_default_icon
 enable_dynamic_notify
+enable_rsvg
 enable_embedded_plugins
 enable_system_jpeg
 enable_system_png
@@ -1382,31 +1352,16 @@ Optional Features:
   --enable-small          optimize for small size
   --enable-cxx11          use C++11 even if C++14 is available
   --enable-strip          strip binary
-  --disable-calendar      disable calendar dialog
-  --disable-checklist     disable checklist dialog
-  --disable-color         disable color dialog
-  --disable-date          disable date dialog
-  --disable-dnd           disable drag & drop dialog
-  --disable-dropdown      disable dropdown dialog
-  --disable-file          disable file chooser dialog
   --disable-native-file   disable native file chooser dialog(s)
   --disable-qt            disable Qt file chooser dialogs (implies
                           --disable-qt4 and --disable-qt5)
   --disable-qt4           disable Qt4 file chooser dialog
   --disable-qt5           disable Qt5 file chooser dialog
-  --disable-font          disable font selection dialog
-  --disable-html          disable html dialog
   --disable-notify        disable notification dialog
-  --disable-progress      disable progress dialog
-  --disable-radiolist     disable radiolist dialog
-  --disable-textinfo      disable textinfo dialog
-  --disable-l10n          disable localization
-  --disable-window-icon   disable option to set the window icon
-  --enable-rsvg           build rsvg plugin
-  --disable-default-icon  disable embedded default window icon
   --disable-dynamic-notify
                           disable dynamically loading libnotify (link directly
                           against shared or static library)
+  --enable-rsvg           build rsvg plugin
   --disable-embedded-plugins
                           don't embed Qt file chooser plugins into executable
                           but load them from LIBDIR/fltk-dialog
@@ -3556,56 +3511,6 @@ if test "${enable_strip+set}" = set; then :
   enableval=$enable_strip; LDFLAGS="$LDFLAGS -s"
 fi
 
-
-# Check whether --enable-calendar was given.
-if test "${enable_calendar+set}" = set; then :
-  enableval=$enable_calendar; use_calendar="no"
-else
-  use_calendar="yes"
-fi
-
-# Check whether --enable-checklist was given.
-if test "${enable_checklist+set}" = set; then :
-  enableval=$enable_checklist; use_checklist="no"
-else
-  use_checklist="yes"
-fi
-
-# Check whether --enable-color was given.
-if test "${enable_color+set}" = set; then :
-  enableval=$enable_color; use_color="no"
-else
-  use_color="yes"
-fi
-
-# Check whether --enable-date was given.
-if test "${enable_date+set}" = set; then :
-  enableval=$enable_date; use_date="no"
-else
-  use_date="yes"
-fi
-
-# Check whether --enable-dnd was given.
-if test "${enable_dnd+set}" = set; then :
-  enableval=$enable_dnd; use_dnd="no"
-else
-  use_dnd="yes"
-fi
-
-# Check whether --enable-dropdown was given.
-if test "${enable_dropdown+set}" = set; then :
-  enableval=$enable_dropdown; use_dropdown="no"
-else
-  use_dropdown="yes"
-fi
-
-# Check whether --enable-file was given.
-if test "${enable_file+set}" = set; then :
-  enableval=$enable_file; use_file="no"
-else
-  use_file="yes"
-fi
-
 # Check whether --enable-native-file was given.
 if test "${enable_native_file+set}" = set; then :
   enableval=$enable_native_file; use_native_file="no"
@@ -3634,75 +3539,11 @@ else
   use_qt5="yes"
 fi
 
-# Check whether --enable-font was given.
-if test "${enable_font+set}" = set; then :
-  enableval=$enable_font; use_font="no"
-else
-  use_font="yes"
-fi
-
-# Check whether --enable-html was given.
-if test "${enable_html+set}" = set; then :
-  enableval=$enable_html; use_html="no"
-else
-  use_html="yes"
-fi
-
 # Check whether --enable-notify was given.
 if test "${enable_notify+set}" = set; then :
   enableval=$enable_notify; use_notify="no"
 else
   use_notify="yes"
-fi
-
-# Check whether --enable-progress was given.
-if test "${enable_progress+set}" = set; then :
-  enableval=$enable_progress; use_progress="no"
-else
-  use_progress="yes"
-fi
-
-# Check whether --enable-radiolist was given.
-if test "${enable_radiolist+set}" = set; then :
-  enableval=$enable_radiolist; use_radiolist="no"
-else
-  use_radiolist="yes"
-fi
-
-# Check whether --enable-textinfo was given.
-if test "${enable_textinfo+set}" = set; then :
-  enableval=$enable_textinfo; use_textinfo="no"
-else
-  use_textinfo="yes"
-fi
-
-
-# Check whether --enable-l10n was given.
-if test "${enable_l10n+set}" = set; then :
-  enableval=$enable_l10n; use_l10n="no"
-else
-  use_l10n="yes"
-fi
-
-# Check whether --enable-window-icon was given.
-if test "${enable_window_icon+set}" = set; then :
-  enableval=$enable_window_icon; use_window_icon="no"
-else
-  use_window_icon="yes"
-fi
-
-# Check whether --enable-rsvg was given.
-if test "${enable_rsvg+set}" = set; then :
-  enableval=$enable_rsvg; use_rsvg="yes"
-else
-  use_rsvg="no"
-fi
-
-# Check whether --enable-default-icon was given.
-if test "${enable_default_icon+set}" = set; then :
-  enableval=$enable_default_icon; default_icon="no"
-else
-  default_icon="yes"
 fi
 
 # Check whether --enable-dynamic-notify was given.
@@ -3712,13 +3553,19 @@ else
   dynamic_notify="yes"
 fi
 
+# Check whether --enable-rsvg was given.
+if test "${enable_rsvg+set}" = set; then :
+  enableval=$enable_rsvg; use_rsvg="yes"
+else
+  use_rsvg="no"
+fi
+
 # Check whether --enable-embedded-plugins was given.
 if test "${enable_embedded_plugins+set}" = set; then :
   enableval=$enable_embedded_plugins; use_embedded_plugins="no"
 else
   use_embedded_plugins="yes"
 fi
-
 
 # Check whether --enable-system-jpeg was given.
 if test "${enable_system_jpeg+set}" = set; then :
@@ -6657,7 +6504,7 @@ fi
 have_qt="no"
 have_qt4="no"
 have_qt5="no"
-if test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"; then :
+if test "x$use_native_file" = "xyes"; then :
 
   if test "x$use_qt" = "xyes"; then :
 
@@ -6838,41 +6685,11 @@ HAVE_QT4=$have_qt4
 
 HAVE_QT5=$have_qt5
 
-WITH_L10N=$use_l10n
-
-WITH_DEFAULT_ICON=$default_icon
-
-WITH_CALENDAR=$use_calendar
-
-WITH_CHECKLIST=$use_checklist
-
-WITH_COLOR=$use_color
-
-WITH_DATE=$use_date
-
-WITH_DND=$use_dnd
-
-WITH_DROPDOWN=$use_dropdown
-
-WITH_FILE=$use_file
-
 WITH_NATIVE_FILE=$use_native_file
 
-WITH_FONT=$use_font
-
-WITH_HTML=$use_html
+WITH_RSVG=$use_rsvg
 
 WITH_NOTIFY=$have_libnotify
-
-WITH_PROGRESS=$use_progress
-
-WITH_RADIOLIST=$use_radiolist
-
-WITH_TEXTINFO=$use_textinfo
-
-WITH_WINDOW_ICON=$use_window_icon
-
-WITH_RSVG=$use_rsvg
 
 DYNAMIC_NOTIFY=$dynamic_notify
 

@@ -52,24 +52,14 @@ static std::string about_text = "\n"
     "Copyright \xc2\xa9 2016-2017 djcj <djcj@gmx.de>\n"
     "\n" //https://github.com/darealshinji/fltk-dialog\n"
     "\n"
-#ifdef WITH_FONT
     "The FLTK library and the font widget are\n"
     "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
-#else
-    "The FLTK library is copyright \xc2\xa9 1998-2016 by\n"
-    "Bill Spitzak and others.\n"
-#endif
     "\n"
     "The calendar widget is copyright \xc2\xa9 1999-2000\n"
     "by the Flek development team and\n"
     "copyright \xc2\xa9 2016-2017 by djcj <djcj@gmx.de>\n"
     "\n"
-#ifdef WITH_DEFAULT_ICON
-    "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc."
-#else
-    "\n"
-#endif
-/* about_text end */;
+    "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
 
 /* sed 's|"|\\"|g; s|^|    "|g; s|$|\\n"|g' LICENSE */
 static const char *license_buffer_text =
@@ -189,7 +179,6 @@ static const char *license_buffer_text =
     "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n"
     "USA.\n"
 #endif  /* WITH_RSVG */
-#ifdef WITH_DEFAULT_ICON
     "\n"
     "\n"
     "\n"
@@ -213,9 +202,7 @@ static const char *license_buffer_text =
     "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
     "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
     "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-    "SOFTWARE.\n"
-#endif  /* WITH_ICON */
-/* license_buffer_text end */;
+    "SOFTWARE.\n";
 
 class uri_box : public Fl_Box
 {

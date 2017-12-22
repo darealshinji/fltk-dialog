@@ -2,45 +2,26 @@ ifneq ($(wildcard config.mak),)
 include config.mak
 endif
 
-# set to "yes" if you want to link
-# against system libraries
-SYSTEM_JPEG ?= no
-SYSTEM_PNG  ?= no
-SYSTEM_ZLIB ?= yes
-
-# set to "no" if you don't want an embedded FLKT
-# icon to appear in taskbar and windows
-WITH_DEFAULT_ICON ?= yes
-
-# set to "no" to disable certain features
-HAVE_QT          ?= yes
-HAVE_QT4         ?= yes
-HAVE_QT5         ?= yes
-WITH_L10N        ?= yes
-WITH_CALENDAR    ?= yes
-WITH_CHECKLIST   ?= yes
-WITH_COLOR       ?= yes
-WITH_DATE        ?= yes
-WITH_DND         ?= yes
-WITH_DROPDOWN    ?= yes
-WITH_FILE        ?= yes
-WITH_NATIVE_FILE ?= yes
-WITH_FONT        ?= yes
-WITH_HTML        ?= yes
-WITH_NOTIFY      ?= yes
-WITH_PROGRESS    ?= yes
-WITH_RADIOLIST   ?= yes
-WITH_TEXTINFO    ?= yes
-WITH_WINDOW_ICON ?= yes
+SYSTEM_JPEG      ?= no
+SYSTEM_PNG       ?= no
+SYSTEM_ZLIB      ?= yes
+HAVE_QT          ?= no
+HAVE_QT4         ?= no
+HAVE_QT5         ?= no
+WITH_NATIVE_FILE ?= no
+WITH_NOTIFY      ?= no
 WITH_RSVG        ?= no
-
 DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
 
 FLTK_VERSION = 1.3.4
 
 BIN  = fltk-dialog
-OBJS = $(addprefix src/,about.o message.o misc/translate.o version.o main.o)
+OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
+  dropdown.o FDate.o file.o Fl_Calendar.o Fl_Color_Chooser2.o Fl_Select_Browser2.o \
+  font.o html.o l10n.o main.o message.o misc.o progress.o radiolist.o textinfo.o \
+  version.o window_icon.o)
+
 
 
 # default build flags
@@ -58,52 +39,9 @@ main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' 
 fltk_CFLAGS   := -Wall $(CFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
 fltk_CXXFLAGS := -Wall $(CXXFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
 
-
-HAVE_ITOSTR     = no
-HAVE_PRINT_DATE = no
-HAVE_SPLIT      = no
-ifneq ($(WITH_L10N),no)
-main_CXXFLAGS += -DWITH_L10N
-OBJS          += src/l10n.o
-endif
-ifneq ($(WITH_DEFAULT_ICON),no)
-main_CXXFLAGS += -DWITH_DEFAULT_ICON
-endif
-ifneq ($(WITH_CALENDAR),no)
-main_CXXFLAGS += -DWITH_CALENDAR
-OBJS          += src/calendar.o src/Flek/Fl_Calendar.o
-HAVE_PRINT_DATE = yes
-endif
-ifneq ($(WITH_CHECKLIST),no)
-main_CXXFLAGS += -DWITH_CHECKLIST
-OBJS          += src/checklist.o
-HAVE_SPLIT = yes
-endif
-ifneq ($(WITH_COLOR),no)
-main_CXXFLAGS += -DWITH_COLOR
-OBJS          += src/color.o src/misc/Fl_Color_Chooser2.o
-endif
-ifneq ($(WITH_DATE),no)
-main_CXXFLAGS += -DWITH_DATE
-OBJS          += src/date.o
-HAVE_PRINT_DATE = yes
-endif
-ifneq ($(WITH_DND),no)
-main_CXXFLAGS += -DWITH_DND
-OBJS          += src/dnd.o
-endif
-ifneq ($(WITH_DROPDOWN),no)
-main_CXXFLAGS += -DWITH_DROPDOWN
-OBJS          += src/dropdown.o
-HAVE_SPLIT = yes
-endif
-
-ifneq ($(WITH_FILE),no)
-main_CXXFLAGS += -DWITH_FILE
 ifneq ($(WITH_NATIVE_FILE),no)
 main_CXXFLAGS += -DWITH_NATIVE_FILE_CHOOSER
 endif
-OBJS          += src/file.o
 ifneq ($(HAVE_QT),no)
 main_CXXFLAGS += -DHAVE_QT
 OBJS          += src/file_dlopen_qtplugin.o
@@ -118,48 +56,13 @@ main_CXXFLAGS += -DUSE_SYSTEM_PLUGINS
 main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
 endif
 endif
-endif
-
-ifneq ($(WITH_FONT),no)
-main_CXXFLAGS += -DWITH_FONT
-OBJS          += src/font.o
-endif
-ifneq ($(WITH_HTML),no)
-main_CXXFLAGS += -DWITH_HTML
-OBJS          += src/html.o
-endif
 ifneq ($(WITH_NOTIFY),no)
 main_CXXFLAGS += -DWITH_NOTIFY
 OBJS          += src/notify.o
 endif
-ifneq ($(WITH_PROGRESS),no)
-main_CXXFLAGS += -DWITH_PROGRESS
-OBJS          += src/progress.o
-endif
-ifneq ($(WITH_RADIOLIST),no)
-main_CXXFLAGS += -DWITH_RADIOLIST
-OBJS          += src/radiolist.o src/misc/Fl_Select_Browser2.o
-HAVE_SPLIT = yes
-endif
-ifneq ($(WITH_TEXTINFO),no)
-main_CXXFLAGS += -DWITH_TEXTINFO
-OBJS          += src/textinfo.o
-endif
-
-ifneq ($(WITH_WINDOW_ICON),no)
-main_CXXFLAGS += -DWITH_WINDOW_ICON
-OBJS          += src/window_icon.o src/misc/gunzip.o
 ifneq ($(WITH_RSVG),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON -DWITH_RSVG
 OBJS          += src/window_icon_dlopen_rsvg_plugin.o
-endif
-endif
-
-ifneq ($(HAVE_PRINT_DATE),no)
-OBJS          += src/misc/print_date.o src/Flek/FDate.o
-endif
-ifneq ($(HAVE_SPLIT),no)
-OBJS          += src/misc/split.o
 endif
 ifneq ($(WITH_NOTIFY),no)
 ifneq ($(DYNAMIC_NOTIFY),no)
@@ -171,9 +74,7 @@ main_LIBS     += $(shell pkg-config --libs libnotify)
 endif
 endif
 
-
 # Qt plugin CXXFLAGS
-#plugin_CXXFLAGS := -std=c++0x  # adjust if required
 plugin_CXXFLAGS :=
 plugin_CXXFLAGS += -fPIC -DPIC $(main_CXXFLAGS)
 

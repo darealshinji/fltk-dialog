@@ -21,15 +21,16 @@
  */
 
 #include <FL/Fl.H>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <Flek/Fl_Calendar.H>
-#include <Flek/FDate.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Repeat_Button.H>
+
+#include <Fl_Calendar.H>
+#include <FDate.H>
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 bool fl_calendar_arabic = false;
 

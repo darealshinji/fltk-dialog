@@ -36,8 +36,6 @@
 #include <stdlib.h>
 
 #include "fltk-dialog.hpp"
-#include "misc/split.hpp"
-
 
 static Fl_Double_Window *check_button_win;
 

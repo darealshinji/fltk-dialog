@@ -29,7 +29,7 @@
 #include <FL/Fl_Repeat_Button.H>
 #include <FL/Fl_Input.H>
 
-#include <Flek/FDate.H>
+#include <FDate.H>
 
 #define	DOE_MIN		1		/* January 1, 1 */
 #define	DOE_MAX		3652059		/* December 31, 9999 */

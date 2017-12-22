@@ -51,90 +51,93 @@
 #define SIZE  128
 #define DPI   90.0
 
-static void
-rsvg_cairo_size_callback (int *width, int *height, gpointer data)
+static void rsvg_cairo_size_callback (int *width, int *height, gpointer data)
 {
-    RsvgDimensionData *dimensions = data;
-    *width = dimensions->width;
-    *height = dimensions->height;
+  RsvgDimensionData *dimensions = data;
+  *width = dimensions->width;
+  *height = dimensions->height;
 }
 
-int
-rsvg_to_png (const char *input_file, const char *output_file)
+int rsvg_to_png (const char *input_file, const char *output_file)
 {
-    const int size = SIZE;
-    const float dpi = DPI;
-    GFile *file = NULL;
-    GInputStream *stream = NULL;
-    GError *error = NULL;
-    GFileInfo *file_info = NULL;
-    gboolean compressed = FALSE;
-    RsvgHandle *rsvg = NULL;
-    RsvgHandleFlags flags = RSVG_HANDLE_FLAG_KEEP_IMAGE_DATA;
-    RsvgDimensionData dimensions;
-    cairo_surface_t *surface = NULL;
-    cairo_t *cr = NULL;
-    struct RsvgSizeCallbackData size_data;
+  const int size = SIZE;
+  const float dpi = DPI;
+  GFile *file = NULL;
+  GInputStream *stream = NULL;
+  GError *error = NULL;
+  GFileInfo *file_info = NULL;
+  gboolean compressed = FALSE;
+  RsvgHandle *rsvg = NULL;
+  RsvgHandleFlags flags = RSVG_HANDLE_FLAG_KEEP_IMAGE_DATA;
+  RsvgDimensionData dimensions;
+  cairo_surface_t *surface = NULL;
+  cairo_t *cr = NULL;
+  struct RsvgSizeCallbackData size_data;
 
-    g_type_init ();
-    rsvg_set_default_dpi (dpi);
+  g_type_init ();
+  rsvg_set_default_dpi (dpi);
 
-    file = g_file_new_for_commandline_arg (input_file);
-    stream = (GInputStream *) g_file_read (file, NULL, &error);
-    file_info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
-                                   G_FILE_QUERY_INFO_NONE, NULL, NULL);
+  file = g_file_new_for_commandline_arg (input_file);
+  stream = (GInputStream *) g_file_read (file, NULL, &error);
+  file_info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE, G_FILE_QUERY_INFO_NONE, NULL, NULL);
 
-    if (file_info) {
-        const char *content_type;
-        char *gz_content_type;
+  if (file_info)
+  {
+    const char *content_type;
+    char *gz_content_type;
 
-        content_type = g_file_info_get_content_type (file_info);
-        gz_content_type = g_content_type_from_mime_type ("application/x-gzip");
-        compressed = (content_type != NULL && g_content_type_is_a (content_type, gz_content_type));
-        g_free (gz_content_type);
-        g_object_unref (file_info);
-    }
+    content_type = g_file_info_get_content_type (file_info);
+    gz_content_type = g_content_type_from_mime_type ("application/x-gzip");
+    compressed = (content_type != NULL && g_content_type_is_a (content_type, gz_content_type));
+    g_free (gz_content_type);
+    g_object_unref (file_info);
+  }
 
-    if (compressed) {
-        GZlibDecompressor *decompressor;
-        GInputStream *converter_stream;
+  if (compressed)
+  {
+    GZlibDecompressor *decompressor;
+    GInputStream *converter_stream;
 
-        decompressor = g_zlib_decompressor_new (G_ZLIB_COMPRESSOR_FORMAT_GZIP);
-        converter_stream = g_converter_input_stream_new (stream, G_CONVERTER (decompressor));
-        g_object_unref (stream);
-        stream = converter_stream;
-    }
+    decompressor = g_zlib_decompressor_new (G_ZLIB_COMPRESSOR_FORMAT_GZIP);
+    converter_stream = g_converter_input_stream_new (stream, G_CONVERTER (decompressor));
+    g_object_unref (stream);
+    stream = converter_stream;
+  }
 
-    if (stream != NULL)
-        rsvg = rsvg_handle_new_from_stream_sync (stream, file, flags, NULL, &error);
+  if (stream)
+  {
+    rsvg = rsvg_handle_new_from_stream_sync (stream, file, flags, NULL, &error);
+  }
 
-    g_clear_object (&stream);
-    g_clear_object (&file);
+  g_clear_object (&stream);
+  g_clear_object (&file);
 
-    if (error != NULL)
-        return 1;
+  if (error)
+  {
+    return 1;
+  }
 
-    rsvg_handle_set_size_callback (rsvg, rsvg_cairo_size_callback, &dimensions, NULL);
-    rsvg_handle_get_dimensions (rsvg, &dimensions);
+  rsvg_handle_set_size_callback (rsvg, rsvg_cairo_size_callback, &dimensions, NULL);
+  rsvg_handle_get_dimensions (rsvg, &dimensions);
 
-    size_data.type = RSVG_SIZE_WH;
-    size_data.width = size;
-    size_data.height = size;
-    size_data.keep_aspect_ratio = FALSE;
+  size_data.type = RSVG_SIZE_WH;
+  size_data.width = size;
+  size_data.height = size;
+  size_data.keep_aspect_ratio = FALSE;
 
-    _rsvg_size_callback (&dimensions.width, &dimensions.height, &size_data);
+  _rsvg_size_callback (&dimensions.width, &dimensions.height, &size_data);
 
-    surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, dimensions.width, dimensions.height);
-    cr = cairo_create (surface);
+  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, dimensions.width, dimensions.height);
+  cr = cairo_create (surface);
 
-    rsvg_handle_render_cairo (rsvg, cr);
-    cairo_surface_write_to_png (surface, output_file);
+  rsvg_handle_render_cairo (rsvg, cr);
+  cairo_surface_write_to_png (surface, output_file);
 
-    g_object_unref (rsvg);
-    cairo_destroy (cr);
-    cairo_surface_destroy (surface);
-    rsvg_cleanup ();
+  g_object_unref (rsvg);
+  cairo_destroy (cr);
+  cairo_surface_destroy (surface);
+  rsvg_cleanup ();
 
-    return 0;
+  return 0;
 }
 

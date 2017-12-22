@@ -69,9 +69,9 @@ static void ti_checkbutton_cb(Fl_Widget *)
 extern "C" void *ti_getline(void *)
 {
   std::string line;
-  int linecount = 0;
+  int linecount;
 
-  for (/**/; std::getline(std::cin, line); /**/)
+  for (linecount = 0; std::getline(std::cin, line); /**/)
   {
     Fl::lock();
     ti_browser->add(line.c_str());
@@ -89,8 +89,7 @@ extern "C" void *ti_getline(void *)
   return nullptr;
 }
 
-int dialog_textinfo(      bool  autoscroll,
-                    const char *checkbox)
+int dialog_textinfo(bool autoscroll, const char *checkbox)
 {
   Fl_Group         *buttongroup;
   Fl_Box           *dummy;

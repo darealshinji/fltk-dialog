@@ -34,7 +34,7 @@
 #include <iostream>
 #include <time.h>
 
-#include "Flek/FDate.H"
+#include "FDate.H"
 #include "fltk-dialog.hpp"
 
 

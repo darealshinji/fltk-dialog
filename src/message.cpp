@@ -103,12 +103,11 @@ void measure_button_width(Fl_Widget *o, int &w, int off)
   delete o;
 }
 
-int dialog_message(
-  const char *label_but_ret,
-  const char *label_but,
-  const char *label_but_alt,
-  int type,
-  bool with_icon_box)
+int dialog_message(const char *label_but_ret
+ ,                 const char *label_but
+ ,                 const char *label_but_alt
+ ,                 int type
+ ,                 bool with_icon_box)
 {
   Fl_Group         *g_icon, *g_box, *g_middle, *g_buttons;
   Fl_Box           *tmp, *icon, *box, *slider_box = NULL, *dummy;

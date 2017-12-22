@@ -45,28 +45,6 @@ AC_ARG_ENABLE([cxx11],
 AC_ARG_ENABLE([strip],
   [AS_HELP_STRING([--enable-strip], [strip binary])],
   [LDFLAGS="$LDFLAGS -s"], [])
-
-AC_ARG_ENABLE([calendar],
-  [AS_HELP_STRING([--disable-calendar], [disable calendar dialog])],
-  [use_calendar="no"], [use_calendar="yes"])
-AC_ARG_ENABLE([checklist],
-  [AS_HELP_STRING([--disable-checklist], [disable checklist dialog])],
-  [use_checklist="no"], [use_checklist="yes"])
-AC_ARG_ENABLE([color],
-  [AS_HELP_STRING([--disable-color], [disable color dialog])],
-  [use_color="no"], [use_color="yes"])
-AC_ARG_ENABLE([date],
-  [AS_HELP_STRING([--disable-date], [disable date dialog])],
-  [use_date="no"], [use_date="yes"])
-AC_ARG_ENABLE([dnd],
-  [AS_HELP_STRING([--disable-dnd], [disable drag & drop dialog])],
-  [use_dnd="no"], [use_dnd="yes"])
-AC_ARG_ENABLE([dropdown],
-  [AS_HELP_STRING([--disable-dropdown], [disable dropdown dialog])],
-  [use_dropdown="no"], [use_dropdown="yes"])
-AC_ARG_ENABLE([file],
-  [AS_HELP_STRING([--disable-file], [disable file chooser dialog])],
-  [use_file="no"], [use_file="yes"])
 AC_ARG_ENABLE([native-file],
   [AS_HELP_STRING([--disable-native-file], [disable native file chooser dialog(s)])],
   [use_native_file="no"], [use_native_file="yes"])
@@ -79,44 +57,18 @@ AC_ARG_ENABLE([qt4],
 AC_ARG_ENABLE([qt5],
   [AS_HELP_STRING([--disable-qt5], [disable Qt5 file chooser dialog])],
   [use_qt5="no"], [use_qt5="yes"])
-AC_ARG_ENABLE([font],
-  [AS_HELP_STRING([--disable-font], [disable font selection dialog])],
-  [use_font="no"], [use_font="yes"])
-AC_ARG_ENABLE([html],
-  [AS_HELP_STRING([--disable-html], [disable html dialog])],
-  [use_html="no"], [use_html="yes"])
 AC_ARG_ENABLE([notify],
   [AS_HELP_STRING([--disable-notify], [disable notification dialog])],
   [use_notify="no"], [use_notify="yes"])
-AC_ARG_ENABLE([progress],
-  [AS_HELP_STRING([--disable-progress], [disable progress dialog])],
-  [use_progress="no"], [use_progress="yes"])
-AC_ARG_ENABLE([radiolist],
-  [AS_HELP_STRING([--disable-radiolist], [disable radiolist dialog])],
-  [use_radiolist="no"], [use_radiolist="yes"])
-AC_ARG_ENABLE([textinfo],
-  [AS_HELP_STRING([--disable-textinfo], [disable textinfo dialog])],
-  [use_textinfo="no"], [use_textinfo="yes"])
-
-AC_ARG_ENABLE([l10n],
-  [AS_HELP_STRING([--disable-l10n], [disable localization])],
-  [use_l10n="no"], [use_l10n="yes"])
-AC_ARG_ENABLE([window-icon],
-  [AS_HELP_STRING([--disable-window-icon], [disable option to set the window icon])],
-  [use_window_icon="no"], [use_window_icon="yes"])
-AC_ARG_ENABLE([rsvg],
-  [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
-  [use_rsvg="yes"], [use_rsvg="no"])
-AC_ARG_ENABLE([default-icon],
-  [AS_HELP_STRING([--disable-default-icon], [disable embedded default window icon])],
-  [default_icon="no"], [default_icon="yes"])
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
+AC_ARG_ENABLE([rsvg],
+  [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
+  [use_rsvg="yes"], [use_rsvg="no"])
 AC_ARG_ENABLE([embedded-plugins],
   [AS_HELP_STRING([--disable-embedded-plugins], [don't embed Qt file chooser plugins into executable but load them from LIBDIR/fltk-dialog])],
   [use_embedded_plugins="no"], [use_embedded_plugins="yes"])
-
 AC_ARG_ENABLE([system-jpeg],
   [AS_HELP_STRING([--enable-system-jpeg], [link against system libjpeg])],
   [use_system_jpeg="yes"], [use_system_jpeg="no"])
@@ -188,7 +140,7 @@ AS_IF([test "x$use_notify" = "xno"], [
 have_qt="no"
 have_qt4="no"
 have_qt5="no"
-AS_IF([test "x$use_native_file" = "xyes" -a "x$use_file" = "xyes"], [
+AS_IF([test "x$use_native_file" = "xyes"], [
   AS_IF([test "x$use_qt" = "xyes"], [
     AS_IF([test "x$use_qt4" = "xyes"], [
       AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
@@ -236,24 +188,9 @@ AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
 AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
-AC_SUBST([WITH_L10N], [$use_l10n])
-AC_SUBST([WITH_DEFAULT_ICON], [$default_icon])
-AC_SUBST([WITH_CALENDAR], [$use_calendar])
-AC_SUBST([WITH_CHECKLIST], [$use_checklist])
-AC_SUBST([WITH_COLOR], [$use_color])
-AC_SUBST([WITH_DATE], [$use_date])
-AC_SUBST([WITH_DND], [$use_dnd])
-AC_SUBST([WITH_DROPDOWN], [$use_dropdown])
-AC_SUBST([WITH_FILE], [$use_file])
 AC_SUBST([WITH_NATIVE_FILE], [$use_native_file])
-AC_SUBST([WITH_FONT], [$use_font])
-AC_SUBST([WITH_HTML], [$use_html])
-AC_SUBST([WITH_NOTIFY], [$have_libnotify])
-AC_SUBST([WITH_PROGRESS], [$use_progress])
-AC_SUBST([WITH_RADIOLIST], [$use_radiolist])
-AC_SUBST([WITH_TEXTINFO], [$use_textinfo])
-AC_SUBST([WITH_WINDOW_ICON], [$use_window_icon])
 AC_SUBST([WITH_RSVG], [$use_rsvg])
+AC_SUBST([WITH_NOTIFY], [$have_libnotify])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 

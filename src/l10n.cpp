@@ -30,8 +30,8 @@
 #include <string>
 #include <stdlib.h>
 
-#include "Flek/FDate.H"
-#include "Flek/Fl_Calendar.H"
+#include "FDate.H"
+#include "Fl_Calendar.H"
 #include "l10n.hpp"
 #include "fltk-dialog.hpp"
 

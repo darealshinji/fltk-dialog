@@ -34,8 +34,7 @@
 #include <vector>
 
 #include "fltk-dialog.hpp"
-#include "misc/split.hpp"
-#include "misc/Fl_Select_Browser2.H"
+#include "Fl_Select_Browser2.H"
 
 
 static Fl_Double_Window *radio_round_button_win;
@@ -61,19 +60,18 @@ static void radiolist_callback(Fl_Widget *v)
   radiolist_return = b->value();
 }
 
-int dialog_radiolist(std::string radiolist_options,
-                            bool return_number)
+int dialog_radiolist(std::string radiolist_options, bool return_number)
 {
   Fl_Group           *g, *g_inside, *buttongroup;
   Fl_Box             *dummy1, *dummy2;
   Fl_Button          *but_cancel;
   Fl_Select_Browser2 *browser;
-
   std::vector<std::string> radiolist_v;
+  int count;
+
   split(radiolist_options, separator, radiolist_v);
 
-  int count = 0;
-  for (/**/; (size_t) count < radiolist_v.size(); ++count) {}
+  for (count = 0; (size_t) count < radiolist_v.size(); ++count) {}
 
   if (count < 1)
   {

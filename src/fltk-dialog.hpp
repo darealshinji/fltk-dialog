@@ -28,6 +28,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <string>
+#include <vector>
 
 #define STREQ(x, y)      (strcmp(x, y) == 0)
 #define SSTREQ(x, y, n)  (strncmp(x, y, n) == 0)
@@ -59,6 +60,17 @@
 # define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 #endif
 
+enum {
+  MESSAGE_TYPE_INFO,
+  MESSAGE_TYPE_WARNING,
+  MESSAGE_TYPE_QUESTION,
+  MESSAGE_TYPE_INPUT,
+  MESSAGE_TYPE_PASSWORD,
+  MESSAGE_TYPE_SCALE
+};
+
+enum { FILE_CHOOSER, DIR_CHOOSER };
+
 extern const char *title, *msg;
 extern char separator;
 extern std::string separator_s;
@@ -68,150 +80,49 @@ extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;
 extern double scale_min, scale_max, scale_step, scale_init;
 
-/* main.cpp */
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
 void set_position(Fl_Double_Window *o);
-void set_taskbar(Fl_Double_Window *o);
-void set_undecorated(Fl_Double_Window *o);
+void set_taskbar(Fl_Double_Window *o);  /* place before show() */
+void set_undecorated(Fl_Double_Window *o);  /* place after show() */
+void split(const std::string &s, char c, std::vector<std::string> &v);
+void repstr(const std::string &from, const std::string &to, std::string &s);
+std::string translate(const char *inputText);
+void print_date(std::string format, int y, int m, int d);
+char *gunzip(const char *file, size_t limit);
 
-/* about.cpp */
 int about(void);
-
-/* calendar.cpp */
-#ifdef WITH_CALENDAR
 int dialog_calendar(std::string format);
-#endif
-
-/* checklist.cpp */
-#ifdef WITH_CHECKLIST
-int dialog_checklist(std::string checklist_options,
-                            bool return_value,
-                            bool check_all);
-#endif
-
-/* color.cpp */
-#ifdef WITH_COLOR
+int dialog_checklist(std::string checklist_options, bool return_value, bool check_all);
 int dialog_color(void);
-#endif
-
-/* date.cpp */
-#ifdef WITH_DATE
 int dialog_date(std::string format);
-#endif
-
-/* dnd.cpp */
-#ifdef WITH_DND
 int dialog_dnd(void);
-#endif
-
-/* dropdown.cpp */
-#ifdef WITH_DROPDOWN
-int dialog_dropdown(std::string dropdown_list,
-                           bool return_number);
-#endif
-
-/* file_dlopen_qtplugin.cpp */
-#ifdef WITH_FILE
+int dialog_dropdown(std::string dropdown_list, bool return_number);
 int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv);
-#endif
-
-/* file.cpp */
-#ifdef WITH_FILE
 int dialog_file_chooser(void);
 int dialog_dir_chooser(void);
-#  define FILE_CHOOSER 0
-#  define DIR_CHOOSER 1
-#  ifdef WITH_NATIVE_FILE_CHOOSER
+#ifdef WITH_NATIVE_FILE_CHOOSER
 int dialog_native_file_chooser(int mode, int argc, char **argv);
 int dialog_native_file_chooser_gtk(int mode);
-#    ifdef HAVE_QT
+#  ifdef HAVE_QT
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv);
-#    endif  /* HAVE_QT */
-#  endif  /* WITH_NATIVE_FILE_CHOOSER */
-#endif  /* WITH_FILE */
-
-/* font.cpp */
-#ifdef WITH_FONT
+#  endif
+#endif  /* WITH_NATIVE_FILE_CHOOSER */
 int dialog_font(void);
-#endif
-
-/* html.cpp */
-#ifdef WITH_HTML
 int dialog_html_viewer(const char *file);
-#endif
-
-/* message.cpp */
 void measure_button_width(Fl_Widget *o, int &w, int off);
-enum {
-  MESSAGE_TYPE_INFO,
-  MESSAGE_TYPE_WARNING,
-  MESSAGE_TYPE_QUESTION,
-  MESSAGE_TYPE_INPUT,
-  MESSAGE_TYPE_PASSWORD,
-  MESSAGE_TYPE_SCALE
-};
-int dialog_message(
-  const char *label_but_ret,
-  const char *label_but,
-  const char *label_but_alt = NULL,
-  int type = MESSAGE_TYPE_WARNING,
-  bool with_icon_box = true
-);
-
-/* notify.cpp */
+int dialog_message(const char *label_but_ret, const char *label_but, const char *label_but_alt = NULL,
+                   int type = MESSAGE_TYPE_WARNING, bool with_icon_box = true);
 #ifdef WITH_NOTIFY
-int dialog_notify(const char *appname,
-                          int timeout,
-                  const char *notify_icon);
+int dialog_notify(const char *appname, int timeout, const char *notify_icon);
 #endif
-
-/* progress.cpp */
-#ifdef WITH_PROGRESS
-int dialog_progress(bool pulsate,
-                     int multi,
-                    long kill_pid,
-                    bool autoclose,
-                    bool hide_cancel);
-#endif
-
-/* textinfo.cpp */
-#ifdef WITH_TEXTINFO
-int dialog_textinfo(      bool  autoscroll,
-                    const char *checkbox);
-#endif
-
-/* radiolist.cpp */
-#ifdef WITH_RADIOLIST
-int dialog_radiolist(std::string radiolist_options,
-                            bool return_number);
-#endif
-
-/* window_icon.cpp */
-#ifdef WITH_WINDOW_ICON
+int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool hide_cancel);
+int dialog_textinfo(bool autoscroll, const char *checkbox);
+int dialog_radiolist(std::string radiolist_options, bool return_number);
 void set_window_icon(const char *file);
 #ifdef WITH_RSVG
 int rsvg_default_icon(const char *file);
 #endif
-#endif
-
-/* l10n.cpp */
-#ifdef WITH_L10N
 void l10n(void);
-#endif
-
-/* misc/print_date.cpp */
-void print_date(std::string format,
-                        int y,
-                        int m,
-                        int d);
-
-/* misc/translate.cpp */
-void repstr(const std::string &from,
-            const std::string &to,
-                  std::string &s);
-std::string translate(const char *inputText);
-
-/* version.cpp */
 std::string get_fltk_version(void);
 
 #endif  /* !FLTK_DIALOG_HPP */

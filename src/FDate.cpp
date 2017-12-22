@@ -23,7 +23,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include <Flek/FDate.H>
+#include <FDate.H>
 
 const int FDate::days[] =
   { 0, 31, 28, 31, 30,  31,  30,  31,  31,  30,  31,  30, 31 };
