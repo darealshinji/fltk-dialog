@@ -163,7 +163,7 @@ distclean: mostlyclean
 	[ ! -f fltk/src/Fl_Help_Dialog.cxx.orig ] || mv -f fltk/src/Fl_Help_Dialog.cxx.orig fltk/src/Fl_Help_Dialog.cxx
 
 mostlyclean:
-	-rm -f $(BIN) *.so *_so.h *.o src/*.o src/Flek/*.o src/misc/*.o
+	-rm -f $(BIN) *.so *_so.h *_png.h *.o src/*.o src/Flek/*.o src/misc/*.o
 
 maintainer-clean: distclean
 	-rm -f configure
@@ -199,6 +199,16 @@ fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Help_Dialog.cxx.ori
 $(libfltk): $(libpng_a) fltk/build/Makefile
 	$(MAKE) -C fltk/build $(cmake_verbose)
 
+src/about.cpp: fltk_png.h
+src/main.cpp: icon_png.h
+
+fltk_png.h: src/fltk.png
+	$(msg_GENH)
+	$(silent)xxd -i $< > $@
+
+icon_png.h: src/icon.png
+	$(msg_GENH)
+	$(silent)xxd -i $< > $@
 
 ifneq ($(HAVE_QT),no)
 qtplugins =

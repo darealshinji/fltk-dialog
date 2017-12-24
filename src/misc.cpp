@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
+#include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/fl_draw.H>
 
 #include <iostream>
 #include <sstream>
@@ -39,6 +41,7 @@ void set_size(Fl_Double_Window *o, Fl_Widget *w);
 void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
+void measure_button_width(Fl_Widget *o, int &w, int off);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
@@ -101,6 +104,20 @@ void set_undecorated(Fl_Double_Window *o)
   {
     o->border(0);
   }
+}
+
+void measure_button_width(Fl_Widget *o, int &w, int off)
+{
+  int h;
+  w = h = 0;
+  fl_font(o->labelfont(), o->labelsize());
+  fl_measure(o->label(), w, h);
+  w += off;
+  if (w < 90)
+  {
+    w = 90;
+  }
+  delete o;
 }
 
 void split(const std::string &s, char c, std::vector<std::string> &v)

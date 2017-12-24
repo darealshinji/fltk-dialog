@@ -26,8 +26,8 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Pixmap.H>
 #include <FL/Fl_Return_Button.H>
+#include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Double_Window.H>
@@ -35,8 +35,8 @@
 
 #include <string>
 
-#include "fltk.xpm"
 #include "fltk-dialog.hpp"
+#include "fltk_png.h"
 
 
 static Fl_Double_Window *about_win;
@@ -258,7 +258,6 @@ int about()
 {
   Fl_Tabs          *about_tab;
   Fl_Group         *g_about, *g_license;
-  Fl_Pixmap        *about_pixmap;
   Fl_Box           *box;
   Fl_Text_Buffer   *license_buffer;
   Fl_Text_Display  *license_display;
@@ -269,8 +268,6 @@ int about()
   const char *uri2 = "https://github.com/darealshinji/fltk-dialog";
   const char *about_text_c = about_text.c_str();
 
-  about_pixmap = new Fl_Pixmap(fltk_xpm);
-
   about_win = new Fl_Double_Window(450, 490, "About FLTK dialog");
   about_win->callback(about_close_cb);
   {
@@ -280,7 +277,7 @@ int about()
       {
         box = new Fl_Box(10, 40, 430, 404, about_text_c);
         box->box(FL_NO_BOX);
-        box->image(about_pixmap);
+        box->image(new Fl_PNG_Image(NULL, src_fltk_png, (int)src_fltk_png_len));
 
         /* x = (winw/2) - (boxw/2) */
         uri_button1 = new uri_box(157, 210, 136, 22, uri1);

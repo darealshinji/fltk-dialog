@@ -47,28 +47,10 @@ static Fl_Double_Window *message_win;
 static double scale_value = 0;
 static char *slider_box_label = NULL;
 
-static char *message_scale_double_to_char(double d)
-{
-  std::stringstream ss;
-
-  if (scale_step == (float)((int) scale_step))
-  {
-    /* integer value */
-    ss << (int) d;
-  }
-  else
-  {
-    /* floating point value;
-     * convert into char with fixed positions after decimal point */
-    ss << (scale_step - (float)((int) scale_step));
-    int precision = ss.str().size() - 2;
-    ss.str("");
-    ss.clear();
-    ss << std::fixed << std::setprecision(precision) << d;
-  }
-
-  return strdup(ss.str().c_str());
-}
+double scale_min = 0;
+double scale_max = 100;
+double scale_step = 1;
+double scale_init = scale_min;
 
 static void message_close_cb(Fl_Widget *, long p)
 {
@@ -78,29 +60,34 @@ static void message_close_cb(Fl_Widget *, long p)
 
 static void message_scale_cb(Fl_Widget *o, void *p)
 {
+  std::stringstream ss;
+
   scale_value = ((Fl_Valuator *)o)->value();
+
+  if (scale_step == (float)((int) scale_step))
+  {
+    /* integer value */
+    ss << (int) scale_value;
+  }
+  else
+  {
+    /* floating point value;
+     * convert into char with fixed positions after decimal point */
+    ss << (scale_step - (float)((int) scale_step));
+    int precision = ss.str().size() - 2;
+    ss.str("");
+    ss.clear();
+    ss << std::fixed << std::setprecision(precision) << scale_value;
+  }
 
   if (slider_box_label)
   {
     free(slider_box_label);
   }
-  slider_box_label = message_scale_double_to_char(scale_value);
+  slider_box_label = strdup(ss.str().c_str());
+
   ((Fl_Box *)p)->label(slider_box_label);
   Fl::redraw();
-}
-
-void measure_button_width(Fl_Widget *o, int &w, int off)
-{
-  int h;
-  w = h = 0;
-  fl_font(o->labelfont(), o->labelsize());
-  fl_measure(o->label(), w, h);
-  w += off;
-  if (w < 90)
-  {
-    w = 90;
-  }
-  delete o;
 }
 
 int dialog_message(const char *label_but_ret

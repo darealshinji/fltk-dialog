@@ -28,8 +28,7 @@
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Double_Window.H>
-#include <FL/Fl_Pixmap.H>
-#include <FL/Fl_RGB_Image.H>
+#include <FL/Fl_PNG_Image.H>
 
 #include <iostream>
 #include <sstream>
@@ -39,8 +38,7 @@
 #include <string.h>
 
 #include "fltk-dialog.hpp"
-
-#include "icon.xpm"
+#include "icon_png.h"
 
 typedef args::Flag ARG_T;
 typedef args::ValueFlag<int> ARGI_T;
@@ -83,8 +81,6 @@ int ret = 0;
 char separator = '|';
 std::string separator_s = "|";
 
-bool arabic = false;
-
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
 int max_h = Fl::h();
@@ -98,27 +94,22 @@ bool position_center = false;
 bool window_taskbar = true;
 bool window_decoration = true;
 
-double scale_min = 0;
-double scale_max = 100;
-double scale_step = 1;
-double scale_init;
-
 /* don't use fltk's '@' symbols */
-#define USE_SYMBOLS 0
+#define NO_SYMBOLS 0
 
 /* global FLTK callback for drawing all label text */
 static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
 {
   fl_font(o->font, o->size);
   fl_color((Fl_Color)o->color);
-  fl_draw(o->value, x, y, w, h, a, o->image, USE_SYMBOLS);
+  fl_draw(o->value, x, y, w, h, a, o->image, NO_SYMBOLS);
 }
 
 /* global FLTK callback for measuring all labels */
 static void measure_cb(const Fl_Label *o, int &w, int &h)
 {
   fl_font(o->font, o->size);
-  fl_measure(o->value, w, h, USE_SYMBOLS);
+  fl_measure(o->value, w, h, NO_SYMBOLS);
 }
 
 static int esc_handler(int event)
@@ -141,7 +132,7 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
     std::cerr << self << ": " << cmd << ": input is not an integer number" << std::endl;
     return 1;
   }
-  val = (int) l;
+  val = (int)l;
   return 0;
 }
 
@@ -154,22 +145,18 @@ static int use_only_with(const char *self, std::string a, std::string b)
 
 int main(int argc, char **argv)
 {
-  Fl_Pixmap win_pixmap(icon_xpm);
-  Fl_RGB_Image win_icon(&win_pixmap, Fl_Color(0));
-  Fl_Window::default_icon(&win_icon);
-
-  l10n();
-
-  /* recommended in Fl_Double_Window.H */
-  Fl::visual(FL_DOUBLE|FL_INDEX);
-
   const char *scheme = "gtk+";
+
+  Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
+  Fl::visual(FL_DOUBLE|FL_INDEX); /* recommended in Fl_Double_Window.H */
+  l10n();
 
   if (argc < 2)
   {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb); /* disable fltk's '@' symbols */
     Fl::scheme(scheme);
     Fl::get_system_colors();
+    position_center = true;
     return about();
   }
 
