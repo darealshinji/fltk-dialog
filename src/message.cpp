@@ -52,22 +52,14 @@ double scale_max = 100;
 double scale_step = 1;
 double scale_init = scale_min;
 
-static void message_close_cb(Fl_Widget *, long p)
-{
-  message_win->hide();
-  ret = (int) p;
-}
-
-static void message_scale_cb(Fl_Widget *o, void *p)
+static char *message_scale_double_to_char(double d)
 {
   std::stringstream ss;
-
-  scale_value = ((Fl_Valuator *)o)->value();
 
   if (scale_step == (float)((int) scale_step))
   {
     /* integer value */
-    ss << (int) scale_value;
+    ss << (int) d;
   }
   else
   {
@@ -77,15 +69,27 @@ static void message_scale_cb(Fl_Widget *o, void *p)
     int precision = ss.str().size() - 2;
     ss.str("");
     ss.clear();
-    ss << std::fixed << std::setprecision(precision) << scale_value;
+    ss << std::fixed << std::setprecision(precision) << d;
   }
+
+  return strdup(ss.str().c_str());
+}
+
+static void message_close_cb(Fl_Widget *, long p)
+{
+  message_win->hide();
+  ret = (int) p;
+}
+
+static void message_scale_cb(Fl_Widget *o, void *p)
+{
+  scale_value = ((Fl_Valuator *)o)->value();
 
   if (slider_box_label)
   {
     free(slider_box_label);
   }
-  slider_box_label = strdup(ss.str().c_str());
-
+  slider_box_label = message_scale_double_to_char(scale_value);
   ((Fl_Box *)p)->label(slider_box_label);
   Fl::redraw();
 }
