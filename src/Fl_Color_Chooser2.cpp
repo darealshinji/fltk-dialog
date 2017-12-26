@@ -688,6 +688,7 @@ int fl_color_chooser2(const char *title, double &r, double &g, double &b, int cm
   set_taskbar(cc2_win);
   cc2_win->show();
   set_undecorated(cc2_win);
+  set_always_on_top(cc2_win);
 
   while (cc2_win->shown())
   {

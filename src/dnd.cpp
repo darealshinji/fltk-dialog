@@ -198,13 +198,7 @@ int dialog_dnd()
     g->resizable(dummy);
     g->end();
   }
-  set_size(dnd_win, box);
-  set_position(dnd_win);
-  dnd_win->end();
-  set_taskbar(dnd_win);
-  dnd_win->show();
-  set_undecorated(dnd_win);
-  Fl::run();
+  run_window(dnd_win, box);
 
   return ret;
 }

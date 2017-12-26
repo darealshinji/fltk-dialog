@@ -413,13 +413,7 @@ int dialog_message(const char *label_but_ret
     g_buttons->resizable(dummy);
     g_buttons->end();
   }
-  set_size(message_win, g_box);
-  set_position(message_win);
-  message_win->end();
-  set_taskbar(message_win);
-  message_win->show();
-  set_undecorated(message_win);
-  Fl::run();
+  run_window(message_win, g_box);
 
   if (ret == 0)
   {

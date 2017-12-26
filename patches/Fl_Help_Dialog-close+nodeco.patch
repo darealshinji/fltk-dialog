@@ -12,11 +12,12 @@
  public:
    ~Fl_Help_Dialog();
    int h();
-@@ -82,6 +87,7 @@ public:
+@@ -82,6 +87,8 @@ public:
    int w();
    int x();
    int y();
 +  void set_border(int b);  // 2016-12-12 djcj <djcj@gmx.de>
++  void set_always_on_top(); // 2017-12-26 djcj <djcj@gmx.de>
  };
  #endif
  
@@ -60,13 +61,31 @@
        { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
          Fl_Group::current()->resizable(o);
        } // Fl_Box* o
-@@ -294,6 +305,11 @@ int Fl_Help_Dialog::y() {
+@@ -294,6 +305,29 @@ int Fl_Help_Dialog::y() {
    return (window_->y());
  }
  
 +// 2016-12-12 djcj <djcj@gmx.de>
 +void Fl_Help_Dialog::set_border(int b) {
 +  return (window_->border(b));
++}
++
++// 2017-12-26 djcj <djcj@gmx.de>
++void Fl_Help_Dialog::set_always_on_top() {
++  XEvent event;
++  window_->wait_for_expose();
++  event.xclient.type = ClientMessage;
++  event.xclient.serial = 0;
++  event.xclient.send_event = True;
++  event.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
++  event.xclient.window = fl_xid((Fl_Window *)window_);
++  event.xclient.format = 32;
++  event.xclient.data.l[0] = 1;  /* _NET_WM_STATE_ADD */
++  event.xclient.data.l[1] = XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
++  event.xclient.data.l[2] = 0;
++  event.xclient.data.l[3] = 0;
++  event.xclient.data.l[4] = 0;
++  XSendEvent(fl_display, DefaultRootWindow(fl_display), False, SubstructureRedirectMask|SubstructureNotifyMask, &event);
 +}
 +
  //

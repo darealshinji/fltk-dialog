@@ -75,15 +75,17 @@ extern const char *title, *msg;
 extern char separator;
 extern std::string separator_s;
 extern int ret;
-extern bool resizable, position_center, window_decoration, window_taskbar, scale_val_set;
+extern bool resizable, position_center, window_decoration, window_taskbar, scale_val_set, always_on_top;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;
 extern double scale_min, scale_max, scale_step, scale_init;
 
+void run_window(Fl_Double_Window *o, Fl_Widget *w);
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
 void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
+void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);

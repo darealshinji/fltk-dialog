@@ -311,12 +311,7 @@ int about()
     but_close = new Fl_Return_Button(440 - but_w, 454, but_w, 28, fl_close);
     but_close->callback(about_close_cb);
   }
-  set_position(about_win);
-  about_win->end();
-  set_taskbar(about_win);
-  about_win->show();
-  set_undecorated(about_win);
-  Fl::run();
+  run_window(about_win, NULL);
 
   return 0;
 }

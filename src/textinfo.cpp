@@ -168,6 +168,7 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
   set_taskbar(textinfo_win);
   textinfo_win->show();
   set_undecorated(textinfo_win);
+  set_always_on_top(textinfo_win);
 
   pthread_create(&ti_thread, 0, &ti_getline, nullptr);
 

@@ -128,13 +128,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  set_size(radio_round_button_win, g);
-  set_position(radio_round_button_win);
-  radio_round_button_win->end();
-  set_taskbar(radio_round_button_win);
-  radio_round_button_win->show();
-  set_undecorated(radio_round_button_win);
-  Fl::run();
+  run_window(radio_round_button_win, g);
 
   if (ret == 0)
   {

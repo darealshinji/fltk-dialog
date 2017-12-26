@@ -353,6 +353,7 @@ int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool
   set_taskbar(progress_win);
   progress_win->show();
   set_undecorated(progress_win);
+  set_always_on_top(progress_win);
 
   if (pulsate)
   {

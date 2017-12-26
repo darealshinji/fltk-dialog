@@ -76,13 +76,7 @@ int dialog_calendar(std::string format)
     g->resizable(dummy);
     g->end();
   }
-  set_size(cal_win, calendar);
-  set_position(cal_win);
-  cal_win->end();
-  set_taskbar(cal_win);
-  cal_win->show();
-  set_undecorated(cal_win);
-  Fl::run();
+  run_window(cal_win, calendar);
 
   if (ret == 0)
   {

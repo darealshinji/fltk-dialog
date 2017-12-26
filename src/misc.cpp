@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
+#include <FL/x.H>
 
 #include <iostream>
 #include <sstream>
@@ -37,10 +38,14 @@
 
 #include "fltk-dialog.hpp"
 
+bool always_on_top = false;
+
+void run_window(Fl_Double_Window *o, Fl_Widget *w);
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
 void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
+void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
 void measure_button_width(Fl_Widget *o, int &w, int off);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
@@ -48,6 +53,21 @@ std::string translate(const char *inputText);
 void print_date(std::string format, int y, int m, int d);
 char *gunzip(const char *file, size_t limit);
 static FILE *popen_gzip(const char *file);
+
+void run_window(Fl_Double_Window *o, Fl_Widget *w)
+{
+  if (w)
+  {
+    set_size(o, w);
+  }
+  set_position(o);
+  o->end();
+  set_taskbar(o);
+  o->show();
+  set_undecorated(o);
+  set_always_on_top(o);
+  Fl::run();
+}
 
 void set_size(Fl_Double_Window *o, Fl_Widget *w)
 {
@@ -103,6 +123,31 @@ void set_undecorated(Fl_Double_Window *o)
   else
   {
     o->border(0);
+  }
+}
+
+void set_always_on_top(Fl_Double_Window *o)
+{
+  XEvent event;
+
+  if (always_on_top)
+  {
+    o->wait_for_expose();
+
+    event.xclient.type = ClientMessage;
+    event.xclient.serial = 0;
+    event.xclient.send_event = True;
+    event.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
+    event.xclient.window = fl_xid((Fl_Window *)o);
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = 1;  /* _NET_WM_STATE_ADD */
+    event.xclient.data.l[1] = XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
+    event.xclient.data.l[2] = 0;
+    event.xclient.data.l[3] = 0;
+    event.xclient.data.l[4] = 0;
+
+    XSendEvent(fl_display, DefaultRootWindow(fl_display), False,
+               SubstructureRedirectMask|SubstructureNotifyMask, &event);
   }
 }
 

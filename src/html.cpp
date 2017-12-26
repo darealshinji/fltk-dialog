@@ -87,6 +87,11 @@ int dialog_html_viewer(const char *file)
     v->set_border(0);
   }
 
+  if (always_on_top)
+  {
+    v->set_always_on_top();
+  }
+
   Fl::run();
 
   return 0;

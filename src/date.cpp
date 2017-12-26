@@ -165,13 +165,7 @@ int dialog_date(std::string format)
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  set_size(fdate_win, g);
-  set_position(fdate_win);
-  fdate_win->end();
-  set_taskbar(fdate_win);
-  fdate_win->show();
-  set_undecorated(fdate_win);
-  Fl::run();
+  run_window(fdate_win, g);
 
   if (ret == 0)
   {

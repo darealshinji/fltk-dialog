@@ -351,10 +351,9 @@ int dialog_font()
 
   fd_fonts->value(1);
   fd_fonts_cb(fd_fonts);
-  set_taskbar(font_win);
-  font_win->show();
-  set_undecorated(font_win);
-  Fl::run();
+  //font_win->show();
+  //Fl::run();
+  run_window(font_win, NULL);
 
   if (ret == 0)
   {

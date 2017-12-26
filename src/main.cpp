@@ -180,6 +180,7 @@ int main(int argc, char **argv)
   ARGS_T arg_geometry(ap, "WxH+X+Y", "Set the window geometry", {"geometry"});
   ARG_T  arg_fixed(ap, "fixed", "Set window unresizable", {"fixed"})
   ,      arg_center(ap, "center", "Place window at center of screen", {"center"})
+  ,      arg_always_on_top(ap, "always-on-top", "Keep window always visible on top (doesn't work on file/directory selection)", {"always-on-top"})
   ,      arg_no_escape(ap, "no-escape", "Don't close window when hitting ESC button", {"no-escape"});
   ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: default, gtk+, gleam, plastic or simple; default is gtk+", {"scheme"});
   ARG_T  arg_no_system_colors(ap, "no-system-colors", "Use FLTK's default gray color scheme", {"no-system-colors"})
@@ -332,6 +333,7 @@ int main(int argc, char **argv)
   bool with_icon_box = arg_no_symbol ? false : true;
   resizable = arg_fixed ? false : true;
   position_center = arg_center ? true : false;
+  always_on_top = arg_always_on_top ? true : false;
   bool return_number = arg_return_number ? true : false;
 
   GETCSTR(scheme, arg_scheme);
