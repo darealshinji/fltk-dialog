@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <string>
+#include <stdlib.h>
 #ifdef DYNAMIC_NOTIFY
 #  include <dlfcn.h>
 #  include "notify.hpp"
@@ -106,6 +107,10 @@ int dialog_notify(const char *appname, int  timeout, const char *notify_icon)
 #  define DLCLOSE_NOTIFY
 #endif
 
+  char *resolved_path = NULL;
+  NotifyNotification *n;
+  int rv = 0;
+
   notify_init(appname);
 
   if (!notify_is_initted())
@@ -115,19 +120,31 @@ int dialog_notify(const char *appname, int  timeout, const char *notify_icon)
     return 1;
   }
 
-  NotifyNotification *n = notify_notification_new(title, msg, notify_icon);
+  if (notify_icon)
+  {
+    resolved_path = realpath(notify_icon, NULL);
+    if (resolved_path)
+    {
+      notify_icon = resolved_path;
+    }
+  }
+
+  n = notify_notification_new(title, msg, notify_icon);
   notify_notification_set_timeout(n, timeout * 1000);
 
   if (!notify_notification_show(n, NULL))
   {
     std::cerr << "error: notify_notification_show()" << std::endl;
-    notify_uninit();
-    DLCLOSE_NOTIFY;
-    return 1;
+    rv = 1;
   }
 
   notify_uninit();
   DLCLOSE_NOTIFY;
-  return 0;
+
+  if (resolved_path)
+  {
+    free(resolved_path);
+  }
+  return rv;
 }
 
