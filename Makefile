@@ -46,10 +46,10 @@ endif
 ifneq ($(HAVE_QT5),no)
 main_CXXFLAGS += -DHAVE_QT5
 endif
+endif # HAVE_QT
 ifneq ($(EMBEDDED_PLUGINS),yes)
 main_CXXFLAGS += -DUSE_SYSTEM_PLUGINS
 main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
-endif
 endif
 ifneq ($(WITH_RSVG),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON -DWITH_RSVG
@@ -111,7 +111,9 @@ endif
 libfltk    = fltk/build/lib/libfltk.a
 main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lm -lpthread
 
+ifneq ($(WITH_RSVG),no)
 librsvg = librsvg/.libs/librsvg-2.a
+endif
 
 ifeq ($(V),1)
 cmake_verbose = VERBOSE=1
@@ -205,6 +207,7 @@ icon_png.h: src/icon.png
 
 ifneq ($(HAVE_QT),no)
 qtplugins =
+
 ifneq ($(HAVE_QT4),no)
 qtplugins += qt4gui.so
 endif
@@ -238,6 +241,16 @@ src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
 	$(msg_CXX)
 	$(silent)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
 
+ifneq ($(EMBEDDED_PLUGINS),no)
+src/file_dlopen_qtplugin.o: qtgui_so.h
+else
+src/file_dlopen_qtplugin.o: $(qtplugins)
+endif
+
+src/file_qtplugin.cpp: $(libfltk)
+endif # HAVE_QT
+
+ifneq ($(WITH_RSVG),no)
 rsvg_convert_so.h: rsvg_convert.so
 	$(msg_GENH)
 	$(silent)xxd -i $< > $@
@@ -264,15 +277,12 @@ librsvg/Makefile:
 	cd librsvg && ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic
 
 ifneq ($(EMBEDDED_PLUGINS),no)
-src/file_dlopen_qtplugin.o: qtgui_so.h
 src/window_icon_dlopen_rsvg_plugin.o: rsvg_convert_so.h
 else
-src/file_dlopen_qtplugin.o: $(qtplugins)
 src/window_icon_dlopen_rsvg_plugin.o: rsvg_convert.so
 endif
 
-src/file_qtplugin.cpp: $(libfltk)
-endif
+endif # WITH_RSVG
 
 
 DISTFILES = fltk/ librsvg/ patches/ src/ \
