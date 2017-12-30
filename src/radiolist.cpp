@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,7 @@
 #include <vector>
 
 #include "fltk-dialog.hpp"
-#include "Fl_Select_Browser2.H"
-
+#include "radiolist_browser.hpp"
 
 static Fl_Double_Window *radio_round_button_win;
 static Fl_Return_Button *radiolist_but_ok;
@@ -56,7 +55,7 @@ static void radiolist_callback(Fl_Widget *v)
     radiolist_but_ok->activate();
   }
 
-  Fl_Select_Browser2 *b = (Fl_Select_Browser2 *)v;
+  radiolist_browser *b = (radiolist_browser *)v;
   radiolist_return = b->value();
 }
 
@@ -65,7 +64,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
   Fl_Group           *g, *g_inside, *buttongroup;
   Fl_Box             *dummy1, *dummy2;
   Fl_Button          *but_cancel;
-  Fl_Select_Browser2 *browser;
+  radiolist_browser  *browser;
   std::vector<std::string> radiolist_v;
   int count;
 
@@ -95,7 +94,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
       {
         for (int i = 0; i < count; ++i)
         {
-          browser = new Fl_Select_Browser2(10, 10, 400, 289);
+          browser = new radiolist_browser(10, 10, 400, 289);
           browser->when(FL_WHEN_CHANGED);
           browser->box(FL_THIN_DOWN_BOX);
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));

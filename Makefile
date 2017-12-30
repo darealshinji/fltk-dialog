@@ -16,9 +16,9 @@ FLTK_VERSION = 1.3.4
 
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
-  dropdown.o FDate.o file.o Fl_Calendar.o Fl_Select_Browser2.o \
-  font.o html.o l10n.o main.o message.o misc.o notify.o progress.o radiolist.o textinfo.o \
-  version.o window_icon.o)
+  dropdown.o FDate.o file.o Fl_Calendar.o font.o html.o l10n.o main.o message.o \
+  misc.o notify.o progress.o radiolist.o radiolist_browser.o textinfo.o version.o \
+  window_icon.o)
 
 
 
