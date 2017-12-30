@@ -1,11 +1,10 @@
 --- a/fltk/FL/Fl_Help_Dialog.H
 +++ b/fltk/FL/Fl_Help_Dialog.H
-@@ -63,6 +63,11 @@ private:
+@@ -63,6 +63,10 @@ private:
    Fl_Help_View *view_;
    inline void cb_view__i(Fl_Help_View*, void*);
    static void cb_view_(Fl_Help_View*, void*);
 +
-+  // 2016-12-11 djcj <djcj@gmx.de>
 +  Fl_Button *close_;
 +  static void cb_close_(Fl_Button*, void*);
 +
@@ -16,18 +15,17 @@
    int w();
    int x();
    int y();
-+  void set_border(int b);  // 2016-12-12 djcj <djcj@gmx.de>
-+  void set_always_on_top(); // 2017-12-26 djcj <djcj@gmx.de>
++  void set_border(int b);
++  void set_always_on_top();
  };
  #endif
  
 --- a/fltk/src/Fl_Help_Dialog.cxx
 +++ b/fltk/src/Fl_Help_Dialog.cxx
-@@ -144,6 +144,11 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
+@@ -144,6 +144,10 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
    ((Fl_Help_Dialog*)(o->parent()->user_data()))->cb_view__i(o,v);
  }
  
-+// 2016-12-11 djcj <djcj@gmx.de>
 +void Fl_Help_Dialog::cb_close_(Fl_Button* o, void* v) {
 +  ((Fl_Help_Dialog*)(o->parent()->parent()->user_data()))->hide();
 +}
@@ -40,11 +38,11 @@
          larger_->callback((Fl_Callback*)cb_larger_);
        } // Fl_Button* larger_
 -      { Fl_Group* o = new Fl_Group(350, 10, 171, 25);
-+      { Fl_Group* o = new Fl_Group(350, 10, 141 /*171*/, 25);  // 2016-12-11 djcj <djcj@gmx.de>
++      { Fl_Group* o = new Fl_Group(350, 10, 141, 25);
          o->box(FL_DOWN_BOX);
          o->color(FL_BACKGROUND2_COLOR);
 -        { find_ = new Fl_Input(375, 12, 143, 21, "@search");
-+        { find_ = new Fl_Input(375, 12, 113 /*143*/, 21, "@search");  // 2016-12-11 djcj <djcj@gmx.de>
++        { find_ = new Fl_Input(375, 12, 113, 21, "@search");
            find_->tooltip("find text in document");
            find_->box(FL_FLAT_BOX);
            find_->labelsize(13);
@@ -57,20 +55,18 @@
 +        close_->labelfont(1);
 +        close_->labelsize(16);
 +        close_->callback((Fl_Callback*)cb_close_);
-+      } // Fl_Button* close_ -- 2016-12-11 djcj <djcj@gmx.de>
++      } // Fl_Button* close_
        { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
          Fl_Group::current()->resizable(o);
        } // Fl_Box* o
-@@ -294,6 +305,29 @@ int Fl_Help_Dialog::y() {
+@@ -294,6 +305,27 @@ int Fl_Help_Dialog::y() {
    return (window_->y());
  }
  
-+// 2016-12-12 djcj <djcj@gmx.de>
 +void Fl_Help_Dialog::set_border(int b) {
 +  return (window_->border(b));
 +}
 +
-+// 2017-12-26 djcj <djcj@gmx.de>
 +void Fl_Help_Dialog::set_always_on_top() {
 +  XEvent event;
 +  window_->wait_for_expose();
