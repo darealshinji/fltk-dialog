@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,55 +23,105 @@
  */
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
+#include <FL/Fl_Color_Chooser.H>
 
-#include <iostream>
-#include <iomanip>
-#include <ios>
 #include <math.h>
+#include <stdio.h>
 
 #include "fltk-dialog.hpp"
-#include "Fl_Color_Chooser2.H"
 
+static Fl_Double_Window *win;
+
+class ColorChip : public Fl_Widget
+{
+  void draw();
+
+public:
+
+  uchar r,g,b;
+
+  ColorChip(int X, int Y, int W, int H) : Fl_Widget(X,Y,W,H)
+  {
+    box(FL_ENGRAVED_FRAME);
+  }
+};
+
+static void chooser_cb(Fl_Widget *o, void *vv)
+{
+  Fl_Color_Chooser *c = (Fl_Color_Chooser *)o;
+  ColorChip *v = (ColorChip *)vv;
+  v->r = uchar(255 * c->r() + 0.5);
+  v->g = uchar(255 * c->g() + 0.5);
+  v->b = uchar(255 * c->b() + 0.5);
+  v->damage(FL_DAMAGE_EXPOSE);
+}
+
+static void close_cb(Fl_Widget *, long p)
+{
+  win->hide();
+  ret = (int) p;
+}
 
 int dialog_color()
 {
-  double r = 1;
-  double g = 1;
-  double b = 1;
+  Fl_Color_Chooser *chooser;
+  ColorChip        *color;
+  Fl_Box           *dummy;
+  Fl_Group         *buttongroup;
+  Fl_Return_Button *ok_button;
+  Fl_Button        *cancel_button;
+
+  double r = 1, g = 1, b = 1;
 
   if (title == NULL)
   {
     title = "color chooser";
   }
 
-  if (fl_color_chooser2(title, r,g,b, 1))
+  win = new Fl_Double_Window(215, 200, title);
+  win->size_range(215, 200, max_w, max_h);
+  win->callback(close_cb, 1);
   {
-    size_t colr = round(255 * r);
-    size_t colg = round(255 * g);
-    size_t colb = round(255 * b);
+    chooser = new Fl_Color_Chooser(10, 10, 195, 115);
+    color = new ColorChip(10, 130, 195, 25);
+    color->r = color->g = color->b = uchar(255);
 
-    double h = 0;
-    double s = 0;
-    double v = 0;
+    buttongroup = new Fl_Group(10, 165, 195, 25);
+    {
+      dummy = new Fl_Box(0, 165, 1, 25);
+      ok_button = new Fl_Return_Button(10, 165, 95, 25, fl_ok);
+      ok_button->callback(close_cb, 0);
+      cancel_button = new Fl_Button(110, 165, 95, 25, fl_cancel);
+      cancel_button->callback(close_cb, 1);
+    }
+    buttongroup->resizable(dummy);
+    buttongroup->end();
 
+    chooser->rgb(r,g,b);
+    chooser->callback(chooser_cb, color);
+    chooser->mode(1);
+  }
+  win->end();
+  run_window(win, chooser);
+
+  if (ret == 0)
+  {
+    r = chooser->r();
+    g = chooser->g();
+    b = chooser->b();
+
+    int colr = round(255 * r);
+    int colg = round(255 * g);
+    int colb = round(255 * b);
+
+    double h = 0, s = 0, v = 0;
     Fl_Color_Chooser::rgb2hsv(r,g,b, h,s,v);
 
-    std::cout
-      /* RGB values [0.000-1.000] */
-      << std::fixed << std::setprecision(3)
-      << r << " " << g << " " << b
-      << "|"
-      /* RGB values [0-255] */
-      << colr << " " << colg << " " << colb
-      << "|"
-      /* HTML hex value */
-      << "#" << std::setfill('0') << std::setw(2) << std::hex
-      << colr << colg << colb
-      << "|"
-      /* HSV values */
-      << h << " " << s << " " << v
-      << std::endl;
-
+    printf("%.3f %.3f %.3f|", r, g, b);         /* RGB values [0.000-1.000] */
+    printf("%d %d %d|", colr, colg, colb);      /* RGB values [0-255] */
+    printf("#%02x%02x%02x|", colr, colg, colb); /* HTML hex value */
+    printf("%.3f %.3f %.3f\n", h,s,v);          /* HSV values */
     return 0;
   }
 

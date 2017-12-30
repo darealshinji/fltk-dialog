@@ -1,0 +1,21 @@
+--- a/fltk/src/Fl_Color_Chooser.cxx
++++ b/fltk/src/Fl_Color_Chooser.cxx
+@@ -91,12 +91,13 @@ enum {
+   M_HEX,	/**< mode() of Fl_Color_Chooser showing hex values */
+   M_HSV		/**< mode() of Fl_Color_Chooser showing HSV values */
+ };
++#define ITEM(x) { x, 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 }
+ static const Fl_Menu_Item mode_menu[] = {
+-  {"rgb"},
+-  {"byte"},
+-  {"hex"},
+-  {"hsv"},
+-  {0}
++  ITEM("rgb"),
++  ITEM("byte"),
++  ITEM("hex"),
++  ITEM("hsv"),
++  { 0,0,0,0,0,0,0,0,0 }
+ };
+ 
+ #ifndef FL_DOXYGEN

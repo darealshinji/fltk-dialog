@@ -16,7 +16,7 @@ FLTK_VERSION = 1.3.4
 
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
-  dropdown.o FDate.o file.o Fl_Calendar.o Fl_Color_Chooser2.o Fl_Select_Browser2.o \
+  dropdown.o FDate.o file.o Fl_Calendar.o Fl_Select_Browser2.o \
   font.o html.o l10n.o main.o message.o misc.o notify.o progress.o radiolist.o textinfo.o \
   version.o window_icon.o)
 
@@ -148,6 +148,7 @@ distclean: mostlyclean
 	-rm -f aclocal.m4 config.mak config.log config.status
 	$(MAKE_CLEAN)
 	[ ! -f fltk/src/Fl_Choice.cxx.orig ] || mv -f fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Choice.cxx
+	[ ! -f fltk/src/Fl_Color_Chooser.cxx.orig ] || mv -f fltk/src/Fl_Color_Chooser.cxx.orig fltk/src/Fl_Color_Chooser.cxx
 	[ ! -f fltk/FL/Fl_Help_Dialog.H.orig ] || mv -f fltk/FL/Fl_Help_Dialog.H.orig fltk/FL/Fl_Help_Dialog.H
 	[ ! -f fltk/src/Fl_Help_Dialog.cxx.orig ] || mv -f fltk/src/Fl_Help_Dialog.cxx.orig fltk/src/Fl_Help_Dialog.cxx
 
@@ -175,13 +176,16 @@ $(BIN): $(OBJS)
 
 fltk/build/fltk-config: $(libfltk)
 
-fltk/src/Fl_Choice.cxx.orig:
-	patch -p1 --backup < patches/Fl_Choice-pulldown.patch
+fltk/src/Fl_Choice.cxx.orig: patches/Fl_Choice-pulldown.patch
+	patch -p1 --backup < $<
 
-fltk/src/Fl_Help_Dialog.cxx.orig:
-	patch -p1 --backup < patches/Fl_Help_Dialog-close+nodeco.patch
+fltk/src/Fl_Color_Chooser.cxx.orig: patches/Fl_Color_Chooser.patch
+	patch -p1 --backup < $<
 
-fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
+fltk/src/Fl_Help_Dialog.cxx.orig: patches/Fl_Help_Dialog-close+nodeco.patch
+	patch -p1 --backup < $<
+
+fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Color_Chooser.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
 	mkdir -p fltk/build
 	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) -DCMAKE_VERBOSE_MAKEFILE="OFF"
 
