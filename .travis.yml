@@ -28,10 +28,10 @@ before_script:
 
 script:
   - ./configure --enable-hardening --enable-rsvg
-  - ( make -j4 V=1 ; strip --strip-all fltk-dialog )
+  - ( make -j4 V=1 && strip --strip-all fltk-dialog )
 
 after_success:
-  - ( mkdir out ; cd out ; tar cfJ fltk-dialog-x86_64_linux.tar.xz ../fltk-dialog )
+  - ( mkdir out && cd out && tar cfJ fltk-dialog-x86_64_linux.tar.xz ../fltk-dialog )
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - bash ./upload.sh out/*
 
