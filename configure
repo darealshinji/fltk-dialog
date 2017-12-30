@@ -627,9 +627,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 EMBEDDED_PLUGINS
 DYNAMIC_NOTIFY
-WITH_NOTIFY
 WITH_RSVG
-WITH_NATIVE_FILE
 HAVE_QT5
 HAVE_QT4
 HAVE_QT
@@ -704,11 +702,9 @@ enable_hardening
 enable_small
 enable_cxx11
 enable_strip
-enable_native_file
 enable_qt
 enable_qt4
 enable_qt5
-enable_notify
 enable_dynamic_notify
 enable_rsvg
 enable_embedded_plugins
@@ -1352,12 +1348,10 @@ Optional Features:
   --enable-small          optimize for small size
   --enable-cxx11          use C++11 even if C++14 is available
   --enable-strip          strip binary
-  --disable-native-file   disable native file chooser dialog(s)
   --disable-qt            disable Qt file chooser dialogs (implies
                           --disable-qt4 and --disable-qt5)
   --disable-qt4           disable Qt4 file chooser dialog
   --disable-qt5           disable Qt5 file chooser dialog
-  --disable-notify        disable notification dialog
   --disable-dynamic-notify
                           disable dynamically loading libnotify (link directly
                           against shared or static library)
@@ -3511,13 +3505,6 @@ if test "${enable_strip+set}" = set; then :
   enableval=$enable_strip; LDFLAGS="$LDFLAGS -s"
 fi
 
-# Check whether --enable-native-file was given.
-if test "${enable_native_file+set}" = set; then :
-  enableval=$enable_native_file; use_native_file="no"
-else
-  use_native_file="yes"
-fi
-
 # Check whether --enable-qt was given.
 if test "${enable_qt+set}" = set; then :
   enableval=$enable_qt; use_qt="no"
@@ -3537,13 +3524,6 @@ if test "${enable_qt5+set}" = set; then :
   enableval=$enable_qt5; use_qt5="no"
 else
   use_qt5="yes"
-fi
-
-# Check whether --enable-notify was given.
-if test "${enable_notify+set}" = set; then :
-  enableval=$enable_notify; use_notify="no"
-else
-  use_notify="yes"
 fi
 
 # Check whether --enable-dynamic-notify was given.
@@ -6685,11 +6665,7 @@ HAVE_QT4=$have_qt4
 
 HAVE_QT5=$have_qt5
 
-WITH_NATIVE_FILE=$use_native_file
-
 WITH_RSVG=$use_rsvg
-
-WITH_NOTIFY=$have_libnotify
 
 DYNAMIC_NOTIFY=$dynamic_notify
 

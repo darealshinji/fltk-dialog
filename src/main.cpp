@@ -204,9 +204,7 @@ int main(int argc, char **argv)
   ,      arg_dropdown(ap, "OPT1|OPT2[|..]", "Display a dropdown menu", {"dropdown"})
   ,      arg_html(ap, "FILE", "Display HTML viewer", {"html"});
   ARG_T  arg_text_info(ap, "text-info", "Display text information dialog", {"text-info"});
-#ifdef WITH_NOTIFY
   ARG_T  arg_notification(ap, "notification", "Display a notification pop-up", {"notification"});
-#endif
   ARG_T  arg_font(ap, "font", "Display font selection dialog", {"font"});
 
   args::Group g_mwq_options(ap_main, "Message/warning/question options:");
@@ -217,10 +215,9 @@ int main(int argc, char **argv)
   ,      arg_no_label(g_question_options, "TEXT", "Sets the label of the No button", {"no-label"})
   ,      arg_alt_label(g_question_options, "TEXT", "Adds a third button and sets its label; exit code is 2", {"alt-label"});
 
-#ifdef WITH_NATIVE_FILE_CHOOSER
   args::Group g_file_dir_options(ap_main, "File/directory selection options:");
   ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, otherwise fall back to FLTK's own version", {"native"});
-#  ifdef HAVE_QT
+#ifdef HAVE_QT
   ARG_T arg_native_gtk(g_file_dir_options, "native-gtk", "Display the Gtk+ native file chooser", {"native-gtk"});
 #  ifdef HAVE_QT4
   ARG_T arg_native_qt4(g_file_dir_options, "native-qt4", "Display the Qt4 native file chooser", {"native-qt4"});
@@ -229,7 +226,6 @@ int main(int argc, char **argv)
   ARG_T arg_native_qt5(g_file_dir_options, "native-qt5", "Display the Qt5 native file chooser", {"native-qt5"});
 #  endif
   ARG_T arg_native_qt(g_file_dir_options, "native-qt", "Alias for --native-qt" XSTRINGIFY(QTDEF), {"native-qt"});
-#  endif
 #endif
 
   args::Group g_progress_options(ap_main, "Progress options:");
@@ -279,11 +275,10 @@ int main(int argc, char **argv)
   ARGS_T arg_checkbox(g_text_info_options, "TEXT", "Enable an \"I read and agree\" checkbox", {"checkbox"});
   ARG_T  arg_auto_scroll(g_text_info_options, "auto-scroll", "Always scroll to the bottom of the text", {"auto-scroll"});
 
-#ifdef WITH_NOTIFY
   args::Group g_notification_options(ap_main, "Notification options:");
   ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds (may be ignored by some desktop environments)", {"timout"});
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
-#endif
+  ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification", {"libnotify"});
 
   try
   {
@@ -335,6 +330,7 @@ int main(int argc, char **argv)
   position_center = arg_center ? true : false;
   always_on_top = arg_always_on_top ? true : false;
   bool return_number = arg_return_number ? true : false;
+  bool libnotify = arg_libnotify ? true : false;
 
   GETCSTR(scheme, arg_scheme);
   GETCSTR(msg, arg_text);
@@ -404,20 +400,17 @@ int main(int argc, char **argv)
   /* file / directory */
   if (arg_file) { dialog = DIALOG_FILE_CHOOSER; dialog_count++; }
   if (arg_directory) { dialog = DIALOG_DIR_CHOOSER; dialog_count++; }
-#ifdef WITH_NATIVE_FILE_CHOOSER
   int native_count = 0;
   bool native = arg_native ? true : false;
   if (native) { native_count++; }
-# ifdef HAVE_QT
-  bool native_gtk = arg_native_gtk ? true : false;
-  if (native_gtk) { native_count++; }
+  bool native_gtk = false, native_qt4 = false, native_qt5 = false;
+#ifdef HAVE_QT
+  if (arg_native_gtk) { native_gtk = true; native_count++; }
 # ifdef HAVE_QT4
-  bool native_qt4 = arg_native_qt4 ? true : false;
-  if (native_qt4) { native_count++; }
+  if (arg_native_qt4) { native_qt4 = true; native_count++; }
 # endif
 # ifdef HAVE_QT5
-  bool native_qt5 = arg_native_qt5 ? true : false;
-  if (native_qt5) { native_count++; }
+  if (arg_native_qt5) { native_qt5 = true; native_count++; }
 # endif
   if (arg_native_qt)
   {
@@ -428,16 +421,14 @@ int main(int argc, char **argv)
 # endif
     native_count++;
   }
-# endif  /* HAVE_QT */
-#endif  /* WITH_NATIVE_FILE_CHOOSER */
+#endif  /* HAVE_QT */
 
-#ifdef WITH_NOTIFY
+  /* notification */
   int timeout = 5;
   const char *notify_icon = NULL;
   if (arg_notification) { dialog = DIALOG_NOTIFY; dialog_count++; }
   GETVAL(timeout, arg_timeout);
   GETCSTR(notify_icon, arg_notify_icon);
-#endif
 
   /* progress */
   int multi = 1;
@@ -511,7 +502,6 @@ int main(int argc, char **argv)
     return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
   }
 
-#if defined(WITH_FILE) && defined(WITH_NATIVE_FILE_CHOOSER)
   if ((native || native_gtk || native_qt4 || native_qt5) && (dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER))
   {
     return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5", "--file or --directory");
@@ -522,9 +512,7 @@ int main(int argc, char **argv)
     std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
     return 1;
   }
-#endif
 
-#ifdef WITH_NOTIFY
   if (dialog != DIALOG_NOTIFY)
   {
     if (arg_timeout)
@@ -536,8 +524,12 @@ int main(int argc, char **argv)
     {
       return use_only_with(argv[0], "--notify-icon", "--notification");
     }
+
+    if (libnotify)
+    {
+      return use_only_with(argv[0], "--libnotify", "--notification");
+    }
   }
-#endif
 
   if (dialog != DIALOG_PROGRESS)
   {
@@ -627,8 +619,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  /* system colors */
-  if (!arg_no_system_colors)
+  if (!arg_no_system_colors && !arg_notification)
   {
     Fl::get_system_colors();
   }
@@ -652,13 +643,12 @@ int main(int argc, char **argv)
     case DIALOG_FILE_CHOOSER:
     case DIALOG_DIR_CHOOSER:
     {
-#ifdef WITH_NATIVE_FILE_CHOOSER
       int flag = (dialog == DIALOG_FILE_CHOOSER) ? FILE_CHOOSER : DIR_CHOOSER;
       if (native)
       {
         return dialog_native_file_chooser(flag, argc, argv);
       }
-# ifdef HAVE_QT
+#ifdef HAVE_QT
       else if (native_gtk)
       {
         return dialog_native_file_chooser_gtk(flag);
@@ -675,14 +665,11 @@ int main(int argc, char **argv)
         return dialog_native_file_chooser_qt(5, flag, argc, argv);
       }
 #  endif
-# endif  /* HAVE_QT */
-#endif  /* WITH_NATIVE_FILE_CHOOSER */
+#endif  /* HAVE_QT */
       return (dialog == DIALOG_FILE_CHOOSER) ? dialog_file_chooser() : dialog_dir_chooser();
     }
-#ifdef WITH_NOTIFY
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], timeout, notify_icon);
-#endif
+      return dialog_notify(argv[0], timeout, notify_icon, libnotify);
     case DIALOG_PROGRESS:
       return dialog_progress(pulsate, multi, kill_pid, autoclose, hide_cancel);
     case DIALOG_TEXTINFO:

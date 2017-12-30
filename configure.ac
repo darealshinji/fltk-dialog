@@ -45,9 +45,6 @@ AC_ARG_ENABLE([cxx11],
 AC_ARG_ENABLE([strip],
   [AS_HELP_STRING([--enable-strip], [strip binary])],
   [LDFLAGS="$LDFLAGS -s"], [])
-AC_ARG_ENABLE([native-file],
-  [AS_HELP_STRING([--disable-native-file], [disable native file chooser dialog(s)])],
-  [use_native_file="no"], [use_native_file="yes"])
 AC_ARG_ENABLE([qt],
   [AS_HELP_STRING([--disable-qt], [disable Qt file chooser dialogs (implies --disable-qt4 and --disable-qt5)])],
   [use_qt="no"], [use_qt="yes"])
@@ -57,9 +54,6 @@ AC_ARG_ENABLE([qt4],
 AC_ARG_ENABLE([qt5],
   [AS_HELP_STRING([--disable-qt5], [disable Qt5 file chooser dialog])],
   [use_qt5="no"], [use_qt5="yes"])
-AC_ARG_ENABLE([notify],
-  [AS_HELP_STRING([--disable-notify], [disable notification dialog])],
-  [use_notify="no"], [use_notify="yes"])
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
@@ -188,9 +182,7 @@ AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
 AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
-AC_SUBST([WITH_NATIVE_FILE], [$use_native_file])
 AC_SUBST([WITH_RSVG], [$use_rsvg])
-AC_SUBST([WITH_NOTIFY], [$have_libnotify])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 

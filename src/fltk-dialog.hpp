@@ -86,9 +86,12 @@ void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
 void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
+void measure_button_width(Fl_Widget *o, int &w, int off);
+void aspect_ratio_scale(int &w, int &h, const int limit);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
+std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
 char *gunzip(const char *file, size_t limit);
 
@@ -102,21 +105,17 @@ int dialog_dropdown(std::string dropdown_list, bool return_number);
 int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv);
 int dialog_file_chooser(void);
 int dialog_dir_chooser(void);
-#ifdef WITH_NATIVE_FILE_CHOOSER
 int dialog_native_file_chooser(int mode, int argc, char **argv);
 int dialog_native_file_chooser_gtk(int mode);
-#  ifdef HAVE_QT
+#ifdef HAVE_QT
 int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv);
-#  endif
-#endif  /* WITH_NATIVE_FILE_CHOOSER */
+#endif
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
 void measure_button_width(Fl_Widget *o, int &w, int off);
 int dialog_message(const char *label_but_ret, const char *label_but, const char *label_but_alt = NULL,
                    int type = MESSAGE_TYPE_WARNING, bool with_icon_box = true);
-#ifdef WITH_NOTIFY
-int dialog_notify(const char *appname, int timeout, const char *notify_icon);
-#endif
+int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify);
 int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox);
 int dialog_radiolist(std::string radiolist_options, bool return_number);

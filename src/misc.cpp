@@ -47,9 +47,11 @@ void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
 void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
 void measure_button_width(Fl_Widget *o, int &w, int off);
+void aspect_ratio_scale(int &w, int &h, const int limit);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
+std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
 char *gunzip(const char *file, size_t limit);
 static FILE *popen_gzip(const char *file);
@@ -165,6 +167,31 @@ void measure_button_width(Fl_Widget *o, int &w, int off)
   delete o;
 }
 
+void aspect_ratio_scale(int &w, int &h, const int limit)
+{
+  float fw = (float)w;
+  float fh = (float)h;
+
+  if (fw/fh == 1.0)
+  {
+    w = limit;
+    h = limit;
+  }
+  else
+  {
+    if (w > h)
+    {
+      w = limit;
+      h = (int)(fh/(fw/(float)limit));
+    }
+    else
+    {
+      h = limit;
+      w = (int)(fw/(fh/(float)limit));
+    }
+  }
+}
+
 void split(const std::string &s, char c, std::vector<std::string> &v)
 {
   size_t i = 0;
@@ -200,6 +227,43 @@ std::string translate(const char *inputText)
   repstr("\\n", "\n", s);
   repstr("\\t", "\t", s);
   return s;
+}
+
+/**
+ * based on https://www.rosettacode.org/wiki/Word_wrap#C.2B.2B
+ */
+std::string word_wrap(const char *text, int width, Fl_Font font, int font_size)
+{
+  std::istringstream words(text);
+  std::ostringstream wrapped;
+  std::string word;
+  int w = 0, h = 0, space_w = 0, space_left;
+
+  if (words >> word)
+  {
+    fl_font(font, font_size);
+    fl_measure(" ", space_w, h);
+    fl_measure(word.c_str(), w, h);
+    wrapped << word;
+    space_left = width - w;
+
+    while (words >> word)
+    {
+      fl_measure(word.c_str(), w, h);
+
+      if (space_left < w + space_w)
+      {
+        wrapped << '\n' << word;
+        space_left = width - w;
+      }
+      else
+      {
+        wrapped << ' ' << word;
+        space_left -= w + space_w;
+      }
+    }
+  }
+  return wrapped.str();
 }
 
 void print_date(std::string format, int y, int m, int d)

@@ -82,8 +82,6 @@ int dialog_dir_chooser()
   return 0;
 }
 
-#ifdef WITH_NATIVE_FILE_CHOOSER
-
 int dialog_native_file_chooser_gtk(int mode)
 {
   Fl_Native_File_Chooser fnfc;
@@ -175,6 +173,4 @@ int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
   return ret;
 }
 #endif  /* HAVE_QT */
-
-#endif  /* WITH_NATIVE_FILE_CHOOSER */
 

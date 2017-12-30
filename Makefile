@@ -8,8 +8,6 @@ SYSTEM_ZLIB      ?= yes
 HAVE_QT          ?= no
 HAVE_QT4         ?= no
 HAVE_QT5         ?= no
-WITH_NATIVE_FILE ?= no
-WITH_NOTIFY      ?= no
 WITH_RSVG        ?= no
 DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
@@ -19,7 +17,7 @@ FLTK_VERSION = 1.3.4
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
   dropdown.o FDate.o file.o Fl_Calendar.o Fl_Color_Chooser2.o Fl_Select_Browser2.o \
-  font.o html.o l10n.o main.o message.o misc.o progress.o radiolist.o textinfo.o \
+  font.o html.o l10n.o main.o message.o misc.o notify.o progress.o radiolist.o textinfo.o \
   version.o window_icon.o)
 
 
@@ -39,9 +37,6 @@ main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' 
 fltk_CFLAGS   := -Wall $(CFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
 fltk_CXXFLAGS := -Wall $(CXXFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missing-field-initializers
 
-ifneq ($(WITH_NATIVE_FILE),no)
-main_CXXFLAGS += -DWITH_NATIVE_FILE_CHOOSER
-endif
 ifneq ($(HAVE_QT),no)
 main_CXXFLAGS += -DHAVE_QT
 OBJS          += src/file_dlopen_qtplugin.o
@@ -56,22 +51,16 @@ main_CXXFLAGS += -DUSE_SYSTEM_PLUGINS
 main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
 endif
 endif
-ifneq ($(WITH_NOTIFY),no)
-main_CXXFLAGS += -DWITH_NOTIFY
-OBJS          += src/notify.o
-endif
 ifneq ($(WITH_RSVG),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON -DWITH_RSVG
 OBJS          += src/window_icon_dlopen_rsvg_plugin.o
 endif
-ifneq ($(WITH_NOTIFY),no)
 ifneq ($(DYNAMIC_NOTIFY),no)
 main_CXXFLAGS += -DDYNAMIC_NOTIFY
 main_LIBS     += -ldl
 else
 main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
-endif
 endif
 
 # Qt plugin CXXFLAGS
