@@ -17,11 +17,16 @@
  * USA.
  *
  * Authors: David Freese
- *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
+ *          2016, 2018  djcj <djcj@gmx.de>
  */
 
 #ifndef __FDATE_H__
 #define __FDATE_H__
+
+#define DOE_MIN   1        /* January 1, 1 */
+#define DOE_MAX   3652059  /* December 31, 9999 */
+#define YEAR_MIN  1
+#define YEAR_MAX  9999
 
 /**
  * from FBase.H

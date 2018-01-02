@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
- *          2016-2017 djcj <djcj@gmx.de> (modified for fltk-dialog)
+ *          2016-2018  djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #ifndef _FL_CALENDAR_H_
@@ -30,11 +30,6 @@
 #include <FL/Fl_Input.H>
 
 #include <FDate.H>
-
-#define	DOE_MIN		1		/* January 1, 1 */
-#define	DOE_MAX		3652059		/* December 31, 9999 */
-#define	YEAR_MIN	1
-#define	YEAR_MAX	9999
 
 extern bool fl_calendar_arabic;
 

@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: James Dean Palmer <james@tiger-marmalade.com>
- *          2016-2017 djcj <djcj@gmx.de> (modified for fltk-dialog)
+ *          2016-2018  djcj <djcj@gmx.de> (modified for fltk-dialog)
  */
 
 #include <FL/Fl.H>
@@ -33,6 +33,9 @@
 #include <stdlib.h>
 
 bool fl_calendar_arabic = false;
+
+static void fl_calendar_prv_month_cb (Fl_Widget *, void *b);
+static void fl_calendar_nxt_month_cb (Fl_Widget *, void *b);
 
 static void fl_calendar_button_cb (Fl_Widget *a, void *b)
 {
@@ -156,6 +159,7 @@ Fl_Calendar_Base::update ()
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
+    days[i]->callback (fl_calendar_prv_month_cb, this);
     days[i]->show ();
   }
 
@@ -186,6 +190,7 @@ Fl_Calendar_Base::update ()
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
+    days[i]->callback (fl_calendar_nxt_month_cb, this);
     days[i]->show ();
   }
 }

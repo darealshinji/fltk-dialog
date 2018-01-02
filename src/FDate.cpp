@@ -17,7 +17,7 @@
  * USA.
  *
  * Authors: David Freese <dfreese@intrepid.net>
- *          2016  djcj <djcj@gmx.de> (modified for fltk-dialog)
+ *          2016, 2018  djcj <djcj@gmx.de>
  */
 
 #include <time.h>
@@ -143,7 +143,8 @@ bool FDate::leap_year (int y) {
 }
 
 bool FDate::valid (int y, int m, int d) {
-  if (y < 1970 || y > 2035) { return false; }
+  //if (y < 1970 || y > 2035) { return false; }
+  if (y < YEAR_MIN || y > YEAR_MAX) { return false; }
   if (m < 1 || m > 12) { return false; }
   if (d < 1 ) { return false; }
   if (leap_year (y)) {
