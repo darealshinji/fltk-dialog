@@ -96,17 +96,19 @@
 
 void l10n()
 {
-  std::string region = std::string(getenv("LANG"));
-  std::string lang = region.substr(0,2);
+  std::string region, lang;
+  char *env;
 
-  if (lang == "")
-  {
-    region = std::string(getenv("LANGUAGE"));
-    lang = region.substr(0,2);
+  if (!(env = getenv("LANG"))) {
+    if (!(env = getenv("LANGUAGE"))) {
+      return;
+    }
   }
+  region = std::string(env);
   region = region.substr(0,5);
+  lang = region.substr(0,2);
 
-  if (lang != "C" && lang != "")
+  if (lang != "en" && lang != "C" && lang != "")
   {
     if (lang == "de")
     {
