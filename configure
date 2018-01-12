@@ -6179,7 +6179,7 @@ if test "x$use_notify" = "xno"; then :
 
 else
 
-  if test "x$dynamic_notify" = "xyes"; then :
+  if test "x$dynamic_notify" != "xyes"; then :
 
     # libnotify headers
     {
@@ -6474,6 +6474,11 @@ fi
 
 
 fi
+    if test "$xhave_libnotify" != "xyes"; then :
+
+      as_fn_error $? "re-run \`$0' without \`--disable-dynamic-notify'" "$LINENO" 5
+
+fi
 
 fi
 
@@ -6484,13 +6489,11 @@ fi
 have_qt="no"
 have_qt4="no"
 have_qt5="no"
-if test "x$use_native_file" = "xyes"; then :
+if test "x$use_qt" = "xyes"; then :
 
-  if test "x$use_qt" = "xyes"; then :
+  if test "x$use_qt4" = "xyes"; then :
 
-    if test "x$use_qt4" = "xyes"; then :
-
-      {
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package QtCore (Qt4)" >&5
 $as_echo_n "checking for package QtCore (Qt4)... " >&6; }
   if test "x$(pkg-config --exists QtCore; echo $?)" = "x0"; then :
@@ -6507,7 +6510,7 @@ $as_echo "no" >&6; }
 
 fi
 }
-      {
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package QtGui (Qt4)" >&5
 $as_echo_n "checking for package QtGui (Qt4)... " >&6; }
   if test "x$(pkg-config --exists QtGui; echo $?)" = "x0"; then :
@@ -6524,15 +6527,15 @@ $as_echo "no" >&6; }
 
 fi
 }
-      if test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
-               -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"; then :
+    if test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"; then :
   have_qt="yes" have_qt4="yes"
 fi
 
 fi
-    if test "x$use_qt5" = "xyes"; then :
+  if test "x$use_qt5" = "xyes"; then :
 
-      {
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package Qt5Core" >&5
 $as_echo_n "checking for package Qt5Core... " >&6; }
   if test "x$(pkg-config --exists Qt5Core; echo $?)" = "x0"; then :
@@ -6549,7 +6552,7 @@ $as_echo "no" >&6; }
 
 fi
 }
-      {
+    {
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package Qt5Widgets" >&5
 $as_echo_n "checking for package Qt5Widgets... " >&6; }
   if test "x$(pkg-config --exists Qt5Widgets; echo $?)" = "x0"; then :
@@ -6566,11 +6569,9 @@ $as_echo "no" >&6; }
 
 fi
 }
-      if test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
-               -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"; then :
+    if test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"; then :
   have_qt="yes" have_qt5="yes"
-fi
-
 fi
 
 fi
@@ -6675,26 +6676,34 @@ EMBEDDED_PLUGINS=$use_embedded_plugins
 
 if test "x$use_rsvg" = "xyes"; then :
 
-  for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package $module" >&5
-$as_echo_n "checking for package $module... " >&6; }
-    if test "x$(pkg-config --exists $module; echo $?)" = "x0"; then :
+  if test -e "librsvg/configure"; then :
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package $module" >&5
+$as_echo_n "checking for package $module... " >&6; }
+      if test "x$(pkg-config --exists $module; echo $?)" = "x0"; then :
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
 else
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-      exit 1
+        exit 1
 
 fi
-  done
-  echo "=== configuring in librsvg ($PWD/librsvg)"
-  cd librsvg || exit 1
-  CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
-  cd -
+    done
+    echo "=== configuring in librsvg ($PWD/librsvg)"
+    cd librsvg || exit 1
+    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+    cd -
+
+else
+
+    as_fn_error $? "cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'" "$LINENO" 5
+
+fi
 
 fi
 

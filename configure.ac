@@ -105,7 +105,7 @@ AS_IF([test "x$use_notify" = "xno"], [
   dynamic_notify="no"
   have_libnotify="no"
 ], [
-  AS_IF([test "x$dynamic_notify" = "xyes"], [
+  AS_IF([test "x$dynamic_notify" != "xyes"], [
     # libnotify headers
     AX_PKG_CHECK_MODULES_SIMPLE([libnotify], [libnotify])
     AS_IF([test "x$ax_cv_pkg_check_modules_simple_libnotify" = "xyes"], [
@@ -126,6 +126,9 @@ AS_IF([test "x$use_notify" = "xno"], [
       AC_CHECK_LIB([notify], [notify_notification_show], [have_libnotify="yes"], [have_libnotify="no"])
       AC_CHECK_LIB([notify], [notify_uninit], [have_libnotify="yes"], [have_libnotify="no"])
     ])
+    AS_IF([test "$xhave_libnotify" != "xyes"], [
+      AC_MSG_ERROR([re-run \`$0' without \`--disable-dynamic-notify'])
+    ])
   ])
 ])
 
@@ -134,22 +137,20 @@ AS_IF([test "x$use_notify" = "xno"], [
 have_qt="no"
 have_qt4="no"
 have_qt5="no"
-AS_IF([test "x$use_native_file" = "xyes"], [
-  AS_IF([test "x$use_qt" = "xyes"], [
-    AS_IF([test "x$use_qt4" = "xyes"], [
-      AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
-      AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)],  [QtGui])
-      AS_IF([test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
-               -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"],
-            [have_qt="yes" have_qt4="yes"])
-    ])
-    AS_IF([test "x$use_qt5" = "xyes"], [
-      AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core],      [Qt5Core])
-      AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets],   [Qt5Widgets])
-      AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
-               -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
-            [have_qt="yes" have_qt5="yes"])
-    ])
+AS_IF([test "x$use_qt" = "xyes"], [
+  AS_IF([test "x$use_qt4" = "xyes"], [
+    AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
+    AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)], [QtGui])
+    AS_IF([test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"],
+          [have_qt="yes" have_qt4="yes"])
+  ])
+  AS_IF([test "x$use_qt5" = "xyes"], [
+    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core], [Qt5Core])
+    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets], [Qt5Widgets])
+    AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
+          [have_qt="yes" have_qt5="yes"])
   ])
 ])
 
@@ -189,19 +190,23 @@ AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 
 dnl Don't use AC_CONFIG_SUBDIRS
 AS_IF([test "x$use_rsvg" = "xyes"], [
-  for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
-    AC_MSG_CHECKING([for package $module])
-    AS_IF([test "x$(pkg-config --exists $module; echo $?)" = "x0"], [
-      AC_MSG_RESULT([yes])
-    ], [
-      AC_MSG_RESULT([no])
-      exit 1
-    ])
-  done
-  echo "=== configuring in librsvg ($PWD/librsvg)"
-  cd librsvg || exit 1
-  CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
-  cd -
+  AS_IF([test -e "librsvg/configure"], [
+    for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
+      AC_MSG_CHECKING([for package $module])
+      AS_IF([test "x$(pkg-config --exists $module; echo $?)" = "x0"], [
+        AC_MSG_RESULT([yes])
+      ], [
+        AC_MSG_RESULT([no])
+        exit 1
+      ])
+    done
+    echo "=== configuring in librsvg ($PWD/librsvg)"
+    cd librsvg || exit 1
+    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+    cd -
+  ], [
+    AC_MSG_ERROR([cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'])
+  ])
 ])
 
 AC_CONFIG_FILES([config.mak])
