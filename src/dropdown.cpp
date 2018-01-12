@@ -38,17 +38,18 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *dropdown_win;
+static Fl_Menu_Item *menu_items;
 
 static void dropdown_close_cb(Fl_Widget *, long p)
 {
   dropdown_win->hide();
   ret = (int) p;
+  delete[] menu_items;
 }
 
 int dialog_dropdown(std::string dropdown_list, bool return_number)
 {
   Fl_Group         *g;
-  Fl_Menu_Item      menu_items[1024] = { 0,0,0,0,0,0,0,0,0 };
   Fl_Choice        *entries;
   Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
@@ -75,6 +76,8 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
     dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
+
+  menu_items = new Fl_Menu_Item[count]();
 
   for (size_t i = 0; i < count; ++i)
   {
