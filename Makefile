@@ -16,9 +16,9 @@ FLTK_VERSION = 1.3.4
 
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
-  dropdown.o FDate.o file.o Fl_Calendar.o font.o html.o l10n.o main.o message.o \
-  misc.o notify.o progress.o radiolist.o radiolist_browser.o textinfo.o version.o \
-  window_icon.o)
+  dropdown.o FDate.o file.o Fl_Calendar.o font.o html.o img_to_rgb.o l10n.o main.o \
+  message.o misc.o notify.o progress.o radiolist.o radiolist_browser.o textinfo.o \
+  version.o)
 
 
 
@@ -53,7 +53,7 @@ main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
 endif
 ifneq ($(WITH_RSVG),no)
 main_CXXFLAGS += -DWITH_WINDOW_ICON -DWITH_RSVG
-OBJS          += src/window_icon_dlopen_rsvg_plugin.o
+OBJS          += src/dlopen_rsvg_plugin.o
 endif
 ifneq ($(DYNAMIC_NOTIFY),no)
 main_CXXFLAGS += -DDYNAMIC_NOTIFY
@@ -277,9 +277,9 @@ librsvg/Makefile:
 	cd librsvg && ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic
 
 ifneq ($(EMBEDDED_PLUGINS),no)
-src/window_icon_dlopen_rsvg_plugin.o: rsvg_convert_so.h
+src/dlopen_rsvg_plugin.o: rsvg_convert_so.h
 else
-src/window_icon_dlopen_rsvg_plugin.o: rsvg_convert.so
+src/dlopen_rsvg_plugin.o: rsvg_convert.so
 endif
 
 endif # WITH_RSVG

@@ -108,16 +108,16 @@ int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
 #endif
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
-void measure_button_width(Fl_Widget *o, int &w, int off);
 int dialog_message(const char *label_but_ret, const char *label_but, const char *label_but_alt = NULL,
                    int type = MESSAGE_TYPE_WARNING, bool with_icon_box = true);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify);
 int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox);
 int dialog_radiolist(std::string radiolist_options, bool return_number);
-void set_window_icon(const char *file);
+
+Fl_RGB_Image *img_to_rgb(const char *file);
 #ifdef WITH_RSVG
-int rsvg_default_icon(const char *file);
+Fl_RGB_Image *rsvg_to_rgb(const char *file);
 #endif
 void l10n(void);
 std::string get_fltk_version(void);

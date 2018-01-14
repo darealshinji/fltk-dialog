@@ -77,19 +77,19 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
-static void nsvg_default_icon(const char *file, bool compressed)
+static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 {
   NSVGimage *nsvg;
   NSVGrasterizer *r;
   char *data;
   unsigned char *img;
-  Fl_RGB_Image *rgb;
+  Fl_RGB_Image *rgb, *rgb_copy;
   int w, h;
 
   if (compressed) {
     data = gunzip(file, SVG_MAX);
     if (!data) {
-      return;
+      return NULL;
     }
     nsvg = nsvgParse(data, "px", 96.0f);
     delete data;
@@ -102,34 +102,39 @@ static void nsvg_default_icon(const char *file, bool compressed)
 
   if (!nsvg->shapes || w < 1 || h < 1) {
     nsvgDelete(nsvg);
-    return;
+    return NULL;
   }
 
   img = new unsigned char[w*h*4];
   r = nsvgCreateRasterizer();
   nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
-
-  Fl_Window::default_icon(rgb);
+  rgb_copy = (Fl_RGB_Image *)rgb->copy();
 
   delete rgb;
   delete img;
   nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
+
+  return rgb_copy;
 }
 
 #ifdef WITH_RSVG
-static void svg_default_icon(const char *file, bool compressed) {
-  if (rsvg_default_icon(file) != 0) {
+static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
+{
+  Fl_RGB_Image *rgb = rsvg_to_rgb(file);
+
+  if (!rgb) {
     //std::cout << "fall back to NanoSVG" << std::endl;
-    nsvg_default_icon(file, compressed);
+    rgb = nsvg_to_rgb(file, compressed);
   }
+  return rgb;
 }
 #else
-# define svg_default_icon(a,b) nsvg_default_icon(a,b)
+# define svg_to_rgb(a,b) nsvg_to_rgb(a,b)
 #endif
 
-void set_window_icon(const char *file)
+Fl_RGB_Image *img_to_rgb(const char *file)
 {
   FILE *fp;
   size_t len;
@@ -138,19 +143,17 @@ void set_window_icon(const char *file)
   struct stat st;
 
   if (!file || stat(file, &st) == -1 || st.st_size > IMGFILE_MAX) {
-    return;
+    return NULL;
   }
 
   /* get filetype from extension */
 
   if (get_ext_lower(file, 4) == ".svg" && st.st_size <= SVG_MAX) {
-    svg_default_icon(file, false);
-    return;
+    rgb = svg_to_rgb(file, false);
   }
   else if ((get_ext_lower(file, 5) == ".svgz" || get_ext_lower(file, 7) == ".svg.gz") &&
            st.st_size < SVGZ_MAX) {
-    svg_default_icon(file, true);
-    return;
+    rgb = svg_to_rgb(file, true);
   }
   else if (get_ext_lower(file, 4) == ".xpm") {
     Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
@@ -173,12 +176,12 @@ void set_window_icon(const char *file)
 
   if (!rgb) {
     if (!(fp = fopen(file, "r"))) {
-      return;
+      return NULL;
     }
     len = fread(bytes, 1, MAGIC_LEN, fp);
     if (ferror(fp) || len < MAGIC_LEN) {
       fclose(fp);
-      return;
+      return NULL;
     }
 
     if (memcmp(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8) == 0) {
@@ -200,9 +203,6 @@ void set_window_icon(const char *file)
     }
   }
 
-  if (rgb) {
-    Fl_Window::default_icon(rgb);
-    delete rgb;
-  }
+  return rgb;
 }
 

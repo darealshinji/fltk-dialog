@@ -39,7 +39,7 @@
 
 #include "fltk-dialog.hpp"
 
-int rsvg_default_icon(const char *file)
+Fl_RGB_Image *rsvg_to_rgb(const char *file)
 {
 #ifdef USE_SYSTEM_PLUGINS
 
@@ -62,13 +62,13 @@ int rsvg_default_icon(const char *file)
 
   if (mkstemp(plugin) == -1) {
     std::cerr << "error: cannot create temporary file: " << plugin << std::endl;
-    return 1;
+    return NULL;
   }
 
   std::ofstream out(plugin, std::ios::out|std::ios::binary);
   if (!out) {
     std::cerr << "error: cannot open file: " << plugin << std::endl;
-    return 1;
+    return NULL;
   }
 
   out.write(array_data, array_length);
@@ -76,20 +76,26 @@ int rsvg_default_icon(const char *file)
 
 #endif
 
+  void *handle;
+  const char *error;
+  char png[] = "/tmp/.icon-png-XXXXXX";
+  Fl_RGB_Image *rgb = NULL;
+
+  int (*rsvg_to_png) (const char *, const char *);
+
   /* dlopen() library */
 
-  void *handle = dlopen(plugin, RTLD_LAZY);
-  const char *error = dlerror();
+  handle = dlopen(plugin, RTLD_LAZY);
+  error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
     DELETE(plugin);
-    return 1;
+    return NULL;
   }
 
   dlerror();
 
-  int (*rsvg_to_png) (const char *, const char *);
   *(void **)(&rsvg_to_png) = dlsym(handle, "rsvg_to_png");
 
   error = dlerror();
@@ -98,24 +104,23 @@ int rsvg_default_icon(const char *file)
     std::cerr << "error: cannot load symbol\n" << error << std::endl;
     dlclose(handle);
     DELETE(plugin);
-    return 1;
+    return NULL;
   }
 
-  char png[] = "/tmp/icon-png-XXXXXX";
   if (mkstemp(png) == -1) {
-    return 1;
+    return NULL;
   }
 
-  int ret = 1;
   if (rsvg_to_png(file, png) == 0) {
-    Fl_Window::default_icon(new Fl_PNG_Image(png));
-    ret = 0;
+    Fl_RGB_Image *tmp = new Fl_PNG_Image(png);
+    rgb = (Fl_RGB_Image *)tmp->copy();
+    delete tmp;
   }
 
   dlclose(handle);
   DELETE(plugin);
   unlink(png);
 
-  return ret;
+  return rgb;
 }
 

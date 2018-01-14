@@ -534,11 +534,6 @@ int main(int argc, char **argv)
     dialog_count++;
   }
 
-  /* set window icon */
-  if (arg_window_icon) {
-    set_window_icon(args::get(arg_window_icon).c_str());
-  }
-
   /* check for excluding options */
 
   if (dialog_count >= 2) {
@@ -640,6 +635,15 @@ int main(int argc, char **argv)
     std::cerr << argv[0] << ": \"" << scheme << "\" is not a valid scheme!\n"
       "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
+  }
+
+  /* set window icon */
+  if (arg_window_icon) {
+    Fl_RGB_Image *rgb = img_to_rgb(args::get(arg_window_icon).c_str());
+    if (rgb) {
+      Fl_Window::default_icon(rgb);
+      delete rgb;
+    }
   }
 
   if (!arg_no_system_colors && !arg_notification) {

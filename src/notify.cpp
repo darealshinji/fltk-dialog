@@ -25,7 +25,6 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_RGB_Image.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
@@ -112,8 +111,7 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
   int n, h = 160, title_h = 0, message_h = 0;
   const int w = 400, icon_wh = 64, bord = 10, fs_title = 21, fs_message = 14;
   Fl_Font font = FL_HELVETICA_BOLD;
-  Fl_Image *rgb = NULL;
-  Fl_PNG_Image *png = NULL;
+  Fl_RGB_Image *rgb = NULL;
 
   n = w - icon_wh - bord*3;
   std::string title_wrapped = word_wrap(title, n, font, fs_title);
@@ -142,16 +140,17 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
       o->callback(close_cb); }
 
     if (notify_icon) {
-      png = new Fl_PNG_Image(notify_icon);
-      if (!png->fail()) {
-        int png_w = png->w();
-        int png_h = png->h();
-        if (png_w > icon_wh || png_h > icon_wh) {
-          aspect_ratio_scale(png_w, png_h, icon_wh);
-          rgb = png->copy(png_w, png_h);
+      Fl_RGB_Image *img = img_to_rgb(notify_icon);
+      if (img) {
+        int img_w = img->w();
+        int img_h = img->h();
+        if (img_w > icon_wh || img_h > icon_wh) {
+          aspect_ratio_scale(img_w, img_h, icon_wh);
+          rgb = (Fl_RGB_Image *)img->copy(img_w, img_h);
         } else {
-          rgb = png->copy();
+          rgb = (Fl_RGB_Image *)img->copy();
         }
+        delete img;
         Fl_Box *o = new Fl_Box(bord, bord, icon_wh, icon_wh);
         o->image(rgb);
       }
@@ -186,9 +185,6 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
 
   if (rgb) {
     delete rgb;
-  }
-  if (png) {
-    delete png;
   }
   return ret;
 }
