@@ -140,16 +140,13 @@ static int use_only_with(const char *self, std::string a, std::string b)
 
 int main(int argc, char **argv)
 {
-  std::string scheme = "gtk+";
-
-  Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
-  Fl::visual(FL_DOUBLE|FL_INDEX); /* recommended in Fl_Double_Window.H */
-  l10n();
-
   if (argc < 2) {
-    Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb); /* disable fltk's '@' symbols */
-    Fl::scheme(scheme.c_str());
+    Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
     Fl::get_system_colors();
+    Fl::scheme("gtk+");
+    Fl::visual(FL_DOUBLE|FL_INDEX);
+    Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
+    l10n();
     position_center = true;
     return about();
   }
@@ -327,6 +324,7 @@ int main(int argc, char **argv)
   GETCSTR(fl_yes, arg_yes_label);
   GETCSTR(fl_no, arg_no_label);
 
+  std::string scheme = "gtk+";
   GETVAL(scheme, arg_scheme);
 
   const char *but_alt = NULL;
@@ -644,11 +642,19 @@ int main(int argc, char **argv)
       Fl_Window::default_icon(rgb);
       delete rgb;
     }
+  } else {
+    Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
   }
 
   if (!arg_no_system_colors && !arg_notification) {
     Fl::get_system_colors();
   }
+
+  /* recommended in Fl_Double_Window.H */
+  Fl::visual(FL_DOUBLE|FL_INDEX);
+
+  /* localization */
+  l10n();
 
   switch (dialog) {
     case DIALOG_ABOUT:
