@@ -23,10 +23,8 @@ OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
 
 
 # default build flags
-common_CFLAGS := -O2 -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -ffunction-sections -fdata-sections
-CFLAGS        ?= $(common_CFLAGS)
-CXXFLAGS      ?= -std=c++11 $(common_CFLAGS)
-LDFLAGS       ?= -s -Wl,-O1 -Wl,-z,defs -Wl,-z,relro -Wl,--as-needed -Wl,--gc-sections
+CFLAGS   ?= -O3 -Wall
+CXXFLAGS ?= -O3 -Wall -std=c++11
 
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra -Wno-unused-parameter $(CXXFLAGS) $(CPPFLAGS)

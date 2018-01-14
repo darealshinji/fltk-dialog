@@ -16,6 +16,8 @@ m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
 
 AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issues])
 AC_CONFIG_SRCDIR([src/main.cpp])
+: ${CFLAGS="-O3 -Wall"}
+: ${CXXFLAGS="-O3 -Wall"}
 
 
 ## check for programs
@@ -75,7 +77,7 @@ AC_ARG_ENABLE([system-zlib],
 
 
 ## check build flags
-# getopt.hpp requires C++11 or higher
+# we need C++11 or higher
 AS_IF([test "x$enable_cxx11" = "xyes"],
   [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])],
   [AX_CXX_COMPILE_STDCXX([14], [noext], [optional])

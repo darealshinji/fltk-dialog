@@ -27,11 +27,10 @@ before_script:
   - mv librsvg-2.40.18 librsvg
 
 script:
-  - ./configure --enable-hardening --enable-rsvg
-  - ( make -j4 V=1 && strip --strip-all fltk-dialog )
+  - ./configure --enable-hardening --enable-rsvg && make -j4 V=1
 
 after_success:
-  - ( mkdir out && cd out && tar cfJ fltk-dialog-x86_64_linux.tar.xz ../fltk-dialog )
+  - mkdir out && cp fltk-dialog out && strip --strip-all out/*
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - bash ./upload.sh out/*
 

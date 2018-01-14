@@ -2130,6 +2130,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+: ${CFLAGS="-O3 -Wall"}
+: ${CXXFLAGS="-O3 -Wall"}
 
 
 ## check for programs
@@ -3571,7 +3573,7 @@ fi
 
 
 ## check build flags
-# getopt.hpp requires C++11 or higher
+# we need C++11 or higher
 
 if test "x$enable_cxx11" = "xyes"; then :
     ax_cxx_compile_alternatives="11 0x"    ax_cxx_compile_cxx11_required=true
