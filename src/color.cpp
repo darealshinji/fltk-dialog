@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,16 +38,14 @@ class ColorChip : public Fl_Widget
   void draw();
 
 public:
-
   uchar r,g,b;
 
-  ColorChip(int X, int Y, int W, int H) : Fl_Widget(X,Y,W,H)
-  {
+  ColorChip(int X, int Y, int W, int H) : Fl_Widget(X,Y,W,H) {
     box(FL_ENGRAVED_FRAME);
   }
 };
 
-static void chooser_cb(Fl_Widget *o, void *vv)
+static void callback(Fl_Widget *o, void *vv)
 {
   Fl_Color_Chooser *c = (Fl_Color_Chooser *)o;
   ColorChip *v = (ColorChip *)vv;
@@ -57,8 +55,7 @@ static void chooser_cb(Fl_Widget *o, void *vv)
   v->damage(FL_DAMAGE_EXPOSE);
 }
 
-static void close_cb(Fl_Widget *, long p)
-{
+static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = (int) p;
 }
@@ -74,8 +71,7 @@ int dialog_color()
 
   double r = 1, g = 1, b = 1;
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "color chooser";
   }
 
@@ -99,14 +95,13 @@ int dialog_color()
     buttongroup->end();
 
     chooser->rgb(r,g,b);
-    chooser->callback(chooser_cb, color);
+    chooser->callback(callback, color);
     chooser->mode(1);
   }
   win->end();
   run_window(win, chooser);
 
-  if (ret == 0)
-  {
+  if (ret == 0) {
     r = chooser->r();
     g = chooser->g();
     b = chooser->b();
@@ -122,9 +117,8 @@ int dialog_color()
     printf("%d %d %d|", colr, colg, colb);      /* RGB values [0-255] */
     printf("#%02x%02x%02x|", colr, colg, colb); /* HTML hex value */
     printf("%.3f %.3f %.3f\n", h,s,v);          /* HSV values */
-    return 0;
   }
 
-  return 1;
+  return ret;
 }
 

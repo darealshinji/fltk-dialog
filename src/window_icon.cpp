@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,20 +57,19 @@
 #define SVGZ_MAX        1024*1024  /*  1 MB */
 #define SVG_MAX       3*1024*1024  /*  3 MB */
 
-struct to_lower
-{
-  int operator() (int ch)
-  {
-    return tolower(ch);
+struct to_lower {
+  int operator() (int c) {
+    return tolower(c);
   }
 };
 
 static std::string get_ext_lower(const char *input, size_t length)
 {
+  if (!input) {
+    return "";
+  }
   std::string s(input);
-
-  if (s.size() <= length)
-  {
+  if (s.size() <= length) {
     return "";
   }
   s = s.substr(s.size() - length);
@@ -80,45 +79,33 @@ static std::string get_ext_lower(const char *input, size_t length)
 
 static void nsvg_default_icon(const char *file, bool compressed)
 {
-  NSVGimage *nsvg = NULL;
-  NSVGrasterizer *r = NULL;
-  char *data = NULL;
-  unsigned char *img = NULL;
-  Fl_RGB_Image *rgb = NULL;
+  NSVGimage *nsvg;
+  NSVGrasterizer *r;
+  char *data;
+  unsigned char *img;
+  Fl_RGB_Image *rgb;
   int w, h;
 
-  if (compressed)
-  {
+  if (compressed) {
     data = gunzip(file, SVG_MAX);
-    if (!data)
-    {
+    if (!data) {
       return;
     }
     nsvg = nsvgParse(data, "px", 96.0f);
     delete data;
-  }
-  else
-  {
+  } else {
     nsvg = nsvgParseFromFile(file, "px", 96.0f);
   }
 
   w = (int)nsvg->width;
   h = (int)nsvg->height;
 
-  if (!nsvg->shapes || w < 1 || h < 1)
-  {
+  if (!nsvg->shapes || w < 1 || h < 1) {
     nsvgDelete(nsvg);
     return;
   }
 
   img = new unsigned char[w*h*4];
-
-  if (!img)
-  {
-    nsvgDelete(nsvg);
-    return;
-  }
-
   r = nsvgCreateRasterizer();
   nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
@@ -132,10 +119,8 @@ static void nsvg_default_icon(const char *file, bool compressed)
 }
 
 #ifdef WITH_RSVG
-static void svg_default_icon(const char *file, bool compressed)
-{
-  if (rsvg_default_icon(file) != 0)
-  {
+static void svg_default_icon(const char *file, bool compressed) {
+  if (rsvg_default_icon(file) != 0) {
     //std::cout << "fall back to NanoSVG" << std::endl;
     nsvg_default_icon(file, compressed);
   }
@@ -152,36 +137,28 @@ void set_window_icon(const char *file)
   Fl_RGB_Image *rgb = NULL;
   struct stat st;
 
-  if (stat(file, &st) == -1 || st.st_size > IMGFILE_MAX)
-  {
+  if (!file || stat(file, &st) == -1 || st.st_size > IMGFILE_MAX) {
     return;
   }
 
   /* get filetype from extension */
 
-  if (get_ext_lower(file, 4) == ".svg" && st.st_size <= SVG_MAX)
-  {
+  if (get_ext_lower(file, 4) == ".svg" && st.st_size <= SVG_MAX) {
     svg_default_icon(file, false);
     return;
   }
-  else if ((get_ext_lower(file, 5) == ".svgz" ||
-            get_ext_lower(file, 7) == ".svg.gz") && \
-           st.st_size < SVGZ_MAX)
-  {
+  else if ((get_ext_lower(file, 5) == ".svgz" || get_ext_lower(file, 7) == ".svg.gz") &&
+           st.st_size < SVGZ_MAX) {
     svg_default_icon(file, true);
     return;
   }
-  else if (get_ext_lower(file, 4) == ".xpm")
-  {
+  else if (get_ext_lower(file, 4) == ".xpm") {
     Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
-    if (xpm)
-    {
+    if (xpm) {
       rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
-      delete xpm;
     }
   }
-  else if (get_ext_lower(file, 4) == ".xbm")
-  {
+  else if (get_ext_lower(file, 4) == ".xbm") {
     Fl_XBM_Image in(file);
     Fl_Image_Surface surf(in.w(), in.h());
     surf.set_current();
@@ -194,49 +171,36 @@ void set_window_icon(const char *file)
 
   /* get filetype from magic bytes */
 
-  if (!rgb)
-  {
-    fp = fopen(file, "r");
-    if (fp == NULL)
-    {
+  if (!rgb) {
+    if (!(fp = fopen(file, "r"))) {
       return;
     }
-
     len = fread(bytes, 1, MAGIC_LEN, fp);
-    if (ferror(fp) || len < MAGIC_LEN)
-    {
+    if (ferror(fp) || len < MAGIC_LEN) {
       fclose(fp);
       return;
     }
 
-    if (MEMEQ(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8))
-    {
+    if (memcmp(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8) == 0) {
       rgb = new Fl_PNG_Image(file);
     }
-    else if (MEMEQ(bytes, "\xFF\xD8\xFF\xDB", 4) ||
-            (MEMEQ(bytes, "\xFF\xD8\xFF\xE0", 4) && MEMEQ(bytes + 6, "JFIF\x00\x01", 6)) ||
-            (MEMEQ(bytes, "\xFF\xD8\xFF\xE1", 4) && MEMEQ(bytes + 6, "Exif\x00\x00", 6)))
-    {
+    else if (memcmp(bytes, "\xFF\xD8\xFF\xDB", 4) == 0 ||
+            (memcmp(bytes, "\xFF\xD8\xFF\xE0", 4) == 0 && memcmp(bytes + 6, "JFIF\x00\x01", 6) == 0) ||
+            (memcmp(bytes, "\xFF\xD8\xFF\xE1", 4) == 0 && memcmp(bytes + 6, "Exif\x00\x00", 6) == 0)) {
       rgb = new Fl_JPEG_Image(file);
     }
-    else if (MEMEQ(bytes, "BM", 2))
-    {
+    else if (memcmp(bytes, "BM", 2) == 0) {
       rgb = new Fl_BMP_Image(file);
     }
-    else if (MEMEQ(bytes, "GIF87a", 6) ||
-             MEMEQ(bytes, "GIF89a", 6))
-    {
+    else if (memcmp(bytes, "GIF87a", 6) == 0 || memcmp(bytes, "GIF89a", 6) == 0) {
       Fl_GIF_Image *gif = new Fl_GIF_Image(file);
-      if (gif)
-      {
+      if (gif) {
         rgb = new Fl_RGB_Image(gif, Fl_Color(0));
-        delete gif;
       }
     }
   }
 
-  if (rgb)
-  {
+  if (rgb) {
     Fl_Window::default_icon(rgb);
     delete rgb;
   }

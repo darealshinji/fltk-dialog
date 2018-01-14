@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,17 +37,14 @@
 
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *check_button_win;
+static Fl_Double_Window *win;
 
-static void check_button_close_cb(Fl_Widget *, long p)
-{
-  check_button_win->hide();
+static void close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
 }
 
-int dialog_checklist(std::string checklist_options,
-                            bool return_value,
-                            bool check_all)
+int dialog_checklist(std::string checklist_options, bool return_value, bool check_all)
 {
   Fl_Group         *g, *g_inside, *buttongroup;
   Fl_Box           *dummy1, *dummy2;
@@ -61,27 +58,24 @@ int dialog_checklist(std::string checklist_options,
 
   split(checklist_options, separator, checklist_v);
 
-  for (size_t i = 0; i < checklist_v.size(); ++i)
-  {
+  for (size_t i = 0; i < checklist_v.size(); ++i) {
     counter_v.push_back((long) i);
     ++count;
   }
 
-  if (count < 1)
-  {
+  if (count < 1) {
     title = "error: checklist";
     msg = "Two or more options required!";
     dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "Select your option(s)";
   }
 
-  check_button_win = new Fl_Double_Window(420, 356, title);
-  check_button_win->callback(check_button_close_cb, 1);
+  win = new Fl_Double_Window(420, 356, title);
+  win->callback(close_cb, 1);
   {
     g = new Fl_Group(0, 0, 420, 310);
     {
@@ -91,12 +85,10 @@ int dialog_checklist(std::string checklist_options,
         browser->box(FL_THIN_DOWN_BOX);
         browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
         browser->clear_visible_focus();
-        for (int i = 0; i < count; ++i)
-        {
+        for (int i = 0; i < count; ++i) {
           browser->add(checklist_v[i].c_str());
         }
-        if (check_all)
-        {
+        if (check_all) {
           browser->check_all();
         }
         dummy1 = new Fl_Box(10, 308, 400, 1);
@@ -113,42 +105,27 @@ int dialog_checklist(std::string checklist_options,
       dummy2 = new Fl_Box(199, 310, 1, 1);
       dummy2->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(200, 320, 100, 26, fl_ok);
-      but_ok->callback(check_button_close_cb, 0);
+      but_ok->callback(close_cb, 0);
       but_cancel = new Fl_Button(310, 320, 100, 26, fl_cancel);
-      but_cancel->callback(check_button_close_cb, 1);
+      but_cancel->callback(close_cb, 1);
     }
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  run_window(check_button_win, g);
+  run_window(win, g);
 
-  if (ret == 0)
-  {
+  if (ret == 0) {
     std::string list;
-
-    for (int i = 1; i <= count; ++i)
-    {
-      if (return_value)
-      {
-        if (browser->checked(i))
-        {
+    for (int i = 1; i <= count; ++i) {
+      if (return_value) {
+        if (browser->checked(i)) {
           list += std::string(browser->text(i)) + separator_s;
         }
-      }
-      else
-      {
-        if (browser->checked(i))
-        {
-          list += "TRUE";
-        }
-        else
-        {
-          list += "FALSE";
-        }
+      } else {
+        list += (browser->checked(i)) ? "TRUE" : "FALSE";
         list += separator_s;
       }
     }
-
     /* strip trailing separator */
     std::cout << list.substr(0, list.length() - 1) << std::endl;
   }

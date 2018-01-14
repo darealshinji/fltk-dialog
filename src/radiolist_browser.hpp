@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2017-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,13 @@ public:
   radiolist_browser(int X, int Y, int W, int H)
       : Fl_Check_Browser(X, Y, W, H) { }
 
-  virtual ~radiolist_browser()
-  {
+  virtual ~radiolist_browser() {
     clear();
   }
 
   void item_draw(void *, int, int, int, int) const;
 
-  void item_select(void *v, int)
-  {
+  void item_select(void *v, int) {
     cb_item *i = (cb_item *)v;
     check_none();
     i->checked = 1;

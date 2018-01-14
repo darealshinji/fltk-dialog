@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,15 +37,15 @@
 #include <unistd.h>
 
 #ifdef DYNAMIC_NOTIFY
-#  include <dlfcn.h>
-#  include "notify.hpp"
+# include <dlfcn.h>
+# include "notify.hpp"
 #else
-#  include <libnotify/notify.h>
+# include <libnotify/notify.h>
 #endif
 
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *win = NULL;
+static Fl_Double_Window *win;
 
 class close_box : public Fl_Box
 {
@@ -55,36 +55,31 @@ public:
 
   virtual ~close_box() { }
 
-  int handle(int event)
-  {
+  int handle(int event) {
     int ret = Fl_Box::handle(event);
-    if (event == FL_RELEASE)
-    {
+    if (event == FL_RELEASE) {
       do_callback();
     }
     return ret;
   }
 };
 
-static void close_cb(Fl_Widget *, void *)
-{
+static void close_cb(Fl_Widget *, void *) {
   win->hide();
 }
 
-static void timeout_cb(void *o)
+static void callback(void *o)
 {
-  static int step = 10; /* pixels */
+  const int step = 10; /* pixels */
   int ms = *(int *)o;
 
-  if (ms > 0)
-  {
+  if (ms > 0) {
     int bord = Fl::w() - win->x() - win->w();
     int usec = (ms*1000) / ((win->w() + bord)/step);
 
     /* move to right screen boundary until the remaining
      * space is smaller than "step" */
-    while ((Fl::w() - win->x() - win->w()) > step)
-    {
+    while ((Fl::w() - win->x() - win->w()) > step) {
       win->position(win->x() + step, win->y());
       Fl::flush();
       usleep(usec);
@@ -93,8 +88,7 @@ static void timeout_cb(void *o)
     /* make window "step - [remaining space]" pixels smaller and
      * move to right screen boundary */
     bord = Fl::w() - win->x() - win->w();
-    if (bord > 0)
-    {
+    if (bord > 0) {
       win->size(win->w() - step + bord, win->h());
       win->position(win->x() + bord, win->y());
       Fl::flush();
@@ -102,8 +96,7 @@ static void timeout_cb(void *o)
     }
 
     /* make window smaller until its width is less than "step" */
-    while (win->w() > step)
-    {
+    while (win->w() > step) {
       win->size(win->w() - step, win->h());
       win->position(win->x() + step, win->y());
       Fl::flush();
@@ -116,10 +109,11 @@ static void timeout_cb(void *o)
 
 int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
 {
-  int n, rv, h = 160, title_h = 0, message_h = 0;
+  int n, h = 160, title_h = 0, message_h = 0;
   const int w = 400, icon_wh = 64, bord = 10, fs_title = 21, fs_message = 14;
   Fl_Font font = FL_HELVETICA_BOLD;
   Fl_Image *rgb = NULL;
+  Fl_PNG_Image *png = NULL;
 
   n = w - icon_wh - bord*3;
   std::string title_wrapped = word_wrap(title, n, font, fs_title);
@@ -131,8 +125,7 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
   fl_measure(message_wrapped.c_str(), n = 0, message_h);
 
   n = title_h + message_h + bord*3;
-  if (n > h)
-  {
+  if (n > h) {
     h = n;
   }
 
@@ -148,27 +141,19 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
       close_box *o = new close_box(0, 0, w, h);
       o->callback(close_cb); }
 
-    if (notify_icon)
-    {
-      Fl_PNG_Image *p = new Fl_PNG_Image(notify_icon);
-
-      if (!p->fail())
-      {
-        int png_w = p->w();
-        int png_h = p->h();
-
-        if (png_w > icon_wh || png_h > icon_wh)
-        {
+    if (notify_icon) {
+      png = new Fl_PNG_Image(notify_icon);
+      if (!png->fail()) {
+        int png_w = png->w();
+        int png_h = png->h();
+        if (png_w > icon_wh || png_h > icon_wh) {
           aspect_ratio_scale(png_w, png_h, icon_wh);
-          rgb = p->copy(png_w, png_h);
+          rgb = png->copy(png_w, png_h);
+        } else {
+          rgb = png->copy();
         }
-        else
-        {
-          rgb = p->copy();
-        }
-
-        { Fl_Box *o = new Fl_Box(bord, bord, icon_wh, icon_wh);
-          o->image(rgb); }
+        Fl_Box *o = new Fl_Box(bord, bord, icon_wh, icon_wh);
+        o->image(rgb);
       }
     }
 
@@ -194,17 +179,18 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
   always_on_top = true;
   set_always_on_top(win);
 
-  if (time_s > 0)
-  {
-    Fl::add_timeout(time_s, timeout_cb, &fadeout_ms);
+  if (time_s > 0) {
+    Fl::add_timeout(time_s, callback, &fadeout_ms);
   }
-  rv = Fl::run();
+  ret = Fl::run();
 
-  if (rgb)
-  {
+  if (rgb) {
     delete rgb;
   }
-  return rv;
+  if (png) {
+    delete png;
+  }
+  return ret;
 }
 
 int run_libnotify(const char *appname, int timeout, const char *notify_icon)
@@ -222,15 +208,14 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
   void *handle = dlopen("libnotify.so.4", RTLD_LAZY);
   const char *dlsym_error = dlerror();
 
-  if (!handle)
-  {
+  if (!handle) {
     std::cerr << dlsym_error << std::endl;
     return 1;
   }
 
   dlerror();  /* clear/reset errors */
 
-#  define LOAD_SYMBOL(x) \
+# define LOAD_SYMBOL(x) \
   *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
   dlsym_error = dlerror(); \
   if (dlsym_error) \
@@ -247,32 +232,28 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
   LOAD_SYMBOL(notify_notification_show);
   LOAD_SYMBOL(notify_uninit);
 
-#  define DLCLOSE_NOTIFY dlclose(handle)
+# define DLCLOSE_NOTIFY dlclose(handle)
 
 #endif  /* DYNAMIC_NOTIFY */
 
 #ifndef DLCLOSE_NOTIFY
-#  define DLCLOSE_NOTIFY
+# define DLCLOSE_NOTIFY
 #endif
 
   char *resolved_path = NULL;
   NotifyNotification *n;
-  int rv = 0;
 
   notify_init(appname);
 
-  if (!notify_is_initted())
-  {
+  if (!notify_is_initted()) {
     std::cerr << "error: notify_init()" << std::endl;
     DLCLOSE_NOTIFY;
     return 1;
   }
 
-  if (notify_icon)
-  {
+  if (notify_icon) {
     resolved_path = realpath(notify_icon, NULL);
-    if (resolved_path)
-    {
+    if (resolved_path) {
       notify_icon = resolved_path;
     }
   }
@@ -280,57 +261,45 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
   n = notify_notification_new(title, msg, notify_icon);
   notify_notification_set_timeout(n, timeout * 1000);
 
-  if (!notify_notification_show(n, NULL))
-  {
+  if (!notify_notification_show(n, NULL)) {
     std::cerr << "error: notify_notification_show()" << std::endl;
-    rv = 1;
+    ret = 1;
   }
 
   notify_uninit();
   DLCLOSE_NOTIFY;
 
-  if (resolved_path)
-  {
+  if (resolved_path) {
     free(resolved_path);
   }
-  return rv;
+  return ret;
 }
 
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify)
 {
-  int rv = 1;
-
-  if (msg == NULL)
-  {
-    msg = "No message";
-  }
-
-  if (title == NULL)
-  {
-    title = "No title";
-  }
-
-  if (timeout < 1)
-  {
+  if (timeout < 1) {
     std::cerr << "error: timeout shorter than 1 second: " << timeout << std::endl;
     return 1;
   }
 
-  if (timeout > 30)
-  {
-    std::cerr << "error: timeout longer than 30 seconds: " << timeout << std::endl;
+  if (timeout > 60) {
+    std::cerr << "error: timeout longer than 60 seconds: " << timeout << std::endl;
     return 1;
   }
 
-  if (libnotify)
-  {
-    rv = run_libnotify(appname, timeout, notify_icon);
+  if (!msg) {
+    msg = "No message";
   }
 
-  if (rv != 0)
-  {
-    rv = notification_box(timeout, 500, notify_icon);
+  if (!title) {
+    title = "No title";
   }
-  return rv;
+
+  ret = libnotify ? run_libnotify(appname, timeout, notify_icon) : 1;
+
+  if (ret != 0) {
+    ret = notification_box(timeout, 500, notify_icon);
+  }
+  return ret;
 }
 

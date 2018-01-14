@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +58,7 @@ static FILE *popen_gzip(const char *file);
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
 {
-  if (w)
-  {
+  if (w) {
     set_size(o, w);
   }
   set_position(o);
@@ -73,69 +72,51 @@ void run_window(Fl_Double_Window *o, Fl_Widget *w)
 
 void set_size(Fl_Double_Window *o, Fl_Widget *w)
 {
-  if (resizable)
-  {
+  if (resizable) {
     o->resizable(w);
   }
-
-  if (override_w > 0)
-  {
+  if (override_w > 0) {
     o->size(override_w, o->h());
   }
-
-  if (override_h > 0)
-  {
+  if (override_h > 0) {
     o->size(o->w(), override_h);
   }
 }
 
 void set_position(Fl_Double_Window *o)
 {
-  if (position_center)
-  {
+  if (position_center) {
     override_x = (max_w - o->w()) / 2;
     override_y = (max_h - o->h()) / 2;
   }
-
-  if (override_x >= 0)
-  {
+  if (override_x >= 0) {
     o->position(override_x, o->y());
   }
-
-  if (override_y >= 0)
-  {
+  if (override_y >= 0) {
     o->position(o->x(), override_y);
   }
 }
 
-void set_taskbar(Fl_Double_Window *o)
-{
-  if (!window_taskbar)
-  {
+void set_taskbar(Fl_Double_Window *o) {
+  if (!window_taskbar) {
     o->border(0);
   }
 }
 
-void set_undecorated(Fl_Double_Window *o)
-{
-  if (window_decoration)
-  {
+void set_undecorated(Fl_Double_Window *o) {
+  if (window_decoration) {
     o->border(1);
-  }
-  else
-  {
+  } else {
     o->border(0);
   }
 }
 
 void set_always_on_top(Fl_Double_Window *o)
 {
-  XEvent event;
-
-  if (always_on_top)
-  {
+  if (always_on_top) {
     o->wait_for_expose();
 
+    XEvent event;
     event.xclient.type = ClientMessage;
     event.xclient.serial = 0;
     event.xclient.send_event = True;
@@ -155,13 +136,11 @@ void set_always_on_top(Fl_Double_Window *o)
 
 void measure_button_width(Fl_Widget *o, int &w, int off)
 {
-  int h;
-  w = h = 0;
+  int h = w = 0;
   fl_font(o->labelfont(), o->labelsize());
   fl_measure(o->label(), w, h);
   w += off;
-  if (w < 90)
-  {
+  if (w < 90) {
     w = 90;
   }
   delete o;
@@ -172,20 +151,14 @@ void aspect_ratio_scale(int &w, int &h, const int limit)
   float fw = (float)w;
   float fh = (float)h;
 
-  if (fw/fh == 1.0)
-  {
+  if (fw/fh == 1.0) {
     w = limit;
     h = limit;
-  }
-  else
-  {
-    if (w > h)
-    {
+  } else {
+    if (w > h) {
       w = limit;
       h = (int)(fh/(fw/(float)limit));
-    }
-    else
-    {
+    } else {
       h = limit;
       w = (int)(fw/(fh/(float)limit));
     }
@@ -197,32 +170,25 @@ void split(const std::string &s, char c, std::vector<std::string> &v)
   size_t i = 0;
   size_t j = s.find(c);
 
-  while (j != std::string::npos)
-  {
+  while (j != std::string::npos) {
     v.push_back(s.substr(i, j - i));
     i = ++j;
     j = s.find(c, j);
-
-    if (j == std::string::npos)
-    {
+    if (j == std::string::npos) {
       v.push_back(s.substr(i, s.length()));
     }
   }
 }
 
-void repstr(const std::string &from, const std::string &to, std::string &s)
-{
-  if (!from.empty())
-  {
-    for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
-    {
+void repstr(const std::string &from, const std::string &to, std::string &s) {
+  if (!from.empty()) {
+    for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size()) {
       s.replace(pos, from.size(), to);
     }
   }
 }
 
-std::string translate(const char *inputText)
-{
+std::string translate(const char *inputText) {
   std::string s(inputText);
   repstr("\\n", "\n", s);
   repstr("\\t", "\t", s);
@@ -239,25 +205,19 @@ std::string word_wrap(const char *text, int width, Fl_Font font, int font_size)
   std::string word;
   int w = 0, h = 0, space_w = 0, space_left;
 
-  if (words >> word)
-  {
+  if (words >> word) {
     fl_font(font, font_size);
     fl_measure(" ", space_w, h);
     fl_measure(word.c_str(), w, h);
     wrapped << word;
     space_left = width - w;
 
-    while (words >> word)
-    {
+    while (words >> word) {
       fl_measure(word.c_str(), w, h);
-
-      if (space_left < w + space_w)
-      {
+      if (space_left < w + space_w) {
         wrapped << '\n' << word;
         space_left = width - w;
-      }
-      else
-      {
+      } else {
         wrapped << ' ' << word;
         space_left -= w + space_w;
       }
@@ -273,12 +233,9 @@ void print_date(std::string format, int y, int m, int d)
   char date[256] = {0};
   struct tm time;
 
-  if (format == "")
-  {
+  if (format == "") {
     format = "%Y-%m-%d";
-  }
-  else
-  {
+  } else {
     /* glibc date formats
      * example date: 2006-01-08 */
     repstr("\\n", "\n",  format);  /* newline */
@@ -314,26 +271,21 @@ static FILE *popen_gzip(const char *file)
   enum { r = 0, w = 1 };
   int fd[2];
 
-  if (pipe(fd) == -1)
-  {
+  if (pipe(fd) == -1) {
     perror("pipe()");
     return NULL;
   }
 
-  if (fork() == 0)
-  {
+  if (fork() == 0) {
     close(fd[r]);
     dup2(fd[w], 1);
     close(fd[w]);
     execl("/bin/gzip", "gzip", "-cd", file, NULL);
     _exit(127);
-  }
-  else
-  {
+  } else {
     close(fd[w]);
     return fdopen(fd[r], "r");
   }
-
   return NULL;
 }
 
@@ -345,8 +297,7 @@ char *gunzip(const char *file, size_t limit)
 
   fd = popen_gzip(file);
 
-  if (!fd)
-  {
+  if (!fd) {
     return NULL;
   }
 
@@ -354,8 +305,7 @@ char *gunzip(const char *file, size_t limit)
   size = fread(data, 1, limit, fd);
   pclose(fd);
 
-  if (size == 0)
-  {
+  if (size == 0) {
     delete data;
     return NULL;
   }

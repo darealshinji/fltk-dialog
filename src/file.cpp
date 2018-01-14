@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,7 @@ int dialog_file_chooser()
 {
   struct stat s;
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "Select a file";
   }
 
@@ -48,8 +47,7 @@ int dialog_file_chooser()
 
   char *file = fl_file_chooser(title, "*", NULL);
 
-  if (!((stat(file, &s) == 0) && (s.st_mode &S_IFREG)))
-  {
+  if (!((stat(file, &s) == 0) && (s.st_mode &S_IFREG))) {
     return 1;
   }
 
@@ -57,12 +55,10 @@ int dialog_file_chooser()
   return 0;
 }
 
-int dialog_dir_chooser()
-{
+int dialog_dir_chooser() {
   struct stat s;
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "Select a directory";
   }
 
@@ -72,13 +68,11 @@ int dialog_dir_chooser()
 
   char *dir = fl_dir_chooser(title, NULL);
 
-  if (!((stat(dir, &s) == 0) && (s.st_mode &S_IFDIR)))
-  {
+  if (!((stat(dir, &s) == 0) && (s.st_mode &S_IFDIR))) {
     return 1;
   }
 
   std::cout << dir << std::endl;
-
   return 0;
 }
 
@@ -86,24 +80,19 @@ int dialog_native_file_chooser_gtk(int mode)
 {
   Fl_Native_File_Chooser fnfc;
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
   }
 
-  if (mode == DIR_CHOOSER)
-  {
+  if (mode == DIR_CHOOSER) {
     fnfc.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
-  }
-  else
-  {
+  } else {
     fnfc.type(Fl_Native_File_Chooser::BROWSE_FILE);
   }
 
   fnfc.title(title);
 
-  if (fnfc.show())
-  {
+  if (fnfc.show()) {
     return 1;
   }
 
@@ -120,26 +109,22 @@ int dialog_native_file_chooser(int mode, int argc, char **argv)
 #ifdef HAVE_QT
   ret = -1;
 
-  if (getenv("KDE_FULL_SESSION") != NULL)
-  {
+  if (getenv("KDE_FULL_SESSION")) {
     ret = dlopen_getfilenameqt(QTDEF, mode, argc, argv);
 
 # if (QTDEF == 5) && defined(HAVE_QT4)
-    if (ret == -1)
-    {
+    if (ret == -1) {
       std::cerr << "warning: falling back to Qt4" << std::endl;
       ret = dlopen_getfilenameqt(4, mode, argc, argv);
     }
 # endif
 
-    if (ret == -1)
-    {
+    if (ret == -1) {
       std::cerr << "warning: falling back to gtk" << std::endl;
     }
   }
 
-  if (ret == -1)
-  {
+  if (ret == -1) {
     ret = dialog_native_file_chooser_gtk(mode);
   }
 
@@ -157,16 +142,12 @@ int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv)
 {
   ret = dlopen_getfilenameqt(qt_major, mode, argc, argv);
 
-  if (ret == -1)
-  {
+  if (ret == -1) {
     std::cerr << "warning: falling back to fltk" << std::endl;
 
-    if (mode == DIR_CHOOSER)
-    {
+    if (mode == DIR_CHOOSER) {
       ret = dialog_dir_chooser();
-    }
-    else
-    {
+    } else {
       ret = dialog_file_chooser();
     }
   }

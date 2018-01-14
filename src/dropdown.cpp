@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Double_Window.H>
 
@@ -37,18 +38,16 @@
 
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *dropdown_win;
-static Fl_Menu_Item *menu_items;
+static Fl_Double_Window *win;
 
-static void dropdown_close_cb(Fl_Widget *, long p)
-{
-  dropdown_win->hide();
+static void close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
-  delete[] menu_items;
 }
 
 int dialog_dropdown(std::string dropdown_list, bool return_number)
 {
+  Fl_Menu_Item     *menu_items;
   Fl_Group         *g;
   Fl_Choice        *entries;
   Fl_Box           *dummy;
@@ -57,21 +56,18 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
 
   std::vector<std::string> itemlist_v;
 
-  if (msg == NULL)
-  {
+  if (!msg) {
     msg = "Select an option";
   }
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "FLTK dropdown menu dialog";
   }
 
   split(dropdown_list, separator, itemlist_v);
 
   size_t count = itemlist_v.size();
-  if (count <= 1)
-  {
+  if (count <= 1) {
     msg = "ERROR: need at least 2 entries";
     dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
@@ -79,16 +75,15 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
 
   menu_items = new Fl_Menu_Item[count]();
 
-  for (size_t i = 0; i < count; ++i)
-  {
+  for (size_t i = 0; i < count; ++i) {
     menu_items[i].text = (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str();
     menu_items[i].labeltype_ = FL_NORMAL_LABEL;
     menu_items[i].labelsize_ = 14;
   }
 
-  dropdown_win = new Fl_Double_Window(320, 110, title);
-  dropdown_win->size_range(320, 110, max_w, max_h);
-  dropdown_win->callback(dropdown_close_cb, 1);
+  win = new Fl_Double_Window(320, 110, title);
+  win->size_range(320, 110, max_w, max_h);
+  win->callback(close_cb, 1);
   {
     g = new Fl_Group(0, 0, 320, 110);
     {
@@ -101,27 +96,25 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
       dummy->box(FL_NO_BOX);
 
       but_ok = new Fl_Return_Button(100, 74, 100, 26, fl_ok);
-      but_ok->callback(dropdown_close_cb, 0);
+      but_ok->callback(close_cb, 0);
       but_cancel = new Fl_Button(210, 74, 100, 26, fl_cancel);
-      but_cancel->callback(dropdown_close_cb, 1);
+      but_cancel->callback(close_cb, 1);
     }
     g->resizable(dummy);
     g->end();
   }
-  run_window(dropdown_win, g);
+  run_window(win, g);
 
-  if (ret == 0)
-  {
+  if (ret == 0) {
     int item = entries->value();
-    if (return_number)
-    {
+    if (return_number) {
       std::cout << (item + 1) << std::endl;
-    }
-    else
-    {
+    } else {
       std::cout << itemlist_v[item] << std::endl;
     }
   }
+
+  delete[] menu_items;
   return ret;
 }
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,26 +43,23 @@
 
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *message_win;
-static double scale_value = 0;
-static char *slider_box_label = NULL;
+static Fl_Double_Window *win;
+static double value = 0;
+static char *label = NULL;
 
-double scale_min = 0;
-double scale_max = 100;
-double scale_step = 1;
-double scale_init = scale_min;
+double scale_min = 0
+,      scale_max = 100
+,      scale_step = 1
+,      scale_init = scale_min;
 
 static char *message_scale_double_to_char(double d)
 {
   std::stringstream ss;
 
-  if (scale_step == (float)((int) scale_step))
-  {
+  if (scale_step == (float)((int) scale_step)) {
     /* integer value */
     ss << (int) d;
-  }
-  else
-  {
+  } else {
     /* floating point value;
      * convert into char with fixed positions after decimal point */
     ss << (scale_step - (float)((int) scale_step));
@@ -75,22 +72,19 @@ static char *message_scale_double_to_char(double d)
   return strdup(ss.str().c_str());
 }
 
-static void message_close_cb(Fl_Widget *, long p)
-{
-  message_win->hide();
+static void message_close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
 }
 
 static void message_scale_cb(Fl_Widget *o, void *p)
 {
-  scale_value = ((Fl_Valuator *)o)->value();
-
-  if (slider_box_label)
-  {
-    free(slider_box_label);
+  value = ((Fl_Valuator *)o)->value();
+  if (label) {
+    free(label);
   }
-  slider_box_label = message_scale_double_to_char(scale_value);
-  ((Fl_Box *)p)->label(slider_box_label);
+  label = message_scale_double_to_char(value);
+  ((Fl_Box *)p)->label(label);
   Fl::redraw();
 }
 
@@ -101,14 +95,14 @@ int dialog_message(const char *label_but_ret
  ,                 bool with_icon_box)
 {
   Fl_Group         *g_icon, *g_box, *g_middle, *g_buttons;
-  Fl_Box           *tmp, *icon, *box, *slider_box = NULL, *dummy;
+  Fl_Box           *icon, *box, *slider_box = NULL, *dummy;
   Fl_Input         *input = NULL;
   Fl_Slider        *slider = NULL;
   Fl_Return_Button *but_ret;
   Fl_Button        *but, *but_alt;
 
   std::string s;
-  int msg_w, msg_h, win_w, win_h, min_w, min_h, input_off;
+  int msg_w, msg_h, win_w, win_h, min_w, min_h, input_off = 0;
   int label_but_ret_w, label_but_w, label_but_alt_w;
   int esc_ret = 1;
   bool input_field = false;
@@ -118,59 +112,52 @@ int dialog_message(const char *label_but_ret
 
   /* labels and message type settings */
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "Window Title";
   }
 
-  if (msg == NULL)
-  {
+  if (!msg) {
     msg = "No message";
-  }
-  else
-  {
+  } else {
     s = translate(msg);
     msg = s.c_str();
   }
 
-  if (type == MESSAGE_TYPE_INFO)
-  {
-    label_but_ret = fl_close;
-    label_but_alt = NULL;
-    label_icon = "i";
-    esc_ret = 0;
-  }
-  else if (type == MESSAGE_TYPE_QUESTION)
-  {
-    label_but_ret = fl_yes;
-    label_but = fl_no;
-    label_icon = "?";
-  }
-  else if (type == MESSAGE_TYPE_INPUT || type == MESSAGE_TYPE_PASSWORD)
-  {
-    input_field = true;
-    with_icon_box = false;
-  }
-  else if (type == MESSAGE_TYPE_SCALE)
-  {
-    scaler_field = true;
-    with_icon_box = false;
+  switch (type) {
+    case MESSAGE_TYPE_INFO:
+      label_but_ret = fl_close;
+      label_but_alt = NULL;
+      label_icon = "i";
+      esc_ret = 0;
+      break;
+    case MESSAGE_TYPE_QUESTION:
+      label_but_ret = fl_yes;
+      label_but = fl_no;
+      label_icon = "?";
+      break;
+    case MESSAGE_TYPE_INPUT:
+    case MESSAGE_TYPE_PASSWORD:
+      input_field = true;
+      with_icon_box = false;
+      break;
+    case MESSAGE_TYPE_SCALE:
+      scaler_field = true;
+      with_icon_box = false;
+      break;
   }
 
-  if (label_but_ret == NULL)
-  {
+  if (!label_but_ret) {
     label_but_ret = fl_ok;
   }
 
-  if (label_but == NULL)
-  {
+  if (!label_but) {
     label_but = fl_cancel;
   }
 
 
   /* window measures */
 
-  tmp = new Fl_Box(0,0,0,0, msg);
+  Fl_Box *tmp = new Fl_Box(0,0,0,0, msg);
   fl_font(tmp->labelfont(), tmp->labelsize());
   msg_w = msg_h = 0;
   fl_measure(tmp->label(), msg_w, msg_h);
@@ -182,8 +169,7 @@ int dialog_message(const char *label_but_ret
   but = new Fl_Button(0,0,0,0, label_but);
   measure_button_width(but, label_but_w, 15);
 
-  if (label_but_alt != NULL)
-  {
+  if (!label_but_alt) {
     but_alt = new Fl_Button(0,0,0,0, label_but_alt);
     measure_button_width(but_alt, label_but_alt_w, 15);
   }
@@ -192,68 +178,48 @@ int dialog_message(const char *label_but_ret
   win_h = msg_h + 58;
   min_h = 74;
 
-  if (with_icon_box)
-  {
+  if (with_icon_box) {
     win_w += 50;
     win_h += 40;
+    min_w += 60;
     min_h += 40;
   }
 
-  if (input_field)
-  {
+  if (input_field) {
     input_off = 40;
-  }
-  else if (scaler_field)
-  {
+  } else if (scaler_field) {
     input_off = 60;
-  }
-  else
-  {
-    input_off = 0;
   }
   win_h += input_off;
   min_h += input_off;
 
-  if (label_but_alt == NULL)
-  {
-    if (type == MESSAGE_TYPE_INFO)
-    {
+  if (!label_but_alt) {
+    if (type == MESSAGE_TYPE_INFO) {
       min_w = label_but_ret_w + 20;
-    }
-    else
-    {
+    } else {
       min_w = label_but_ret_w + label_but_w + 30;
     }
-  }
-  else
-  {
+  } else {
     min_w = label_but_ret_w + label_but_w + label_but_alt_w + 40;
   }
 
-  if (with_icon_box)
-  {
-    min_w += 60;
-  }
-
-  if (win_w < min_w)
-  {
+  if (win_w < min_w) {
     win_w = min_w;
   }
-  if (win_h < min_h)
-  {
+
+  if (win_h < min_h) {
     win_h = min_h;
   }
 
 
   /* initialize window */
 
-  message_win = new Fl_Double_Window(win_w, win_h, title);
-  message_win->size_range(win_w, win_h, max_w, max_h);
-  message_win->callback(message_close_cb, esc_ret);
+  win = new Fl_Double_Window(win_w, win_h, title);
+  win->size_range(win_w, win_h, max_w, max_h);
+  win->callback(message_close_cb, esc_ret);
   {
     /* icon box */
-    if (with_icon_box)
-    {
+    if (with_icon_box) {
       g_icon = new Fl_Group(/*x*/ 0,
                             /*y*/ 0,
                             /*w*/ 70,
@@ -278,13 +244,10 @@ int dialog_message(const char *label_but_ret
                          /*h*/ win_h - input_off - 58);
     {
       int box_x, box_w;
-      if (with_icon_box)
-      {
+      if (with_icon_box) {
         box_x = 69;
         box_w = win_w - 69;
-      }
-      else
-      {
+      } else {
         box_x = 10;
         box_w = win_w - 20;
       }
@@ -300,8 +263,7 @@ int dialog_message(const char *label_but_ret
     g_box->end();
 
     /* input field / scaler */
-    if (input_field)
-    {
+    if (input_field) {
       g_middle = new Fl_Group(/*x*/ 0,
                               /*y*/ win_h - input_off - 38,
                               /*w*/ win_w,
@@ -311,27 +273,24 @@ int dialog_message(const char *label_but_ret
                              /*y*/ win_h - input_off - 38,
                              /*w*/ win_w - 20,
                              /*h*/ 30);
-        if (type == MESSAGE_TYPE_PASSWORD)
-        {
+        if (type == MESSAGE_TYPE_PASSWORD) {
           input->type(FL_SECRET_INPUT);
         }
       }
       g_middle->resizable(input);
       g_middle->end();
-    }
-    else if (scaler_field)
-    {
+    } else if (scaler_field) {
       g_middle = new Fl_Group(/*x*/ 0,
                               /*y*/ win_h - input_off - 38,
                               /*w*/ win_w,
                               /*h*/ 30);
       {
-        slider_box_label = message_scale_double_to_char(scale_init);
+        label = message_scale_double_to_char(scale_init);
         slider_box = new Fl_Box(/*x*/ 10,
                                 /*y*/ win_h - input_off - 8,
                                 /*w*/ win_w - 20,
                                 /*h*/ 30,
-                                /*l*/ slider_box_label);
+                                /*l*/ label);
         slider_box->box(FL_FLAT_BOX);
         slider_box->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
 
@@ -343,8 +302,8 @@ int dialog_message(const char *label_but_ret
         slider->box(FL_NO_BOX);
         slider->bounds(scale_min, scale_max);
         slider->step(scale_step);
-        scale_value = slider->round(scale_init);
-        slider->value(scale_value);
+        value = slider->round(scale_init);
+        slider->value(value);
         slider->callback(message_scale_cb, slider_box);
       }
       g_middle->resizable(slider);
@@ -357,25 +316,9 @@ int dialog_message(const char *label_but_ret
                              /*w*/ win_w,
                              /*h*/ 58);
     {
-      int offset_alt, offset;
-
-      if (label_but_alt == NULL)
-      {
-        offset_alt = 0;
-      }
-      else
-      {
-        offset_alt = label_but_alt_w + 10;
-      }
-
-      if (type == MESSAGE_TYPE_INFO)
-      {
-        offset = label_but_ret_w + 10 + offset_alt;
-      }
-      else
-      {
-        offset = label_but_ret_w + label_but_w + 20 + offset_alt;
-      }
+      int offset_alt = label_but_alt ? label_but_alt_w + 10 : 0;
+      int offset = label_but_ret_w + offset_alt;
+      offset += (type == MESSAGE_TYPE_INFO) ? 10 : label_but_w + 20;
 
       dummy = new Fl_Box(/*x*/ win_w - offset - 1,
                          /*y*/ win_h - 48,
@@ -390,8 +333,7 @@ int dialog_message(const char *label_but_ret
                                      /*l*/ label_but_ret);
       but_ret->callback(message_close_cb, 0);
 
-      if (type != MESSAGE_TYPE_INFO)
-      {
+      if (type != MESSAGE_TYPE_INFO) {
         but = new Fl_Button(/*x*/ win_w - label_but_w - 10 - offset_alt,
                             /*y*/ win_h - 38,
                             /*w*/ label_but_w,
@@ -400,8 +342,7 @@ int dialog_message(const char *label_but_ret
         but->callback(message_close_cb, 1);
       }
 
-      if (label_but_alt != NULL)
-      {
+      if (label_but_alt) {
         but_alt = new Fl_Button(/*x*/ win_w - label_but_alt_w - 10,
                                 /*y*/ win_h - 38,
                                 /*w*/ label_but_alt_w,
@@ -413,23 +354,18 @@ int dialog_message(const char *label_but_ret
     g_buttons->resizable(dummy);
     g_buttons->end();
   }
-  run_window(message_win, g_box);
+  run_window(win, g_box);
 
-  if (ret == 0)
-  {
-    if (input_field)
-    {
+  if (ret == 0) {
+    if (input_field) {
       std::cout << input->value() << std::endl;
-    }
-    else if (scaler_field)
-    {
+    } else if (scaler_field) {
       std::cout << slider_box->label() << std::endl;
     }
   }
 
-  if (slider_box_label)
-  {
-    free(slider_box_label);
+  if (label) {
+    free(label);
   }
   return ret;
 }

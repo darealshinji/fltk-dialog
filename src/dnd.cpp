@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,22 +36,21 @@
 
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *dnd_win;
-static Fl_Box *dnd_count;
-static int dnd_count_val = 0;
-static std::string dnd_count_label;
+static Fl_Double_Window *win;
+static Fl_Box *count;
+static int count_val = 0;
+static std::string count_label;
 static void dnd_callback(const char *items);
 
 class dnd_box : public Fl_Box
 {
-  public:
+public:
+  dnd_box(int X, int Y, int W, int H, const char *L=0)
+    : Fl_Box(X, Y, W, H, L) { }
 
-    dnd_box(int X, int Y, int W, int H, const char *L=0)
-      : Fl_Box(X, Y, W, H, L) { }
+  virtual ~dnd_box() { }
 
-    virtual ~dnd_box() { }
-
-    int handle(int event);
+  int handle(int event);
 };
 
 int dnd_box::handle(int event)
@@ -73,33 +72,24 @@ int dnd_box::handle(int event)
 
 /* http://www.geekhideout.com/urlcode.shtml */
 
-static char from_hex(char ch)
-{
+static inline char from_hex(char ch) {
   return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
 }
 
-static char *url_decode(char *str)
-{
+static char *url_decode(char *str) {
   char *pstr = str;
   char *buf = new char[strlen(str) + 1];
   char *pbuf = buf;
 
-  while (*pstr)
-  {
-    if (*pstr == '%')
-    {
-      if (pstr[1] && pstr[2])
-      {
+  while (*pstr) {
+    if (*pstr == '%') {
+      if (pstr[1] && pstr[2]) {
         *pbuf++ = from_hex(pstr[1]) << 4 | from_hex(pstr[2]);
         pstr += 2;
       }
-    }
-    else if (*pstr == '+')
-    {
+    } else if (*pstr == '+') {
       *pbuf++ = ' ';
-    }
-    else
-    {
+    } else {
       *pbuf++ = *pstr;
     }
     pstr++;
@@ -109,9 +99,8 @@ static char *url_decode(char *str)
   return buf;
 }
 
-static void dnd_close_cb(Fl_Widget *)
-{
-  dnd_win->hide();
+static void close_cb(Fl_Widget *) {
+  win->hide();
 }
 
 static void dnd_callback(const char *items)
@@ -120,49 +109,44 @@ static void dnd_callback(const char *items)
   std::string s;
   char *line;
 
-  ++dnd_count_val;
-  ss << dnd_count_val;
+  ++count_val;
+  ss << count_val;
 
-  dnd_count_label = ss.str();
-  dnd_count->label(dnd_count_label.c_str());
-  dnd_win->redraw();
+  count_label = ss.str();
+  count->label(count_label.c_str());
+  win->redraw();
 
-  if (SSTREQ(items, "file:///", 8))
-  {
+  if (strncmp(items, "file:///", 8) == 0) {
     s = std::string(items + 7);
     repstr("\nfile://", "\n", s);
     line = url_decode((char *)s.c_str());
     std::cout << line;
     delete line;
-  }
-  else
-  {
+  } else {
     std::cout << items << std::endl;
   }
 }
 
 int dialog_dnd()
 {
-  dnd_box          *box;
-  Fl_Group         *g;
-  Fl_Box           *text, *dummy;
+  dnd_box  *box;
+  Fl_Group *g;
+  Fl_Box   *text, *dummy;
   Fl_Return_Button *but_close;
 
   int but_w;
 
-  if (msg == NULL)
-  {
+  if (!msg) {
     msg = "drop stuff here";
   }
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "FLTK Drag & Drop";
   }
 
-  dnd_win = new Fl_Double_Window(400, 300, title);
-  dnd_win->size_range(400, 300, max_w, max_h);
-  dnd_win->callback(dnd_close_cb);
+  win = new Fl_Double_Window(400, 300, title);
+  win->size_range(400, 300, max_w, max_h);
+  win->callback(close_cb);
   {
     box = new dnd_box(10, 10, 380, 244, msg);
     box->box(FL_ENGRAVED_FRAME);
@@ -170,22 +154,22 @@ int dialog_dnd()
     g = new Fl_Group(0, 244, 400, 56);
     {
       text = new Fl_Box(0,0,0,0);
-      dnd_count = new Fl_Box(0,0,0,0);
+      count = new Fl_Box(0,0,0,0);
 
       measure_button_width(text, but_w, 40);
       text = new Fl_Box(10, 264, but_w, 26);
-      measure_button_width(dnd_count, but_w, 40);
-      dnd_count = new Fl_Box(10, 264, but_w, 26);
+      measure_button_width(count, but_w, 40);
+      count = new Fl_Box(10, 264, but_w, 26);
 
       text->label("Drop count:");
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
 
-      /* the dnd_count widget has the same size and position as the
+      /* the count widget has the same size and position as the
        * text widget, but its label text is placed right to it */
-      dnd_count->label("0");
-      dnd_count->box(FL_NO_BOX);
-      dnd_count->align(FL_ALIGN_RIGHT);
+      count->label("0");
+      count->box(FL_NO_BOX);
+      count->align(FL_ALIGN_RIGHT);
 
       but_close = new Fl_Return_Button(0,0,0,0, fl_close);
       measure_button_width(but_close, but_w, 40);
@@ -193,12 +177,12 @@ int dialog_dnd()
       dummy = new Fl_Box(389 - but_w, 260, 1, 1);
       dummy->box(FL_NO_BOX);
       but_close = new Fl_Return_Button(390 - but_w, 264, but_w, 26, fl_close);
-      but_close->callback(dnd_close_cb);
+      but_close->callback(close_cb);
     }
     g->resizable(dummy);
     g->end();
   }
-  run_window(dnd_win, box);
+  run_window(win, box);
 
   return ret;
 }

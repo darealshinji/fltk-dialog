@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,6 @@
 #include <FL/Fl_Double_Window.H>
 #include <string>
 #include <vector>
-
-#define STREQ(x, y)      (strcmp(x, y) == 0)
-#define SSTREQ(x, y, n)  (strncmp(x, y, n) == 0)
-#define MEMEQ(x, y, n)   (memcmp(x, y, n) == 0)
 
 #define XSTRINGIFY(x)  STRINGIFY(x)
 #define STRINGIFY(x)   #x

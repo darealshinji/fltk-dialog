@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,137 +40,107 @@
 
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *textinfo_win;
-static Fl_Multi_Browser *ti_browser;
-static Fl_Return_Button *ti_but_ok;
-static bool ti_checkbutton_set = false;
-static bool ti_autoscroll = false;
+// (while (true); do echo hello; done) | ./fltk-dialog --text-info --auto-scroll
 
-static void textinfo_close_cb(Fl_Widget *, long p)
-{
-  textinfo_win->hide();
+static Fl_Double_Window *win;
+static Fl_Multi_Browser *browser;
+static Fl_Return_Button *but_ok;
+static bool checkbutton_set = false;
+
+static void close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
 }
 
-static void ti_checkbutton_cb(Fl_Widget *)
-{
-  if (ti_checkbutton_set == true)
-  {
-    ti_checkbutton_set = false;
-    ti_but_ok->deactivate();
-  }
-  else
-  {
-    ti_checkbutton_set = true;
-    ti_but_ok->activate();
+static void callback(Fl_Widget *) {
+  if (checkbutton_set) {
+    checkbutton_set = false;
+    but_ok->deactivate();
+  } else {
+    checkbutton_set = true;
+    but_ok->activate();
   }
 }
 
-extern "C" void *ti_getline(void *)
+extern "C" void *ti_getline(void *p)
 {
   std::string line;
-  int linecount;
-
-  for (linecount = 0; std::getline(std::cin, line); /**/)
-  {
+  for (int i = 0; std::getline(std::cin, line); ) {
     Fl::lock();
-    ti_browser->add(line.c_str());
-
-    if (ti_autoscroll)
-    {
-      ++linecount;
-      ti_browser->bottomline(linecount);
+    browser->add(line.c_str());
+    if (p) {
+      ++i;
+      browser->bottomline(i);
     }
-
     Fl::unlock();
-    Fl::awake(textinfo_win);
+    Fl::awake(win);
   }
-
   return nullptr;
 }
 
 int dialog_textinfo(bool autoscroll, const char *checkbox)
 {
-  Fl_Group         *buttongroup;
+  Fl_Group         *g;
   Fl_Box           *dummy;
   Fl_Check_Button  *checkbutton;
-  Fl_Button        *ti_but_cancel;
+  Fl_Button        *but_cancel;
 
-  std::string checkbox_s;
-  int browser_h;
-  pthread_t ti_thread;
-
-  ti_autoscroll = autoscroll;
-
-  if (title == NULL)
-  {
+  if (!title) {
     title = "FLTK text info window";
   }
 
-  if (checkbox == NULL)
-  {
-    browser_h = 444;
-  }
-  else
-  {
-    browser_h = 418;
-  }
+  int browser_h = checkbox ? 418 : 444;
 
-  textinfo_win = new Fl_Double_Window(400, 500, title);
+  win = new Fl_Double_Window(400, 500, title);
   {
-    ti_browser = new Fl_Multi_Browser(10, 10, 380, browser_h);
+    browser = new Fl_Multi_Browser(10, 10, 380, browser_h);
 
-    buttongroup = new Fl_Group(0, browser_h, 400, 500);
+    g = new Fl_Group(0, browser_h, 400, 500);
     {
       int but_x = 290;
       int but_y = browser_h + 20;
-      if (checkbox == NULL)
-      {
+      if (!checkbox) {
         int but_w;
-
-        textinfo_win->callback(textinfo_close_cb, 0);
-
-        ti_but_ok = new Fl_Return_Button(0,0,0,0, fl_close);
-        measure_button_width(ti_but_ok, but_w, 40);
-
-        ti_but_ok = new Fl_Return_Button(390 - but_w, but_y, but_w, 26, fl_close);
-        ti_but_ok->callback(textinfo_close_cb, 0);
-      }
-      else
-      {
+        win->callback(close_cb, 0);
+        but_ok = new Fl_Return_Button(0,0,0,0, fl_close);
+        measure_button_width(but_ok, but_w, 40);
+        but_ok = new Fl_Return_Button(390 - but_w, but_y, but_w, 26, fl_close);
+        but_ok->callback(close_cb, 0);
+      } else {
         but_x = 180;
         but_y = browser_h + 10;
 
-        textinfo_win->callback(textinfo_close_cb, 1);
+        win->callback(close_cb, 1);
 
-        checkbox_s = " " + std::string(checkbox);
-        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, checkbox_s.c_str());
-        checkbutton->callback(ti_checkbutton_cb);
+        std::string s = " " + std::string(checkbox);
+        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, s.c_str());
+        checkbutton->callback(callback);
 
-        ti_but_ok = new Fl_Return_Button(but_x, but_y + 36, 100, 26, fl_ok);
-        ti_but_ok->deactivate();
-        ti_but_ok->callback(textinfo_close_cb, 0);
-        ti_but_cancel = new Fl_Button(290, but_y + 36, 100, 26, fl_cancel);
-        ti_but_cancel->callback(textinfo_close_cb, 1);
+        but_ok = new Fl_Return_Button(but_x, but_y + 36, 100, 26, fl_ok);
+        but_ok->deactivate();
+        but_ok->callback(close_cb, 0);
+        but_cancel = new Fl_Button(290, but_y + 36, 100, 26, fl_cancel);
+        but_cancel->callback(close_cb, 1);
       }
       dummy = new Fl_Box(but_x - 1, but_y - 1, 1, 1);
       dummy->box(FL_NO_BOX);
     }
-    buttongroup->resizable(dummy);
-    buttongroup->end();
+    g->resizable(dummy);
+    g->end();
   }
-  set_size(textinfo_win, ti_browser);
-  set_position(textinfo_win);
-  textinfo_win->end();
+  set_size(win, browser);
+  set_position(win);
+  win->end();
 
   Fl::lock();
 
-  set_taskbar(textinfo_win);
-  textinfo_win->show();
-  set_undecorated(textinfo_win);
-  set_always_on_top(textinfo_win);
+  set_taskbar(win);
+  win->show();
+  set_undecorated(win);
+  set_always_on_top(win);
 
-  pthread_create(&ti_thread, 0, &ti_getline, nullptr);
+  pthread_t t;
+  pthread_create(&t, 0, &ti_getline, (void *)autoscroll);
 
   Fl::run();
 

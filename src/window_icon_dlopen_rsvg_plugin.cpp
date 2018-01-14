@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2017-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,15 +60,13 @@ int rsvg_default_icon(const char *file)
   array_data = (char *)rsvg_convert_so;
   array_length = (std::streamsize) rsvg_convert_so_len;
 
-  if (mkstemp(plugin) == -1)
-  {
+  if (mkstemp(plugin) == -1) {
     std::cerr << "error: cannot create temporary file: " << plugin << std::endl;
     return 1;
   }
 
   std::ofstream out(plugin, std::ios::out|std::ios::binary);
-  if (!out)
-  {
+  if (!out) {
     std::cerr << "error: cannot open file: " << plugin << std::endl;
     return 1;
   }
@@ -81,11 +79,10 @@ int rsvg_default_icon(const char *file)
   /* dlopen() library */
 
   void *handle = dlopen(plugin, RTLD_LAZY);
-  const char *dlsym_error = dlerror();
+  const char *error = dlerror();
 
-  if (!handle)
-  {
-    std::cerr << dlsym_error << std::endl;
+  if (!handle) {
+    std::cerr << error << std::endl;
     DELETE(plugin);
     return 1;
   }
@@ -95,25 +92,22 @@ int rsvg_default_icon(const char *file)
   int (*rsvg_to_png) (const char *, const char *);
   *(void **)(&rsvg_to_png) = dlsym(handle, "rsvg_to_png");
 
-  dlsym_error = dlerror();
+  error = dlerror();
 
-  if (dlsym_error)
-  {
-    std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl;
+  if (error) {
+    std::cerr << "error: cannot load symbol\n" << error << std::endl;
     dlclose(handle);
     DELETE(plugin);
     return 1;
   }
 
   char png[] = "/tmp/icon-png-XXXXXX";
-  if (mkstemp(png) == -1)
-  {
+  if (mkstemp(png) == -1) {
     return 1;
   }
 
   int ret = 1;
-  if (rsvg_to_png(file, png) == 0)
-  {
+  if (rsvg_to_png(file, png) == 0) {
     Fl_Window::default_icon(new Fl_PNG_Image(png));
     ret = 0;
   }

@@ -15,7 +15,7 @@
 //
 //     http://www.fltk.org/str.php
 //
-// Modified 2016 by djcj <djcj@gmx.de> for fltk-dialog
+// Modified 2016, 2018 by djcj <djcj@gmx.de> for fltk-dialog
 
 /*                              FLTK License
  *                            December 11, 2001
@@ -101,8 +101,7 @@ class FontDisplay : public Fl_Widget
 {
   void draw();
 
-  public:
-
+public:
     int font, size;
 
     FontDisplay(Fl_Boxtype B, int X, int Y, int W, int H, const char *L=0)
@@ -114,8 +113,7 @@ class FontDisplay : public Fl_Widget
     }
 };
 
-void FontDisplay::draw()
-{
+void FontDisplay::draw() {
   draw_box();
   fl_font((Fl_Font) font, size);
   fl_color(FL_BLACK);
@@ -130,11 +128,10 @@ static int **fd_sizes;
 static int  *fd_numsizes;
 static int   fd_pickedsize = 18;
 
-static void fd_fonts_cb(Fl_Widget*)
+static void fd_fonts_cb(Fl_Widget *)
 {
   int fn = fd_fonts->value();
-  if (!fn)
-  {
+  if (!fn) {
     return;
   }
   fn--;
@@ -143,38 +140,27 @@ static void fd_fonts_cb(Fl_Widget*)
 
   int n = fd_numsizes[fn];
   int *s = fd_sizes[fn];
-  if (!n)
-  {
+  if (!n) {
     /* no sizes */
-  }
-  else if (s[0] == 0)
-  {
+  } else if (s[0] == 0) {
     /* many sizes */
     int j = 1;
-    for (int i = 1; i < 64 || i < s[n - 1]; i++)
-    {
+    for (int i = 1; i < 64 || i < s[n - 1]; i++) {
       char buf[20];
-      if (j < n && i == s[j])
-      {
+      if (j < n && i == s[j]) {
         sprintf(buf, "@b%d", i);
         j++;
-      }
-      else
-      {
+      } else {
         sprintf(buf, "%d", i);
       }
       fd_size->add(buf);
     }
     fd_size->value(fd_pickedsize);
-  }
-  else
-  {
+  } else {
     /* some sizes */
     int w = 0;
-    for (int i = 0; i < n; i++)
-    {
-      if (s[i] <= fd_pickedsize)
-      {
+    for (int i = 0; i < n; i++) {
+      if (s[i] <= fd_pickedsize) {
         w = i;
       }
       char buf[20];
@@ -186,17 +172,15 @@ static void fd_fonts_cb(Fl_Widget*)
   fd_text->redraw();
 }
 
-static void fd_size_cb(Fl_Widget*)
+static void fd_size_cb(Fl_Widget *)
 {
   int i = fd_size->value();
-  if (!i)
-  {
+  if (!i) {
     return;
   }
 
   const char *c = fd_size->text(i);
-  while (*c < '0' || *c > '9')
-  {
+  while (*c < '0' || *c > '9') {
     c++;
   }
 
@@ -205,8 +189,7 @@ static void fd_size_cb(Fl_Widget*)
   fd_text->redraw();
 }
 
-static void font_close_cb(Fl_Widget *, long p)
-{
+static void close_cb(Fl_Widget *, long p) {
   font_win->hide();
   ret = (int) p;
 }
@@ -219,8 +202,6 @@ int dialog_font()
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
-  Fl::get_system_colors();
-
   /* create the sample string */
   char label[0x1000];
   int n = 0;
@@ -228,24 +209,19 @@ int dialog_font()
   int i = strlen(label);
   unsigned long c;
 
-  for (c = ' ' + 1; c < 127; c++)
-  {
-    if (!(c &0x1f))
-    {
+  for (c = ' ' + 1; c < 127; c++) {
+    if (!(c &0x1f)) {
       label[i++] = '\n';
     }
-    if (c == '@')
-    {
+    if (c == '@') {
       label[i++] = c;
     }
     label[i++] = c;
   }
   label[i++] = '\n';
 
-  for (c = 0xA1; c < 0x600; c += 9)
-  {
-    if (!(++n &(0x1f)))
-    {
+  for (c = 0xA1; c < 0x600; c += 9) {
+    if (!(++n &(0x1f))) {
       label[i++] = '\n';
     }
     i += fl_utf8encode((unsigned int) c, label + i);
@@ -253,13 +229,12 @@ int dialog_font()
   label[i] = 0;
 
   /* create the window */
-  if (title == NULL)
-  {
+  if (!title) {
     title = "FLTK Font Selector";
   }
 
   font_win = new Fl_Double_Window(550, 400, title);
-  font_win->callback(font_close_cb, 1);  /* exit(1) */
+  font_win->callback(close_cb, 1);
   {
     font_tile = new Fl_Tile(0, 0, 550, 370);
     {
@@ -293,9 +268,9 @@ int dialog_font()
       dummy = new Fl_Box(329, 370, 1, 26);
       dummy->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(350, 370, 90, 26, fl_ok);
-      but_ok->callback(font_close_cb, 0);
+      but_ok->callback(close_cb, 0);
       but_cancel = new Fl_Button(450, 370, 90, 26, fl_cancel);
-      but_cancel->callback(font_close_cb, 1);
+      but_cancel->callback(close_cb, 1);
     }
     buttongroup->resizable(dummy);
     buttongroup->end();
@@ -308,22 +283,18 @@ int dialog_font()
   fd_sizes = new int*[k];
   fd_numsizes = new int[k];
 
-  for (i = 0; i < k; i++)
-  {
+  for (i = 0; i < k; i++) {
     int t;
     const char *name = Fl::get_font_name((Fl_Font) i, &t);
     char buffer[128];
 
-    if (t)
-    {
+    if (t) {
       char *p = buffer;
-      if (t &FL_BOLD)
-      {
+      if (t &FL_BOLD) {
         *p++ = '@';
         *p++ = 'b';
       }
-      if (t &FL_ITALIC)
-      {
+      if (t &FL_ITALIC) {
         *p++ = '@';
         *p++ = 'i';
       }
@@ -339,11 +310,9 @@ int dialog_font()
     int *s;
     int n = Fl::get_font_sizes((Fl_Font) i, s);
     fd_numsizes[i] = n;
-    if (n)
-    {
+    if (n) {
       fd_sizes[i] = new int[n];
-      for (int j = 0; j < n; j++)
-      {
+      for (int j = 0; j < n; j++) {
         fd_sizes[i][j] = s[j];
       }
     }
@@ -351,14 +320,14 @@ int dialog_font()
 
   fd_fonts->value(1);
   fd_fonts_cb(fd_fonts);
-  //font_win->show();
-  //Fl::run();
   run_window(font_win, NULL);
 
-  if (ret == 0)
-  {
-    const char *fname = Fl::get_font_name((Fl_Font) fd_text->font, NULL);
-    std::cout << fname << "|" << fd_size->value() << std::endl;
+  if (ret == 0) {
+    std::cout << Fl::get_font_name((Fl_Font) fd_text->font, NULL) << "|"
+      << fd_size->value() << std::endl;
   }
+
+  delete[] fd_sizes;
+  delete[] fd_numsizes;
   return ret;
 }

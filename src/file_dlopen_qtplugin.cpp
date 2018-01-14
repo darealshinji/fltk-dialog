@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,7 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   char plugin[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
 
 # ifdef HAVE_QT4
-  if (qt_major == 4)
-  {
+  if (qt_major == 4) {
     plugin[strlen(plugin)-7] = '4';
   }
 # endif
@@ -69,22 +68,19 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   array_length = (std::streamsize) QTGUI_SO_LEN;
 
 # if (QTDEF == 5) && defined(HAVE_QT4)
-  if (qt_major == 4)
-  {
+  if (qt_major == 4) {
     array_data = (char *)qt4gui_so;
     array_length = (std::streamsize) qt4gui_so_len;
   }
 # endif
 
-  if (mkstemp(plugin) == -1)
-  {
+  if (mkstemp(plugin) == -1) {
     std::cerr << "error: cannot create temporary file: " << plugin << std::endl;
     return -1;
   }
 
   std::ofstream out(plugin, std::ios::out|std::ios::binary);
-  if (!out)
-  {
+  if (!out) {
     std::cerr << "error: cannot open file: " << plugin << std::endl;
     return -1;
   }
@@ -97,11 +93,10 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   /* dlopen() library */
 
   void *handle = dlopen(plugin, RTLD_LAZY);
-  const char *dlsym_error = dlerror();
+  const char *error = dlerror();
 
-  if (!handle)
-  {
-    std::cerr << dlsym_error << std::endl;
+  if (!handle) {
+    std::cerr << error << std::endl;
     DELETE(plugin);
     return -1;
   }
@@ -111,18 +106,16 @@ int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   int (*getfilenameqt) (int, const char*, const char*, int, char **);
   *(void **)(&getfilenameqt) = dlsym(handle, "getfilenameqt");
 
-  dlsym_error = dlerror();
+  error = dlerror();
 
-  if (dlsym_error)
-  {
-    std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl;
+  if (error) {
+    std::cerr << "error: cannot load symbol\n" << error << std::endl;
     dlclose(handle);
     DELETE(plugin);
     return -1;
   }
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
   }
 

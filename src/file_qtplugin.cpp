@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,17 +55,13 @@ int getfilenameqt(int mode, const char *separator, const char *title, int argc, 
   dialog->setWindowIcon(QIcon(":/icon.png"));  /* not shown in Qt5? */
   dialog->setWindowTitle(title);
 
-  if (mode == DIR_CHOOSER)
-  {
+  if (mode == DIR_CHOOSER) {
     dialog->setFileMode(QFileDialog::Directory);
-  }
-  else /* if (mode == FILE_CHOOSER) */
-  {
+  } else /* if (mode == FILE_CHOOSER) */ {
     dialog->setFileMode(QFileDialog::ExistingFiles);
   }
 
-  if (dialog->exec())
-  {
+  if (dialog->exec()) {
     QStringList strList;
     strList << dialog->selectedFiles();
     QString str = strList.join(QString::fromLatin1(separator));
@@ -73,7 +69,6 @@ int getfilenameqt(int mode, const char *separator, const char *title, int argc, 
     delete dialog;
     return 0;
   }
-
   delete dialog;
   return 1;
 }

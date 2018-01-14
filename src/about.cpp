@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 #include "fltk_png.h"
 
 
-static Fl_Double_Window *about_win;
+static Fl_Double_Window *win;
 
 static std::string about_text = "\n"
     "- FLTK dialog -\n"
@@ -206,21 +206,19 @@ static const char *license_buffer_text =
 
 class uri_box : public Fl_Box
 {
-  public:
+public:
+  uri_box(int X, int Y, int W, int H, const char *L=0)
+    : Fl_Box(X, Y, W, H, L) { }
 
-    uri_box(int X, int Y, int W, int H, const char *L=0)
-      : Fl_Box(X, Y, W, H, L) { }
+  virtual ~uri_box() { }
 
-    virtual ~uri_box() { }
-
-    int handle(int event);
+  int handle(int event);
 };
 
 int uri_box::handle(int event)
 {
   int ret = Fl_Box::handle(event);
-  switch (event)
-  {
+  switch (event) {
     case FL_PUSH:
       do_callback();
       break;
@@ -234,14 +232,12 @@ int uri_box::handle(int event)
   return ret;
 }
 
-static void open_uri_cb(Fl_Widget *, void *p)
+static void callback(Fl_Widget *, void *p)
 {
   const char *uri = (char *)p;
   char errmsg[512] = {0};
   std::string warnmsg;
-
-  if (!fl_open_uri(uri, errmsg, sizeof(errmsg)))
-  {
+  if (!fl_open_uri(uri, errmsg, sizeof(errmsg))) {
     title = "Error";
     warnmsg = "Error: " + std::string(errmsg);
     msg = warnmsg.c_str();
@@ -249,9 +245,8 @@ static void open_uri_cb(Fl_Widget *, void *p)
   }
 }
 
-static void about_close_cb(Fl_Widget *)
-{
-  about_win->hide();
+static void close_cb(Fl_Widget *) {
+  win->hide();
 }
 
 int about()
@@ -268,8 +263,8 @@ int about()
   const char *uri2 = "https://github.com/darealshinji/fltk-dialog";
   const char *about_text_c = about_text.c_str();
 
-  about_win = new Fl_Double_Window(450, 490, "About FLTK dialog");
-  about_win->callback(about_close_cb);
+  win = new Fl_Double_Window(450, 490, "About FLTK dialog");
+  win->callback(close_cb);
   {
     about_tab = new Fl_Tabs(10, 10, 430, 434);
     {
@@ -284,13 +279,13 @@ int about()
         uri_button1->box(FL_NO_BOX);
         uri_button1->labelcolor(FL_BLUE);
         uri_button1->clear_visible_focus();
-        uri_button1->callback(open_uri_cb, (void *)uri1);
+        uri_button1->callback(callback, (void *)uri1);
 
         uri_button2 = new uri_box(75, 260, 300, 22, uri2);
         uri_button2->box(FL_NO_BOX);
         uri_button2->labelcolor(FL_BLUE);
         uri_button2->clear_visible_focus();
-        uri_button2->callback(open_uri_cb, (void *)uri2);
+        uri_button2->callback(callback, (void *)uri2);
       }
       g_about->end();
 
@@ -309,9 +304,9 @@ int about()
     int but_w;
     measure_button_width(but_close, but_w, 40);
     but_close = new Fl_Return_Button(440 - but_w, 454, but_w, 28, fl_close);
-    but_close->callback(about_close_cb);
+    but_close->callback(close_cb);
   }
-  run_window(about_win, NULL);
+  run_window(win, NULL);
 
   return 0;
 }

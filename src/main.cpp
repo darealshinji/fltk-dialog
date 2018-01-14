@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,24 +98,20 @@ bool window_decoration = true;
 #define NO_SYMBOLS 0
 
 /* global FLTK callback for drawing all label text */
-static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a)
-{
+static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a) {
   fl_font(o->font, o->size);
   fl_color((Fl_Color)o->color);
   fl_draw(o->value, x, y, w, h, a, o->image, NO_SYMBOLS);
 }
 
 /* global FLTK callback for measuring all labels */
-static void measure_cb(const Fl_Label *o, int &w, int &h)
-{
+static void measure_cb(const Fl_Label *o, int &w, int &h) {
   fl_font(o->font, o->size);
   fl_measure(o->value, w, h, NO_SYMBOLS);
 }
 
-static int esc_handler(int event)
-{
-  if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape)
-  {
+static int esc_handler(int event) {
+  if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape) {
     return 1; /* ignore Escape key */
   }
   return 0;
@@ -127,8 +123,7 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
   char *p;
   long l = strtol(arg, &p, 10);
 
-  if (*p)
-  {
+  if (*p) {
     std::cerr << self << ": " << cmd << ": input is not an integer number" << std::endl;
     return 1;
   }
@@ -145,16 +140,15 @@ static int use_only_with(const char *self, std::string a, std::string b)
 
 int main(int argc, char **argv)
 {
-  const char *scheme = "gtk+";
+  std::string scheme = "gtk+";
 
   Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
   Fl::visual(FL_DOUBLE|FL_INDEX); /* recommended in Fl_Double_Window.H */
   l10n();
 
-  if (argc < 2)
-  {
+  if (argc < 2) {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb); /* disable fltk's '@' symbols */
-    Fl::scheme(scheme);
+    Fl::scheme(scheme.c_str());
     Fl::get_system_colors();
     position_center = true;
     return about();
@@ -280,31 +274,26 @@ int main(int argc, char **argv)
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification", {"libnotify"});
 
-  try
-  {
+  try {
     ap_main.ParseCLI(argc, argv);
   }
-  catch (args::Help)
-  {
+  catch (args::Help) {
     std::cout << ap_main << "  using FLTK version " << get_fltk_version() << " - http://www.fltk.org\n\n"
       << "  https://github.com/darealshinji/fltk-dialog\n" << std::endl;
     return 0;
   }
-  catch (args::ParseError e)
-  {
+  catch (args::ParseError e) {
     std::cerr << e.what() << std::endl;
     std::cerr << "See `" << argv[0] << " --help' for more information" << std::endl;
     return 1;
   }
-  catch (args::ValidationError e)
-  {
+  catch (args::ValidationError e) {
     std::cerr << e.what() << std::endl;
     std::cerr << "See `" << argv[0] << " --help' for more information" << std::endl;
     return 1;
   }
 
-  if (arg_version)
-  {
+  if (arg_version) {
     std::cout << "using FLTK version " << get_fltk_version() << " - http://www.fltk.org" << std::endl;
     return 0;
   }
@@ -312,14 +301,12 @@ int main(int argc, char **argv)
   int dialog_count = 0;  /* check if two or more dialog options were specified */
   int dialog = DIALOG_MESSAGE;  /* default message type */
 
-  if (arg_about)
-  {
+  if (arg_about) {
     dialog = DIALOG_ABOUT;
     dialog_count++;
   }
 
-  if (arg_no_escape)
-  {
+  if (arg_no_escape) {
     Fl::add_handler(esc_handler);
   }
 
@@ -332,7 +319,6 @@ int main(int argc, char **argv)
   bool return_number = arg_return_number ? true : false;
   bool libnotify = arg_libnotify ? true : false;
 
-  GETCSTR(scheme, arg_scheme);
   GETCSTR(msg, arg_text);
   GETCSTR(title, arg_title);
   GETCSTR(fl_ok, arg_ok_label);
@@ -340,6 +326,8 @@ int main(int argc, char **argv)
   GETCSTR(fl_cancel, arg_cancel_label);
   GETCSTR(fl_yes, arg_yes_label);
   GETCSTR(fl_no, arg_no_label);
+
+  GETVAL(scheme, arg_scheme);
 
   const char *but_alt = NULL;
   GETCSTR(but_alt, arg_alt_label);
@@ -349,27 +337,23 @@ int main(int argc, char **argv)
   GETVAL(override_x, arg_posx);
   GETVAL(override_y, arg_posy);
 
-  if (arg_separator)
-  {
+  if (arg_separator) {
     separator_s = args::get(arg_separator).substr(0,1);
     separator = separator_s.c_str()[0];
   }
 
-  if (arg_geometry)
-  {
+  if (arg_geometry) {
     std::vector<std::string> v, v_wh;
     std::string s = args::get(arg_geometry);
     split(s, '+', v);
 
-    if (v.size() != 3)
-    {
+    if (v.size() != 3) {
       std::cerr << argv[0] << ": --geometry=WxH+X+Y: wrong format" << std::endl;
       return 1;
     }
 
     split(v[0], 'x', v_wh);
-    if (v_wh.size() != 2)
-    {
+    if (v_wh.size() != 2) {
       std::cerr << argv[0] << ": --geometry=WxH+X+Y: wrong format" << std::endl;
       return 1;
     }
@@ -381,39 +365,80 @@ int main(int argc, char **argv)
   }
 
   const char *html = NULL;
-  if (arg_html)
-  {
+  if (arg_html) {
     dialog = DIALOG_HTML;
     html = args::get(arg_html).c_str();
     dialog_count++;
   }
 
-  if (arg_dnd) { dialog = DIALOG_DND; dialog_count++; }
-  if (arg_message) { dialog = DIALOG_MESSAGE; dialog_count++; }
-  if (arg_warning) { dialog = DIALOG_WARNING; dialog_count++; }
-  if (arg_question) { dialog = DIALOG_QUESTION; dialog_count++; }
-  if (arg_entry) { dialog = DIALOG_INPUT; dialog_count++; }
-  if (arg_password) { dialog = DIALOG_PASSWORD; dialog_count++; }
-  if (arg_color) { dialog = DIALOG_COLOR; dialog_count++; }
-  if (arg_font) { dialog = DIALOG_FONT; dialog_count++; }
+  if (arg_dnd) {
+    dialog = DIALOG_DND;
+    dialog_count++;
+  }
+  if (arg_message) {
+    dialog = DIALOG_MESSAGE;
+    dialog_count++;
+  }
+  if (arg_warning) {
+    dialog = DIALOG_WARNING;
+    dialog_count++;
+  }
+  if (arg_question) {
+    dialog = DIALOG_QUESTION;
+    dialog_count++;
+  }
+  if (arg_entry) {
+    dialog = DIALOG_INPUT;
+    dialog_count++;
+  }
+  if (arg_password) {
+    dialog = DIALOG_PASSWORD;
+    dialog_count++;
+  }
+  if (arg_color) {
+    dialog = DIALOG_COLOR;
+    dialog_count++;
+  }
+  if (arg_font) {
+    dialog = DIALOG_FONT;
+    dialog_count++;
+  }
 
   /* file / directory */
-  if (arg_file) { dialog = DIALOG_FILE_CHOOSER; dialog_count++; }
-  if (arg_directory) { dialog = DIALOG_DIR_CHOOSER; dialog_count++; }
+  if (arg_file) {
+    dialog = DIALOG_FILE_CHOOSER;
+    dialog_count++;
+  }
+  if (arg_directory) {
+    dialog = DIALOG_DIR_CHOOSER;
+    dialog_count++;
+  }
+
   int native_count = 0;
   bool native = arg_native ? true : false;
-  if (native) { native_count++; }
+  if (native) {
+    native_count++;
+  }
+
   bool native_gtk = false, native_qt4 = false, native_qt5 = false;
 #ifdef HAVE_QT
-  if (arg_native_gtk) { native_gtk = true; native_count++; }
+  if (arg_native_gtk) {
+    native_gtk = true;
+    native_count++;
+  }
 # ifdef HAVE_QT4
-  if (arg_native_qt4) { native_qt4 = true; native_count++; }
+  if (arg_native_qt4) {
+    native_qt4 = true;
+    native_count++;
+  }
 # endif
 # ifdef HAVE_QT5
-  if (arg_native_qt5) { native_qt5 = true; native_count++; }
+  if (arg_native_qt5) {
+    native_qt5 = true;
+    native_count++;
+  }
 # endif
-  if (arg_native_qt)
-  {
+  if (arg_native_qt) {
 # if QTDEF == 5
     native_qt5 = true;
 # else
@@ -426,7 +451,10 @@ int main(int argc, char **argv)
   /* notification */
   int timeout = 5;
   const char *notify_icon = NULL;
-  if (arg_notification) { dialog = DIALOG_NOTIFY; dialog_count++; }
+  if (arg_notification) {
+    dialog = DIALOG_NOTIFY;
+    dialog_count++;
+  }
   GETVAL(timeout, arg_timeout);
   GETCSTR(notify_icon, arg_notify_icon);
 
@@ -436,20 +464,25 @@ int main(int argc, char **argv)
   bool pulsate = arg_pulsate ? true : false;
   bool autoclose = arg_auto_close ? true : false;
   bool hide_cancel = arg_no_cancel ? true : false;
-  if (arg_progress) { dialog = DIALOG_PROGRESS; dialog_count++; }
+  if (arg_progress) {
+    dialog = DIALOG_PROGRESS;
+    dialog_count++;
+  }
   GETVAL(kill_pid, arg_watch_pid);
   GETVAL(multi, arg_multi);
   multi = (multi > 1) ? multi : 1;
 
   /* scale */
-  if (arg_scale) { dialog = DIALOG_SCALE; dialog_count++; }
+  if (arg_scale) {
+    dialog = DIALOG_SCALE;
+    dialog_count++;
+  }
   GETVAL(scale_min, arg_min_value);
   scale_init = scale_min;
   GETVAL(scale_max, arg_max_value);
   GETVAL(scale_init, arg_value);
   GETVAL(scale_step, arg_step);
-  if (scale_step < 1)
-  {
+  if (scale_step < 1) {
     std::cerr << argv[0] << ": error `--step': value cannot be negative or zero" << std::endl;
     return 1;
   }
@@ -457,175 +490,163 @@ int main(int argc, char **argv)
   /* checklist */
   std::string checklist_options = "";
   GETVAL(checklist_options, arg_checklist);
-  if (arg_checklist) { dialog = DIALOG_CHECKLIST; dialog_count++; }
+  if (arg_checklist) {
+    dialog = DIALOG_CHECKLIST;
+    dialog_count++;
+  }
   bool check_all = arg_check_all ? true : false;
   bool return_value = arg_return_value ? true : false;
 
   /* radiolist */
   std::string radiolist_options = "";
   GETVAL(radiolist_options, arg_radiolist);
-  if (arg_radiolist) { dialog = DIALOG_RADIOLIST; dialog_count++; }
+  if (arg_radiolist) {
+    dialog = DIALOG_RADIOLIST;
+    dialog_count++;
+  }
 
   /* dropdown */
   std::string dropdown_options = "";
   GETVAL(dropdown_options, arg_dropdown);
-  if (arg_dropdown) { dialog = DIALOG_DROPDOWN; dialog_count++; }
+  if (arg_dropdown) {
+    dialog = DIALOG_DROPDOWN;
+    dialog_count++;
+  }
 
   /* calendar / date */
   std::string format = "";
   GETVAL(format, arg_format);
-  if (arg_calendar) { dialog = DIALOG_CALENDAR; dialog_count++; }
-  if (arg_date) { dialog = DIALOG_DATE; dialog_count++; }
+  if (arg_calendar) {
+    dialog = DIALOG_CALENDAR;
+    dialog_count++;
+  }
+  if (arg_date) {
+    dialog = DIALOG_DATE;
+    dialog_count++;
+  }
 
   /* text-info */
   const char *checkbox = NULL;
   GETCSTR(checkbox, arg_checkbox);
   bool autoscroll = arg_auto_scroll ? true : false;
-  if (arg_text_info) { dialog = DIALOG_TEXTINFO; dialog_count++; }
+  if (arg_text_info) {
+    dialog = DIALOG_TEXTINFO;
+    dialog_count++;
+  }
 
   /* set window icon */
-  if (arg_window_icon)
-  {
+  if (arg_window_icon) {
     set_window_icon(args::get(arg_window_icon).c_str());
   }
 
   /* check for excluding options */
 
-  if (dialog_count >= 2)
-  {
+  if (dialog_count >= 2) {
     std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
     return 1;
   }
 
-  if (!with_icon_box && (dialog != DIALOG_MESSAGE && dialog != DIALOG_WARNING && dialog != DIALOG_QUESTION))
-  {
+  if (!with_icon_box && (dialog != DIALOG_MESSAGE && dialog != DIALOG_WARNING &&
+      dialog != DIALOG_QUESTION)) {
     return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
   }
 
-  if ((native || native_gtk || native_qt4 || native_qt5) && (dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER))
-  {
+  if ((native || native_gtk || native_qt4 || native_qt5) &&
+      (dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER)) {
     return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5", "--file or --directory");
   }
 
-  if (native_count >= 2)
-  {
+  if (native_count >= 2) {
     std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
     return 1;
   }
 
-  if (dialog != DIALOG_NOTIFY)
-  {
-    if (arg_timeout)
-    {
+  if (dialog != DIALOG_NOTIFY) {
+    if (arg_timeout) {
       return use_only_with(argv[0], "--timeout", "--notification");
     }
 
-    if (notify_icon != NULL)
-    {
+    if (notify_icon) {
       return use_only_with(argv[0], "--notify-icon", "--notification");
     }
 
-    if (libnotify)
-    {
+    if (libnotify) {
       return use_only_with(argv[0], "--libnotify", "--notification");
     }
   }
 
-  if (dialog != DIALOG_PROGRESS)
-  {
-    if (pulsate)
-    {
+  if (dialog != DIALOG_PROGRESS) {
+    if (pulsate) {
       return use_only_with(argv[0], "--pulsate", "--progress");
     }
 
-    if (arg_multi)
-    {
+    if (arg_multi) {
       return use_only_with(argv[0], "--multi", "--progress");
     }
 
-    if (arg_watch_pid)
-    {
+    if (arg_watch_pid) {
       return use_only_with(argv[0], "--watch-pid", "--progress");
     }
 
-    if (autoclose)
-    {
+    if (autoclose) {
       return use_only_with(argv[0], "--auto-close", "--progress");
     }
 
-    if (hide_cancel)
-    {
+    if (hide_cancel) {
       return use_only_with(argv[0], "--no-cancel", "--progress");
     }
-  }
-  else if (dialog == DIALOG_PROGRESS && pulsate && arg_multi)
-  {
+  } else if (dialog == DIALOG_PROGRESS && pulsate && arg_multi) {
     return use_only_with(argv[0], "--multi", "--progress, but not with --pulsate");
   }
 
-  if ((arg_value || arg_min_value || arg_max_value || arg_step) && dialog != DIALOG_SCALE)
-  {
+  if ((arg_value || arg_min_value || arg_max_value || arg_step) &&
+      dialog != DIALOG_SCALE) {
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
 
-  if (return_value && dialog != DIALOG_CHECKLIST)
-  {
+  if (return_value && dialog != DIALOG_CHECKLIST) {
     return use_only_with(argv[0], "--return-value", "--checklist");
   }
 
-  if (check_all && dialog != DIALOG_CHECKLIST)
-  {
+  if (check_all && dialog != DIALOG_CHECKLIST) {
     return use_only_with(argv[0], "--check-all", "--checklist");
   }
 
-  if (return_number && (dialog != DIALOG_RADIOLIST && dialog != DIALOG_DROPDOWN))
-  {
+  if (return_number && (dialog != DIALOG_RADIOLIST && dialog != DIALOG_DROPDOWN)) {
     return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
   }
 
-  if (format != "" && (dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE))
-  {
+  if (format != "" && (dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE)) {
     return use_only_with(argv[0], "--format", "--calendar or --date");
   }
 
-  if ((autoscroll || checkbox) && dialog != DIALOG_TEXTINFO)
-  {
+  if ((autoscroll || checkbox) && dialog != DIALOG_TEXTINFO) {
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
   }
 
   /* keep fltk's '@' symbols enabled for HTML and Date dialogs */
-  if (dialog != DIALOG_HTML && dialog != DIALOG_DATE)
-  {
+  if (dialog != DIALOG_HTML && dialog != DIALOG_DATE) {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
 
   /* set scheme */
-  if (STREQ("gtk+", scheme) || STREQ("gtk", scheme) || STREQ("default", scheme))
-  {
+  if (scheme == "gtk+" || scheme == "gtk" || scheme == "default") {
     Fl::scheme("gtk+");
-  }
-  else if (STREQ("none", scheme) || STREQ("simple", scheme))
-  {
+  } else if (scheme == "none" || scheme == "simple") {
     Fl::scheme("none");
-  }
-  else if (STREQ("gleam", scheme) || STREQ("plastic", scheme))
-  {
-    Fl::scheme(scheme);
-  }
-  else
-  {
+  } else if (scheme == "gleam" || scheme == "plastic") {
+    Fl::scheme(scheme.c_str());
+  } else {
     std::cerr << argv[0] << ": \"" << scheme << "\" is not a valid scheme!\n"
       "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
     return 1;
   }
 
-  if (!arg_no_system_colors && !arg_notification)
-  {
+  if (!arg_no_system_colors && !arg_notification) {
     Fl::get_system_colors();
   }
 
-  switch (dialog)
-  {
+  switch (dialog) {
     case DIALOG_ABOUT:
       return about();
     case DIALOG_MESSAGE:
@@ -642,32 +663,7 @@ int main(int argc, char **argv)
       return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_SCALE, false);
     case DIALOG_FILE_CHOOSER:
     case DIALOG_DIR_CHOOSER:
-    {
-      int flag = (dialog == DIALOG_FILE_CHOOSER) ? FILE_CHOOSER : DIR_CHOOSER;
-      if (native)
-      {
-        return dialog_native_file_chooser(flag, argc, argv);
-      }
-#ifdef HAVE_QT
-      else if (native_gtk)
-      {
-        return dialog_native_file_chooser_gtk(flag);
-      }
-#  ifdef HAVE_QT4
-      else if (native_qt4)
-      {
-        return dialog_native_file_chooser_qt(4, flag, argc, argv);
-      }
-#  endif
-#  ifdef HAVE_QT5
-      else if (native_qt5)
-      {
-        return dialog_native_file_chooser_qt(5, flag, argc, argv);
-      }
-#  endif
-#endif  /* HAVE_QT */
-      return (dialog == DIALOG_FILE_CHOOSER) ? dialog_file_chooser() : dialog_dir_chooser();
-    }
+      goto return_file_chooser;
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, notify_icon, libnotify);
     case DIALOG_PROGRESS:
@@ -692,11 +688,35 @@ int main(int argc, char **argv)
       return dialog_color();
     case DIALOG_FONT:
       return dialog_font();
-    default:  /* should never be reached */
-      std::cerr << argv[0] << ":\nmain(): error: unknown or unused dialog" << std::endl;
-      return 1;
+    default:
+      break;
   }
+
   /* should never be reached */
+  std::cerr << argv[0] << ": error: unknown or unused dialog\n" << __PRETTY_FUNCTION__
+    << " at " << __FILE__ << ", line " << __LINE__ << std::endl;
   return 1;
+
+return_file_chooser:
+  int flag = (dialog == DIALOG_FILE_CHOOSER) ? FILE_CHOOSER : DIR_CHOOSER;
+  if (native) {
+    return dialog_native_file_chooser(flag, argc, argv);
+  }
+#ifdef HAVE_QT
+  else if (native_gtk) {
+    return dialog_native_file_chooser_gtk(flag);
+  }
+#  ifdef HAVE_QT4
+  else if (native_qt4) {
+    return dialog_native_file_chooser_qt(4, flag, argc, argv);
+  }
+#  endif
+#  ifdef HAVE_QT5
+  else if (native_qt5) {
+    return dialog_native_file_chooser_qt(5, flag, argc, argv);
+  }
+#  endif
+#endif  /* HAVE_QT */
+  return (dialog == DIALOG_FILE_CHOOSER) ? dialog_file_chooser() : dialog_dir_chooser();
 }
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include "Fl_Calendar.H"
 #include "l10n.hpp"
 #include "fltk-dialog.hpp"
-
 
 #define FL_OK_(x)     fl_ok = FL_OK_##x
 #define FL_CANCEL_(x) fl_cancel = FL_CANCEL_##x
@@ -93,6 +92,10 @@
   FDATE_MON_NOV_(x); \
   FDATE_MON_DEC_(x)
 
+#define L10N(x) \
+  FL_L10N_(x); \
+  WEEKDAYS_L10N_(x); \
+  MONTHS_L10N_(x)
 
 void l10n()
 {
@@ -108,44 +111,40 @@ void l10n()
   region = region.substr(0,5);
   lang = region.substr(0,2);
 
-  if (lang != "en" && lang != "C" && lang != "")
-  {
-    if (lang == "de")
-    {
-      FL_L10N_(DE);
-      WEEKDAYS_L10N_(DE);
-      MONTHS_L10N_(DE);
-      if (region == "de_CH")
-      {
-        FL_CLOSE_(DE_CH);
-      }
-      else if (region == "de_AT")
-      {
-        FDATE_MON_JAN_(DE_AT);
-      }
+  if (lang == "en" || lang == "" || lang == "C") {
+    return;
+  } else if (lang == "de") {
+    L10N(DE);
+    if (region == "de_CH") {
+      FL_CLOSE_(DE_CH);
+    } else if (region == "de_AT") {
+      FDATE_MON_JAN_(DE_AT);
     }
-    else if (lang == "zh")
-    {
-      FL_L10N_(ZH);
-      MONTHS_L10N_(ZH);
-      if (region == "zh_TW")
-      {
-        FL_OK_(ZH_TW);
-        FL_CLOSE_(ZH_TW);
-        WEEKDAYS_L10N_(ZH_TW);
-      }
-      else
-      {
-        WEEKDAYS_L10N_(ZH);
-      }
+  } else if (lang == "zh") {
+    FL_L10N_(ZH);
+    MONTHS_L10N_(ZH);
+    if (region == "zh_TW") {
+      FL_OK_(ZH_TW);
+      FL_CLOSE_(ZH_TW);
+      WEEKDAYS_L10N_(ZH_TW);
+    } else {
+      WEEKDAYS_L10N_(ZH);
     }
-    else if (lang == "ar") { FL_L10N_(AR); WEEKDAYS_L10N_(AR); MONTHS_L10N_(AR); fl_calendar_arabic = true; }
-    else if (lang == "es") { FL_L10N_(ES); WEEKDAYS_L10N_(ES); MONTHS_L10N_(ES); }
-    else if (lang == "fr") { FL_L10N_(FR); WEEKDAYS_L10N_(FR); MONTHS_L10N_(FR); }
-    else if (lang == "it") { FL_L10N_(IT); WEEKDAYS_L10N_(IT); MONTHS_L10N_(IT); }
-    else if (lang == "ja") { FL_L10N_(JA); WEEKDAYS_L10N_(JA); MONTHS_L10N_(JA); }
-    else if (lang == "pt") { FL_L10N_(PT); WEEKDAYS_L10N_(PT); MONTHS_L10N_(PT); }
-    else if (lang == "ru") { FL_L10N_(RU); WEEKDAYS_L10N_(RU); MONTHS_L10N_(RU); }
+  } else if (lang == "ar") {
+    L10N(AR);
+    fl_calendar_arabic = true;
+  } else if (lang == "es") {
+    L10N(ES);
+  } else if (lang == "fr") {
+    L10N(FR);
+  } else if (lang == "it") {
+    L10N(IT);
+  } else if (lang == "ja") {
+    L10N(JA);
+  } else if (lang == "pt") {
+    L10N(PT);
+  } else if (lang == "ru") {
+    L10N(RU);
   }
 }
 

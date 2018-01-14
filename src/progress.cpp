@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,138 +55,111 @@
 
 #include "fltk-dialog.hpp"
 
-
 #define PULSATE_USLEEP 10000
 
-static Fl_Double_Window *progress_win = NULL;
-static Fl_Box           *progress_box = NULL;
-static Fl_Return_Button *progress_but_ok = NULL;
-static Fl_Button        *progress_but_cancel = NULL;
+static Fl_Double_Window *win = NULL;
+static Fl_Box           *box = NULL;
+static Fl_Return_Button *but_ok = NULL;
+static Fl_Button        *but_cancel = NULL;
 static Fl_Slider        *slider = NULL;
-static Fl_Progress      *progress_bar = NULL, *progress_bar_main = NULL;
+static Fl_Progress      *bar = NULL, *bar_main = NULL;
 
-static int pulsate_val = 0;
-static int progress_percent = 0;
-static int progress_multi = 1;
-static int progress_multi_percent = 0;
-static int progress_multi_iteration = 0;
-static bool progress_pulsate = false;
-static bool progress_running = true;
-static bool progress_autoclose = false;
-static bool progress_hide_cancel = false;
-static long progress_kill_pid = -1;
-static char *progress_box_label = NULL;
+static int pulsate_val = 0
+,          percent = 0
+,          multi = 1
+,          multi_percent = 0
+,          iteration = 0;
 
-static void progress_close_cb(Fl_Widget *, long p)
-{
-  progress_win->hide();
+static bool running = true
+,           pulsate = false
+,           autoclose = false
+,           hide_cancel = false;
+
+static long kill_pid = -1;
+static char *label = NULL;
+
+static void close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
-
-  if (progress_box_label)
-  {
-    free(progress_box_label);
+  if (label) {
+    free(label);
   }
 }
 
-static void progress_cancel_cb(Fl_Widget *o)
-{
-  if (progress_kill_pid > 1)
-  {
-    kill((pid_t) progress_kill_pid, 1);
+static void cancel_cb(Fl_Widget *o) {
+  if (kill_pid > 1) {
+    kill((pid_t) kill_pid, 1);
   }
-  progress_close_cb(o, 1);
+  close_cb(o, 1);
 }
 
-static void progress_finished(void)
-{
-  if (progress_autoclose)
-  {
-    progress_close_cb(nullptr, 0);
-  }
-  else
-  {
-    if (!progress_hide_cancel)
-    {
-      progress_but_cancel->deactivate();
+static void progress_finished(void) {
+  if (autoclose) {
+    close_cb(nullptr, 0);
+  } else {
+    if (!hide_cancel) {
+      but_cancel->deactivate();
     }
-    progress_but_ok->activate();
+    but_ok->activate();
   }
 
-  if (progress_pulsate)
-  {
+  if (pulsate) {
     slider->value(100);
     slider->deactivate();
   }
 }
 
-static void progress_parse_line(const char *ch)
+static void parse_line(const char *ch)
 {
-  if (progress_running)
-  {
-    if (ch[0] == '#' && ch[1] != '\0')
-    {
+  if (running) {
+    if (ch[0] == '#' && ch[1] != '\0') {
       /* "#comment" line found, change the label */
-      if (progress_box_label)
-      {
-        free(progress_box_label);
+      if (label) {
+        free(label);
       }
-      progress_box_label = strdup(ch + 1);
-      progress_box->label(progress_box_label);
-    }
-    else if (!progress_pulsate && ch[0] >= '0' && ch[0] <= '9')
-    {
+      label = strdup(ch + 1);
+      box->label(label);
+    } else if (!pulsate && ch[0] >= '0' && ch[0] <= '9') {
       /* number found, update the progress bar */
       std::stringstream ss;
       std::string l1, l2;
-      progress_percent = atoi(ch);
-
-      if (progress_percent >= 100)
-      {
-        progress_percent = 100;
-        progress_running = (progress_multi > 1) ? true : false;
-        progress_multi_iteration++;
+      percent = atoi(ch);
+      if (percent >= 100) {
+        percent = 100;
+        running = (multi > 1) ? true : false;
+        iteration++;
       }
-
-      ss << progress_percent;
+      ss << percent;
       l1 = ss.str() + "%";
-      progress_bar->value(progress_percent);
-      progress_bar->label(l1.c_str());
+      bar->value(percent);
+      bar->label(l1.c_str());
 
       /* update the main progress bar too if --multi=n was given */
-      if (progress_multi > 1)
-      {
-        if (progress_percent == 100)
-        {
+      if (multi > 1) {
+        if (percent == 100) {
           /* reset % for next iteration */
-          progress_percent = 0;
+          percent = 0;
         }
-
-        progress_multi_percent = progress_multi_iteration * 100 + progress_percent;
-
-        if (progress_multi_percent >= progress_multi * 100)
-        {
-          progress_multi_percent = progress_multi * 100;
-          progress_running = false;
+        multi_percent = iteration * 100 + percent;
+        if (multi_percent >= multi * 100) {
+          multi_percent = multi * 100;
+          running = false;
         }
-
         ss.str(std::string());
-        ss << (progress_multi_percent / progress_multi);
+        ss << (multi_percent / multi);
         l2 = ss.str() + "%";
-        progress_bar_main->value(progress_multi_percent);
-        progress_bar_main->label(l2.c_str());
+        bar_main->value(multi_percent);
+        bar_main->label(l2.c_str());
       }
-    }
-    else if (progress_pulsate && strcmp(ch, "STOP") == 0)
-    {
+    } else if (pulsate && strcmp(ch, "STOP") == 0) {
       /* stop now */
-      progress_running = false;
+      running = false;
     }
   }
 
   /* should be a separate "if"-statement, so we can finish
    * immediately after a "STOP" signal was sent */
-  if (!progress_running)
-  {
+  if (!running) {
     progress_finished();
   }
 
@@ -195,54 +168,41 @@ static void progress_parse_line(const char *ch)
 
 extern "C" void *progress_getline(void *)
 {
-  std::fstream fs;
   std::string line;
-
-  while (std::getline(std::cin, line))
-  {
+  while (std::getline(std::cin, line)) {
     Fl::lock();
-    progress_parse_line(line.c_str());
+    parse_line(line.c_str());
     Fl::unlock();
-    Fl::awake(progress_win);
+    Fl::awake(win);
   }
-
   return nullptr;
 }
 
 extern "C" void *pulsate_bar_thread(void *)
 {
-  while (progress_running)
-  {
-    if (progress_percent >= 100)
-    {
-      /* move from right to left */
-      pulsate_val = -1;
+  while (running) {
+    if (percent >= 100) {
+      pulsate_val = -1;  /* move from right to left */
+    } else if (percent <= 0) {
+      pulsate_val = 1;  /* move from left to right */
     }
-    else if (progress_percent <= 0)
-    {
-      /* move from left to right */
-      pulsate_val = 1;
-    }
-    progress_percent += pulsate_val;
+    percent += pulsate_val;
 
     Fl::lock();
-    slider->value(progress_percent);
+    slider->value(percent);
 
-    if (progress_kill_pid > 1 && kill((pid_t) progress_kill_pid, 0) == -1)
-    {
-      /* the watched process stopped */
-      progress_running = false;
+    if (kill_pid > 1 && kill((pid_t) kill_pid, 0) == -1) {
+      running = false;  /* the watched process has stopped */
     }
 
     Fl::unlock();
-    Fl::awake(progress_win);
+    Fl::awake(win);
 
     /* has an effect on the pulsate speed */
     usleep(PULSATE_USLEEP);
   }
 
-  if (!progress_running)
-  {
+  if (!running) {
     progress_finished();
     Fl::redraw();
   }
@@ -250,50 +210,44 @@ extern "C" void *pulsate_bar_thread(void *)
   return nullptr;
 }
 
-int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool hide_cancel)
+int dialog_progress(bool pulsate_, int multi_, long kill_pid_, bool autoclose_, bool hide_cancel_)
 {
-  Fl_Group  *g;
-  Fl_Box    *dummy;
-  int        win_h = 140, offset = 0;
-  pthread_t  progress_thread_1, progress_thread_2;
+  Fl_Group *g;
+  Fl_Box *dummy;
+  int win_h = 140, offset = 0;
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "FLTK progress window";
   }
 
-  if (msg == NULL)
-  {
+  if (!msg) {
     msg = "Progress indicator";
   }
 
-  progress_pulsate = pulsate;
-  progress_multi = pulsate ? 1 : multi;
-  progress_kill_pid = kill_pid;
-  progress_autoclose = autoclose;
-  progress_hide_cancel = hide_cancel;
+  pulsate = pulsate_;
+  multi = pulsate ? 1 : multi_;
+  kill_pid = kill_pid_;
+  autoclose = autoclose_;
+  hide_cancel = hide_cancel_;
 
-  if (hide_cancel && autoclose)
-  {
+  if (hide_cancel && autoclose) {
     win_h -= 36;
   }
 
-  if (multi > 1)
-  {
+  if (multi > 1) {
     offset = 40;
   }
 
-  progress_win = new Fl_Double_Window(320, win_h + offset, title);
-  progress_win->callback(progress_cancel_cb);
+  win = new Fl_Double_Window(320, win_h + offset, title);
+  win->callback(cancel_cb);
   {
     g = new Fl_Group(0, 0, 320, win_h + offset);
     {
-      progress_box = new Fl_Box(0, 10, 10, 30, msg);
-      progress_box->box(FL_NO_BOX);
-      progress_box->align(FL_ALIGN_RIGHT);
+      box = new Fl_Box(0, 10, 10, 30, msg);
+      box->box(FL_NO_BOX);
+      box->align(FL_ALIGN_RIGHT);
 
-      if (pulsate)
-      {
+      if (pulsate) {
         slider = new Fl_Slider(10, 50, 300, 30);
         slider->type(1);
         slider->minimum(0);
@@ -301,41 +255,36 @@ int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool
         slider->color(fl_darker(FL_GRAY));
         slider->value(0);
         slider->slider_size(0.25);
-      }
-      else
-      {
-        if (multi > 1)
-        {
-          progress_bar_main = new Fl_Progress(10, 50, 300, 30, "0%");
-          progress_bar_main->minimum(0);
-          progress_bar_main->maximum(multi * 100);
-          progress_bar_main->color(fl_darker(FL_GRAY));
-          progress_bar_main->selection_color(fl_lighter(FL_BLUE));
-          progress_bar_main->labelcolor(FL_WHITE);
-          progress_bar_main->value(0);
+      } else {
+        if (multi > 1) {
+          bar_main = new Fl_Progress(10, 50, 300, 30, "0%");
+          bar_main->minimum(0);
+          bar_main->maximum(multi * 100);
+          bar_main->color(fl_darker(FL_GRAY));
+          bar_main->selection_color(fl_lighter(FL_BLUE));
+          bar_main->labelcolor(FL_WHITE);
+          bar_main->value(0);
         }
-        progress_bar = new Fl_Progress(10, 50 + offset, 300, 30, "0%");
-        progress_bar->minimum(0);
-        progress_bar->maximum(100);
-        progress_bar->color(fl_darker(FL_GRAY));
-        progress_bar->selection_color(fl_lighter(FL_BLUE));
-        progress_bar->labelcolor(FL_WHITE);
-        progress_bar->value(0);
+        bar = new Fl_Progress(10, 50 + offset, 300, 30, "0%");
+        bar->minimum(0);
+        bar->maximum(100);
+        bar->color(fl_darker(FL_GRAY));
+        bar->selection_color(fl_lighter(FL_BLUE));
+        bar->labelcolor(FL_WHITE);
+        bar->value(0);
       }
 
       int but_ok_x = (hide_cancel) ? 210 : 100;
 
-      if (!hide_cancel)
-      {
-        progress_but_cancel = new Fl_Button(210, 104 + offset, 100, 26, fl_cancel);
-        progress_but_cancel->callback(progress_cancel_cb);
+      if (!hide_cancel) {
+        but_cancel = new Fl_Button(210, 104 + offset, 100, 26, fl_cancel);
+        but_cancel->callback(cancel_cb);
       }
 
-      if (!autoclose)
-      {
-        progress_but_ok = new Fl_Return_Button(but_ok_x, 104 + offset, 100, 26, fl_ok);
-        progress_but_ok->deactivate();
-        progress_but_ok->callback(progress_close_cb, 0);
+      if (!autoclose) {
+        but_ok = new Fl_Return_Button(but_ok_x, 104 + offset, 100, 26, fl_ok);
+        but_ok->deactivate();
+        but_ok->callback(close_cb, 0);
       }
 
       dummy = new Fl_Box(but_ok_x - 1, (103 + offset) - 1, 1, 1);
@@ -344,23 +293,24 @@ int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool
     g->resizable(dummy);
     g->end();
   }
-  set_size(progress_win, g);
-  set_position(progress_win);
-  progress_win->end();
+  set_size(win, g);
+  set_position(win);
+  win->end();
 
   Fl::lock();
 
-  set_taskbar(progress_win);
-  progress_win->show();
-  set_undecorated(progress_win);
-  set_always_on_top(progress_win);
+  set_taskbar(win);
+  win->show();
+  set_undecorated(win);
+  set_always_on_top(win);
 
-  if (pulsate)
-  {
+  pthread_t t1, t2;
+
+  if (pulsate) {
     /* the pulsating bar is running in its own thread */
-    pthread_create(&progress_thread_1, 0, &pulsate_bar_thread, nullptr);
+    pthread_create(&t1, 0, &pulsate_bar_thread, nullptr);
   }
-  pthread_create(&progress_thread_2, 0, &progress_getline, nullptr);
+  pthread_create(&t2, 0, &progress_getline, nullptr);
 
   Fl::run();
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,10 @@
 #include "Fl_Calendar.H"
 #include "fltk-dialog.hpp"
 
-static Fl_Double_Window *cal_win;
+static Fl_Double_Window *win;
 
-static void calendar_close_cb(Fl_Widget *, long p)
-{
-  cal_win->hide();
+static void close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
 }
 
@@ -50,36 +49,34 @@ int dialog_calendar(std::string format)
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "FLTK calendar";
   }
 
   /* one calendar unit = 32px
    * calendar widget width/height = 32px * 7 = 224px
    */
-  cal_win = new Fl_Double_Window(244, 281, title);
+  win = new Fl_Double_Window(244, 281, title);
   calendar = new Fl_Calendar(10, 10, 224, 224);
-  cal_win->begin();  /* don't remove! */
-  cal_win->size_range(244, 281, max_w, max_h);
-  cal_win->callback(calendar_close_cb, 1);
+  win->begin();  /* don't remove! */
+  win->size_range(244, 281, max_w, max_h);
+  win->callback(close_cb, 1);
   {
     g = new Fl_Group(0, 244, 244, 37);
     {
       dummy = new Fl_Box(9, 244, 1, 1);
       dummy->box(FL_NO_BOX);
       but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
-      but_ok->callback(calendar_close_cb, 0);
+      but_ok->callback(close_cb, 0);
       but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
-      but_cancel->callback(calendar_close_cb, 1);
+      but_cancel->callback(close_cb, 1);
     }
     g->resizable(dummy);
     g->end();
   }
-  run_window(cal_win, calendar);
+  run_window(win, calendar);
 
-  if (ret == 0)
-  {
+  if (ret == 0) {
     print_date(format, calendar->year(), calendar->month(), calendar->day());
   }
   return ret;

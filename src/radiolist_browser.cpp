@@ -13,6 +13,7 @@
 //
 //     http://www.fltk.org/str.php
 //
+// Modified by djcj <djcj@gmx.de>
 
 /*                              FLTK License
  *                            December 11, 2001
@@ -100,20 +101,17 @@ void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
   int r = CHECK_SIZE/2 - 1;
   fl_circle(ox+2, oy+2, r);
 
-  if (i->checked)
-  {
+  if (i->checked) {
     int tw = CHECK_SIZE - 4;
-    int d1 = tw/3;
-    int d2 = tw-d1;
-    int ty = cy + (CHECK_SIZE+d2)/2-d1-2;
-    for (int n = 0; n < 3; n++, ty++)
-    {
+    int d1 = tw / 3;
+    int d2 = tw - d1;
+    int ty = cy + (CHECK_SIZE + d2) / 2 - d1 - 2;
+    for (int n = 0; n < 3; n++, ty++) {
       fl_pie(ox, oy, r, r, 0, 360);
     }
   }
   fl_font(textfont(), tsize);
-  if (i->selected)
-  {
+  if (i->selected) {
     col = fl_contrast(col, selection_color());
   }
   fl_color(col);

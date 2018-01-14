@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 
 #include "fltk-dialog.hpp"
 
-
 int dialog_html_viewer(const char *file)
 {
   Fl_Help_Dialog *v = new Fl_Help_Dialog();
@@ -38,57 +37,42 @@ int dialog_html_viewer(const char *file)
   int new_w = v->w();
   int new_h = v->h();
 
-  if (resizable)
-  {
-    if (override_w > 0)
-    {
+  if (resizable) {
+    if (override_w > 0) {
       new_w = override_w;
     }
-
-    if (override_h > 0)
-    {
+    if (override_h > 0) {
       new_h = override_h;
     }
   }
 
-  if (position_center)
-  {
+  if (position_center) {
     new_x = (max_w - new_w) / 2;
     new_y = (max_h - new_h) / 2;
-  }
-  else
-  {
-    if (override_x >= 0)
-    {
+  } else {
+    if (override_x >= 0) {
       new_x = override_x;
     }
-
-    if (override_y >= 0)
-    {
+    if (override_y >= 0) {
       new_y = override_y;
     }
   }
 
   v->resize(new_x, new_y, new_w, new_h);
 
-  if (!window_taskbar)
-  {
+  if (!window_taskbar) {
     v->set_border(0);
   }
 
   v->show();
 
-  if (window_decoration)
-  {
+  if (window_decoration) {
     v->set_border(1);
-  }
-  else
-  {
+  } else {
     v->set_border(0);
   }
 
-  if (always_on_top)
-  {
+  if (always_on_top) {
     v->set_always_on_top();
   }
 

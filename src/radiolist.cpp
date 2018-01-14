@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2017, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,57 +36,48 @@
 #include "fltk-dialog.hpp"
 #include "radiolist_browser.hpp"
 
-static Fl_Double_Window *radio_round_button_win;
-static Fl_Return_Button *radiolist_but_ok;
-static int radiolist_return = 0;
-static bool radiolist_but_ok_activated = false;
+static Fl_Double_Window *win;
+static Fl_Return_Button *but_ok;
+static radiolist_browser *browser;
+static int browser_rv = 0;
+static bool but_ok_activated = false;
 
-static void radio_round_button_cb(Fl_Widget *, long p)
-{
-  radio_round_button_win->hide();
+static void close_cb(Fl_Widget *, long p) {
+  win->hide();
   ret = (int) p;
 }
 
-static void radiolist_callback(Fl_Widget *v)
-{
-  if (!radiolist_but_ok_activated)
-  {
-    radiolist_but_ok_activated = true;
-    radiolist_but_ok->activate();
+static void callback(Fl_Widget *) {
+  if (!but_ok_activated) {
+    but_ok_activated = true;
+    but_ok->activate();
   }
-
-  radiolist_browser *b = (radiolist_browser *)v;
-  radiolist_return = b->value();
+  browser_rv = browser->value();
 }
 
 int dialog_radiolist(std::string radiolist_options, bool return_number)
 {
-  Fl_Group           *g, *g_inside, *buttongroup;
-  Fl_Box             *dummy1, *dummy2;
-  Fl_Button          *but_cancel;
-  radiolist_browser  *browser;
+  Fl_Group   *g, *g_inside, *buttongroup;
+  Fl_Box     *dummy1, *dummy2;
+  Fl_Button  *but_cancel;
   std::vector<std::string> radiolist_v;
-  int count;
 
   split(radiolist_options, separator, radiolist_v);
+  int count = radiolist_v.size();
 
-  for (count = 0; (size_t) count < radiolist_v.size(); ++count) {}
-
-  if (count < 1)
-  {
+  if (count < 1) {
     title = "error: radiolist";
     msg = "Two or more options required!";
     dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
     return 1;
   }
 
-  if (title == NULL)
-  {
+  if (!title) {
     title = "Select an option";
   }
 
-  radio_round_button_win = new Fl_Double_Window(420, 356, title);
-  radio_round_button_win->callback(radio_round_button_cb, 1);
+  win = new Fl_Double_Window(420, 356, title);
+  win->callback(close_cb, 1);
   {
     g = new Fl_Group(0, 0, 420, 290);
     {
@@ -99,11 +90,10 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
           browser->box(FL_THIN_DOWN_BOX);
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
           browser->clear_visible_focus();
-          for (int i = 0; i < count; ++i)
-          {
+          for (int i = 0; i < count; ++i) {
             browser->add(radiolist_v[i].c_str());
           }
-          browser->callback(radiolist_callback);
+          browser->callback(callback);
         }
         dummy1 = new Fl_Box(10, 288, 400, 1);
         dummy1->box(FL_NO_BOX);
@@ -118,26 +108,22 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
     {
       dummy2 = new Fl_Box(199, 310, 1, 1);
       dummy2->box(FL_NO_BOX);
-      radiolist_but_ok = new Fl_Return_Button(200, 314, 100, 26, fl_ok);
-      radiolist_but_ok->deactivate();
-      radiolist_but_ok->callback(radio_round_button_cb, 0);
+      but_ok = new Fl_Return_Button(200, 314, 100, 26, fl_ok);
+      but_ok->deactivate();
+      but_ok->callback(close_cb, 0);
       but_cancel = new Fl_Button(310, 314, 100, 26, fl_cancel);
-      but_cancel->callback(radio_round_button_cb, 1);
+      but_cancel->callback(close_cb, 1);
     }
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  run_window(radio_round_button_win, g);
+  run_window(win, g);
 
-  if (ret == 0)
-  {
-    if (return_number)
-    {
-      std::cout << radiolist_return << std::endl;
-    }
-    else
-    {
-      std::cout << browser->text(radiolist_return) << std::endl;
+  if (ret == 0) {
+    if (return_number) {
+      std::cout << browser_rv << std::endl;
+    } else {
+      std::cout << browser->text(browser_rv) << std::endl;
     }
   }
   return ret;
