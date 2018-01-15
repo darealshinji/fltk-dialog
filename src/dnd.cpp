@@ -27,19 +27,19 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/filename.H>
 
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <ctype.h>
 #include <string.h>
 
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
 static Fl_Box *count;
-static int count_val = 0;
-static std::string count_label;
+static int val = 0;
+static std::string label;
 static void dnd_callback(const char *items);
 
 class dnd_box : public Fl_Box
@@ -70,35 +70,6 @@ int dnd_box::handle(int event)
   return handle_ret;
 }
 
-/* http://www.geekhideout.com/urlcode.shtml */
-
-static inline char from_hex(char ch) {
-  return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
-}
-
-static char *url_decode(char *str) {
-  char *pstr = str;
-  char *buf = new char[strlen(str) + 1];
-  char *pbuf = buf;
-
-  while (*pstr) {
-    if (*pstr == '%') {
-      if (pstr[1] && pstr[2]) {
-        *pbuf++ = from_hex(pstr[1]) << 4 | from_hex(pstr[2]);
-        pstr += 2;
-      }
-    } else if (*pstr == '+') {
-      *pbuf++ = ' ';
-    } else {
-      *pbuf++ = *pstr;
-    }
-    pstr++;
-  }
-  *pbuf = '\0';
-
-  return buf;
-}
-
 static void close_cb(Fl_Widget *) {
   win->hide();
 }
@@ -106,22 +77,19 @@ static void close_cb(Fl_Widget *) {
 static void dnd_callback(const char *items)
 {
   std::stringstream ss;
-  std::string s;
-  char *line;
-
-  ++count_val;
-  ss << count_val;
-
-  count_label = ss.str();
-  count->label(count_label.c_str());
+  val++;
+  ss << val;
+  label = ss.str();
+  count->label(label.c_str());
   win->redraw();
 
   if (strncmp(items, "file:///", 8) == 0) {
-    s = std::string(items + 7);
+    std::string s(items + 7);
     repstr("\nfile://", "\n", s);
-    line = url_decode((char *)s.c_str());
-    std::cout << line;
-    delete line;
+    char *ch = strdup(s.c_str());
+    fl_decode_uri(ch);
+    std::cout << ch;
+    free(ch);
   } else {
     std::cout << items << std::endl;
   }
