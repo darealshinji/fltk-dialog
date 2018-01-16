@@ -37,7 +37,6 @@ fltk_CXXFLAGS := -Wall $(CXXFLAGS) $(CPPFLAGS) -Wno-unused-parameter -Wno-missin
 
 ifneq ($(HAVE_QT),no)
 main_CXXFLAGS += -DHAVE_QT
-OBJS          += src/file_dlopen_qtplugin.o
 ifneq ($(HAVE_QT4),no)
 main_CXXFLAGS += -DHAVE_QT4
 endif
@@ -136,6 +135,11 @@ define MAKE_CLEAN
   [ ! -f librsvg/Makefile ] || $(MAKE) -C librsvg $@
 endef
 
+define NL
+
+
+endef
+
 
 
 all: $(BIN)
@@ -147,10 +151,8 @@ distclean: mostlyclean
 	-rm -rf fltk/build autom4te.cache
 	-rm -f aclocal.m4 config.mak config.log config.status
 	$(MAKE_CLEAN)
-	[ ! -f fltk/src/Fl_Choice.cxx.orig ] || mv -f fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Choice.cxx
-	[ ! -f fltk/src/Fl_Color_Chooser.cxx.orig ] || mv -f fltk/src/Fl_Color_Chooser.cxx.orig fltk/src/Fl_Color_Chooser.cxx
-	[ ! -f fltk/FL/Fl_Help_Dialog.H.orig ] || mv -f fltk/FL/Fl_Help_Dialog.H.orig fltk/FL/Fl_Help_Dialog.H
-	[ ! -f fltk/src/Fl_Help_Dialog.cxx.orig ] || mv -f fltk/src/Fl_Help_Dialog.cxx.orig fltk/src/Fl_Help_Dialog.cxx
+	$(foreach file,fltk/src/Fl_Choice.cxx fltk/src/Fl_Color_Chooser.cxx fltk/FL/Fl_File_Chooser.H fltk/src/Fl_File_Chooser.cxx \
+ fltk/FL/Fl_Help_Dialog.H fltk/src/Fl_Help_Dialog.cxx,[ ! -f $(file).orig ] || mv -f $(file).orig $(file)$(NL))
 
 mostlyclean:
 	-rm -f $(BIN) *.so *_so.h *_png.h *.o src/*.o src/Flek/*.o src/misc/*.o
@@ -182,10 +184,16 @@ fltk/src/Fl_Choice.cxx.orig: patches/Fl_Choice-pulldown.patch
 fltk/src/Fl_Color_Chooser.cxx.orig: patches/Fl_Color_Chooser.patch
 	patch -p1 --backup < $<
 
+fltk/src/Fl_File_Chooser.cxx.orig: patches/Fl_File_Chooser.patch
+	patch -p1 --backup < $<
+
 fltk/src/Fl_Help_Dialog.cxx.orig: patches/Fl_Help_Dialog-close+nodeco.patch
 	patch -p1 --backup < $<
 
-fltk/build/Makefile: fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Color_Chooser.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
+patches_backup_files = fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Color_Chooser.cxx.orig \
+ fltk/src/Fl_File_Chooser.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
+
+fltk/build/Makefile: $(patches_backup_files)
 	mkdir -p fltk/build
 	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) -DCMAKE_VERBOSE_MAKEFILE="OFF"
 
@@ -245,6 +253,7 @@ else
 src/file_dlopen_qtplugin.o: $(qtplugins)
 endif
 
+src/file.cpp: qtgui_so.h
 src/file_qtplugin.cpp: $(libfltk)
 endif # HAVE_QT
 

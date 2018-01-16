@@ -412,35 +412,35 @@ int main(int argc, char **argv)
     dialog_count++;
   }
 
+  int native_mode = NATIVE_NONE;
   int native_count = 0;
-  bool native = arg_native ? true : false;
-  if (native) {
+  if (arg_native) {
+    native_mode = NATIVE_ANY;
     native_count++;
   }
 
-  bool native_gtk = false, native_qt4 = false, native_qt5 = false;
 #ifdef HAVE_QT
   if (arg_native_gtk) {
-    native_gtk = true;
+    native_mode = NATIVE_GTK;
     native_count++;
   }
 # ifdef HAVE_QT4
   if (arg_native_qt4) {
-    native_qt4 = true;
+    native_mode = NATIVE_QT4;
     native_count++;
   }
 # endif
 # ifdef HAVE_QT5
   if (arg_native_qt5) {
-    native_qt5 = true;
+    native_mode = NATIVE_QT5;
     native_count++;
   }
 # endif
   if (arg_native_qt) {
 # if QTDEF == 5
-    native_qt5 = true;
+    native_mode = NATIVE_QT5;
 # else
-    native_qt4 = true;
+    native_mode = NATIVE_QT4;
 # endif
     native_count++;
   }
@@ -544,8 +544,7 @@ int main(int argc, char **argv)
     return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
   }
 
-  if ((native || native_gtk || native_qt4 || native_qt5) &&
-      (dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER)) {
+  if (native_mode != NATIVE_NONE && dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER) {
     return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5", "--file or --directory");
   }
 
@@ -672,8 +671,9 @@ int main(int argc, char **argv)
     case DIALOG_SCALE:
       return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_SCALE, false);
     case DIALOG_FILE_CHOOSER:
+      return dialog_file_chooser(FILE_CHOOSER, native_mode, argc, argv);
     case DIALOG_DIR_CHOOSER:
-      goto return_file_chooser;
+      return dialog_file_chooser(DIR_CHOOSER, native_mode, argc, argv);
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, notify_icon, libnotify);
     case DIALOG_PROGRESS:
@@ -706,27 +706,5 @@ int main(int argc, char **argv)
   std::cerr << argv[0] << ": error: unknown or unused dialog\n" << __PRETTY_FUNCTION__
     << " at " << __FILE__ << ", line " << __LINE__ << std::endl;
   return 1;
-
-return_file_chooser:
-  int flag = (dialog == DIALOG_FILE_CHOOSER) ? FILE_CHOOSER : DIR_CHOOSER;
-  if (native) {
-    return dialog_native_file_chooser(flag, argc, argv);
-  }
-#ifdef HAVE_QT
-  else if (native_gtk) {
-    return dialog_native_file_chooser_gtk(flag);
-  }
-#  ifdef HAVE_QT4
-  else if (native_qt4) {
-    return dialog_native_file_chooser_qt(4, flag, argc, argv);
-  }
-#  endif
-#  ifdef HAVE_QT5
-  else if (native_qt5) {
-    return dialog_native_file_chooser_qt(5, flag, argc, argv);
-  }
-#  endif
-#endif  /* HAVE_QT */
-  return (dialog == DIALOG_FILE_CHOOSER) ? dialog_file_chooser() : dialog_dir_chooser();
 }
 

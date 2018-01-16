@@ -1,0 +1,47 @@
+--- a/fltk/FL/Fl_File_Chooser.H
++++ a/fltk/FL/Fl_File_Chooser.H
+@@ -144,7 +144,9 @@ public:
+   void label(const char *l);
+   const char * label();
+   void ok_label(const char *l);
++  void cancel_label(const char *l);
+   const char * ok_label();
++  const char * cancel_label();
+   void preview(int e); 
+   int preview() const { return previewButton->value(); }; 
+ private:
+--- a/fltk/src/Fl_File_Chooser.cxx
++++ a/fltk/src/Fl_File_Chooser.cxx
+@@ -378,15 +378,32 @@ void Fl_File_Chooser::ok_label(const char *l) {
+   if (l) okButton->label(l);
+   int w=0, h=0;
+   okButton->measure_label(w, h);
++  if (w < 60) w = 60;
+   okButton->resize(cancelButton->x() - 50 - w, cancelButton->y(),
+                    w + 40, 25);
+   okButton->parent()->init_sizes();
+ }
+ 
++void Fl_File_Chooser::cancel_label(const char *l) {
++  if (l) cancelButton->label(l);
++  int w=0, h=0;
++  cancelButton->measure_label(w, h);
++  if (w < 60) w = 60;
++  cancelButton->resize(cancelButton->parent()->w() - 10 - w, cancelButton->y(),
++                       w + 20, 25);
++  okButton->resize(cancelButton->x() - 10 - okButton->w(), okButton->y(),
++                   okButton->w(), okButton->h());
++  cancelButton->parent()->init_sizes();
++}
++
+ const char * Fl_File_Chooser::ok_label() {
+   return (okButton->label());
+ }
+ 
++const char * Fl_File_Chooser::cancel_label() {
++  return (cancelButton->label());
++}
++
+ int Fl_File_Chooser::shown() {
+   return window->shown();
+ }

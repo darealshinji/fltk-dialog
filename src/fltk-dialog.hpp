@@ -65,7 +65,18 @@ enum {
   MESSAGE_TYPE_SCALE
 };
 
-enum { FILE_CHOOSER, DIR_CHOOSER };
+enum {
+  FILE_CHOOSER,
+  DIR_CHOOSER
+};
+
+enum {
+  NATIVE_NONE,
+  NATIVE_ANY,
+  NATIVE_GTK,
+  NATIVE_QT4,
+  NATIVE_QT5
+};
 
 extern const char *title, *msg;
 extern char separator;
@@ -98,14 +109,7 @@ int dialog_color(void);
 int dialog_date(std::string format);
 int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number);
-int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv);
-int dialog_file_chooser(void);
-int dialog_dir_chooser(void);
-int dialog_native_file_chooser(int mode, int argc, char **argv);
-int dialog_native_file_chooser_gtk(int mode);
-#ifdef HAVE_QT
-int dialog_native_file_chooser_qt(int qt_major, int mode, int argc, char **argv);
-#endif
+int dialog_file_chooser(int file_mode, int native_mode, int argc, char **argv);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
 int dialog_message(const char *label_but_ret, const char *label_but, const char *label_but_alt = NULL,
