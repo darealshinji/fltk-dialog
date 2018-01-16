@@ -94,11 +94,12 @@ static void close_cb(Fl_Widget *) {
 
 int about()
 {
-  Fl_Box *box;
+  Fl_Group *g1, *g2;
+  Fl_Box *box, *dummy;
   Fl_Text_Display *display;
   Fl_Return_Button *but_close;
   Fl_Button *but_lic, *but_hp;
-  int w = 500, h = 500, but_w;
+  int w = 500, h = 500, but_w, range_w = 40;
 
   win = new Fl_Double_Window(w, h, "FLTK dialog");
   win->callback(close_cb);
@@ -107,27 +108,43 @@ int about()
     box->box(FL_NO_BOX);
     box->image(new Fl_PNG_Image(NULL, src_fltk_png, (int)src_fltk_png_len));
 
-    buffer = new Fl_Text_Buffer();
-    display = new Fl_Text_Display(10, FLTK_PNG_HEIGHT + 40, w - 20, h - FLTK_PNG_HEIGHT - 90);
-    display->buffer(buffer);
-    buffer->text(text.c_str());
+    g1 = new Fl_Group(10, FLTK_PNG_HEIGHT + 40, w - 20, h - FLTK_PNG_HEIGHT - 90);
+    {
+      buffer = new Fl_Text_Buffer();
+      display = new Fl_Text_Display(10, FLTK_PNG_HEIGHT + 40, w - 20, h - FLTK_PNG_HEIGHT - 90);
+      display->buffer(buffer);
+      buffer->text(text.c_str());
+    }
+    g1->end();
 
-    but_lic = new Fl_Button(0,0,0,0, "License");
-    measure_button_width(but_lic, but_w, 40);
-    but_lic = new Fl_Button(10, h - 40, but_w, 28, "License");
-    but_lic->callback(callback);
+    g2 = new Fl_Group(0, h - 40, w, 40);
+    {
+      but_lic = new Fl_Button(0,0,0,0, "License");
+      measure_button_width(but_lic, but_w, 40);
+      but_lic = new Fl_Button(10, h - 40, but_w, 28, "License");
+      but_lic->callback(callback);
+      range_w += but_w;
 
-    but_hp = new Fl_Button(0,0,0,0, "Homepage");
-    measure_button_width(but_hp, but_w, 40);
-    but_hp = new Fl_Button(but_lic->w() + 20, h - 40, but_w, 28, "Homepage");
-    but_hp->callback(url_cb, (void *)"https://github.com/darealshinji/fltk-dialog");
+      but_hp = new Fl_Button(0,0,0,0, "Homepage");
+      measure_button_width(but_hp, but_w, 40);
+      but_hp = new Fl_Button(but_lic->w() + 20, h - 40, but_w, 28, "Homepage");
+      but_hp->callback(url_cb, (void *)"https://github.com/darealshinji/fltk-dialog");
+      range_w += but_w;
 
-    but_close = new Fl_Return_Button(0,0,0,0, fl_close);
-    measure_button_width(but_close, but_w, 40);
-    but_close = new Fl_Return_Button(w - but_w - 10, h - 40, but_w, 28, fl_close);
-    but_close->callback(close_cb);
+      but_close = new Fl_Return_Button(0,0,0,0, fl_close);
+      measure_button_width(but_close, but_w, 40);
+      but_close = new Fl_Return_Button(w - but_w - 10, h - 40, but_w, 28, fl_close);
+      but_close->callback(close_cb);
+      range_w += but_w;
+
+      dummy = new Fl_Box(but_close->x() - 1, h - 40, 1, 1);
+      dummy->box(FL_NO_BOX);
+    }
+    g2->resizable(dummy);
+    g2->end();
   }
-  run_window(win, NULL);
+  win->size_range(range_w, FLTK_PNG_HEIGHT + 130, max_w, max_h);
+  run_window(win, g1);
 
   return 0;
 }
