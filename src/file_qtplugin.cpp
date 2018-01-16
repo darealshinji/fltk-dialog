@@ -52,7 +52,7 @@ int getfilenameqt(int mode, const char *separator, const char *title, int argc, 
   QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
   QFileDialog *dialog = new QFileDialog();
 
-  dialog->setWindowIcon(QIcon(":/icon.png"));  /* not shown in Qt5? */
+  dialog->setWindowIcon(QIcon(":/icon.png"));
   dialog->setWindowTitle(title);
 
   if (mode == DIR_CHOOSER) {
