@@ -62,7 +62,7 @@ static void close_cb(Fl_Widget *, long p) {
 
 int dialog_date(std::string format)
 {
-  Fl_Group         *g, *buttongroup;
+  Fl_Group         *g1, *g2;
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
@@ -105,7 +105,7 @@ int dialog_date(std::string format)
   win->size_range(400, 114, max_w, max_h);
   win->callback(close_cb, 1);
   {
-    g = new Fl_Group(0, 0, 400, 114);
+    g1 = new Fl_Group(0, 0, 400, 114);
     {
       month = new Fl_Choice(10, 28, 120, 30, "Month:");
       month->down_box(FL_BORDER_BOX);
@@ -134,22 +134,24 @@ int dialog_date(std::string format)
       dummy1 = new Fl_Box(10, 58, 380, 1);
       dummy1->box(FL_NO_BOX);
     }
-    g->resizable(dummy1);
-    g->end();
+    g1->resizable(dummy1);
+    g1->end();
 
-    buttongroup = new Fl_Group(0, 74, 400, 46);
+    g2 = new Fl_Group(0, 74, 400, 46);
     {
-      dummy2 = new Fl_Box(179, 74, 1, 1);
-      dummy2->box(FL_NO_BOX);
-      but_ok = new Fl_Return_Button(180, 78, 100, 26, fl_ok);
-      but_ok->callback(close_cb, 0);
-      but_cancel = new Fl_Button(290, 78, 100, 26, fl_cancel);
+      int but_w = measure_button_width(fl_cancel, 20);
+      but_cancel = new Fl_Button(win->w() - 10 - but_w, 78, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
+      but_w = measure_button_width(fl_ok, 40);
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 78, but_w, 26, fl_ok);
+      but_ok->callback(close_cb, 0);
+      dummy2 = new Fl_Box(but_ok->x() - 1, 74, 1, 1);
+      dummy2->box(FL_NO_BOX);
     }
-    buttongroup->resizable(dummy2);
-    buttongroup->end();
+    g2->resizable(dummy2);
+    g2->end();
   }
-  run_window(win, g);
+  run_window(win, g1);
 
   if (ret == 0) {
     print_date(format, year->value(), month->value() + 1, day->value());

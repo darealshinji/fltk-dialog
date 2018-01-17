@@ -102,8 +102,6 @@ int dialog_dnd()
   Fl_Box   *text, *dummy;
   Fl_Return_Button *but_close;
 
-  int but_w;
-
   if (!msg) {
     msg = "drop stuff here";
   }
@@ -121,27 +119,16 @@ int dialog_dnd()
 
     g = new Fl_Group(0, 244, 400, 56);
     {
-      text = new Fl_Box(0,0,0,0);
-      count = new Fl_Box(0,0,0,0);
-
-      measure_button_width(text, but_w, 40);
-      text = new Fl_Box(10, 264, but_w, 26);
-      measure_button_width(count, but_w, 40);
-      count = new Fl_Box(10, 264, but_w, 26);
-
-      text->label("Drop count:");
+      int but_w = measure_button_width("Drop count:");
+      text = new Fl_Box(10, 264, but_w, 26, "Drop count:");
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
 
-      /* the count widget has the same size and position as the
-       * text widget, but its label text is placed right to it */
-      count->label("0");
+      count = new Fl_Box(10, 264, but_w, 26, "0");
       count->box(FL_NO_BOX);
       count->align(FL_ALIGN_RIGHT);
 
-      but_close = new Fl_Return_Button(0,0,0,0, fl_close);
-      measure_button_width(but_close, but_w, 40);
-
+      but_w = measure_button_width(fl_close, 40);
       dummy = new Fl_Box(389 - but_w, 260, 1, 1);
       dummy->box(FL_NO_BOX);
       but_close = new Fl_Return_Button(390 - but_w, 264, but_w, 26, fl_close);
@@ -152,6 +139,6 @@ int dialog_dnd()
   }
   run_window(win, box);
 
-  return ret;
+  return 0;
 }
 

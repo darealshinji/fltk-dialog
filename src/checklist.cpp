@@ -102,12 +102,14 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
 
     buttongroup = new Fl_Group(0, 310, 420, 42);
     {
-      dummy2 = new Fl_Box(199, 310, 1, 1);
-      dummy2->box(FL_NO_BOX);
-      but_ok = new Fl_Return_Button(200, 320, 100, 26, fl_ok);
-      but_ok->callback(close_cb, 0);
-      but_cancel = new Fl_Button(310, 320, 100, 26, fl_cancel);
+      int but_w = measure_button_width(fl_cancel, 20);
+      but_cancel = new Fl_Button(win->w() - 10 - but_w, 320, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
+      but_w = measure_button_width(fl_ok, 40);
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 320, but_w, 26, fl_ok);
+      but_ok->callback(close_cb, 0);
+      dummy2 = new Fl_Box(but_ok->x() - 1, 310, 1, 1);
+      dummy2->box(FL_NO_BOX);
     }
     buttongroup->resizable(dummy2);
     buttongroup->end();

@@ -66,17 +66,17 @@ int dialog_color()
   ColorChip        *color;
   Fl_Box           *dummy;
   Fl_Group         *buttongroup;
-  Fl_Return_Button *ok_button;
-  Fl_Button        *cancel_button;
+  Fl_Return_Button *but_ok;
+  Fl_Button        *but_cancel;
 
   double r = 1, g = 1, b = 1;
+  int range_w = 0;
 
   if (!title) {
     title = "color chooser";
   }
 
   win = new Fl_Double_Window(215, 200, title);
-  win->size_range(215, 200, max_w, max_h);
   win->callback(close_cb, 1);
   {
     chooser = new Fl_Color_Chooser(10, 10, 195, 115);
@@ -85,11 +85,16 @@ int dialog_color()
 
     buttongroup = new Fl_Group(10, 165, 195, 25);
     {
-      dummy = new Fl_Box(0, 165, 1, 25);
-      ok_button = new Fl_Return_Button(10, 165, 95, 25, fl_ok);
-      ok_button->callback(close_cb, 0);
-      cancel_button = new Fl_Button(110, 165, 95, 25, fl_cancel);
-      cancel_button->callback(close_cb, 1);
+      int but_w = measure_button_width(fl_cancel, 20);
+      range_w += but_w;
+      but_cancel = new Fl_Button(win->w() - 10 - but_w, 165, but_w, 26, fl_cancel);
+      but_cancel->callback(close_cb, 1);
+      but_w = measure_button_width(fl_ok, 40);
+      range_w += but_w + 30;
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 165, but_w, 26, fl_ok);
+      but_ok->callback(close_cb, 0);
+      dummy = new Fl_Box(but_ok->x() - 1, 165, 1, 1);
+      dummy->box(FL_NO_BOX);
     }
     buttongroup->resizable(dummy);
     buttongroup->end();
@@ -98,6 +103,7 @@ int dialog_color()
     chooser->callback(callback, color);
     chooser->mode(1);
   }
+  win->size_range(range_w, range_w - 26, max_w, max_h);
   win->end();
   run_window(win, chooser);
 

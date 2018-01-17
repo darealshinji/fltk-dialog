@@ -57,7 +57,7 @@ static void callback(Fl_Widget *) {
 
 int dialog_radiolist(std::string radiolist_options, bool return_number)
 {
-  Fl_Group   *g, *g_inside, *buttongroup;
+  Fl_Group   *g1, *g1a, *g2;
   Fl_Box     *dummy1, *dummy2;
   Fl_Button  *but_cancel;
   std::vector<std::string> radiolist_v;
@@ -79,9 +79,9 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
   win = new Fl_Double_Window(420, 356, title);
   win->callback(close_cb, 1);
   {
-    g = new Fl_Group(0, 0, 420, 290);
+    g1 = new Fl_Group(0, 0, 420, 290);
     {
-      g_inside = new Fl_Group(0, 0, 420, 290);
+      g1a = new Fl_Group(0, 0, 420, 290);
       {
         for (int i = 0; i < count; ++i)
         {
@@ -98,26 +98,28 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
         dummy1 = new Fl_Box(10, 288, 400, 1);
         dummy1->box(FL_NO_BOX);
       }
-      g_inside->resizable(dummy1);
-      g_inside->end();
+      g1a->resizable(dummy1);
+      g1a->end();
     }
-    g->resizable(g_inside);
-    g->end();
+    g1->resizable(g1a);
+    g1->end();
 
-    buttongroup = new Fl_Group(0, 310, 420, 36);
+    g2 = new Fl_Group(0, 310, 420, 36);
     {
-      dummy2 = new Fl_Box(199, 310, 1, 1);
-      dummy2->box(FL_NO_BOX);
-      but_ok = new Fl_Return_Button(200, 314, 100, 26, fl_ok);
-      but_ok->deactivate();
-      but_ok->callback(close_cb, 0);
-      but_cancel = new Fl_Button(310, 314, 100, 26, fl_cancel);
+      int but_w = measure_button_width(fl_cancel, 20);
+      but_cancel = new Fl_Button(win->w() - 10 - but_w, 314, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
+      but_w = measure_button_width(fl_ok, 40);
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 314, but_w, 26, fl_ok);
+      but_ok->callback(close_cb, 0);
+      but_ok->deactivate();
+      dummy2 = new Fl_Box(but_ok->x() - 1, 310, 1, 1);
+      dummy2->box(FL_NO_BOX);
     }
-    buttongroup->resizable(dummy2);
-    buttongroup->end();
+    g2->resizable(dummy2);
+    g2->end();
   }
-  run_window(win, g);
+  run_window(win, g1);
 
   if (ret == 0) {
     if (return_number) {

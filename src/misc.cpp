@@ -25,6 +25,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Button.H>
 #include <FL/x.H>
 
 #include <iostream>
@@ -46,7 +47,7 @@ void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
 void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
-void measure_button_width(Fl_Widget *o, int &w, int off);
+int measure_button_width(const char *label, int extra_width);
 void aspect_ratio_scale(int &w, int &h, const int limit);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
@@ -134,16 +135,21 @@ void set_always_on_top(Fl_Double_Window *o)
   }
 }
 
-void measure_button_width(Fl_Widget *o, int &w, int off)
+int measure_button_width(const char *label, int extra_width)
 {
-  int h = w = 0;
+  int h = 0, w = 0;
+  if (!label) {
+    return 90;
+  }
+  Fl_Button *o = new Fl_Button(0,0,0,0, label);
   fl_font(o->labelfont(), o->labelsize());
   fl_measure(o->label(), w, h);
-  w += off;
+  w += extra_width;
   if (w < 90) {
     w = 90;
   }
   delete o;
+  return w;
 }
 
 void aspect_ratio_scale(int &w, int &h, const int limit)

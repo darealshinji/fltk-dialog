@@ -99,7 +99,7 @@ int about()
   Fl_Text_Display *display;
   Fl_Return_Button *but_close;
   Fl_Button *but_lic, *but_hp;
-  int w = 500, h = 500, but_w, range_w = 40;
+  int w = 500, h = 500, range_w = 40;
 
   win = new Fl_Double_Window(w, h, "FLTK dialog");
   win->callback(close_cb);
@@ -119,20 +119,17 @@ int about()
 
     g2 = new Fl_Group(0, h - 40, w, 40);
     {
-      but_lic = new Fl_Button(0,0,0,0, "License");
-      measure_button_width(but_lic, but_w, 40);
+      int but_w = measure_button_width("License", 20);
       but_lic = new Fl_Button(10, h - 40, but_w, 28, "License");
       but_lic->callback(callback);
       range_w += but_w;
 
-      but_hp = new Fl_Button(0,0,0,0, "Homepage");
-      measure_button_width(but_hp, but_w, 40);
+      but_w = measure_button_width("Homepage", 20);
       but_hp = new Fl_Button(but_lic->w() + 20, h - 40, but_w, 28, "Homepage");
       but_hp->callback(url_cb, (void *)"https://github.com/darealshinji/fltk-dialog");
       range_w += but_w;
 
-      but_close = new Fl_Return_Button(0,0,0,0, fl_close);
-      measure_button_width(but_close, but_w, 40);
+      but_w = measure_button_width(fl_close, 40);
       but_close = new Fl_Return_Button(w - but_w - 10, h - 40, but_w, 28, fl_close);
       but_close->callback(close_cb);
       range_w += but_w;

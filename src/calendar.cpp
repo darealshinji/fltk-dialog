@@ -64,12 +64,14 @@ int dialog_calendar(std::string format)
   {
     g = new Fl_Group(0, 244, 244, 37);
     {
-      dummy = new Fl_Box(9, 244, 1, 1);
-      dummy->box(FL_NO_BOX);
-      but_ok = new Fl_Return_Button(10, 244, 107, 26, fl_ok);
-      but_ok->callback(close_cb, 0);
-      but_cancel = new Fl_Button(127, 244, 107, 26, fl_cancel);
+      int but_w = measure_button_width(fl_cancel, 20);
+      but_cancel = new Fl_Button(234 - but_w, 244, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
+      but_w = measure_button_width(fl_ok, 40);
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 244, but_w, 26, fl_ok);
+      but_ok->callback(close_cb, 0);
+      dummy = new Fl_Box(but_ok->x() - 1, 244, 1, 1);
+      dummy->box(FL_NO_BOX);
     }
     g->resizable(dummy);
     g->end();

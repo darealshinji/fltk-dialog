@@ -57,11 +57,27 @@
 
 #define PULSATE_USLEEP 10000
 
+class no_handle_Fl_Slider : public Fl_Slider
+{
+public:
+  no_handle_Fl_Slider(int X, int Y, int W, int H)
+      : Fl_Slider(X, Y, W, H) { }
+
+  virtual ~no_handle_Fl_Slider() { }
+
+  int handle(int) {
+    /* don't do anything if
+     * we grab the slider */
+    return 0;
+  };
+};
+
+static no_handle_Fl_Slider *slider = NULL;
+
 static Fl_Double_Window *win = NULL;
 static Fl_Box           *box = NULL;
 static Fl_Return_Button *but_ok = NULL;
 static Fl_Button        *but_cancel = NULL;
-static Fl_Slider        *slider = NULL;
 static Fl_Progress      *bar = NULL, *bar_main = NULL;
 
 static int pulsate_val = 0
@@ -248,13 +264,13 @@ int dialog_progress(bool pulsate_, int multi_, long kill_pid_, bool autoclose_, 
       box->align(FL_ALIGN_RIGHT);
 
       if (pulsate) {
-        slider = new Fl_Slider(10, 50, 300, 30);
+        slider = new no_handle_Fl_Slider(10, 50, 300, 30);
         slider->type(1);
         slider->minimum(0);
         slider->maximum(100);
         slider->color(fl_darker(FL_GRAY));
         slider->value(0);
-        slider->slider_size(0.25);
+        slider->slider_size(0.1);
       } else {
         if (multi > 1) {
           bar_main = new Fl_Progress(10, 50, 300, 30, "0%");
@@ -274,20 +290,30 @@ int dialog_progress(bool pulsate_, int multi_, long kill_pid_, bool autoclose_, 
         bar->value(0);
       }
 
-      int but_ok_x = (hide_cancel) ? 210 : 100;
+      if (hide_cancel && autoclose) {
+        dummy = new Fl_Box(10, 81 + offset, 300, 1);
+      } else {
+        int but_w = 0;
+        int but_x = win->w() - 10;
 
-      if (!hide_cancel) {
-        but_cancel = new Fl_Button(210, 104 + offset, 100, 26, fl_cancel);
-        but_cancel->callback(cancel_cb);
+        if (!hide_cancel) {
+          but_w = measure_button_width(fl_cancel, 20);
+          but_cancel = new Fl_Button(win->w() - 10 - but_w, 104 + offset, but_w, 26, fl_cancel);
+          but_cancel->callback(cancel_cb);
+          but_x = but_cancel->x() - 1;
+        }
+
+        if (!autoclose) {
+          but_w = measure_button_width(fl_ok, 40);
+          but_x = hide_cancel ? win->w() : but_cancel->x();
+          but_ok = new Fl_Return_Button(but_x - 10 - but_w, 104 + offset, but_w, 26, fl_ok);
+          but_ok->deactivate();
+          but_ok->callback(close_cb, 0);
+          but_x = but_ok->x() - 1;
+        }
+
+        dummy = new Fl_Box(but_x, 103 + offset, 1, 1);
       }
-
-      if (!autoclose) {
-        but_ok = new Fl_Return_Button(but_ok_x, 104 + offset, 100, 26, fl_ok);
-        but_ok->deactivate();
-        but_ok->callback(close_cb, 0);
-      }
-
-      dummy = new Fl_Box(but_ok_x - 1, (103 + offset) - 1, 1, 1);
       dummy->box(FL_NO_BOX);
     }
     g->resizable(dummy);

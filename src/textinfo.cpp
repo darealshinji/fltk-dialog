@@ -40,11 +40,11 @@
 
 #include "fltk-dialog.hpp"
 
-// (while (true); do echo hello; done) | ./fltk-dialog --text-info --auto-scroll
+// (n=1; while (test $n -le 1000); do echo "Line $n"; n=$(($((n))+1)); done) | ./fltk-dialog --text-info --auto-scroll --checkbox="I confirm"
 
 static Fl_Double_Window *win;
 static Fl_Multi_Browser *browser;
-static Fl_Return_Button *but_ok;
+static Fl_Return_Button *but_ret;
 static bool checkbutton_set = false;
 
 static void close_cb(Fl_Widget *, long p) {
@@ -55,10 +55,10 @@ static void close_cb(Fl_Widget *, long p) {
 static void callback(Fl_Widget *) {
   if (checkbutton_set) {
     checkbutton_set = false;
-    but_ok->deactivate();
+    but_ret->deactivate();
   } else {
     checkbutton_set = true;
-    but_ok->activate();
+    but_ret->activate();
   }
 }
 
@@ -83,7 +83,7 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
   Fl_Group         *g;
   Fl_Box           *dummy;
   Fl_Check_Button  *checkbutton;
-  Fl_Button        *but_cancel;
+  Fl_Button        *but;
 
   if (!title) {
     title = "FLTK text info window";
@@ -97,32 +97,31 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
 
     g = new Fl_Group(0, browser_h, 400, 500);
     {
-      int but_x = 290;
       int but_y = browser_h + 20;
+      int but_w;
       if (!checkbox) {
-        int but_w;
         win->callback(close_cb, 0);
-        but_ok = new Fl_Return_Button(0,0,0,0, fl_close);
-        measure_button_width(but_ok, but_w, 40);
-        but_ok = new Fl_Return_Button(390 - but_w, but_y, but_w, 26, fl_close);
-        but_ok->callback(close_cb, 0);
+        but_w = measure_button_width(fl_close, 40);
+        but_ret = new Fl_Return_Button(win->w() - 10 - but_w, but_y, but_w, 26, fl_close);
+        but_ret->callback(close_cb, 0);
       } else {
-        but_x = 180;
-        but_y = browser_h + 10;
-
         win->callback(close_cb, 1);
+        but_y = browser_h + 10;
 
         std::string s = " " + std::string(checkbox);
         checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, s.c_str());
         checkbutton->callback(callback);
 
-        but_ok = new Fl_Return_Button(but_x, but_y + 36, 100, 26, fl_ok);
-        but_ok->deactivate();
-        but_ok->callback(close_cb, 0);
-        but_cancel = new Fl_Button(290, but_y + 36, 100, 26, fl_cancel);
-        but_cancel->callback(close_cb, 1);
+        but_w = measure_button_width(fl_cancel, 20);
+        but = new Fl_Button(win->w() - 10 - but_w, but_y + 36, but_w, 26, fl_cancel);
+        but->callback(close_cb, 1);
+
+        but_w = measure_button_width(fl_ok, 40);
+        but_ret = new Fl_Return_Button(but->x() - 10 - but_w, but_y + 36, but_w, 26, fl_ok);
+        but_ret->callback(close_cb, 0);
+        but_ret->deactivate();
       }
-      dummy = new Fl_Box(but_x - 1, but_y - 1, 1, 1);
+      dummy = new Fl_Box(but_ret->x() - 1, but_y - 1, 1, 1);
       dummy->box(FL_NO_BOX);
     }
     g->resizable(dummy);

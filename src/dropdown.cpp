@@ -47,7 +47,6 @@ static void close_cb(Fl_Widget *, long p) {
 
 int dialog_dropdown(std::string dropdown_list, bool return_number)
 {
-  Fl_Menu_Item     *menu_items;
   Fl_Group         *g;
   Fl_Choice        *entries;
   Fl_Box           *dummy;
@@ -66,20 +65,21 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
 
   split(dropdown_list, separator, itemlist_v);
 
-  size_t count = itemlist_v.size();
-  if (count <= 1) {
+  if (itemlist_v.size() < 2) {
     msg = "ERROR: need at least 2 entries";
-    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
+    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
     return 1;
   }
 
-  menu_items = new Fl_Menu_Item[count]();
+  struct Fl_Menu_Item menu_items[itemlist_v.size() + 1];
 
-  for (size_t i = 0; i < count; ++i) {
-    menu_items[i].text = (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str();
-    menu_items[i].labeltype_ = FL_NORMAL_LABEL;
-    menu_items[i].labelsize_ = 14;
+  for (size_t i = 0; i < itemlist_v.size(); i++) {
+    menu_items[i] = {
+      (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str(),
+      0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
+    };
   }
+  menu_items[itemlist_v.size()] = { 0,0,0,0,0,0,0,0,0 };
 
   win = new Fl_Double_Window(320, 110, title);
   win->size_range(320, 110, max_w, max_h);
@@ -92,13 +92,16 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
       entries->align(FL_ALIGN_TOP_LEFT);
       entries->menu(menu_items);
 
-      dummy = new Fl_Box(99, 73, 1, 1);
-      dummy->box(FL_NO_BOX);
-
-      but_ok = new Fl_Return_Button(100, 74, 100, 26, fl_ok);
-      but_ok->callback(close_cb, 0);
-      but_cancel = new Fl_Button(210, 74, 100, 26, fl_cancel);
+      int but_w = measure_button_width(fl_cancel, 20);
+      but_cancel = new Fl_Button(310 - but_w, 74, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
+
+      but_w = measure_button_width(fl_ok, 40);
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 74, but_w, 26, fl_ok);
+      but_ok->callback(close_cb, 0);
+
+      dummy = new Fl_Box(but_ok->x() - 1, 73, 1, 1);
+      dummy->box(FL_NO_BOX);
     }
     g->resizable(dummy);
     g->end();
@@ -114,7 +117,6 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
     }
   }
 
-  delete[] menu_items;
   return ret;
 }
 

@@ -103,7 +103,7 @@ int dialog_message(const char *label_but_ret
 
   std::string s;
   int msg_w, msg_h, win_w, win_h, min_w, min_h, input_off = 0;
-  int label_but_ret_w, label_but_w, label_but_alt_w;
+  int label_but_ret_w, label_but_w, label_but_alt_w = 0;
   int esc_ret = 1;
   bool input_field = false;
   bool scaler_field = false;
@@ -163,15 +163,11 @@ int dialog_message(const char *label_but_ret
   fl_measure(tmp->label(), msg_w, msg_h);
   delete tmp;
 
-  but_ret = new Fl_Return_Button(0,0,0,0, label_but_ret);
-  measure_button_width(but_ret, label_but_ret_w, 40);
-
-  but = new Fl_Button(0,0,0,0, label_but);
-  measure_button_width(but, label_but_w, 15);
+  label_but_ret_w = measure_button_width(label_but_ret, 40);
+  label_but_w = measure_button_width(label_but, 15);
 
   if (!label_but_alt) {
-    but_alt = new Fl_Button(0,0,0,0, label_but_alt);
-    measure_button_width(but_alt, label_but_alt_w, 15);
+    label_but_alt_w = measure_button_width(label_but_alt, 15);
   }
 
   win_w = msg_w + 30;

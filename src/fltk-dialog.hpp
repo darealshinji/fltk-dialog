@@ -93,7 +93,7 @@ void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
 void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
-void measure_button_width(Fl_Widget *o, int &w, int off);
+int measure_button_width(const char *label, int extra_width = 0);
 void aspect_ratio_scale(int &w, int &h, const int limit);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
