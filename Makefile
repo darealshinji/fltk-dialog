@@ -12,8 +12,6 @@ WITH_RSVG        ?= no
 DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
 
-FLTK_VERSION = 1.3.4
-
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
   dropdown.o FDate.o file.o Fl_Calendar.o font.o html.o img_to_rgb.o l10n.o main.o \
@@ -28,7 +26,7 @@ CXXFLAGS ?= -O3 -Wall -std=c++11
 
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra -Wno-unused-parameter $(CXXFLAGS) $(CPPFLAGS)
-main_CXXFLAGS += -I. -Isrc -Isrc/misc -Ifltk/build -Ifltk -DFLTK_VERSION=\"$(FLTK_VERSION)\"
+main_CXXFLAGS += -I. -Isrc -Isrc/misc -Ifltk/build -Ifltk -DFLTK_STATIC
 main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
 
 # libfltk build flags

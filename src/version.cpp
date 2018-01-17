@@ -23,29 +23,24 @@
  */
 
 #include <FL/Fl.H>
+#include <string>
+
+#ifdef FLTK_STATIC
+
+#include <FL/Enumerations.H>
+#include "fltk-dialog.hpp"
+
+std::string get_fltk_version() {
+  return XSTRINGIFY(FL_MAJOR_VERSION) "." XSTRINGIFY(FL_MINOR_VERSION) "." XSTRINGIFY(FL_PATCH_VERSION);
+}
+
+#else  /* !FLTK_STATIC */
 
 #include <iostream>
 #include <sstream>
-#include <string>
-
-#ifdef PRINT_VERSION
-# define RETURN_VERSION PRINT_VERSION
-#else
-# ifdef FLTK_VERSION
-#  ifdef REVISION
-#   define RETURN_VERSION FLTK_VERSION " (SVN r" REVISION ")"
-#  else
-#   define RETURN_VERSION FLTK_VERSION
-#  endif
-# endif
-#endif
-
 
 std::string get_fltk_version()
 {
-#ifdef RETURN_VERSION
-  return RETURN_VERSION;
-#else
   int version, major, minor, patch;
   std::stringstream ss;
 
@@ -56,6 +51,7 @@ std::string get_fltk_version()
 
   ss << major << "." << minor << "." << patch;
   return ss.str();
-#endif
 }
+
+#endif  /* !FLTK_STATIC */
 
