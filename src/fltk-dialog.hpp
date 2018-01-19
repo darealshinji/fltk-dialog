@@ -100,7 +100,6 @@ void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
 std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
-char *gunzip(const char *file, size_t limit);
 
 int about(void);
 int dialog_calendar(std::string format);

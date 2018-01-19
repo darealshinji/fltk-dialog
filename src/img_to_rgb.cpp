@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <ctype.h>
 #include <stdio.h>
@@ -44,6 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <zlib.h>
 
 #include "fltk-dialog.hpp"
 
@@ -52,10 +54,11 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
-#define MAGIC_LEN              16
-#define IMGFILE_MAX  10*1024*1024  /* 10 MB */
-#define SVGZ_MAX        1024*1024  /*  1 MB */
-#define SVG_MAX       3*1024*1024  /*  3 MB */
+#define MAGIC_LEN          16
+#define CHUNK_SIZE      16384  /* 16 KiB */
+#define IMGFILE_MAX  10485760  /* 10 MiB */
+#define SVGZ_MAX      1048576  /*  1 MiB */
+#define SVG_MAX       3145728  /*  3 MiB */
 
 struct to_lower {
   int operator() (int c) {
@@ -77,6 +80,74 @@ static std::string get_ext_lower(const char *input, size_t length)
   return s;
 }
 
+static char *gzip_uncompress(const char *file)
+{
+  std::streampos size;
+  std::string output;
+  char *data;
+  unsigned char out[CHUNK_SIZE];
+  z_stream strm;
+
+  if (!file) {
+    return NULL;
+  }
+
+  std::ifstream ifs(file, std::ios::in|std::ios::binary|std::ios::ate);
+
+  if (!ifs.is_open()) {
+    return NULL;
+  }
+
+  if ((size = ifs.tellg()) > SVGZ_MAX) {
+    ifs.close();
+    return NULL;
+  }
+
+  data = new char[size];
+  ifs.seekg(0, std::ios::beg);
+  ifs.read(data, size);
+  ifs.close();
+
+  strm.zalloc = Z_NULL;
+  strm.zfree = Z_NULL;
+  strm.opaque = Z_NULL;
+  strm.avail_in = 0;
+  strm.next_in = Z_NULL;
+
+  if (inflateInit2(&strm, 16 + MAX_WBITS) != Z_OK) {
+    delete data;
+    return NULL;
+  }
+
+  strm.avail_in = size;
+  strm.next_in = (unsigned char *)data;
+  do {
+    strm.avail_out = CHUNK_SIZE;
+    strm.next_out = out;
+    switch (inflate(&strm, Z_NO_FLUSH)) {
+      case Z_NEED_DICT:
+      case Z_DATA_ERROR:
+      case Z_MEM_ERROR:
+        inflateEnd(&strm);
+        delete data;
+        return NULL;
+    }
+    output.append((char *)out, CHUNK_SIZE - strm.avail_out);
+    if (output.size() > SVG_MAX) {
+      inflateEnd(&strm);
+      delete data;
+      return NULL;
+    }
+  } while (strm.avail_out == 0);
+
+  delete data;
+
+  if (inflateEnd(&strm) != Z_OK) {
+    return NULL;
+  }
+  return strdup(output.c_str());
+}
+
 static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 {
   NSVGimage *nsvg;
@@ -86,13 +157,16 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   Fl_RGB_Image *rgb, *rgb_copy;
   int w, h;
 
+  if (!file) {
+    return NULL;
+  }
+
   if (compressed) {
-    data = gunzip(file, SVG_MAX);
-    if (!data) {
+    if (!(data = gzip_uncompress(file))) {
       return NULL;
     }
     nsvg = nsvgParse(data, "px", 96.0f);
-    delete data;
+    free(data);
   } else {
     nsvg = nsvgParseFromFile(file, "px", 96.0f);
   }

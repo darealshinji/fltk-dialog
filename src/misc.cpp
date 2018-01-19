@@ -54,8 +54,6 @@ void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
 std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
-char *gunzip(const char *file, size_t limit);
-static FILE *popen_gzip(const char *file);
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
 {
@@ -270,51 +268,5 @@ void print_date(std::string format, int y, int m, int d)
   strftime(date, sizeof(date), format.c_str(), &time);
 
   std::cout << date << std::endl;
-}
-
-static FILE *popen_gzip(const char *file)
-{
-  enum { r = 0, w = 1 };
-  int fd[2];
-
-  if (pipe(fd) == -1) {
-    perror("pipe()");
-    return NULL;
-  }
-
-  if (fork() == 0) {
-    close(fd[r]);
-    dup2(fd[w], 1);
-    close(fd[w]);
-    execl("/bin/gzip", "gzip", "-cd", file, NULL);
-    _exit(127);
-  } else {
-    close(fd[w]);
-    return fdopen(fd[r], "r");
-  }
-  return NULL;
-}
-
-char *gunzip(const char *file, size_t limit)
-{
-  FILE *fd;
-  size_t size;
-  char *data = NULL;
-
-  fd = popen_gzip(file);
-
-  if (!fd) {
-    return NULL;
-  }
-
-  data = new char[limit + 1]();
-  size = fread(data, 1, limit, fd);
-  pclose(fd);
-
-  if (size == 0) {
-    delete data;
-    return NULL;
-  }
-  return data;
 }
 
