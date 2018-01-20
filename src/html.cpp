@@ -32,6 +32,12 @@ int dialog_html_viewer(const char *file)
   Fl_Help_Dialog *v = new Fl_Help_Dialog();
   v->load(file);
 
+  if (!window_taskbar) {
+    v->border(0);
+  }
+
+  v->show();
+
   int new_x = v->x();
   int new_y = v->y();
   int new_w = v->w();
@@ -60,20 +66,14 @@ int dialog_html_viewer(const char *file)
 
   v->resize(new_x, new_y, new_w, new_h);
 
-  if (!window_taskbar) {
-    v->set_border(0);
-  }
-
-  v->show();
-
   if (window_decoration) {
-    v->set_border(1);
+    v->border(1);
   } else {
-    v->set_border(0);
+    v->border(0);
   }
 
   if (always_on_top) {
-    v->set_always_on_top();
+    v->always_on_top();
   }
 
   Fl::run();

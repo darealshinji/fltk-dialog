@@ -15,8 +15,8 @@
    int w();
    int x();
    int y();
-+  void set_border(int b);
-+  void set_always_on_top();
++  void border(int b);
++  void always_on_top();
  };
  #endif
  
@@ -63,11 +63,11 @@
    return (window_->y());
  }
  
-+void Fl_Help_Dialog::set_border(int b) {
-+  return (window_->border(b));
++void Fl_Help_Dialog::border(int b) {
++  window_->border(b);
 +}
 +
-+void Fl_Help_Dialog::set_always_on_top() {
++void Fl_Help_Dialog::always_on_top() {
 +  XEvent event;
 +  window_->wait_for_expose();
 +  event.xclient.type = ClientMessage;
