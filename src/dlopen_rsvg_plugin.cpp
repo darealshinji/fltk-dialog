@@ -78,7 +78,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 
   void *handle;
   const char *error;
-  char png[] = "/tmp/.icon-png-XXXXXX";
+  char png[] = "/tmp/fltk-dialog-icon-XXXXXX";
   Fl_RGB_Image *rgb = NULL;
 
   int (*rsvg_to_png) (const char *, const char *);

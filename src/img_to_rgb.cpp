@@ -68,9 +68,9 @@ struct to_lower {
 
 static std::string get_ext_lower(const char *input, size_t length)
 {
-  if (!input) {
-    return "";
-  }
+  //if (!input) {
+  //  return "";
+  //}
   std::string s(input);
   if (s.size() <= length) {
     return "";
@@ -88,9 +88,9 @@ static char *gzip_uncompress(const char *file)
   unsigned char out[CHUNK_SIZE];
   z_stream strm;
 
-  if (!file) {
-    return NULL;
-  }
+  //if (!file) {
+  //  return NULL;
+  //}
 
   std::ifstream ifs(file, std::ios::in|std::ios::binary|std::ios::ate);
 
@@ -98,10 +98,11 @@ static char *gzip_uncompress(const char *file)
     return NULL;
   }
 
-  if ((size = ifs.tellg()) > SVGZ_MAX) {
-    ifs.close();
-    return NULL;
-  }
+  size = ifs.tellg();
+  //if (size > SVGZ_MAX) {
+  //  ifs.close();
+  //  return NULL;
+  //}
 
   data = new char[size];
   ifs.seekg(0, std::ios::beg);
@@ -156,32 +157,34 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   unsigned char *img;
   Fl_RGB_Image *rgb, *rgb_copy;
   int w, h;
+  float scalex, scaley;
 
-  if (!file) {
-    return NULL;
-  }
+  //if (!file) {
+  //  return NULL;
+  //}
 
   if (compressed) {
     if (!(data = gzip_uncompress(file))) {
       return NULL;
     }
-    nsvg = nsvgParse(data, "px", 96.0f);
+    nsvg = nsvgParse(data, "px", 90.0);
     free(data);
   } else {
-    nsvg = nsvgParseFromFile(file, "px", 96.0f);
+    nsvg = nsvgParseFromFile(file, "px", 90.0);
   }
 
-  w = (int)nsvg->width;
-  h = (int)nsvg->height;
-
-  if (!nsvg->shapes || w < 1 || h < 1) {
+  if (!nsvg->shapes || nsvg->width < 5.0 || nsvg->height < 5.0) {
     nsvgDelete(nsvg);
     return NULL;
   }
 
+  scalex = 64.0 / nsvg->width;
+  scaley = 64.0 / nsvg->height;
+  w = h = 64;
+
   img = new unsigned char[w*h*4];
   r = nsvgCreateRasterizer();
-  nsvgRasterize(r, nsvg, 0, 0, 1, img, w, h, w*4);
+  nsvgRasterizeFull(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
   rgb_copy = (Fl_RGB_Image *)rgb->copy();
 
@@ -196,10 +199,16 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 #ifdef WITH_RSVG
 static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
 {
-  Fl_RGB_Image *rgb = rsvg_to_rgb(file);
+  Fl_RGB_Image *rgb = NULL;
+
+  if (!force_nanosvg) {
+    rgb = rsvg_to_rgb(file);
+  }
 
   if (!rgb) {
-    //std::cout << "fall back to NanoSVG" << std::endl;
+    if (!force_nanosvg) {
+      std::cerr << "Warning: falling back to NanoSVG" << std::endl;
+    }
     rgb = nsvg_to_rgb(file, compressed);
   }
   return rgb;

@@ -262,7 +262,7 @@ rsvg_convert_so.h: rsvg_convert.so
 
 rsvg_modules = glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6
 
-rsvg_convert.so: src/rsvg_convert.o rsvg-size-callback.o $(librsvg)
+rsvg_convert.so: src/rsvg_convert.o $(librsvg)
 	$(msg_CCLDSO)
 	$(silent)$(CC) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
 
@@ -270,10 +270,6 @@ src/rsvg_convert.c: $(librsvg)
 src/rsvg_convert.o: src/rsvg_convert.c
 	$(msg_CC)
 	$(silent)$(CC) -I librsvg $(plugin_CFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
-
-rsvg-size-callback.o: librsvg/rsvg-size-callback.c
-	$(msg_CC)
-	$(silent)$(CC) -I librsvg $(plugin_CFLAGS) $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
 
 $(librsvg): librsvg/Makefile
 	$(MAKE) -C librsvg V=$(make_verbose)

@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
-#include "args.hxx"  /* include first */
+/* include this first
+ * source: https://github.com/Taywee/args */
+#include "args.hxx"
 
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
@@ -93,6 +95,9 @@ bool resizable = true;
 bool position_center = false;
 bool window_taskbar = true;
 bool window_decoration = true;
+#ifdef WITH_RSVG
+bool force_nanosvg = false;
+#endif
 
 /* don't use fltk's '@' symbols */
 #define NO_SYMBOLS 0
@@ -152,6 +157,7 @@ int main(int argc, char **argv)
   }
 
   args::ArgumentParser ap_main("FLTK dialog - run dialog boxes from shell scripts", "");
+  ap_main.Prog(argv[0]);
 
   args::Group ap(ap_main, "Generic options:");
   args::HelpFlag help(ap, "help", "Show options", {'h', "help"});
@@ -164,6 +170,9 @@ int main(int argc, char **argv)
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator character", {"separator"})
   ,      arg_window_icon(ap, "FILE", "Set the window icon; supported are: bmp gif jpg png svg svgz xbm xpm", {"window-icon"});
+#ifdef WITH_RSVG
+  ARG_T  arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
+#endif
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
   ,      arg_posx(ap, "NUMBER", "Set the X position of a window", {"posx"})
@@ -271,12 +280,22 @@ int main(int argc, char **argv)
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification", {"libnotify"});
 
+  std::string appendix = "  using FLTK version " + get_fltk_version() + " - http://www.fltk.org\n\n"
+    "  https://github.com/darealshinji/fltk-dialog\n";
+
+  /* ignore any errors and always print help if --help or -h was among the arguments */
+  for (int i = argc - 1; i > 0; --i) {
+    if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      std::cout << ap_main << appendix << std::endl;
+      return 0;
+    }
+  }
+
   try {
     ap_main.ParseCLI(argc, argv);
   }
   catch (args::Help) {
-    std::cout << ap_main << "  using FLTK version " << get_fltk_version() << " - http://www.fltk.org\n\n"
-      << "  https://github.com/darealshinji/fltk-dialog\n" << std::endl;
+    std::cout << ap_main << appendix << std::endl;
     return 0;
   }
   catch (args::ParseError e) {
@@ -315,6 +334,9 @@ int main(int argc, char **argv)
   always_on_top = arg_always_on_top ? true : false;
   bool return_number = arg_return_number ? true : false;
   bool libnotify = arg_libnotify ? true : false;
+#ifdef WITH_RSVG
+  force_nanosvg = arg_force_nanosvg ? true : false;
+#endif
 
   GETCSTR(msg, arg_text);
   GETCSTR(title, arg_title);
