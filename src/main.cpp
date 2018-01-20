@@ -180,11 +180,11 @@ int main(int argc, char **argv)
   ARGS_T arg_geometry(ap, "WxH+X+Y", "Set the window geometry", {"geometry"});
   ARG_T  arg_fixed(ap, "fixed", "Set window unresizable", {"fixed"})
   ,      arg_center(ap, "center", "Place window at center of screen", {"center"})
-  ,      arg_always_on_top(ap, "always-on-top", "Keep window always visible on top (doesn't work on file/directory selection)", {"always-on-top"})
+  ,      arg_always_on_top(ap, "always-on-top", "Keep window always visible on top", {"always-on-top"})
   ,      arg_no_escape(ap, "no-escape", "Don't close window when hitting ESC button", {"no-escape"});
   ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: default, gtk+, gleam, plastic or simple; default is gtk+", {"scheme"});
   ARG_T  arg_no_system_colors(ap, "no-system-colors", "Use FLTK's default gray color scheme", {"no-system-colors"})
-  ,      arg_undecorated(ap, "undecorated", "Set window undecorated (doesn't work on file/directory selection)", {"undecorated"})
+  ,      arg_undecorated(ap, "undecorated", "Set window undecorated", {"undecorated"})
   ,      arg_skip_taskbar(ap, "skip-taskbar", "Don't show window in taskbar", {"skip-taskbar"})
   ,      arg_message(ap, "message", "Display message dialog", {"message"})
   ,      arg_warning(ap, "warning", "Display warning dialog", {"warning"})
@@ -216,7 +216,8 @@ int main(int argc, char **argv)
   ,      arg_alt_label(g_question_options, "TEXT", "Adds a third button and sets its label; exit code is 2", {"alt-label"});
 
   args::Group g_file_dir_options(ap_main, "File/directory selection options:");
-  ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, otherwise fall back to FLTK's own version", {"native"});
+  ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, otherwise fall back to FLTK's own version; "
+                   "some options may only work on FLTK's file chooser", {"native"});
 #ifdef HAVE_QT
   ARG_T arg_native_gtk(g_file_dir_options, "native-gtk", "Display the Gtk+ native file chooser", {"native-gtk"});
 #  ifdef HAVE_QT4
@@ -230,7 +231,8 @@ int main(int argc, char **argv)
 
   args::Group g_progress_options(ap_main, "Progress options:");
   ARG_T  arg_pulsate(g_progress_options, "pulsate", "Pulsating progress bar", {"pulsate"});
-  ARGI_T arg_multi(g_progress_options, "NUMBER", "Use 2 progress bars; the main bar, showing the overall progress, will reach 100% if the other bar has reached 100% after NUMBER iterations", {"multi"});
+  ARGI_T arg_multi(g_progress_options, "NUMBER", "Use 2 progress bars; the main bar, showing the overall progress, will reach 100% if the other bar has "
+                   "reached 100% after NUMBER iterations", {"multi"});
   ARGL_T arg_watch_pid(g_progress_options, "PID", "Process ID to watch", {"watch-pid"});
   ARG_T  arg_auto_close(g_progress_options, "auto-close", "Dismiss the dialog when 100% has been reached", {"auto-close"})
   ,      arg_no_cancel(g_progress_options, "no-cancel", "Hide cancel button", {"no-cancel"});
@@ -276,7 +278,8 @@ int main(int argc, char **argv)
   ARG_T  arg_auto_scroll(g_text_info_options, "auto-scroll", "Always scroll to the bottom of the text", {"auto-scroll"});
 
   args::Group g_notification_options(ap_main, "Notification options:");
-  ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds (may be ignored by some desktop environments)", {"timout"});
+  ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds (may be ignored by some "
+                     "desktop environments)", {"timout"});
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification", {"libnotify"});
 

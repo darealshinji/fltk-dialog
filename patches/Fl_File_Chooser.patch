@@ -1,5 +1,5 @@
 --- a/fltk/FL/Fl_File_Chooser.H
-+++ a/fltk/FL/Fl_File_Chooser.H
++++ b/fltk/FL/Fl_File_Chooser.H
 @@ -144,7 +144,9 @@ public:
    void label(const char *l);
    const char * label();
@@ -10,8 +10,22 @@
    void preview(int e); 
    int preview() const { return previewButton->value(); }; 
  private:
+@@ -168,6 +170,13 @@ public:
+   const char *value(int f = 1); 
+   void value(const char *filename); 
+   int visible();
++  int x();
++  int y();
++  int w();
++  int h();
++  void resize(int X, int Y, int W, int H);
++  void border(int b);
++  void always_on_top();
+   /**
+    [standard text may be customized at run-time]
+   */
 --- a/fltk/src/Fl_File_Chooser.cxx
-+++ a/fltk/src/Fl_File_Chooser.cxx
++++ b/fltk/src/Fl_File_Chooser.cxx
 @@ -378,15 +378,32 @@ void Fl_File_Chooser::ok_label(const char *l) {
    if (l) okButton->label(l);
    int w=0, h=0;
@@ -45,3 +59,55 @@
  int Fl_File_Chooser::shown() {
    return window->shown();
  }
+@@ -443,10 +460,51 @@ void Fl_File_Chooser::user_data(void *d) {
+   data_ = d;
+ }
+ 
++int Fl_File_Chooser::x() {
++  return window->x();
++}
++
++int Fl_File_Chooser::y() {
++  return window->y();
++}
++
++int Fl_File_Chooser::w() {
++  return window->w();
++}
++
++int Fl_File_Chooser::h() {
++  return window->h();
++}
++
++void Fl_File_Chooser::resize(int X, int Y, int W, int H) {
++  window->resize(X, Y, W, H);
++}
++
+ int Fl_File_Chooser::visible() {
+   return window->visible();
+ }
+ 
++void Fl_File_Chooser::border(int b) {
++  window->border(b);
++}
++
++void Fl_File_Chooser::always_on_top() {
++  XEvent event;
++  window->wait_for_expose();
++  event.xclient.type = ClientMessage;
++  event.xclient.serial = 0;
++  event.xclient.send_event = True;
++  event.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
++  event.xclient.window = fl_xid((Fl_Window *)window);
++  event.xclient.format = 32;
++  event.xclient.data.l[0] = 1;  /* _NET_WM_STATE_ADD */
++  event.xclient.data.l[1] = XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
++  event.xclient.data.l[2] = 0;
++  event.xclient.data.l[3] = 0;
++  event.xclient.data.l[4] = 0;
++  XSendEvent(fl_display, DefaultRootWindow(fl_display), False, SubstructureRedirectMask|SubstructureNotifyMask, &event);
++}
++
+ Fl_Widget* Fl_File_Chooser::add_extra(Fl_Widget* gr) {
+   Fl_Widget* ret=ext_group;
+   if (gr==ext_group) {

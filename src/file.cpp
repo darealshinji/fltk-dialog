@@ -62,7 +62,50 @@ static int dialog_file_chooser_fltk(int mode)
   fc->ok_label(fl_ok);
   fc->cancel_label(fl_cancel);
 
+  if (!window_taskbar) {
+    fc->border(0);
+  }
+
   fc->show();
+
+  int new_x = fc->x();
+  int new_y = fc->y();
+  int new_w = fc->w();
+  int new_h = fc->h();
+
+  if (resizable) {
+    if (override_w > 0) {
+      new_w = override_w;
+    }
+    if (override_h > 0) {
+      new_h = override_h;
+    }
+  }
+
+  if (position_center) {
+    new_x = (max_w - new_w) / 2;
+    new_y = (max_h - new_h) / 2;
+  } else {
+    if (override_x >= 0) {
+      new_x = override_x;
+    }
+    if (override_y >= 0) {
+      new_y = override_y;
+    }
+  }
+
+  fc->resize(new_x, new_y, new_w, new_h);
+
+  if (window_decoration) {
+    fc->border(1);
+  } else {
+    fc->border(0);
+  }
+
+  if (always_on_top) {
+    fc->always_on_top();
+  }
+
   Fl::run();
 
   if (fc->value()) {
