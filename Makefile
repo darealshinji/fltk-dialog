@@ -176,7 +176,7 @@ $(BIN): $(OBJS)
 
 fltk/build/fltk-config: $(libfltk)
 
-fltk/src/Fl_Choice.cxx.orig: patches/Fl_Choice-pulldown.patch
+fltk/src/Fl_Choice.cxx.orig: patches/Fl_Choice.patch
 	patch -p1 --backup < $<
 
 fltk/src/Fl_Color_Chooser.cxx.orig: patches/Fl_Color_Chooser.patch
@@ -185,7 +185,7 @@ fltk/src/Fl_Color_Chooser.cxx.orig: patches/Fl_Color_Chooser.patch
 fltk/src/Fl_File_Chooser.cxx.orig: patches/Fl_File_Chooser.patch
 	patch -p1 --backup < $<
 
-fltk/src/Fl_Help_Dialog.cxx.orig: patches/Fl_Help_Dialog-close+nodeco.patch
+fltk/src/Fl_Help_Dialog.cxx.orig: patches/Fl_Help_Dialog.patch
 	patch -p1 --backup < $<
 
 patches_backup_files = fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Color_Chooser.cxx.orig \
