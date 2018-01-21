@@ -214,8 +214,7 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
 # define LOAD_SYMBOL(x) \
   *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
   dlsym_error = dlerror(); \
-  if (dlsym_error) \
-  { \
+  if (dlsym_error) { \
     std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl; \
     dlclose(handle); \
     return 1; \

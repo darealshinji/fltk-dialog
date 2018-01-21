@@ -77,49 +77,50 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 #endif
 
   void *handle;
-  const char *error;
-  char png[] = "/tmp/fltk-dialog-icon-XXXXXX";
+  const char *dlsym_error;
+  unsigned char *data;
+  int len;
   Fl_RGB_Image *rgb = NULL;
 
-  int (*rsvg_to_png) (const char *, const char *);
+  int (*rsvg_to_png_convert) (const char *);
+  unsigned char * (*rsvg_to_png_get_data) (void);
 
   /* dlopen() library */
 
   handle = dlopen(plugin, RTLD_LAZY);
-  error = dlerror();
+  dlsym_error = dlerror();
 
   if (!handle) {
-    std::cerr << error << std::endl;
+    std::cerr << dlsym_error << std::endl;
     DELETE(plugin);
     return NULL;
   }
 
   dlerror();
 
-  *(void **)(&rsvg_to_png) = dlsym(handle, "rsvg_to_png");
-
-  error = dlerror();
-
-  if (error) {
-    std::cerr << "error: cannot load symbol\n" << error << std::endl;
-    dlclose(handle);
-    DELETE(plugin);
-    return NULL;
+# define LOAD_SYMBOL(x) \
+  *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
+  dlsym_error = dlerror(); \
+  if (dlsym_error) { \
+    std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl; \
+    dlclose(handle); \
+    return NULL; \
   }
 
-  if (mkstemp(png) == -1) {
-    return NULL;
-  }
+  LOAD_SYMBOL(rsvg_to_png_convert)
+  LOAD_SYMBOL(rsvg_to_png_get_data)
 
-  if (rsvg_to_png(file, png) == 0) {
-    Fl_RGB_Image *tmp = new Fl_PNG_Image(png);
+  len = rsvg_to_png_convert(file);
+  data = rsvg_to_png_get_data();
+
+  if (data && len > 0) {
+    Fl_RGB_Image *tmp = new Fl_PNG_Image(NULL, data, len);
     rgb = (Fl_RGB_Image *)tmp->copy();
     delete tmp;
   }
 
   dlclose(handle);
   DELETE(plugin);
-  unlink(png);
 
   return rgb;
 }

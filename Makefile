@@ -58,12 +58,8 @@ main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
 endif
 
-# Qt plugin CXXFLAGS
 plugin_CXXFLAGS :=
 plugin_CXXFLAGS += -fPIC -DPIC $(main_CXXFLAGS)
-
-plugin_CFLAGS :=
-plugin_CFLAGS += -fPIC -DPIC $(CFLAGS)
 
 
 extra_include :=
@@ -264,12 +260,12 @@ rsvg_modules = glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcr
 
 rsvg_convert.so: src/rsvg_convert.o $(librsvg)
 	$(msg_CCLDSO)
-	$(silent)$(CC) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
+	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
 
-src/rsvg_convert.c: $(librsvg)
-src/rsvg_convert.o: src/rsvg_convert.c
+src/rsvg_convert.cpp: $(librsvg)
+src/rsvg_convert.o: src/rsvg_convert.cpp
 	$(msg_CC)
-	$(silent)$(CC) -I librsvg $(plugin_CFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
+	$(silent)$(CXX) -I librsvg $(plugin_CXXFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
 
 $(librsvg): librsvg/Makefile
 	$(MAKE) -C librsvg V=$(make_verbose)
