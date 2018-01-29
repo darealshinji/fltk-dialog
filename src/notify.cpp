@@ -109,13 +109,13 @@ static void callback(void *o)
 int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
 {
   int n, h = 160, title_h = 0, message_h = 0;
-  const int w = 400, icon_wh = 64, bord = 10, fs_title = 21, fs_message = 14;
-  Fl_Font font = FL_HELVETICA_BOLD;
+  const int w = 400, icon_wh = 64, bord = 10, fs_title = 18, fs_message = 14;
+  Fl_Font font = FL_HELVETICA, font_t = FL_HELVETICA_BOLD;
   Fl_RGB_Image *rgb = NULL;
 
   n = w - icon_wh - bord*3;
-  std::string title_wrapped = word_wrap(title, n, font, fs_title);
-  std::string message_wrapped = word_wrap(msg, n, font, fs_message);
+  std::string title_wrapped = text_wrap(title, n, font_t, fs_title);
+  std::string message_wrapped = text_wrap(msg, n, font, fs_message);
 
   fl_font(font, fs_title);
   fl_measure(title_wrapped.c_str(), n = 0, title_h);
@@ -161,7 +161,7 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
     { /* title */
       Fl_Box *o = new Fl_Box(n, bord, 0, 0, title_wrapped.c_str());
       o->align(FL_ALIGN_INSIDE|FL_ALIGN_TOP_LEFT);
-      o->labelfont(font);
+      o->labelfont(font_t);
       o->labelcolor(FL_WHITE);
       o->labelsize(fs_title); }
 

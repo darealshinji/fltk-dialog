@@ -100,8 +100,8 @@ int measure_button_width(const char *label, int extra_width = 0);
 void aspect_ratio_scale(int &w, int &h, const int limit);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
-std::string translate(const char *inputText);
-std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
+std::string translate(const char *text);
+std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 

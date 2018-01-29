@@ -53,7 +53,7 @@ void aspect_ratio_scale(int &w, int &h, const int limit);
 void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
-std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
+std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 
@@ -194,42 +194,63 @@ void repstr(const std::string &from, const std::string &to, std::string &s) {
   }
 }
 
-std::string translate(const char *inputText) {
-  std::string s(inputText);
+std::string translate(const char *text) {
+  std::string s(text);
   repstr("\\n", "\n", s);
   repstr("\\t", "\t", s);
   return s;
 }
 
-/**
- * based on https://www.rosettacode.org/wiki/Word_wrap#C.2B.2B
- */
-std::string word_wrap(const char *text, int width, Fl_Font font, int font_size)
+std::string text_wrap(const char *text, int linewidth, Fl_Font font, int font_size)
 {
-  std::istringstream words(text);
-  std::ostringstream wrapped;
+  std::istringstream iss(text);
+  std::ostringstream oss;
   std::string word;
-  int w = 0, h = 0, space_w = 0, space_left;
+  int w, ws, remain = linewidth;
 
-  if (words >> word) {
-    fl_font(font, font_size);
-    fl_measure(" ", space_w, h);
-    fl_measure(word.c_str(), w, h);
-    wrapped << word;
-    space_left = width - w;
+  if (!text) {
+    return "";
+  }
 
-    while (words >> word) {
-      fl_measure(word.c_str(), w, h);
-      if (space_left < w + space_w) {
-        wrapped << '\n' << word;
-        space_left = width - w;
-      } else {
-        wrapped << ' ' << word;
-        space_left -= w + space_w;
+  fl_font(font, font_size);
+  ws = fl_width(' ');
+
+  while (iss >> word) {
+    w = fl_width(word.c_str());
+    if (remain >= w) {
+      /* enough space to append the word */
+      if (oss.tellp() > 0) {
+        oss << ' ';
+        remain -= ws;
       }
+      remain -= w;
+      oss << word;
+    } else {
+      /* new line */
+      if (oss.tellp() > 0) {
+        oss << '\n';
+      }
+      if (w > linewidth) {
+        /* split the word */
+        w = 0;
+        for (size_t i = 0; i < word.size(); i++) {
+          int wi = fl_width(word[i]);
+          if (w + wi > linewidth) {
+            oss << '\n' << word[i];
+            w = wi;
+          } else {
+            oss << word[i];
+            w += wi;
+          }
+        }
+      } else {
+        oss << word;
+      }
+      remain = linewidth - w;
     }
   }
-  return wrapped.str();
+
+  return oss.str();
 }
 
 void print_date(std::string format, int y, int m, int d)
