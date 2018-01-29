@@ -279,7 +279,7 @@ int main(int argc, char **argv)
 
   args::Group g_notification_options(ap_main, "Notification options:");
   ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds (may be ignored by some "
-                     "desktop environments)", {"timout"});
+                     "desktop environments)", {"timeout"});
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification", {"libnotify"});
 
