@@ -38,7 +38,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,31 +53,13 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
+#define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
+
 #define MAGIC_LEN          16
 #define CHUNK_SIZE      16384  /* 16 KiB */
 #define IMGFILE_MAX  10485760  /* 10 MiB */
 #define SVGZ_MAX      1048576  /*  1 MiB */
 #define SVG_MAX       3145728  /*  3 MiB */
-
-struct to_lower {
-  int operator() (int c) {
-    return tolower(c);
-  }
-};
-
-static std::string get_ext_lower(const char *input, size_t length)
-{
-  //if (!input) {
-  //  return "";
-  //}
-  std::string s(input);
-  if (s.size() <= length) {
-    return "";
-  }
-  s = s.substr(s.size() - length);
-  std::transform(s.begin(), s.end(), s.begin(), to_lower());
-  return s;
-}
 
 static char *gzip_uncompress(const char *file)
 {
@@ -230,21 +211,16 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   }
 
   /* get filetype from extension */
-
-  if (get_ext_lower(file, 4) == ".svg" && st.st_size <= SVG_MAX) {
+  if (HASEXT(file, ".svg") && st.st_size <= SVG_MAX) {
     rgb = svg_to_rgb(file, false);
-  }
-  else if ((get_ext_lower(file, 5) == ".svgz" || get_ext_lower(file, 7) == ".svg.gz") &&
-           st.st_size < SVGZ_MAX) {
+  } else if ((HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) && st.st_size < SVGZ_MAX) {
     rgb = svg_to_rgb(file, true);
-  }
-  else if (get_ext_lower(file, 4) == ".xpm") {
+  } else if (HASEXT(file, ".xpm")) {
     Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
     if (xpm) {
       rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
     }
-  }
-  else if (get_ext_lower(file, 4) == ".xbm") {
+  } else if (HASEXT(file, ".xbm")) {
     Fl_XBM_Image in(file);
     Fl_Image_Surface surf(in.w(), in.h());
     surf.set_current();
@@ -256,7 +232,6 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   }
 
   /* get filetype from magic bytes */
-
   if (!rgb) {
     if (!(fp = fopen(file, "r"))) {
       return NULL;

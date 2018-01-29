@@ -32,6 +32,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -54,6 +55,7 @@ void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *inputText);
 std::string word_wrap(const char *text, int width, Fl_Font font, int font_size);
 void print_date(std::string format, int y, int m, int d);
+size_t strlastcasecmp(const char *s1, const char *s2);
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
 {
@@ -268,5 +270,32 @@ void print_date(std::string format, int y, int m, int d)
   strftime(date, sizeof(date), format.c_str(), &time);
 
   std::cout << date << std::endl;
+}
+
+/* Compares the last bytes of s1 and s2 and returns the number
+ * of equal bytes, ignoring the case.
+ * The terminating null byte ('\0') is ignored.
+ * It returns -1 if the length of s1 and/or s2 is 0.
+ */
+size_t strlastcasecmp(const char *s1, const char *s2)
+{
+  size_t len1 = strlen(s1);
+  size_t len2 = strlen(s2);
+  size_t n = 0;
+
+  if (len1 == 0 || len2 == 0) {
+    return -1;
+  }
+
+  while (len1 > 0 && len2 > 0) {
+    if (tolower(s1[len1 - 1]) != tolower(s2[len2 - 1])) {
+      break;
+    }
+    ++n;
+    --len1;
+    --len2;
+  }
+
+  return n;
 }
 
