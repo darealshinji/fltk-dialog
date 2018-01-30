@@ -253,7 +253,7 @@ std::string text_wrap(const char *text, int linewidth, Fl_Font font, int font_si
   return oss.str();
 }
 
-void print_date(std::string format, int y, int m, int d)
+std::string format_date(std::string format, int y, int m, int d)
 {
   std::stringstream ss;
 
@@ -290,7 +290,7 @@ void print_date(std::string format, int y, int m, int d)
   strptime(ss.str().c_str(), "%Y-%m-%d", &time);
   strftime(date, sizeof(date), format.c_str(), &time);
 
-  std::cout << date << std::endl;
+  return std::string(date);
 }
 
 /* Compares the last bytes of s1 and s2 and returns the number

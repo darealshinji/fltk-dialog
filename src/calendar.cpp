@@ -79,7 +79,7 @@ int dialog_calendar(std::string format)
   run_window(win, calendar);
 
   if (ret == 0) {
-    print_date(format, calendar->year(), calendar->month(), calendar->day());
+    std::cout << format_date(format, calendar->year(), calendar->month(), calendar->day()) << std::endl;
   }
   return ret;
 }
