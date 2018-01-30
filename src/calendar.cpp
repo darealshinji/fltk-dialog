@@ -62,6 +62,9 @@ int dialog_calendar(std::string format)
   win->size_range(244, 281, max_w, max_h);
   win->callback(close_cb, 1);
   {
+    if (calendar_arabic) {
+      calendar->arabic(1);
+    }
     g = new Fl_Group(0, 244, 244, 37);
     {
       int but_w = measure_button_width(fl_cancel, 20);

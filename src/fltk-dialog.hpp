@@ -89,6 +89,7 @@ extern double scale_min, scale_max, scale_step, scale_init;
 #ifdef WITH_RSVG
 extern bool force_nanosvg;
 #endif
+extern bool calendar_arabic;
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w);
 void set_size(Fl_Double_Window *o, Fl_Widget *w);

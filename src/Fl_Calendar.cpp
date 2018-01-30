@@ -32,7 +32,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool fl_calendar_arabic = false;
+static bool arabic_ = false;
+
+void
+Fl_Calendar_Base::arabic (int i)
+{
+  arabic_ = (i == 0) ? false : true;
+  update();
+}
+
+int
+Fl_Calendar_Base::arabic ()
+{
+  return arabic_ ? 1 : 0;
+}
 
 static void fl_calendar_prv_month_cb (Fl_Widget *, void *b);
 static void fl_calendar_nxt_month_cb (Fl_Widget *, void *b);
@@ -107,7 +120,7 @@ void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
 void
 Fl_Calendar_Base::int_to_str (char *t, int n)
 {
-  if (fl_calendar_arabic) {
+  if (arabic_) {
     const char *f;
     char c[32];
     sprintf (c, "%d", n);
