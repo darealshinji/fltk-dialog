@@ -135,27 +135,28 @@ Fl_Calendar_Base::update ()
 {
   int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
-  int i;
-  char tmp_d[32];
+  int i, n;
+  char tmp[32];
+#ifdef ISO_WEEK_NUMBERS
+  int j = 0;
+  int wk[6][3] = { 0, 0 };
+#endif
 
   int dipm_month;  /* previous month */
   int dipm_year;   /* year of previous month */
   if (month () == JANUARY) {
     dipm_month = DECEMBER;
-    dipm_year = leap_year (year () - 1);
+    dipm_year = year () - 1;
   } else {
     dipm_month = month () - 1;
-    dipm_year = leap_year (year ());
+    dipm_year = year ();
   }
   int dipm = days_in_month (dipm_month, dipm_year);
 
   /* last days of previous month */
   for (i = 0; i < dow; i++) {
-    int_to_str (tmp_d, (i-dow+dipm+1));
-    if (days[i]->label ()) {
-      free ((void *) days[i]->label ());
-    }
-    days[i]->label (strdup(tmp_d));
+    int_to_str (tmp, i-dow+dipm+1);
+    days[i]->copy_label (tmp);
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
@@ -165,11 +166,17 @@ Fl_Calendar_Base::update ()
 
   /* current month */
   for (i = dow; i < (dim+dow); i++) {
-    int_to_str (tmp_d, (i+1-dow));
-    if (days[i]->label ()) {
-      free ((void *) days[i]->label ());
+    n = i+1-dow;
+#ifdef ISO_WEEK_NUMBERS
+    if (n == 1 || i % 7 == 0) {
+      wk[j][0] = n;
+      wk[j][1] = month ();
+      wk[j][2] = year ();
+      j++;
     }
-    days[i]->label (strdup(tmp_d));
+#endif
+    int_to_str (tmp, n);
+    days[i]->copy_label (tmp);
     days[i]->down_box (FL_THIN_DOWN_BOX);
     days[i]->box (FL_THIN_UP_BOX);
     days[i]->color (52);
@@ -182,17 +189,39 @@ Fl_Calendar_Base::update ()
 
   /* first days of next month */
   for (i = (dim+dow); i < (6*7); i++) {
-    int_to_str (tmp_d, (i+1-dow-dim));
-    if (days[i]->label ()) {
-      free ((void *) days[i]->label ());
+    n = i+1-dow-dim;
+#ifdef ISO_WEEK_NUMBERS
+    if (i % 7 == 0) {
+      wk[j][0] = n;
+      if (month () == DECEMBER) {
+        wk[j][1] = JANUARY;
+        wk[j][2] = year () + 1;
+      } else {
+        wk[j][1] = month () + 1;
+        wk[j][2] = year ();
+      }
+      j++;
     }
-    days[i]->label (strdup(tmp_d));
+#endif
+    int_to_str (tmp, n);
+    days[i]->copy_label (tmp);
     days[i]->down_box (FL_FLAT_BOX);
     days[i]->box (FL_FLAT_BOX);
     days[i]->color (color());
     days[i]->callback (fl_calendar_nxt_month_cb, this);
     days[i]->show ();
   }
+
+#ifdef ISO_WEEK_NUMBERS
+  j = 0;
+  for (i = 0; i < 6; i++) {
+    weeknumbers[i] = iso_week_number(wk[i][2], wk[i][1], wk[i][0]);
+    sprintf(tmp, "week %d", weeknumbers[i]);
+    for (n = 0; n < 7; n++, j++) {
+      days[j]->copy_tooltip (tmp);
+    }
+  }
+#endif
 }
 
 Fl_Button *
@@ -371,15 +400,8 @@ Fl_Calendar::update ()
 
   Fl_Calendar_Base::update ();
 
-  if (caption_m->label ()) {
-    free ((void *) caption_m->label ());
-  }
-  caption_m->label (strdup(tmp_m));
-
-  if (caption_y->label ()) {
-    free ((void *) caption_y->label ());
-  }
-  caption_y->label (strdup(tmp_y));
+  caption_m->copy_label (tmp_m);
+  caption_y->copy_label (tmp_y);
 
   redraw ();
 }
@@ -500,21 +522,9 @@ Fl_Calendar::selected_day (int d)
 
 Fl_Calendar_Base::~Fl_Calendar_Base ()
 {
-  for (int i = 0; i < (6*7); i++) {
-    if (days[i]->label ()) {
-      free ((void *) days[i]->label ());
-    }
-  }
 }
 
 Fl_Calendar::~Fl_Calendar ()
 {
-  if (caption_m->label ()) {
-    free ((void *) caption_m->label ());
-  }
-
-  if (caption_y->label ()) {
-    free ((void *) caption_y->label ());
-  }
 }
 

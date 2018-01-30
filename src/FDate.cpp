@@ -22,6 +22,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <FDate.H>
 
@@ -317,3 +318,16 @@ int FDate::day_of_epoch (int year, int mon, int mday) {
 int FDate::day_of_week (int year, int mon, int mday) {
   return day_of_epoch (year, mon, mday) % 7;
 }
+
+int FDate::iso_week_number (int year, int mon, int mday) {
+  struct tm time;
+  char tmp[16];
+  char wn[8];
+
+  memset(&time, 0, sizeof(struct tm));
+  sprintf(tmp, "%d %d %d", year, mon, mday);
+  strptime(tmp, "%Y %m %d", &time);
+  strftime(wn, sizeof(wn), "%-V", &time);
+  return atoi(wn);
+}
+

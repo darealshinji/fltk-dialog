@@ -31,6 +31,9 @@
 
 #include <FDate.H>
 
+/* uncomment to test WIP week numbers */
+//#define ISO_WEEK_NUMBERS
+
 extern bool fl_calendar_arabic;
 
 /** @package libflek_ui
@@ -64,6 +67,10 @@ public:
   Fl_Button * day_button (int i);
 
   void int_to_str (char *t, int n);
+
+#ifdef ISO_WEEK_NUMBERS
+  int weeknumbers[6];
+#endif
 
  protected:
 

@@ -358,6 +358,8 @@ class FDate : public FBase
     return day_of_week (Year, Month, Day);
   }
 
+  static int iso_week_number (int y, int m, int d);
+
   /**
    * Decrement the date by one month.
    */
