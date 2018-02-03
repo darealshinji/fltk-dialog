@@ -88,31 +88,10 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
 
 void Fl_Calendar_Base::csize (int cx, int cy, int cw, int ch)
 {
-  /*
-  int oi = (cw-(7*(cw/7)))/2;
-  int of = (cw-(7*(cw/7))) - oi;
-  int xi, wxi;
-  */
-
   for (int i = 0; i < (7*6); i++) {
-    /*
-    if ((i%7) == 0) {
-      xi = 0;
-    } else {
-      xi = oi;
-    }
-    if ((i%7) == 0) {
-      wxi = oi;
-    } else if ((i%7) == 6) {
-      wxi = of;
-    } else {
-      wxi = 0;
-    }
-    */
-
-    days[i]->resize ((cw/7)*(i%7) + cx /* + xi */,
+    days[i]->resize ((cw/7)*(i%7) + cx,
                      (ch/6)*(i/7) + cy,
-                     (cw/7) /* + wxi */,
+                     (cw/7),
                      (ch/6));
   }
 }
@@ -126,16 +105,19 @@ Fl_Calendar_Base::int_to_str (char *t, int n)
     sprintf (c, "%d", n);
     memset (t, '\0', strlen(t));
     for (size_t i = 0; i < strlen (c) && c[i] != '\0'; i++) {
-      if      (c[i] == '1') { f = "\xD9\xA1"; }
-      else if (c[i] == '2') { f = "\xD9\xA2"; }
-      else if (c[i] == '3') { f = "\xD9\xA3"; }
-      else if (c[i] == '4') { f = "\xD9\xA4"; }
-      else if (c[i] == '5') { f = "\xD9\xA5"; }
-      else if (c[i] == '6') { f = "\xD9\xA6"; }
-      else if (c[i] == '7') { f = "\xD9\xA7"; }
-      else if (c[i] == '8') { f = "\xD9\xA8"; }
-      else if (c[i] == '9') { f = "\xD9\xA9"; }
-      else /*if (c[i] == '0')*/{ f = "\xD9\xA0"; }
+      switch (c[i]) {
+        case '1': f = "\xD9\xA1"; break;
+        case '2': f = "\xD9\xA2"; break;
+        case '3': f = "\xD9\xA3"; break;
+        case '4': f = "\xD9\xA4"; break;
+        case '5': f = "\xD9\xA5"; break;
+        case '6': f = "\xD9\xA6"; break;
+        case '7': f = "\xD9\xA7"; break;
+        case '8': f = "\xD9\xA8"; break;
+        case '9': f = "\xD9\xA9"; break;
+        case '0':
+        default:  f = "\xD9\xA0"; break;
+      }
       strcat (t, f);
     }
   } else {
@@ -226,13 +208,8 @@ Fl_Calendar_Base::update ()
   }
 
 #ifdef ISO_WEEK_NUMBERS
-  j = 0;
   for (i = 0; i < 6; i++) {
-    weeknumbers[i] = iso_week_number(wk[i][2], wk[i][1], wk[i][0]);
-    sprintf(tmp, "week %d", weeknumbers[i]);
-    for (n = 0; n < 7; n++, j++) {
-      days[j]->copy_tooltip (tmp);
-    }
+    weeknumbers_[i] = iso_week_number(wk[i][2], wk[i][1], wk[i][0]);
   }
 #endif
 }
@@ -280,34 +257,10 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   int title_height = h / 8;
   selected_day_ = 0;
 
-  /**
-   * If the Calendar width isn't divisible by 7 there will be a gap
-   * on the right or left side, so we will distribute this extra space.
-   */
-  /*
-  int oi = (w-(7*(w/7)))/2;
-  int of = (w-(7*(w/7))) - oi;
-  int xi, wxi;
-  */
-
   for (int i = 0; i < 7; i++) {
-    /*
-    if (i == 0) {
-      xi = 0;
-    } else {
-      xi = oi;
-    }
-    if (i == 0) {
-      wxi = oi;
-    } else if (i == 6) {
-      wxi = of;
-    } else {
-      wxi = 0;
-    }
-    */
-    weekdays[i] = new Fl_Box ((w/7)*(i%7) + x /* + xi */,
+    weekdays[i] = new Fl_Box ((w/7)*(i%7) + x,
                               ((h - title_height)/7)*(i/7) + y + title_height,
-                              (w/7) /* + wxi */,
+                              (w/7),
                               (h - title_height)/7);
     weekdays[i]->box (FL_THIN_UP_BOX);
     weekdays[i]->labelsize (labelsize_);
@@ -532,6 +485,14 @@ Fl_Calendar::selected_day (int d)
   if (d) day(d);
   return d;
 }
+
+#ifdef ISO_WEEK_NUMBERS
+int
+Fl_Calendar_Base::weeknumber(int i)
+{
+  return (i > 5) ? -1 : weeknumbers_[i];
+}
+#endif
 
 Fl_Calendar_Base::~Fl_Calendar_Base ()
 {

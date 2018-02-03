@@ -35,6 +35,24 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
+static Fl_Calendar *calendar;
+
+#ifdef ISO_WEEK_NUMBERS
+# define XSP 32
+static Fl_Box *weeknum[8];
+
+static void callback(Fl_Widget *, void *)
+{
+  char tmp[32];
+  for (int i = 0; i < 6; i++) {
+    calendar->int_to_str(tmp, calendar->weeknumber(i));
+    weeknum[i+2]->copy_label(tmp);
+  }
+  win->redraw();
+}
+#else
+# define XSP 0
+#endif  /* !ISO_WEEK_NUMBERS */
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
@@ -43,7 +61,9 @@ static void close_cb(Fl_Widget *, long p) {
 
 int dialog_calendar(std::string format)
 {
-  Fl_Calendar      *calendar;
+#ifdef ISO_WEEK_NUMBERS
+  Fl_Group         *g0;
+#endif
   Fl_Group         *g;
   Fl_Box           *dummy;
   Fl_Return_Button *but_ok;
@@ -54,21 +74,42 @@ int dialog_calendar(std::string format)
   }
 
   /* one calendar unit = 32px
-   * calendar widget width/height = 32px * 7 = 224px
+   * calendar widget width = 32px * 7 = 224px
    */
-  win = new Fl_Double_Window(244, 281, title);
-  calendar = new Fl_Calendar(10, 10, 224, 224);
+  win = new Fl_Double_Window(244 + XSP, 281, title);
+  calendar = new Fl_Calendar(10 + XSP, 10, 224, 224);
   win->begin();  /* don't remove! */
-  win->size_range(244, 281, max_w, max_h);
+  win->size_range(244 + XSP, 281, max_w, max_h);
   win->callback(close_cb, 1);
   {
     if (calendar_arabic) {
       calendar->arabic(1);
     }
-    g = new Fl_Group(0, 244, 244, 37);
+
+#ifdef ISO_WEEK_NUMBERS
+    calendar->callback(callback);
+
+    g0 = new Fl_Group(10, 10, 224, 224);
+    {
+      for (int i = 0; i < 8; i++) {
+        weeknum[i] = new Fl_Box (10, 10 + i*28, 32, 28);
+        if (i > 1) {
+          weeknum[i]->labelsize(12);
+          weeknum[i]->box(FL_FLAT_BOX);
+        } else {
+          weeknum[i]->box(FL_NO_BOX);
+        }
+      }
+      callback(NULL, NULL);
+    }
+    g0->resizable(calendar);
+    g0->end();
+#endif  /* ISO_WEEK_NUMBERS */
+
+    g = new Fl_Group(0, 244, 244 + XSP, 37);
     {
       int but_w = measure_button_width(fl_cancel, 20);
-      but_cancel = new Fl_Button(234 - but_w, 244, but_w, 26, fl_cancel);
+      but_cancel = new Fl_Button(234 + XSP - but_w, 244, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
       but_w = measure_button_width(fl_ok, 40);
       but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 244, but_w, 26, fl_ok);
@@ -79,7 +120,12 @@ int dialog_calendar(std::string format)
     g->resizable(dummy);
     g->end();
   }
+
+#ifdef ISO_WEEK_NUMBERS
+  run_window(win, g0);
+#else
   run_window(win, calendar);
+#endif
 
   if (ret == 0) {
     std::cout << format_date(format, calendar->year(), calendar->month(), calendar->day()) << std::endl;

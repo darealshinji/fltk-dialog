@@ -73,10 +73,17 @@ public:
   int arabic ();
 
 #ifdef ISO_WEEK_NUMBERS
-  int weeknumbers[6];
+  /**
+   * Return week number of row i [0-5].
+   */
+  int weeknumber(int i);
 #endif
 
  protected:
+
+#ifdef ISO_WEEK_NUMBERS
+  int weeknumbers_[6];
+#endif
 
   int labelsize_;
 
