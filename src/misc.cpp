@@ -213,33 +213,35 @@ std::string text_wrap(const char *text, int linewidth, Fl_Font font, int font_si
 
   while (iss >> word) {
     w = fl_width(word.c_str());
+    if (oss.tellp() > 0) {
+      oss << ' ';
+      remain -= ws;
+    }
     if (remain >= w) {
       /* enough space to append the word */
-      if (oss.tellp() > 0) {
-        oss << ' ';
-        remain -= ws;
-      }
-      remain -= w;
       oss << word;
+      remain -= w;
     } else {
-      /* new line */
-      if (oss.tellp() > 0) {
-        oss << '\n';
-      }
+      /* not enough space to append the word */
       if (w > linewidth) {
-        /* split the word */
+        /* word is longer than line -> split the word */
         w = 0;
         for (size_t i = 0; i < word.size(); i++) {
           int wi = fl_width(word[i]);
-          if (w + wi > linewidth) {
+          if (w + wi > remain) {
             oss << '\n' << word[i];
             w = wi;
+            remain = linewidth - w;
           } else {
             oss << word[i];
             w += wi;
           }
         }
       } else {
+        /* new line */
+        if (oss.tellp() > 0) {
+          oss << '\n';
+        }
         oss << word;
       }
       remain = linewidth - w;
