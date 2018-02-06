@@ -115,23 +115,19 @@ void set_undecorated(Fl_Double_Window *o) {
 void set_always_on_top(Fl_Double_Window *o)
 {
   if (always_on_top) {
-    o->wait_for_expose();
-
-    XEvent event;
-    event.xclient.type = ClientMessage;
-    event.xclient.serial = 0;
-    event.xclient.send_event = True;
-    event.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
-    event.xclient.window = fl_xid((Fl_Window *)o);
-    event.xclient.format = 32;
-    event.xclient.data.l[0] = 1;  /* _NET_WM_STATE_ADD */
-    event.xclient.data.l[1] = XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
-    event.xclient.data.l[2] = 0;
-    event.xclient.data.l[3] = 0;
-    event.xclient.data.l[4] = 0;
-
-    XSendEvent(fl_display, DefaultRootWindow(fl_display), False,
-               SubstructureRedirectMask|SubstructureNotifyMask, &event);
+    XEvent e;
+    e.xclient.type = ClientMessage;
+    e.xclient.window = fl_xid(o);
+    e.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
+    e.xclient.format = 32;
+    e.xclient.data.l[0] = 1;
+    e.xclient.data.l[1] = (long) XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
+    e.xclient.data.l[2] = 0;
+    e.xclient.data.l[3] = 0;
+    e.xclient.data.l[4] = 0;
+    XSendEvent(fl_display, RootWindow(fl_display, fl_screen), False,
+               SubstructureRedirectMask|SubstructureNotifyMask, &e);
+    XFlush(fl_display);
   }
 }
 
