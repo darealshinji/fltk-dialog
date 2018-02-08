@@ -31,9 +31,6 @@
 
 #include <FDate.H>
 
-/* uncomment to test WIP week numbers */
-//#define ISO_WEEK_NUMBERS
-
 /** @package libflek_ui
  * Fl_Calendar_Base is a widget that allows a user to select a date
  * (day, month, and year) with a wall style calendar.
@@ -66,28 +63,12 @@ public:
 
   void int_to_str (char *t, int n);
 
-  /**
-   * Set non-zero to enable Eastern Arabic numbers.
-   */
-  void arabic (int i);
-  int arabic ();
-
-#ifdef ISO_WEEK_NUMBERS
-  /**
-   * Return week number of row i [0-5].
-   */
-  int weeknumber(int i);
-#endif
-
  protected:
-
-#ifdef ISO_WEEK_NUMBERS
-  int weeknumbers_[6];
-#endif
 
   int labelsize_;
 
-  Fl_Button * days[6*7];
+  Fl_Button * days[7*6];
+  Fl_Box * weeknumbers[6];
 
   ~Fl_Calendar_Base();
 
@@ -179,6 +160,12 @@ class Fl_Calendar : public Fl_Calendar_Base
    * @return The selected day if the user has selected a day, 0 otherwise.
    */
   int selected_day(int d);
+
+  /**
+   * Set non-zero to enable Eastern Arabic numbers.
+   */
+  void arabic (int i);
+  int arabic ();
 
  protected:
 
