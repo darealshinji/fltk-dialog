@@ -130,9 +130,8 @@ Fl_Calendar_Base::update ()
 {
   int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
-  int i, j = 0, n;
+  int i, j, n, wk[6][3];
   char tmp[32];
-  int wk[6][3] = { 0, 0 };
 
   int dipm_month;  /* previous month */
   int dipm_year;   /* year of previous month */
@@ -155,7 +154,7 @@ Fl_Calendar_Base::update ()
   }
 
   /* current month */
-  for (i = dow; i < (dim+dow); i++) {
+  for (i = dow, j = 0; i < dim+dow; i++) {
     n = i+1-dow;
     if (n == 1 || i % 7 == 0) {
       wk[j][0] = n;
@@ -174,7 +173,7 @@ Fl_Calendar_Base::update ()
   }
 
   /* first days of next month */
-  for (i = (dim+dow); i < (6*7); i++) {
+  for (i = dim+dow; i < 6*7; i++) {
     n = i+1-dow-dim;
     if (i % 7 == 0) {
       wk[j][0] = n;
@@ -194,8 +193,13 @@ Fl_Calendar_Base::update ()
     days[i]->show ();
   }
 
-  for (int i = 0; i < 6; i++) {
-    int_to_str (tmp, iso_week_number(wk[i][2], wk[i][1], wk[i][0]));
+  for (i = 0, n = 53; i < 6; i++, n++) {
+    if (n == 53) {
+      n = iso_week_number(wk[i][2], wk[i][1], wk[i][0]);
+    } else if (n > 53) {
+      n = 1;
+    }
+    int_to_str (tmp, n);
     weeknumbers[i]->copy_label (tmp);
   }
 }
