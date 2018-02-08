@@ -1,0 +1,275 @@
+diff --git a/FL/Fl_File_Chooser.H b/FL/Fl_File_Chooser.H
+index 344f52d..84a4295 100644
+--- a/FL/Fl_File_Chooser.H
++++ b/FL/Fl_File_Chooser.H
+@@ -144,7 +144,9 @@ public:
+   void label(const char *l);
+   const char * label();
+   void ok_label(const char *l);
++  void cancel_label(const char *l);
+   const char * ok_label();
++  const char * cancel_label();
+   void preview(int e); 
+   int preview() const { return previewButton->value(); }; 
+ private:
+@@ -168,6 +170,13 @@ public:
+   const char *value(int f = 1); 
+   void value(const char *filename); 
+   int visible();
++  int x();
++  int y();
++  int w();
++  int h();
++  void resize(int X, int Y, int W, int H);
++  void border(int b);
++  void always_on_top();
+   /**
+    [standard text may be customized at run-time]
+   */
+diff --git a/FL/Fl_Help_Dialog.H b/FL/Fl_Help_Dialog.H
+index 92fba6d..6c99424 100644
+--- a/FL/Fl_Help_Dialog.H
++++ b/FL/Fl_Help_Dialog.H
+@@ -63,6 +63,10 @@ private:
+   Fl_Help_View *view_;
+   inline void cb_view__i(Fl_Help_View*, void*);
+   static void cb_view_(Fl_Help_View*, void*);
++
++  Fl_Button *close_;
++  static void cb_close_(Fl_Button*, void*);
++
+ public:
+   ~Fl_Help_Dialog();
+   int h();
+@@ -82,6 +86,8 @@ public:
+   int w();
+   int x();
+   int y();
++  void border(int b);
++  void always_on_top();
+ };
+ #endif
+ 
+diff --git a/FL/fl_ask.H b/FL/fl_ask.H
+index 79b56ec..6c9755c 100644
+--- a/FL/fl_ask.H
++++ b/FL/fl_ask.H
+@@ -26,6 +26,7 @@
+ #  include "Enumerations.H"
+ 
+ class Fl_Widget;
++class Fl_Window;
+ 
+ /** Different system beeps available. 
+  \sa fl_beep(int) */
+@@ -69,6 +70,8 @@ FL_EXPORT int fl_message_hotspot(void);
+ FL_EXPORT void fl_message_title(const char *title);
+ FL_EXPORT void fl_message_title_default(const char *title);
+ 
++FL_EXPORT void fl_always_on_top(Fl_Window *o);
++
+ // pointers you can use to change FLTK to a foreign language:
+ extern FL_EXPORT const char* fl_no;
+ extern FL_EXPORT const char* fl_yes;
+diff --git a/src/Fl_Choice.cxx b/src/Fl_Choice.cxx
+index ecdfedd..934052a 100644
+--- a/src/Fl_Choice.cxx
++++ b/src/Fl_Choice.cxx
+@@ -186,13 +186,13 @@ int Fl_Choice::handle(int e) {
+   J1:
+     if (Fl::scheme()
+ 	|| fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {
+-      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
++      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
+     } else {
+       // In order to preserve the old look-n-feel of "white" menus,
+       // temporarily override the color() of this widget...
+       Fl_Color c = color();
+       color(FL_BACKGROUND2_COLOR);
+-      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
++      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
+       color(c);
+     }
+     if (!v || v->submenu()) return 1;
+diff --git a/src/Fl_Color_Chooser.cxx b/src/Fl_Color_Chooser.cxx
+index 4b4ce1d..3402dc2 100644
+--- a/src/Fl_Color_Chooser.cxx
++++ b/src/Fl_Color_Chooser.cxx
+@@ -92,11 +92,11 @@ enum {
+   M_HSV		/**< mode() of Fl_Color_Chooser showing HSV values */
+ };
+ static const Fl_Menu_Item mode_menu[] = {
+-  {"rgb"},
+-  {"byte"},
+-  {"hex"},
+-  {"hsv"},
+-  {0}
++  { "rgb",  0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
++  { "byte", 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
++  { "hex",  0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
++  { "hsv",  0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
++  { 0,0,0,0,0,0,0,0,0 }
+ };
+ 
+ #ifndef FL_DOXYGEN
+diff --git a/src/Fl_File_Chooser.cxx b/src/Fl_File_Chooser.cxx
+index e8e9e68..cfa83e2 100644
+--- a/src/Fl_File_Chooser.cxx
++++ b/src/Fl_File_Chooser.cxx
+@@ -378,15 +378,32 @@ void Fl_File_Chooser::ok_label(const char *l) {
+   if (l) okButton->label(l);
+   int w=0, h=0;
+   okButton->measure_label(w, h);
++  if (w < 60) w = 60;
+   okButton->resize(cancelButton->x() - 50 - w, cancelButton->y(),
+                    w + 40, 25);
+   okButton->parent()->init_sizes();
+ }
+ 
++void Fl_File_Chooser::cancel_label(const char *l) {
++  if (l) cancelButton->label(l);
++  int w=0, h=0;
++  cancelButton->measure_label(w, h);
++  if (w < 60) w = 60;
++  cancelButton->resize(cancelButton->parent()->w() - 10 - w, cancelButton->y(),
++                       w + 20, 25);
++  okButton->resize(cancelButton->x() - 10 - okButton->w(), okButton->y(),
++                   okButton->w(), okButton->h());
++  cancelButton->parent()->init_sizes();
++}
++
+ const char * Fl_File_Chooser::ok_label() {
+   return (okButton->label());
+ }
+ 
++const char * Fl_File_Chooser::cancel_label() {
++  return (cancelButton->label());
++}
++
+ int Fl_File_Chooser::shown() {
+   return window->shown();
+ }
+@@ -443,10 +460,38 @@ void Fl_File_Chooser::user_data(void *d) {
+   data_ = d;
+ }
+ 
++int Fl_File_Chooser::x() {
++  return window->x();
++}
++
++int Fl_File_Chooser::y() {
++  return window->y();
++}
++
++int Fl_File_Chooser::w() {
++  return window->w();
++}
++
++int Fl_File_Chooser::h() {
++  return window->h();
++}
++
++void Fl_File_Chooser::resize(int X, int Y, int W, int H) {
++  window->resize(X, Y, W, H);
++}
++
+ int Fl_File_Chooser::visible() {
+   return window->visible();
+ }
+ 
++void Fl_File_Chooser::border(int b) {
++  window->border(b);
++}
++
++void Fl_File_Chooser::always_on_top() {
++  fl_always_on_top(window);
++}
++
+ Fl_Widget* Fl_File_Chooser::add_extra(Fl_Widget* gr) {
+   Fl_Widget* ret=ext_group;
+   if (gr==ext_group) {
+diff --git a/src/Fl_Help_Dialog.cxx b/src/Fl_Help_Dialog.cxx
+index 23a360a..ae4ae86 100644
+--- a/src/Fl_Help_Dialog.cxx
++++ b/src/Fl_Help_Dialog.cxx
+@@ -144,6 +144,10 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
+   ((Fl_Help_Dialog*)(o->parent()->user_data()))->cb_view__i(o,v);
+ }
+ 
++void Fl_Help_Dialog::cb_close_(Fl_Button* o, void* v) {
++  ((Fl_Help_Dialog*)(o->parent()->parent()->user_data()))->hide();
++}
++
+ Fl_Help_Dialog::Fl_Help_Dialog() {
+   { window_ = new Fl_Double_Window(530, 385, "Help Dialog");
+     window_->user_data((void*)(this));
+@@ -172,10 +176,10 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
+         larger_->labelsize(16);
+         larger_->callback((Fl_Callback*)cb_larger_);
+       } // Fl_Button* larger_
+-      { Fl_Group* o = new Fl_Group(350, 10, 171, 25);
++      { Fl_Group* o = new Fl_Group(350, 10, 141, 25);
+         o->box(FL_DOWN_BOX);
+         o->color(FL_BACKGROUND2_COLOR);
+-        { find_ = new Fl_Input(375, 12, 143, 21, "@search");
++        { find_ = new Fl_Input(375, 12, 113, 21, "@search");
+           find_->tooltip("find text in document");
+           find_->box(FL_FLAT_BOX);
+           find_->labelsize(13);
+@@ -185,6 +189,12 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
+         } // Fl_Input* find_
+         o->end();
+       } // Fl_Group* o
++      { close_ = new Fl_Button(495, 10, 25, 25, "X");
++        close_->tooltip("Close the window.");
++        close_->labelfont(1);
++        close_->labelsize(16);
++        close_->callback((Fl_Callback*)cb_close_);
++      } // Fl_Button* close_
+       { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
+         Fl_Group::current()->resizable(o);
+       } // Fl_Box* o
+@@ -294,6 +304,14 @@ int Fl_Help_Dialog::y() {
+   return (window_->y());
+ }
+ 
++void Fl_Help_Dialog::border(int b) {
++  window_->border(b);
++}
++
++void Fl_Help_Dialog::always_on_top() {
++  fl_always_on_top(window_);
++}
++
+ //
+ // End of "$Id: Fl_Help_Dialog.cxx 10612 2015-03-10 01:41:55Z AlbrechtS $".
+ //
+diff --git a/src/fl_ask.cxx b/src/fl_ask.cxx
+index fc3d22f..3f7db04 100644
+--- a/src/fl_ask.cxx
++++ b/src/fl_ask.cxx
+@@ -613,6 +613,24 @@ void fl_message_title_default(const char *title) {
+     message_title_default = strdup(title);
+ }
+ 
++void fl_always_on_top(Fl_Window *o) {
++#if !defined(__APPLE__) && !defined(WIN32)
++  XEvent e;
++  e.xclient.type = ClientMessage;
++  e.xclient.window = fl_xid(o);
++  e.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
++  e.xclient.format = 32;
++  e.xclient.data.l[0] = 1;
++  e.xclient.data.l[1] = (long) XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
++  e.xclient.data.l[2] = 0;
++  e.xclient.data.l[3] = 0;
++  e.xclient.data.l[4] = 0;
++  XSendEvent(fl_display, RootWindow(fl_display, fl_screen), False,
++             SubstructureRedirectMask|SubstructureNotifyMask, &e);
++  XFlush(fl_display);
++#endif
++}
++
+ /** @} */
+ 
+ //

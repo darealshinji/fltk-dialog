@@ -145,8 +145,7 @@ distclean: mostlyclean
 	-rm -rf fltk/build autom4te.cache
 	-rm -f aclocal.m4 config.mak config.log config.status
 	$(MAKE_CLEAN)
-	$(foreach file,fltk/src/Fl_Choice.cxx fltk/src/Fl_Color_Chooser.cxx fltk/FL/Fl_File_Chooser.H fltk/src/Fl_File_Chooser.cxx \
- fltk/FL/Fl_Help_Dialog.H fltk/src/Fl_Help_Dialog.cxx,[ ! -f $(file).orig ] || mv -f $(file).orig $(file)$(NL))
+	test ! -f fltk/patches_applied_stamp || (cd fltk && patch -p1 -R < ../fltk_patches.diff && rm patches_applied_stamp)
 
 mostlyclean:
 	-rm -f $(BIN) *.so *_so.h *_png.h *.o src/*.o src/Flek/*.o src/misc/*.o
@@ -172,22 +171,10 @@ $(BIN): $(OBJS)
 
 fltk/build/fltk-config: $(libfltk)
 
-fltk/src/Fl_Choice.cxx.orig: patches/Fl_Choice.patch
-	patch -p1 --backup < $<
+fltk/patches_applied_stamp: fltk_patches.diff
+	cd fltk && patch -p1 < ../$< && touch ../$@
 
-fltk/src/Fl_Color_Chooser.cxx.orig: patches/Fl_Color_Chooser.patch
-	patch -p1 --backup < $<
-
-fltk/src/Fl_File_Chooser.cxx.orig: patches/Fl_File_Chooser.patch
-	patch -p1 --backup < $<
-
-fltk/src/Fl_Help_Dialog.cxx.orig: patches/Fl_Help_Dialog.patch
-	patch -p1 --backup < $<
-
-patches_backup_files = fltk/src/Fl_Choice.cxx.orig fltk/src/Fl_Color_Chooser.cxx.orig \
- fltk/src/Fl_File_Chooser.cxx.orig fltk/src/Fl_Help_Dialog.cxx.orig
-
-fltk/build/Makefile: $(patches_backup_files)
+fltk/build/Makefile: fltk/patches_applied_stamp
 	mkdir -p fltk/build
 	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) -DCMAKE_VERBOSE_MAKEFILE="OFF"
 
