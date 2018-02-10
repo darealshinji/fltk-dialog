@@ -13,10 +13,33 @@ DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
 
 BIN  = fltk-dialog
-OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
-  dropdown.o FDate.o file.o Fl_Calendar.o font.o html.o img_to_rgb.o l10n.o main.o \
-  message.o misc.o nanosvg.o nanosvgrast.o notify.o progress.o radiolist.o \
-  radiolist_browser.o textinfo.o version.o)
+
+OBJS = \
+	src/about.o \
+	src/calendar.o \
+	src/checklist.o \
+	src/color.o \
+	src/date.o \
+	src/dnd.o \
+	src/dropdown.o \
+	src/FDate.o \
+	src/file.o \
+	src/Fl_Calendar.o \
+	src/font.o \
+	src/html.o \
+	src/img_to_rgb.o \
+	src/l10n.o \
+	src/main.o \
+	src/message.o \
+	src/misc.o \
+	src/nanosvg.o \
+	src/notify.o \
+	src/progress.o \
+	src/radiolist.o \
+	src/radiolist_browser.o \
+	src/textinfo.o \
+	src/version.o \
+	$(NULL)
 
 
 
@@ -109,9 +132,11 @@ endif
 ifeq ($(V),1)
 cmake_verbose = VERBOSE=1
 make_verbose  = 1
+Q =
 else
+cmake_verbose =
 make_verbose  = 0
-silent        = @
+Q = @
 endif
 
 msg_GENH    = @echo "Generating header file $@"
@@ -148,7 +173,7 @@ distclean: mostlyclean
 	test ! -f fltk/patches_applied_stamp || (cd fltk && patch -p1 -R < ../fltk_patches.diff && rm patches_applied_stamp)
 
 mostlyclean:
-	-rm -f $(BIN) *.so *_so.h *_png.h *.o src/*.o src/Flek/*.o src/misc/*.o
+	-rm -f $(BIN) *.so *_so.h *_png.h *_qrc.h *.o src/*.o src/Flek/*.o src/misc/*.o
 
 maintainer-clean: distclean
 	-rm -f configure
@@ -162,11 +187,15 @@ endif
 
 $(BIN): $(OBJS)
 	$(msg_CXXLD)
-	$(silent)$(CXX) -o $@ $^ $(LDFLAGS) $(main_LIBS) $(LIBS)
+	$(Q)$(CXX) -o $@ $^ $(LDFLAGS) $(main_LIBS) $(LIBS)
+
+.c.o:
+	$(msg_CC)
+	$(Q)$(CC) $(main_CFLAGS) -c -o $@ $<
 
 .cpp.o:
 	$(msg_CXX)
-	$(silent)$(CXX) $(main_CXXFLAGS) -c -o $@ $<
+	$(Q)$(CXX) $(main_CXXFLAGS) -c -o $@ $<
 
 
 fltk/build/fltk-config: $(libfltk)
@@ -186,11 +215,11 @@ src/main.cpp: icon_png.h
 
 fltk_png.h: src/fltk.png
 	$(msg_GENH)
-	$(silent)xxd -i $< > $@
+	$(Q)xxd -i $< > $@
 
 icon_png.h: src/icon.png
 	$(msg_GENH)
-	$(silent)xxd -i $< > $@
+	$(Q)xxd -i $< > $@
 
 ifneq ($(HAVE_QT),no)
 qtplugins =
@@ -204,29 +233,37 @@ endif
 
 qtgui_so.h: $(qtplugins)
 	$(msg_GENH)
-	$(silent)rm -f $@
+	$(Q)rm -f $@
 ifneq ($(HAVE_QT4),no)
-	$(silent)xxd -i qt4gui.so >> $@
+	$(Q)xxd -i qt4gui.so >> $@
 endif
 ifneq ($(HAVE_QT5),no)
-	$(silent)xxd -i qt5gui.so >> $@
+	$(Q)xxd -i qt5gui.so >> $@
 endif
 
 qt4gui.so: src/file_qtplugin_qt4.o
 	$(msg_CXXLDSO)
-	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs QtGui QtCore)
+	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs QtGui QtCore)
 
 qt5gui.so: src/file_qtplugin_qt5.o
 	$(msg_CXXLDSO)
-	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs Qt5Widgets Qt5Core)
+	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs Qt5Widgets Qt5Core)
 
-src/file_qtplugin_qt4.o: src/file_qtplugin.cpp
+src/file_qtplugin_qt4.o: src/file_qtplugin.cpp icon_qrc.h
 	$(msg_CXX)
-	$(silent)$(CXX) $(plugin_CXXFLAGS) -Wno-unused-variable $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
+	$(Q)$(CXX) $(plugin_CXXFLAGS) -Wno-unused-variable $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
 
-src/file_qtplugin_qt5.o: src/file_qtplugin.cpp
+src/file_qtplugin_qt5.o: src/file_qtplugin.cpp icon_qrc.h
 	$(msg_CXX)
-	$(silent)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
+	$(Q)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
+
+icon_qrc.h: src/icon.png
+	$(msg_GENH)
+	$(Q)printf "static const unsigned char qt_resource_data[] = {\n " > $@
+	$(Q)printf "%08x" $$(wc -c < $<) | sed 's|.\{2\}| 0x&,|g' >> $@
+	$(Q)printf "\n" >> $@
+	$(Q)xxd -i < $< >> $@
+	$(Q)printf "};\n" >> $@
 
 ifneq ($(EMBEDDED_PLUGINS),no)
 src/file_dlopen_qtplugin.o: qtgui_so.h
@@ -241,18 +278,18 @@ endif # HAVE_QT
 ifneq ($(WITH_RSVG),no)
 rsvg_convert_so.h: rsvg_convert.so
 	$(msg_GENH)
-	$(silent)xxd -i $< > $@
+	$(Q)xxd -i $< > $@
 
 rsvg_modules = glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6
 
 rsvg_convert.so: src/rsvg_convert.o $(librsvg)
 	$(msg_CCLDSO)
-	$(silent)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
+	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
 
 src/rsvg_convert.cpp: $(librsvg)
 src/rsvg_convert.o: src/rsvg_convert.cpp
 	$(msg_CC)
-	$(silent)$(CXX) -I librsvg $(plugin_CXXFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
+	$(Q)$(CXX) -I librsvg $(plugin_CXXFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
 
 $(librsvg): librsvg/Makefile
 	$(MAKE) -C librsvg V=$(make_verbose)

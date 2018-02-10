@@ -38,9 +38,9 @@
 
 #include <QtGlobal>
 #if QT_VERSION >= 0x050000
-# include "icon_qrc_qt5.cpp"
+# include "icon_qrc_qt5.hpp"
 #else
-# include "icon_qrc_qt4.cpp"
+# include "icon_qrc_qt4.hpp"
 #endif
 
 #include "fltk-dialog.hpp"
