@@ -53,28 +53,26 @@ int dialog_calendar(std::string format)
     title = "FLTK calendar";
   }
 
-  /* one calendar unit = 32px
-   * calendar widget width = 32px * 8 = 256px
-   */
-  win = new Fl_Double_Window(276, 313, title);
-  calendar = new Fl_Calendar(10, 10, 256, 256);
+  /* one calendar unit = 32px */
+  win = new Fl_Double_Window(32*8 + 20, 32*8 + 20 + 37, title);
+  calendar = new Fl_Calendar(10, 10, 32*8, 32*8);
   win->begin();  /* don't remove! */
-  win->size_range(276, 313, max_w, max_h);
+  win->size_range(32*8 + 20, 32*8 + 20 + 37, max_w, max_h);
   win->callback(close_cb, 1);
   {
     if (calendar_arabic) {
       calendar->arabic(1);
     }
 
-    g = new Fl_Group(0, 276, win->w(), 37);
+    g = new Fl_Group(0, 32*8+20, win->w(), 37);
     {
       int but_w = measure_button_width(fl_cancel, 20);
-      but_cancel = new Fl_Button(win->w() - 10 - but_w, 276, but_w, 26, fl_cancel);
+      but_cancel = new Fl_Button(win->w() - 10 - but_w, 32*8 + 20, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
       but_w = measure_button_width(fl_ok, 40);
-      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 276, but_w, 26, fl_ok);
+      but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 32*8 + 20, but_w, 26, fl_ok);
       but_ok->callback(close_cb, 0);
-      dummy = new Fl_Box(but_ok->x() - 1, 276, 1, 1);
+      dummy = new Fl_Box(but_ok->x() - 1, 32*8 + 20, 1, 1);
       dummy->box(FL_NO_BOX);
     }
     g->resizable(dummy);

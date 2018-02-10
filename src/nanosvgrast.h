@@ -81,6 +81,8 @@ void nsvgDeleteRasterizer(NSVGrasterizer*);
 
 #ifdef NANOSVGRAST_IMPLEMENTATION
 
+#include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define NSVG__SUBSAMPLES	5

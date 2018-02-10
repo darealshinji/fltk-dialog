@@ -90,8 +90,8 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
           browser->box(FL_THIN_DOWN_BOX);
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
           browser->clear_visible_focus();
-          for (int i = 0; i < count; ++i) {
-            browser->add(radiolist_v[i].c_str());
+          for (int j = 0; j < count; ++j) {
+            browser->add(radiolist_v[j].c_str());
           }
           browser->callback(callback);
         }
@@ -104,7 +104,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
     g1->resizable(g1a);
     g1->end();
 
-    g2 = new Fl_Group(0, 310, 420, 36);
+    g2 = new Fl_Group(0, 290 + 20, 420, 36);
     {
       int but_w = measure_button_width(fl_cancel, 20);
       but_cancel = new Fl_Button(win->w() - 10 - but_w, 314, but_w, 26, fl_cancel);
@@ -113,7 +113,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
       but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 314, but_w, 26, fl_ok);
       but_ok->callback(close_cb, 0);
       but_ok->deactivate();
-      dummy2 = new Fl_Box(but_ok->x() - 1, 310, 1, 1);
+      dummy2 = new Fl_Box(but_ok->x() - 1, 290 + 20, 1, 1);
       dummy2->box(FL_NO_BOX);
     }
     g2->resizable(dummy2);

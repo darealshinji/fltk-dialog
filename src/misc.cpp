@@ -122,14 +122,13 @@ void set_always_on_top(Fl_Double_Window *o)
 
 int measure_button_width(const char *label, int extra_width)
 {
-  int h = 0, w = 0;
+  int w = 0;
   if (!label) {
     return 90;
   }
   Fl_Button *o = new Fl_Button(0,0,0,0, label);
   fl_font(o->labelfont(), o->labelsize());
-  fl_measure(o->label(), w, h);
-  w += extra_width;
+  w = fl_width(o->label()) + extra_width;
   if (w < 90) {
     w = 90;
   }

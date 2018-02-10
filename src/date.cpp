@@ -114,7 +114,14 @@ int dialog_date(std::string format)
       month->value(current_month);
       month->callback(callback);
 
-      year = new Fl_Spinner(270, 28, 120, 30, "Year:");
+      day = new Fl_Spinner(20 + 120, 28, 120, 30, "Day:");
+      day->labelsize(14);
+      day->align(FL_ALIGN_TOP_LEFT);
+      day->minimum(1);
+      day->step(1);
+      day->value(current_day);
+
+      year = new Fl_Spinner(30 + 2*120, 28, 120, 30, "Year:");
       year->labelsize(14);
       year->align(FL_ALIGN_TOP_LEFT);
       year->minimum(1);
@@ -123,12 +130,7 @@ int dialog_date(std::string format)
       year->value(current_year);
       year->callback(callback);
 
-      day = new Fl_Spinner(140, 28, 120, 30, "Day:");
-      day->labelsize(14);
-      day->align(FL_ALIGN_TOP_LEFT);
-      day->minimum(1);
-      day->step(1);
-      day->value(current_day);
+      /* run callback to update days */
       callback(NULL);
 
       dummy1 = new Fl_Box(10, 58, 380, 1);

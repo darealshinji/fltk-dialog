@@ -87,32 +87,29 @@ std::string separator_s = "|";
 int max_w = Fl::w();
 int max_h = Fl::h();
 
-int override_x = -1;
-int override_y = -1;
-int override_w = -1;
-int override_h = -1;
-bool resizable = true;
-bool position_center = false;
-bool window_taskbar = true;
-bool window_decoration = true;
+int override_x = -1
+,   override_y = -1
+,   override_w = -1
+,   override_h = -1;
+
+bool resizable = true
+,    position_center = false
+,    window_taskbar = true
+,    window_decoration = true;
+
 #ifdef WITH_RSVG
 bool force_nanosvg = false;
 #endif
 
-/* don't use fltk's '@' symbols */
-#define NO_SYMBOLS 0
-
-/* global FLTK callback for drawing all label text */
 static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a) {
   fl_font(o->font, o->size);
   fl_color((Fl_Color)o->color);
-  fl_draw(o->value, x, y, w, h, a, o->image, NO_SYMBOLS);
+  fl_draw(o->value, x, y, w, h, a, o->image, 0);
 }
 
-/* global FLTK callback for measuring all labels */
 static void measure_cb(const Fl_Label *o, int &w, int &h) {
   fl_font(o->font, o->size);
-  fl_measure(o->value, w, h, NO_SYMBOLS);
+  fl_measure(o->value, w, h, 0);
 }
 
 static int esc_handler(int event) {
@@ -316,6 +313,10 @@ int main(int argc, char **argv)
     std::cout << "using FLTK version " << get_fltk_version() << " - http://www.fltk.org" << std::endl;
     return 0;
   }
+
+  /* do the localization BEFORE we set
+   * the user-specified button labels */
+  l10n();
 
   int dialog_count = 0;  /* check if two or more dialog options were specified */
   int dialog = DIALOG_MESSAGE;  /* default message type */
@@ -677,9 +678,6 @@ int main(int argc, char **argv)
   /* recommended in Fl_Double_Window.H */
   Fl::visual(FL_DOUBLE|FL_INDEX);
 
-  /* localization */
-  l10n();
-
   switch (dialog) {
     case DIALOG_ABOUT:
       return about();
@@ -702,7 +700,7 @@ int main(int argc, char **argv)
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, notify_icon, libnotify);
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, multi, kill_pid, autoclose, hide_cancel);
+      return dialog_progress(pulsate, (unsigned int) multi, kill_pid, autoclose, hide_cancel);
     case DIALOG_TEXTINFO:
       return dialog_textinfo(autoscroll, checkbox);
     case DIALOG_CHECKLIST:

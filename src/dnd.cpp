@@ -110,8 +110,8 @@ int dialog_dnd()
     title = "FLTK Drag & Drop";
   }
 
-  win = new Fl_Double_Window(400, 300, title);
-  win->size_range(400, 300, max_w, max_h);
+  win = new Fl_Double_Window(400, 244 + 56, title);
+  win->size_range(400, 244 + 56, max_w, max_h);
   win->callback(close_cb);
   {
     box = new dnd_box(10, 10, 380, 244, msg);
@@ -120,18 +120,18 @@ int dialog_dnd()
     g = new Fl_Group(0, 244, 400, 56);
     {
       int but_w = measure_button_width("Drop count:");
-      text = new Fl_Box(10, 264, but_w, 26, "Drop count:");
+      text = new Fl_Box(10, 244 + 20, but_w, 26, "Drop count:");
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
 
-      count = new Fl_Box(10, 264, but_w, 26, "0");
+      count = new Fl_Box(10, 244 + 20, but_w, 26, "0");
       count->box(FL_NO_BOX);
       count->align(FL_ALIGN_RIGHT);
 
       but_w = measure_button_width(fl_close, 40);
       dummy = new Fl_Box(389 - but_w, 260, 1, 1);
       dummy->box(FL_NO_BOX);
-      but_close = new Fl_Return_Button(390 - but_w, 264, but_w, 26, fl_close);
+      but_close = new Fl_Return_Button(390 - but_w, 244 + 20, but_w, 26, fl_close);
       but_close->callback(close_cb);
     }
     g->resizable(dummy);

@@ -15,8 +15,8 @@ EMBEDDED_PLUGINS ?= yes
 BIN  = fltk-dialog
 OBJS = $(addprefix src/,about.o calendar.o checklist.o color.o date.o dnd.o \
   dropdown.o FDate.o file.o Fl_Calendar.o font.o html.o img_to_rgb.o l10n.o main.o \
-  message.o misc.o notify.o progress.o radiolist.o radiolist_browser.o textinfo.o \
-  version.o)
+  message.o misc.o nanosvg.o nanosvgrast.o notify.o progress.o radiolist.o \
+  radiolist_browser.o textinfo.o version.o)
 
 
 

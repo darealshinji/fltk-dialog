@@ -1,4 +1,5 @@
  * finish documentation + HTML documentation (--html-doc)
  * write --forms dialog
  * further calendar improvements
+ * use glibc date formats directly in format_date()
 

@@ -192,7 +192,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
   /* dlopen() library */
 
   void *handle = dlopen(plugin, RTLD_LAZY);
-  const char *error = dlerror();
+  char *error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
@@ -202,8 +202,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
 
   dlerror();
 
-  int (*getfilenameqt) (int, const char*, const char*, int, char **);
-  *(void **)(&getfilenameqt) = dlsym(handle, "getfilenameqt");
+  GETPROCADDRESS(handle, int, getfilenameqt, (int, const char*, const char*, int, char **))
 
   error = dlerror();
 
@@ -218,7 +217,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode, int argc, char **argv)
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
   }
 
-  int ret = getfilenameqt(mode, separator_s.c_str(), title, argc, argv);
+  ret = getfilenameqt(mode, separator_s.c_str(), title, argc, argv);
   dlclose(handle);
   DELETE(plugin);
 

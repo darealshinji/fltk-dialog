@@ -47,31 +47,26 @@
 #include <zlib.h>
 
 #include "fltk-dialog.hpp"
-
-#define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"
-#define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
-#define MAGIC_LEN          16
-#define CHUNK_SIZE      16384  /* 16 KiB */
-#define IMGFILE_MAX  10485760  /* 10 MiB */
-#define SVGZ_MAX      1048576  /*  1 MiB */
-#define SVG_MAX       3145728  /*  3 MiB */
+#define IMGFILE_MAX  10*1024*1024
+#define SVGZ_MAX        1024*1024
+#define SVG_MAX       3*1024*1024
 
 static char *gzip_uncompress(const char *file)
 {
   std::streampos size;
   std::string output;
   char *data;
-  unsigned char out[CHUNK_SIZE];
+  unsigned char out[16*1024];
   z_stream strm;
 
-  //if (!file) {
-  //  return NULL;
-  //}
+  if (!file) {
+    return NULL;
+  }
 
   std::ifstream ifs(file, std::ios::in|std::ios::binary|std::ios::ate);
 
@@ -80,10 +75,6 @@ static char *gzip_uncompress(const char *file)
   }
 
   size = ifs.tellg();
-  //if (size > SVGZ_MAX) {
-  //  ifs.close();
-  //  return NULL;
-  //}
 
   data = new char[size];
   ifs.seekg(0, std::ios::beg);
@@ -104,7 +95,7 @@ static char *gzip_uncompress(const char *file)
   strm.avail_in = size;
   strm.next_in = (unsigned char *)data;
   do {
-    strm.avail_out = CHUNK_SIZE;
+    strm.avail_out = sizeof(out);
     strm.next_out = out;
     switch (inflate(&strm, Z_NO_FLUSH)) {
       case Z_NEED_DICT:
@@ -114,7 +105,7 @@ static char *gzip_uncompress(const char *file)
         delete data;
         return NULL;
     }
-    output.append((char *)out, CHUNK_SIZE - strm.avail_out);
+    output.append((char *)out, sizeof(out) - strm.avail_out);
     if (output.size() > SVG_MAX) {
       inflateEnd(&strm);
       delete data;
@@ -140,9 +131,9 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   int w, h;
   float scalex, scaley;
 
-  //if (!file) {
-  //  return NULL;
-  //}
+  if (!file) {
+    return NULL;
+  }
 
   if (compressed) {
     if (!(data = gzip_uncompress(file))) {
@@ -202,7 +193,7 @@ Fl_RGB_Image *img_to_rgb(const char *file)
 {
   FILE *fp;
   size_t len;
-  unsigned char bytes[MAGIC_LEN] = {0};
+  unsigned char bytes[16] = {0};
   Fl_RGB_Image *rgb = NULL;
   struct stat st;
 
@@ -236,8 +227,8 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     if (!(fp = fopen(file, "r"))) {
       return NULL;
     }
-    len = fread(bytes, 1, MAGIC_LEN, fp);
-    if (ferror(fp) || len < MAGIC_LEN) {
+    len = fread(bytes, 1, sizeof(bytes), fp);
+    if (ferror(fp) || len < sizeof(bytes)) {
       fclose(fp);
       return NULL;
     }

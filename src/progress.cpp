@@ -57,13 +57,13 @@
 
 #define PULSATE_USLEEP 10000
 
-class no_handle_Fl_Slider : public Fl_Slider
+class nograb_slider : public Fl_Slider
 {
 public:
-  no_handle_Fl_Slider(int X, int Y, int W, int H)
+  nograb_slider(int X, int Y, int W, int H)
       : Fl_Slider(X, Y, W, H) { }
 
-  virtual ~no_handle_Fl_Slider() { }
+  virtual ~nograb_slider() { }
 
   int handle(int) {
     /* don't do anything if
@@ -72,19 +72,20 @@ public:
   };
 };
 
-static no_handle_Fl_Slider *slider = NULL;
-
+static nograb_slider    *slider = NULL;
 static Fl_Double_Window *win = NULL;
 static Fl_Box           *box = NULL;
 static Fl_Return_Button *but_ok = NULL;
 static Fl_Button        *but_cancel = NULL;
 static Fl_Progress      *bar = NULL, *bar_main = NULL;
 
-static int pulsate_val = 0
-,          percent = 0
-,          multi = 1
-,          multi_percent = 0
-,          iteration = 0;
+static int pulsate_val = 0;
+
+static
+unsigned int percent = 0
+,            multi = 1
+,            multi_percent = 0
+,            iteration = 0;
 
 static bool running = true
 ,           pulsate = false
@@ -226,11 +227,11 @@ extern "C" void *pulsate_bar_thread(void *)
   return nullptr;
 }
 
-int dialog_progress(bool pulsate_, int multi_, long kill_pid_, bool autoclose_, bool hide_cancel_)
+int dialog_progress(bool pulsate_, unsigned int multi_, long kill_pid_, bool autoclose_, bool hide_cancel_)
 {
   Fl_Group *g;
   Fl_Box *dummy;
-  int win_h = 140, offset = 0;
+  int h = 140, offset = 0;
 
   if (!title) {
     title = "FLTK progress window";
@@ -247,24 +248,24 @@ int dialog_progress(bool pulsate_, int multi_, long kill_pid_, bool autoclose_, 
   hide_cancel = hide_cancel_;
 
   if (hide_cancel && autoclose) {
-    win_h -= 36;
+    h -= 36;
   }
 
   if (multi > 1) {
     offset = 40;
   }
 
-  win = new Fl_Double_Window(320, win_h + offset, title);
+  win = new Fl_Double_Window(320, h + offset, title);
   win->callback(cancel_cb);
   {
-    g = new Fl_Group(0, 0, 320, win_h + offset);
+    g = new Fl_Group(0, 0, 320, h + offset);
     {
       box = new Fl_Box(0, 10, 10, 30, msg);
       box->box(FL_NO_BOX);
       box->align(FL_ALIGN_RIGHT);
 
       if (pulsate) {
-        slider = new no_handle_Fl_Slider(10, 50, 300, 30);
+        slider = new nograb_slider(10, 50, 300, 30);
         slider->type(1);
         slider->minimum(0);
         slider->maximum(100);

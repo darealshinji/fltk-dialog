@@ -245,14 +245,14 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
   : Fl_Calendar_Base (x, y, w, h, l)
 {
   int title_height = h / 8;
-  int h_ = (h - title_height)/7;
+  int h2 = (h - title_height)/7;
   selected_day_ = 0;
 
   for (int i = 0; i < 7; i++) {
     weekdays[i] = new Fl_Box ((w/8)*((i+1)%8) + x,
-                              h_*((i+1)/8) + y + title_height,
+                              h2*((i+1)/8) + y + title_height,
                               (w/8),
-                              h_);
+                              h2);
     weekdays[i]->box (FL_FLAT_BOX);
     weekdays[i]->labelsize (labelsize_);
     weekdays[i]->color (color());
@@ -268,9 +268,9 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
 
   for (int i = 0; i < 6; i++) {
     weeknumbers[i] = new Fl_Box (x,
-                                 h_ + i*h_ + y + title_height,
+                                 h2 + i*h2 + y + title_height,
                                  (w/8),
-                                 h_);
+                                 h2);
     weeknumbers[i]->box (FL_FLAT_BOX);
     weeknumbers[i]->labelsize (labelsize_);
     weeknumbers[i]->color (color());

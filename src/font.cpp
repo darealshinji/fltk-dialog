@@ -308,7 +308,7 @@ int dialog_font()
     fd_fonts->add(name);
 
     int *s;
-    int n = Fl::get_font_sizes((Fl_Font) i, s);
+    n = Fl::get_font_sizes((Fl_Font) i, s);
     fd_numsizes[i] = n;
     if (n) {
       fd_sizes[i] = new int[n];

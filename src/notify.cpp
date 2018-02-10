@@ -23,6 +23,7 @@
  */
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_RGB_Image.H>
@@ -55,7 +56,7 @@ public:
   virtual ~close_box() { }
 
   int handle(int event) {
-    int ret = Fl_Box::handle(event);
+    ret = Fl_Box::handle(event);
     if (event == FL_RELEASE) {
       do_callback();
     }
@@ -108,26 +109,35 @@ static void callback(void *o)
 
 int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
 {
-  int n, h = 160, title_h = 0, message_h = 0;
-  const int w = 400, icon_wh = 64, bord = 10, fs_title = 18, fs_message = 14;
-  Fl_Font font = FL_HELVETICA, font_t = FL_HELVETICA_BOLD;
-  Fl_RGB_Image *rgb = NULL;
+  int n, h = 160
+  ,   title_h = 0
+  ,   message_h = 0;
 
-  n = w - icon_wh - bord*3;
-  std::string title_wrapped = text_wrap(title, n, font_t, fs_title);
-  std::string message_wrapped = text_wrap(msg, n, font, fs_message);
+  const int w = 400
+  ,         icon_wh = 64
+  ,         fs_title = 18
+  ,         fs_message = 14;
+
+  Fl_Font font = FL_HELVETICA;
+  Fl_Font font_t = FL_HELVETICA_BOLD;
+  Fl_RGB_Image *rgb = NULL;
+  std::string title_wrapped, message_wrapped;
+
+  n = w - icon_wh - 30;
+  title_wrapped = text_wrap(title, n, font_t, fs_title);
+  message_wrapped = text_wrap(msg, n, font, fs_message);
 
   fl_font(font, fs_title);
   fl_measure(title_wrapped.c_str(), n = 0, title_h);
   fl_font(font, fs_message);
   fl_measure(message_wrapped.c_str(), n = 0, message_h);
 
-  n = title_h + message_h + bord*3;
+  n = title_h + message_h + 30;
   if (n > h) {
     h = n;
   }
 
-  win = new Fl_Double_Window(Fl::w() - bord - w, bord, w, h);
+  win = new Fl_Double_Window(Fl::w() - 10 - w, 10, w, h);
   win->color(FL_WHITE);  /* outline color */
   {
     { /* background color */
@@ -151,32 +161,30 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
           rgb = (Fl_RGB_Image *)img->copy();
         }
         delete img;
-        Fl_Box *o = new Fl_Box(bord, bord, icon_wh, icon_wh);
+        Fl_Box *o = new Fl_Box(10, 10, icon_wh, icon_wh);
         o->image(rgb);
       }
     }
 
-    n = bord*2 + icon_wh;
+    n = 20 + icon_wh;
 
     { /* title */
-      Fl_Box *o = new Fl_Box(n, bord, 0, 0, title_wrapped.c_str());
+      Fl_Box *o = new Fl_Box(n, 10, 0, 0, title_wrapped.c_str());
       o->align(FL_ALIGN_INSIDE|FL_ALIGN_TOP_LEFT);
       o->labelfont(font_t);
       o->labelcolor(FL_WHITE);
       o->labelsize(fs_title); }
 
     { /* message */
-      Fl_Box *o = new Fl_Box(n, title_h + bord*2, 0, 0, message_wrapped.c_str());
+      Fl_Box *o = new Fl_Box(n, title_h + 20, 0, 0, message_wrapped.c_str());
       o->align(FL_ALIGN_INSIDE|FL_ALIGN_TOP_LEFT);
       o->labelfont(font);
       o->labelcolor(FL_WHITE);
       o->labelsize(fs_message); }
   }
-  //win->set_override();
   win->border(0);
   win->show();
-  always_on_top = true;
-  set_always_on_top(win);
+  fl_always_on_top(win);
 
   if (time_s > 0) {
     Fl::add_timeout(time_s, callback, &fadeout_ms);
@@ -194,38 +202,31 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
 #ifdef DYNAMIC_NOTIFY
   /* dlopen() libnotify */
 
-  gboolean            (*notify_init)                     (const char*);
-  gboolean            (*notify_is_initted)               (void);
-  NotifyNotification* (*notify_notification_new)         (const char*, const char*, const char*);
-  void                (*notify_notification_set_timeout) (NotifyNotification*, gint);
-  gboolean            (*notify_notification_show)        (NotifyNotification*, GError**);
-  void                (*notify_uninit)                   (void);
-
   void *handle = dlopen("libnotify.so.4", RTLD_LAZY);
-  const char *dlsym_error = dlerror();
+  char *error = dlerror();
 
   if (!handle) {
-    std::cerr << dlsym_error << std::endl;
+    std::cerr << error << std::endl;
     return 1;
   }
 
-  dlerror();  /* clear/reset errors */
+  dlerror();
 
-# define LOAD_SYMBOL(x) \
-  *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
-  dlsym_error = dlerror(); \
-  if (dlsym_error) { \
-    std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl; \
+# define LOAD_SYMBOL(type,func,param) \
+  GETPROCADDRESS(handle,type,func,param) \
+  error = dlerror(); \
+  if (error) { \
+    std::cerr << "error: cannot load symbol\n" << error << std::endl; \
     dlclose(handle); \
     return 1; \
   }
 
-  LOAD_SYMBOL(notify_init);
-  LOAD_SYMBOL(notify_is_initted);
-  LOAD_SYMBOL(notify_notification_new);
-  LOAD_SYMBOL(notify_notification_set_timeout);
-  LOAD_SYMBOL(notify_notification_show);
-  LOAD_SYMBOL(notify_uninit);
+  LOAD_SYMBOL( gboolean,             notify_init,                      (const char*) )
+  LOAD_SYMBOL( gboolean,             notify_is_initted,                (void) )
+  LOAD_SYMBOL( NotifyNotification*,  notify_notification_new,          (const char*, const char*, const char*) )
+  LOAD_SYMBOL( void,                 notify_notification_set_timeout,  (NotifyNotification*, gint) )
+  LOAD_SYMBOL( gboolean,             notify_notification_show,         (NotifyNotification*, GError**) )
+  LOAD_SYMBOL( void,                 notify_uninit,                    (void) )
 
 # define DLCLOSE_NOTIFY dlclose(handle)
 

@@ -33,6 +33,10 @@
 #define XSTRINGIFY(x)  STRINGIFY(x)
 #define STRINGIFY(x)   #x
 
+#define GETPROCADDRESS(handle,type,func,param) \
+  typedef type (*func##_t) param; \
+  func##_t func = (func##_t) dlsym(handle, STRINGIFY(func));
+
 #ifdef HAVE_QT
 # if defined(HAVE_QT5) && defined(HAVE_QT4)
 #  define QTDEF 5
@@ -119,7 +123,7 @@ int dialog_html_viewer(const char *file);
 int dialog_message(const char *label_but_ret, const char *label_but, const char *label_but_alt = NULL,
                    int type = MESSAGE_TYPE_WARNING, bool with_icon_box = true);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify);
-int dialog_progress(bool pulsate, int multi, long kill_pid, bool autoclose, bool hide_cancel);
+int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox);
 int dialog_radiolist(std::string radiolist_options, bool return_number);
 

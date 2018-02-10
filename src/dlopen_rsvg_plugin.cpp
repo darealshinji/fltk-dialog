@@ -76,39 +76,34 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 
 #endif
 
-  void *handle;
-  const char *dlsym_error;
-  unsigned char *data;
-  int len;
   Fl_RGB_Image *rgb = NULL;
-
-  int (*rsvg_to_png_convert) (const char *);
-  unsigned char * (*rsvg_to_png_get_data) (void);
+  int len;
+  unsigned char *data;
 
   /* dlopen() library */
 
-  handle = dlopen(plugin, RTLD_LAZY);
-  dlsym_error = dlerror();
+  void *handle = dlopen(plugin, RTLD_LAZY);
+  char *error = dlerror();
 
   if (!handle) {
-    std::cerr << dlsym_error << std::endl;
+    std::cerr << error << std::endl;
     DELETE(plugin);
     return NULL;
   }
 
   dlerror();
 
-# define LOAD_SYMBOL(x) \
-  *(void **) (&x) = dlsym(handle, STRINGIFY(x)); \
-  dlsym_error = dlerror(); \
-  if (dlsym_error) { \
-    std::cerr << "error: cannot load symbol\n" << dlsym_error << std::endl; \
+# define LOAD_SYMBOL(type,func,param) \
+  GETPROCADDRESS(handle,type,func,param) \
+  error = dlerror(); \
+  if (error) { \
+    std::cerr << "error: cannot load symbol\n" << error << std::endl; \
     dlclose(handle); \
     return NULL; \
   }
 
-  LOAD_SYMBOL(rsvg_to_png_convert)
-  LOAD_SYMBOL(rsvg_to_png_get_data)
+  LOAD_SYMBOL(int, rsvg_to_png_convert, (const char *))
+  LOAD_SYMBOL(unsigned char *, rsvg_to_png_get_data, (void))
 
   len = rsvg_to_png_convert(file);
   data = rsvg_to_png_get_data();

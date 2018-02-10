@@ -76,7 +76,7 @@ int dialog_color()
     title = "color chooser";
   }
 
-  win = new Fl_Double_Window(215, 200, title);
+  win = new Fl_Double_Window(195 + 20, 200, title);
   win->callback(close_cb, 1);
   {
     chooser = new Fl_Color_Chooser(10, 10, 195, 115);
