@@ -246,29 +246,8 @@ std::string format_date(std::string format, int y, int m, int d)
   char date[256] = {0};
   struct tm time;
 
-  if (format == "") {
+  if (format.empty() || format == "") {
     format = "%Y-%m-%d";
-  } else {
-    /* glibc date formats
-     * example date: 2006-01-08 */
-    repstr("\\n", "\n",  format);  /* newline */
-    repstr("\\t", "\t",  format);  /* tab */
-    repstr("%",   "%%",  format);  /* literal % */
-    repstr("d",   "%-d", format);  /* day (8) */
-    repstr("D",   "%d",  format);  /* day (08) */
-    repstr("m",   "%-m", format);  /* month (1) */
-    repstr("M",   "%m",  format);  /* month (01) */
-    repstr("y",   "%y",  format);  /* year (06) */
-    repstr("Y",   "%Y",  format);  /* year (2006) */
-    repstr("j",   "%-j", format);  /* day of the year (8) */
-    repstr("J",   "%j",  format);  /* day of the year (008) */
-    repstr("W",   "%A",  format);  /* weekday name (Sunday) */
-    repstr("w",   "%a",  format);  /* weekday name (Sun) */
-    repstr("n",   "%-V", format);  /* ISO 8601 week number (1) */
-    repstr("N",   "%V",  format);  /* ISO 8601 week number (01) */
-    repstr("B",   "%B",  format);  /* month name (January) */
-    repstr("b",   "%b",  format);  /* month name (Jan) */
-    repstr("u",   "%u",  format);  /* day of the week, Monday being 1 (7) */
   }
 
   ss << y << "-" << m << "-" << d;

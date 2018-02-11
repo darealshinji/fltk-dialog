@@ -243,25 +243,18 @@ int main(int argc, char **argv)
 
   args::Group g_calendar_options(ap_main, "Calendar/date options:");
   ARGS_T arg_format(g_calendar_options, "FORMAT",
-                    "Set a custom output format; interpreted sequences for FORMAT are:\n"
+                    "Set a custom output using glibc date formats; interpreted sequences for FORMAT are:\n"
                     "(using the date 2006-01-08)\n"
-                    "d   day (8)\n"
-                    "D   day (08)\n"
-                    "m   month (1)\n"
-                    "M   month (01)\n"
-                    "y   year (06)\n"
-                    "Y   year (2006)\n"
-                    "j   day of the year (8)\n"
-                    "J   day of the year (008)\n"
-                    "W   weekday name (Sunday)\n"
-                    "w   weekday name (Sun)\n"
-                    "n   ISO 8601 week number (1)\n"
-                    "N   ISO 8601 week number (01)\n"
-                    "B   month name (January)\n"
-                    "b   month name (Jan)\n"
-                    "u   day of the week, Monday being 1 (7)\n"
-                    "\\n  newline character\n"
-                    "\\t  tab character",
+                    "%%: literal %\n"
+                    "%-d, %d: day [8, 08]\n"
+                    "%-m, %m: month [1, 01]\n"
+                    "%y, %Y: year [06, 2006]\n"
+                    "%-j, %j: day of the year [8, 008]\n"
+                    "%A, %a: weekday name [Sunday, Sun]\n"
+                    "%-V, %V: ISO 8601 week number [1, 01]\n"
+                    "%B, %b: month name [January, Jan]\n"
+                    "%u: day of the week, Monday being 1 [7]\n"
+                    "See `man strftime' for a full list.",
                     {"format"});
 
   args::Group g_scale_options(ap_main, "Scale options:\n(VALUE can be float point or integer)");
@@ -275,10 +268,10 @@ int main(int argc, char **argv)
   ARG_T  arg_auto_scroll(g_text_info_options, "auto-scroll", "Always scroll to the bottom of the text", {"auto-scroll"});
 
   args::Group g_notification_options(ap_main, "Notification options:");
-  ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds (may be ignored by some "
-                     "desktop environments)", {"timeout"});
+  ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds", {"timeout"});
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
-  ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification", {"libnotify"});
+  ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout value may be "
+                       "ignored by some desktop environments)", {"libnotify"});
 
   std::string appendix = "  using FLTK version " + get_fltk_version() + " - http://www.fltk.org\n\n"
     "  https://github.com/darealshinji/fltk-dialog\n";
