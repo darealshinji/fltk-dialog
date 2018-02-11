@@ -52,16 +52,49 @@
  * https://translate.google.com
  * https://ar.wikipedia.org/wiki/%D9%8A%D9%86%D8%A7%D9%8A%D8%B1_(%D8%B4%D9%87%D8%B1)
  * https://ar.wikipedia.org/wiki/%D8%A7%D9%84%D8%B3%D8%A8%D8%AA
+ * https://en.wikipedia.org/wiki/Arabic_Presentation_Forms-B
  */
 
 
 /*** ar ***/
 
-#define FL_OK_AR     "\xD8\xAD\xD8\xB3\xD9\x86\xD8\xA7"  /* حسنا */
-#define FL_CANCEL_AR "\xD8\xA3\xD9\x84\xD8\xBA"  /* ألغ */
-#define FL_YES_AR    "\xD9\x86\xD8\xB9\xD9\x85"  /* نعم*/
-#define FL_NO_AR     "\xD9\x84\xD8\xA7"  /* لا */
-#define FL_CLOSE_AR  "\xD8\xA3\xD8\xBA\xD9\x84\xD9\x82"  /* أغلق */
+#define YEH_I   "\xEF\xBB\xB3"
+#define YEH_M   "\xEF\xBB\xB4"
+#define NOON_I  "\xEF\xBB\xA7"
+#define NOON_M  "\xEF\xBB\xA8"
+#define ALEF    "\xEF\xBA\x8D"
+#define ALEF_F  "\xEF\xBA\x8E"
+#define REH     "\xEF\xBA\xAD"
+#define REH_F   "\xEF\xBA\xAE"
+#define SEEN    "\xEF\xBA\xB1"
+#define SEEN_F  "\xEF\xBA\xB2"
+#define SEEN_I  "\xEF\xBA\xB3"
+#define SEEN_M  "\xEF\xBA\xB4"
+#define HAH_I   "\xEF\xBA\xA3"
+#define ALEF_HAMZA_ABOVE "\xEF\xBA\x83"
+#define BEH_I   "\xEF\xBA\x91"
+#define BEH_M   "\xEF\xBA\x92"
+#define LAM_F   "\xEF\xBB\x9E"
+#define LAM_I   "\xEF\xBB\x9F"
+#define LAM_M   "\xEF\xBB\xA0"
+#define GHAIN_F "\xEF\xBB\x8E"
+#define GHAIN_I "\xEF\xBB\x8F"
+#define ALEF_MAKSURA_F "\xEF\xBB\xB0"
+#define QAF_F   "\xEF\xBB\x96"
+#define FEH_I   "\xEF\xBB\x93"
+#define MEEM_I  "\xEF\xBB\xA3"
+#define MEEM_M  "\xEF\xBB\xA4"
+#define WAW_F   "\xEF\xBB\xAE"
+#define TAH_M   "\xEF\xBB\x84"
+#define TEH_M   "\xEF\xBA\x98"
+#define KAF_I   "\xEF\xBB\x9B"
+#define DAL     "\xEF\xBA\xA9"
+
+#define FL_OK_AR     ALEF_F NOON_M SEEN_M HAH_I /* حسنا */
+#define FL_CANCEL_AR GHAIN_F LAM_I ALEF_HAMZA_ABOVE  /* ألغ */
+#define FL_YES_AR    ALEF_MAKSURA_F LAM_M BEH_I  /* بلى */
+#define FL_NO_AR     "\xEF\xBB\xBB"  /* لا */
+#define FL_CLOSE_AR  QAF_F LAM_M GHAIN_I ALEF_HAMZA_ABOVE  /* أغلق */
 
 #define FDATE_MO_AR "\xD9\x86"  /* ن */
 #define FDATE_TU_AR "\xD8\xAB"  /* ث */
@@ -71,18 +104,18 @@
 #define FDATE_SA_AR "\xD8\xB3"  /* س */
 #define FDATE_SU_AR "\xD8\xAD"  /* ح */
 
-#define FDATE_MON_JAN_AR "\xD9\x8A\xD9\x86\xD8\xA7\xD9\x8A\xD8\xB1"  /* يناير */
-#define FDATE_MON_FEB_AR "\xD9\x81\xD8\xA8\xD8\xB1\xD8\xA7\xD9\x8A\xD8\xB1"  /* فبراير */
-#define FDATE_MON_MAR_AR "\xD9\x85\xD8\xA7\xD8\xB1\xD8\xB3"  /* مارس */
-#define FDATE_MON_APR_AR "\xD8\xA3\xD8\xA8\xD8\xB1\xD9\x8A\xD9\x84"  /* أبريل */
-#define FDATE_MON_MAY_AR "\xD9\x85\xD8\xA7\xD9\x8A\xD9\x88"  /* مايو */
-#define FDATE_MON_JUN_AR "\xD9\x8A\xD9\x88\xD9\x86\xD9\x8A\xD9\x88"  /* يونيو */
-#define FDATE_MON_JUL_AR "\xD9\x8A\xD9\x88\xD9\x84\xD9\x8A\xD9\x88"  /* يوليو */
-#define FDATE_MON_AUG_AR "\xD8\xA3\xD8\xBA\xD8\xB3\xD8\xB7\xD8\xB3"  /* أغسطس */
-#define FDATE_MON_SEP_AR "\xD8\xB3\xD8\xA8\xD8\xAA\xD9\x85\xD8\xA8\xD8\xB1"  /* سبتمبر */
-#define FDATE_MON_OCT_AR "\xD8\xA3\xD9\x83\xD8\xAA\xD9\x88\xD8\xA8\xD8\xB1"  /* أكتوبر */
-#define FDATE_MON_NOV_AR "\xD9\x86\xD9\x88\xD9\x81\xD9\x85\xD8\xA8\xD8\xB1"  /* نوفمبر */
-#define FDATE_MON_DEC_AR "\xD8\xAF\xD9\x8A\xD8\xB3\xD9\x85\xD8\xA8\xD8\xB1"  /* ديسمبر */
+#define FDATE_MON_JAN_AR  REH_F YEH_I ALEF_F NOON_M YEH_I  /* يناير */
+#define FDATE_MON_FEB_AR  REH_F YEH_I ALEF REH_F NOON_M FEH_I  /* فبراير */
+#define FDATE_MON_MAR_AR  SEEN REH ALEF_F MEEM_I  /* مارس */
+#define FDATE_MON_APR_AR  LAM_F YEH_I REH_F NOON_I ALEF_HAMZA_ABOVE  /* أبريل */
+#define FDATE_MON_MAY_AR  WAW_F YEH_I ALEF_F MEEM_I  /* مايو */
+#define FDATE_MON_JUN_AR  WAW_F YEH_M NOON_I WAW_F YEH_I  /* يونيو */
+#define FDATE_MON_JUL_AR  WAW_F YEH_M LAM_I WAW_F YEH_I  /* يوليو */
+#define FDATE_MON_AUG_AR  SEEN_F TAH_M SEEN_M GHAIN_I ALEF_HAMZA_ABOVE  /* أغسطس */
+#define FDATE_MON_SEP_AR  REH_F BEH_M MEEM_M TEH_M BEH_M SEEN_I  /* سبتمبر */
+#define FDATE_MON_OCT_AR  REH_F BEH_I WAW_F TEH_M KAF_I ALEF_HAMZA_ABOVE  /* أكتوبر */
+#define FDATE_MON_NOV_AR  REH_F BEH_M MEEM_M FEH_I WAW_F NOON_I  /* نوفمبر */
+#define FDATE_MON_DEC_AR  REH_F BEH_M MEEM_M SEEN_M YEH_I DAL  /* ديسمبر */
 
 
 /*** de ***/
