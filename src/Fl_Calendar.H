@@ -61,11 +61,7 @@ public:
    */
   Fl_Button * day_button (int i);
 
-  void int_to_str (char *t, int n);
-
  protected:
-
-  int labelsize_;
 
   Fl_Button * days[7*6];
   Fl_Box * weeknumbers[6];
@@ -131,16 +127,16 @@ class Fl_Calendar : public Fl_Calendar_Base
    *
    * @param color The calendar's selection color.
    */
-  void selection_color (Fl_Color c);
+  //void selection_color (Fl_Color c);
 
   /**
    * Gets the Calendar's selection color.
    *
    * @return The calendar's selection color.
    */
-  Fl_Color selection_color() const {
-    return Fl_Group::selection_color();
-  }
+  //Fl_Color selection_color() const {
+  //  return Fl_Group::selection_color();
+  //}
 
   /**
    * Gets the user selected day.  This method differs
