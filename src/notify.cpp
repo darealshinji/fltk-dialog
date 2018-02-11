@@ -38,7 +38,7 @@
 
 #ifdef DYNAMIC_NOTIFY
 # include <dlfcn.h>
-# include "notify.hpp"
+# include "notify.h"
 #else
 # include <libnotify/notify.h>
 #endif

@@ -1,5 +1,5 @@
-#ifndef NOTIFY_HPP
-#define NOTIFY_HPP
+#ifndef NOTIFY_H
+#define NOTIFY_H
 
 /* GLIB type definitions */
 typedef char gchar;
@@ -36,5 +36,5 @@ struct _NotifyNotification {
   NotifyNotificationPrivate *priv;
 };
 
-#endif  /* !NOTIFY_HPP */
+#endif  /* !NOTIFY_H */
 
