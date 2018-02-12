@@ -39,7 +39,6 @@
 static Fl_Double_Window *win;
 static Fl_Box *count;
 static int val = 0;
-static std::string label;
 static void dnd_callback(const char *items);
 
 class dnd_box : public Fl_Box
@@ -79,8 +78,7 @@ static void dnd_callback(const char *items)
   std::stringstream ss;
   val++;
   ss << val;
-  label = ss.str();
-  count->label(label.c_str());
+  count->copy_label(ss.str().c_str());
   win->redraw();
 
   if (strncmp(items, "file:///", 8) == 0) {

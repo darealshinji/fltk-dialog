@@ -49,7 +49,6 @@
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -93,14 +92,10 @@ static bool running = true
 ,           hide_cancel = false;
 
 static long kill_pid = -1;
-static char *label = NULL;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = (int) p;
-  if (label) {
-    free(label);
-  }
 }
 
 static void cancel_cb(Fl_Widget *o) {
@@ -131,11 +126,7 @@ static void parse_line(const char *ch)
   if (running) {
     if (ch[0] == '#' && ch[1] != '\0') {
       /* "#comment" line found, change the label */
-      if (label) {
-        free(label);
-      }
-      label = strdup(ch + 1);
-      box->label(label);
+      box->copy_label(ch + 1);
     } else if (!pulsate && ch[0] >= '0' && ch[0] <= '9') {
       /* number found, update the progress bar */
       std::stringstream ss;
@@ -149,7 +140,7 @@ static void parse_line(const char *ch)
       ss << percent;
       l1 = ss.str() + "%";
       bar->value(percent);
-      bar->label(l1.c_str());
+      bar->copy_label(l1.c_str());
 
       /* update the main progress bar too if --multi=n was given */
       if (multi > 1) {
@@ -166,7 +157,7 @@ static void parse_line(const char *ch)
         ss << (multi_percent / multi);
         l2 = ss.str() + "%";
         bar_main->value(multi_percent);
-        bar_main->label(l2.c_str());
+        bar_main->copy_label(l2.c_str());
       }
     } else if (pulsate && strcmp(ch, "STOP") == 0) {
       /* stop now */
