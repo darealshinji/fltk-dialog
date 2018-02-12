@@ -499,7 +499,7 @@ int main(int argc, char **argv)
   GETVAL(scale_max, arg_max_value);
   GETVAL(scale_init, arg_value);
   GETVAL(scale_step, arg_step);
-  if (scale_step < 1) {
+  if (scale_step <= 0) {
     std::cerr << argv[0] << ": error `--step': value cannot be negative or zero" << std::endl;
     return 1;
   }
