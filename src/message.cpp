@@ -156,7 +156,7 @@ int dialog_message(const char *label_but_ret
   label_but_ret_w = measure_button_width(label_but_ret, 40);
   label_but_w = measure_button_width(label_but, 15);
 
-  if (!label_but_alt) {
+  if (label_but_alt) {
     label_but_alt_w = measure_button_width(label_but_alt, 15);
   }
 
