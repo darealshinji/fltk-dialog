@@ -3,31 +3,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO: FLTK button width issues?
-
 /***
 main_CXXFLAGS += $(shell pkg-config --cflags fribidi)
 main_LIBS     += $(shell pkg-config --libs fribidi)
 ***/
 
-/* returns pointer to text.c_str() on success and NULL on error */
-const char *fribidi_parse_line(std::string &text)
+/* leaves string untouched on error */
+void fribidi_parse_line(std::string &text)
 {
   FriBidiParType base = FRIBIDI_PAR_LTR;
   FriBidiStrIndex len, inlen, *ltov = NULL, *vtol = NULL;
   FriBidiChar *logical, *visual;
   FriBidiLevel *levels = NULL;
   FriBidiCharSet charset;
-  const char *instring, *p = NULL;
+  const char *instring;
 
   if (text.empty() || text == "") {
-    return NULL;
+    return;
   }
 
   instring = text.c_str();
 
   if ((inlen = strlen(instring)) == 0) {
-    return NULL;
+    return;
   }
 
   char temp[inlen+1] = {0};
@@ -47,7 +45,7 @@ const char *fribidi_parse_line(std::string &text)
     if (logical) {
       free(logical);
     }
-    return NULL;
+    return;
   }
 
   visual = (FriBidiChar *)malloc(sizeof(FriBidiChar) * (len + 1));
@@ -58,7 +56,6 @@ const char *fribidi_parse_line(std::string &text)
       memset(temp, '\0', sizeof(temp));
       fribidi_unicode_to_charset(charset, visual, len, temp);
       text = std::string(temp);
-      p = text.c_str();
     }
   }
 
@@ -69,6 +66,6 @@ const char *fribidi_parse_line(std::string &text)
     free(visual);
   }
 
-  return p;
+  return;
 }
 
