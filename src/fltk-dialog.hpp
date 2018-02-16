@@ -83,17 +83,9 @@ enum {
 };
 
 extern const char *title, *msg;
-extern char separator;
-extern std::string separator_s;
-extern int ret;
 extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;
-extern double scale_min, scale_max, scale_step, scale_init;
-#ifdef WITH_RSVG
-extern bool force_nanosvg;
-#endif
-extern bool calendar_arabic;
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w);
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
@@ -110,28 +102,34 @@ std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 std::string format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 
+int dialog_message(int type = MESSAGE_TYPE_WARNING
+,                  bool with_icon_box = true
+,                  const char *label_but_alt = NULL
+,                  double scale_min = 0
+,                  double scale_max = 100
+,                  double scale_step = 1
+,                  double scale_init = 0);
+
 int about(void);
-int dialog_calendar(std::string format);
-int dialog_checklist(std::string checklist_options, bool return_value, bool check_all);
+int dialog_calendar(std::string format, bool arabic);
+int dialog_checklist(std::string checklist_options, bool return_value, bool check_all, char separator);
 int dialog_color(void);
 int dialog_date(std::string format);
 int dialog_dnd(void);
-int dialog_dropdown(std::string dropdown_list, bool return_number);
-int dialog_file_chooser(int file_mode, int native_mode, int argc, char **argv);
+int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
+int dialog_file_chooser(int file_mode, int native_mode, char separator);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
-int dialog_message(const char *label_but_ret, const char *label_but, const char *label_but_alt = NULL,
-                   int type = MESSAGE_TYPE_WARNING, bool with_icon_box = true);
-int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify);
+int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox);
-int dialog_radiolist(std::string radiolist_options, bool return_number);
+int dialog_radiolist(std::string radiolist_options, bool return_number, char separator);
 
-Fl_RGB_Image *img_to_rgb(const char *file);
+Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 #ifdef WITH_RSVG
 Fl_RGB_Image *rsvg_to_rgb(const char *file);
 #endif
-void l10n(void);
+bool l10n(void);
 std::string get_fltk_version(void);
 
 #endif  /* !FLTK_DIALOG_HPP */

@@ -97,16 +97,15 @@
   WEEKDAYS_L10N_(x); \
   MONTHS_L10N_(x)
 
-bool calendar_arabic = false;
-
-void l10n()
+/* returns true if language is Arabic */
+bool l10n(void)
 {
   std::string region, lang;
   char *env;
 
   if (!(env = getenv("LANG"))) {
     if (!(env = getenv("LANGUAGE"))) {
-      return;
+      return false;
     }
   }
   region = std::string(env);
@@ -114,7 +113,7 @@ void l10n()
   lang = region.substr(0,2);
 
   if (lang == "en" || lang == "" || lang == "C") {
-    return;
+    return false;
   } else if (lang == "de") {
     L10N(DE);
     if (region == "de_CH") {
@@ -134,7 +133,7 @@ void l10n()
     }
   } else if (lang == "ar") {
     L10N(AR);
-    calendar_arabic = true;
+    return true;
   } else if (lang == "es") {
     L10N(ES);
   } else if (lang == "fr") {
@@ -148,5 +147,7 @@ void l10n()
   } else if (lang == "ru") {
     L10N(RU);
   }
+
+  return false;
 }
 

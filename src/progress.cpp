@@ -77,6 +77,7 @@ static Fl_Box           *box = NULL;
 static Fl_Return_Button *but_ok = NULL;
 static Fl_Button        *but_cancel = NULL;
 static Fl_Progress      *bar = NULL, *bar_main = NULL;
+static int ret = 1;
 
 static int pulsate_val = 0;
 

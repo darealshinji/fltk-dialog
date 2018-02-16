@@ -84,7 +84,7 @@ static void url_cb(Fl_Widget *, void *p)
     title = "Error";
     warnmsg = "Error: " + std::string(errmsg);
     msg = warnmsg.c_str();
-    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+    dialog_message(MESSAGE_TYPE_INFO);
   }
 }
 

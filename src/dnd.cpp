@@ -49,25 +49,22 @@ public:
 
   virtual ~dnd_box() { }
 
-  int handle(int event);
-};
-
-int dnd_box::handle(int event)
-{
-  int handle_ret = Fl_Box::handle(event);
-  switch (event) {
-    case FL_DND_ENTER:
-    case FL_DND_DRAG:
-    case FL_DND_RELEASE:
-      handle_ret = 1;
-      break;
-    case FL_PASTE:
-      dnd_callback(Fl::event_text());
-      handle_ret = 1;
-      break;
+  int handle(int event) {
+    int rv = Fl_Box::handle(event);
+    switch (event) {
+      case FL_DND_ENTER:
+      case FL_DND_DRAG:
+      case FL_DND_RELEASE:
+        rv = 1;
+        break;
+      case FL_PASTE:
+        dnd_callback(Fl::event_text());
+        rv = 1;
+        break;
+    }
+    return rv;
   }
-  return handle_ret;
-}
+};
 
 static void close_cb(Fl_Widget *) {
   win->hide();

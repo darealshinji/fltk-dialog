@@ -78,10 +78,6 @@ enum dialogTypes {
 
 const char *title = NULL;
 const char *msg = NULL;
-int ret = 0;
-
-char separator = '|';
-std::string separator_s = "|";
 
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
@@ -96,10 +92,6 @@ bool resizable = true
 ,    position_center = false
 ,    window_taskbar = true
 ,    window_decoration = true;
-
-#ifdef WITH_RSVG
-bool force_nanosvg = false;
-#endif
 
 static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a) {
   fl_font(o->font, o->size);
@@ -309,7 +301,7 @@ int main(int argc, char **argv)
 
   /* do the localization BEFORE we set
    * the user-specified button labels */
-  l10n();
+  bool arabic = l10n();
 
   int dialog_count = 0;  /* check if two or more dialog options were specified */
   int dialog = DIALOG_MESSAGE;  /* default message type */
@@ -332,7 +324,9 @@ int main(int argc, char **argv)
   bool return_number = arg_return_number ? true : false;
   bool libnotify = arg_libnotify ? true : false;
 #ifdef WITH_RSVG
-  force_nanosvg = arg_force_nanosvg ? true : false;
+  bool force_nanosvg = arg_force_nanosvg ? true : false;
+#else
+  bool force_nanosvg = false;
 #endif
 
   GETCSTR(msg, arg_text);
@@ -354,9 +348,17 @@ int main(int argc, char **argv)
   GETVAL(override_x, arg_posx);
   GETVAL(override_y, arg_posy);
 
+  char separator = '|';
   if (arg_separator) {
-    separator_s = args::get(arg_separator).substr(0,1);
-    separator = separator_s.c_str()[0];
+    std::string s = args::get(arg_separator);
+    if (s.size() == 0) {
+      std::cerr << argv[0] << ": error `--separator': empty separator" << std::endl;
+      return 1;
+    } else if (s.size() > 1) {
+      std::cerr << argv[0] << ": error `--separator': separator must be 1 character" << std::endl;
+      return 1;
+    }
+    separator = s[0];
   }
 
   if (arg_geometry) {
@@ -365,13 +367,13 @@ int main(int argc, char **argv)
     split(s, '+', v);
 
     if (v.size() != 3) {
-      std::cerr << argv[0] << ": --geometry=WxH+X+Y: wrong format" << std::endl;
+      std::cerr << argv[0] << ": error `--geometry=WxH+X+Y': wrong format" << std::endl;
       return 1;
     }
 
     split(v[0], 'x', v_wh);
     if (v_wh.size() != 2) {
-      std::cerr << argv[0] << ": --geometry=WxH+X+Y: wrong format" << std::endl;
+      std::cerr << argv[0] << ": error `--geometry=WxH+X+Y': wrong format" << std::endl;
       return 1;
     }
 
@@ -494,6 +496,7 @@ int main(int argc, char **argv)
     dialog = DIALOG_SCALE;
     dialog_count++;
   }
+  double scale_min = 0, scale_max = 100, scale_step = 1, scale_init;
   GETVAL(scale_min, arg_min_value);
   scale_init = scale_min;
   GETVAL(scale_max, arg_max_value);
@@ -655,7 +658,7 @@ int main(int argc, char **argv)
 
   /* set window icon */
   if (arg_window_icon) {
-    Fl_RGB_Image *rgb = img_to_rgb(args::get(arg_window_icon).c_str());
+    Fl_RGB_Image *rgb = img_to_rgb(args::get(arg_window_icon).c_str(), force_nanosvg);
     if (rgb) {
       Fl_Window::default_icon(rgb);
       delete rgb;
@@ -675,35 +678,35 @@ int main(int argc, char **argv)
     case DIALOG_ABOUT:
       return about();
     case DIALOG_MESSAGE:
-      return dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO, with_icon_box);
+      return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
     case DIALOG_WARNING:
-      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_WARNING, with_icon_box);
+      return dialog_message(MESSAGE_TYPE_WARNING, with_icon_box, but_alt);
     case DIALOG_QUESTION:
-      return dialog_message(fl_yes, fl_no, but_alt, MESSAGE_TYPE_QUESTION, with_icon_box);
+      return dialog_message(MESSAGE_TYPE_QUESTION, with_icon_box, but_alt);
     case DIALOG_INPUT:
-      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_INPUT, false);
+      return dialog_message(MESSAGE_TYPE_INPUT, false, but_alt);
     case DIALOG_PASSWORD:
-      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_PASSWORD, false);
+      return dialog_message(MESSAGE_TYPE_PASSWORD, false, but_alt);
     case DIALOG_SCALE:
-      return dialog_message(fl_ok, fl_cancel, but_alt, MESSAGE_TYPE_SCALE, false);
+      return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
-      return dialog_file_chooser(FILE_CHOOSER, native_mode, argc, argv);
+      return dialog_file_chooser(FILE_CHOOSER, native_mode, separator);
     case DIALOG_DIR_CHOOSER:
-      return dialog_file_chooser(DIR_CHOOSER, native_mode, argc, argv);
+      return dialog_file_chooser(DIR_CHOOSER, native_mode, separator);
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], timeout, notify_icon, libnotify);
+      return dialog_notify(argv[0], timeout, notify_icon, libnotify, force_nanosvg);
     case DIALOG_PROGRESS:
       return dialog_progress(pulsate, (unsigned int) multi, kill_pid, autoclose, hide_cancel);
     case DIALOG_TEXTINFO:
       return dialog_textinfo(autoscroll, checkbox);
     case DIALOG_CHECKLIST:
-      return dialog_checklist(checklist_options, return_value, check_all);
+      return dialog_checklist(checklist_options, return_value, check_all, separator);
     case DIALOG_RADIOLIST:
-      return dialog_radiolist(radiolist_options, return_number);
+      return dialog_radiolist(radiolist_options, return_number, separator);
     case DIALOG_DROPDOWN:
-      return dialog_dropdown(dropdown_options, return_number);
+      return dialog_dropdown(dropdown_options, return_number, separator);
     case DIALOG_CALENDAR:
-      return dialog_calendar(format);
+      return dialog_calendar(format, arabic);
     case DIALOG_DATE:
       return dialog_date(format);
     case DIALOG_DND:

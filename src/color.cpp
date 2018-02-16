@@ -32,6 +32,7 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
+static int ret = 1;
 
 class ColorChip : public Fl_Widget
 {

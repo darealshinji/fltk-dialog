@@ -47,9 +47,13 @@
 
 
 extern "C"
-int getfilenameqt(int mode, const char *separator, const char *title, int argc, char **argv)
+int getfilenameqt(int mode, char separator, const char *title)
 {
-  QScopedPointer<QCoreApplication> app(new QApplication(argc, argv));
+  char fake_argv0[] = "getfilenameqt()";
+  char *fake_argv[] = { fake_argv0 };
+  int fake_argc = 1, rv = 1;
+
+  QScopedPointer<QCoreApplication> app(new QApplication(fake_argc, fake_argv));
   QFileDialog *dialog = new QFileDialog();
 
   dialog->setWindowIcon(QIcon(":/icon.png"));
@@ -64,12 +68,12 @@ int getfilenameqt(int mode, const char *separator, const char *title, int argc, 
   if (dialog->exec()) {
     QStringList strList;
     strList << dialog->selectedFiles();
-    QString str = strList.join(QString::fromLatin1(separator));
+    QString str = strList.join(QChar(separator));
     std::cout << str.toUtf8().constData() << std::endl;
-    delete dialog;
-    return 0;
+    rv = 0;
   }
-  delete dialog;
-  return 1;
+
+  app->exit();
+  return rv;
 }
 

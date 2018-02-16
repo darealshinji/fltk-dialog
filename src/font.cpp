@@ -99,7 +99,12 @@
 
 class FontDisplay : public Fl_Widget
 {
-  void draw();
+  void draw() {
+    draw_box();
+    fl_font((Fl_Font) font, size);
+    fl_color(FL_BLACK);
+    fl_draw(label(), x() + 3, y() + 3, w() - 6, h() - 6, align());
+  }
 
 public:
     int font, size;
@@ -113,16 +118,10 @@ public:
     }
 };
 
-void FontDisplay::draw() {
-  draw_box();
-  fl_font((Fl_Font) font, size);
-  fl_color(FL_BLACK);
-  fl_draw(label(), x() + 3, y() + 3, w() - 6, h() - 6, align());
-}
-
 static Fl_Double_Window *font_win;
 static FontDisplay      *fd_text;
 static Fl_Hold_Browser  *fd_fonts, *fd_size;
+static int ret = 1;
 
 static int **fd_sizes;
 static int  *fd_numsizes;

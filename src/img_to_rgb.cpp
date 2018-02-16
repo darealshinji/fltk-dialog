@@ -169,7 +169,7 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 }
 
 #ifdef WITH_RSVG
-static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
+static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_nanosvg)
 {
   Fl_RGB_Image *rgb = NULL;
 
@@ -186,10 +186,10 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
   return rgb;
 }
 #else
-# define svg_to_rgb(a,b) nsvg_to_rgb(a,b)
+# define svg_to_rgb(a,b,c) nsvg_to_rgb(a,b)
 #endif
 
-Fl_RGB_Image *img_to_rgb(const char *file)
+Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
 {
   FILE *fp;
   size_t len;
@@ -197,15 +197,19 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   Fl_RGB_Image *rgb = NULL;
   struct stat st;
 
+#ifndef WITH_RSVG
+  (void) force_nanosvg;
+#endif
+
   if (!file || stat(file, &st) == -1 || st.st_size > IMGFILE_MAX) {
     return NULL;
   }
 
   /* get filetype from extension */
   if (HASEXT(file, ".svg") && st.st_size <= SVG_MAX) {
-    rgb = svg_to_rgb(file, false);
+    rgb = svg_to_rgb(file, false, force_nanosvg);
   } else if ((HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) && st.st_size < SVGZ_MAX) {
-    rgb = svg_to_rgb(file, true);
+    rgb = svg_to_rgb(file, true, force_nanosvg);
   } else if (HASEXT(file, ".xpm")) {
     Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
     if (xpm) {

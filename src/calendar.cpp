@@ -36,13 +36,14 @@
 
 static Fl_Double_Window *win;
 static Fl_Calendar *calendar;
+static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = (int) p;
 }
 
-int dialog_calendar(std::string format)
+int dialog_calendar(std::string format, bool arabic)
 {
   Fl_Group         *g;
   Fl_Box           *dummy;
@@ -60,7 +61,7 @@ int dialog_calendar(std::string format)
   win->size_range(32*8 + 20, 26*8 + 20 + 37, max_w, max_h);
   win->callback(close_cb, 1);
   {
-    if (calendar_arabic) {
+    if (arabic) {
       calendar->arabic(1);
     }
 

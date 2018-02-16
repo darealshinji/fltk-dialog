@@ -46,6 +46,7 @@ static Fl_Double_Window *win;
 static Fl_Multi_Browser *browser;
 static Fl_Return_Button *but_ret;
 static bool checkbutton_set = false;
+static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();

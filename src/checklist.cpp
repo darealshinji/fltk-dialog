@@ -38,13 +38,14 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
+static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = (int) p;
 }
 
-int dialog_checklist(std::string checklist_options, bool return_value, bool check_all)
+int dialog_checklist(std::string checklist_options, bool return_value, bool check_all, char separator)
 {
   Fl_Group         *g, *g_inside, *buttongroup;
   Fl_Box           *dummy1, *dummy2;
@@ -66,7 +67,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
   if (count < 1) {
     title = "error: checklist";
     msg = "Two or more options required!";
-    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+    dialog_message(MESSAGE_TYPE_INFO);
     return 1;
   }
 
@@ -121,15 +122,17 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
     for (int i = 1; i <= count; ++i) {
       if (return_value) {
         if (browser->checked(i)) {
-          list += std::string(browser->text(i)) + separator_s;
+          list.append(browser->text(i));
+          list.push_back(separator);
         }
       } else {
         list += (browser->checked(i)) ? "TRUE" : "FALSE";
-        list += separator_s;
+        list.push_back(separator);
       }
     }
     /* strip trailing separator */
-    std::cout << list.substr(0, list.length() - 1) << std::endl;
+    list.pop_back();
+    std::cout << list << std::endl;
   }
 
   return ret;

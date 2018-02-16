@@ -41,6 +41,7 @@
 static Fl_Double_Window *win;
 static Fl_Choice *month;
 static Fl_Spinner *year, *day;
+static int ret = 1;
 
 static void callback(Fl_Widget *)
 {

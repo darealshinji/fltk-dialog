@@ -39,13 +39,14 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
+static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = (int) p;
 }
 
-int dialog_dropdown(std::string dropdown_list, bool return_number)
+int dialog_dropdown(std::string dropdown_list, bool return_number, char separator)
 {
   Fl_Group         *g;
   Fl_Choice        *entries;
@@ -67,7 +68,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number)
 
   if (itemlist_v.size() < 2) {
     msg = "ERROR: need at least 2 entries";
-    dialog_message(fl_close, NULL, NULL, MESSAGE_TYPE_INFO);
+    dialog_message(MESSAGE_TYPE_INFO);
     return 1;
   }
 

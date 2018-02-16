@@ -41,6 +41,7 @@ static Fl_Return_Button *but_ok;
 static radiolist_browser *browser;
 static int browser_rv = 0;
 static bool but_ok_activated = false;
+static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
@@ -55,7 +56,7 @@ static void callback(Fl_Widget *) {
   browser_rv = browser->value();
 }
 
-int dialog_radiolist(std::string radiolist_options, bool return_number)
+int dialog_radiolist(std::string radiolist_options, bool return_number, char separator)
 {
   Fl_Group   *g1, *g1a, *g2;
   Fl_Box     *dummy1, *dummy2;
@@ -68,7 +69,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number)
   if (count < 1) {
     title = "error: radiolist";
     msg = "Two or more options required!";
-    dialog_message(fl_ok, fl_cancel, NULL, MESSAGE_TYPE_WARNING);
+    dialog_message(MESSAGE_TYPE_WARNING);
     return 1;
   }
 

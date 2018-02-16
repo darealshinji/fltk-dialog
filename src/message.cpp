@@ -44,12 +44,8 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
-static double value = 0;
-
-double scale_min = 0
-,      scale_max = 100
-,      scale_step = 1
-,      scale_init = scale_min;
+static double value = 0, scale_step = 1;
+static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
@@ -78,11 +74,13 @@ static void callback(Fl_Widget *o, void *p)
   Fl::redraw();
 }
 
-int dialog_message(const char *label_but_ret
- ,                 const char *label_but
- ,                 const char *label_but_alt
- ,                 int type
- ,                 bool with_icon_box)
+int dialog_message(int type
+,                  bool with_icon_box
+,                  const char *label_but_alt
+,                  double scale_min
+,                  double scale_max
+,                  double scale_step_
+,                  double scale_init)
 {
   Fl_Group         *g_icon, *g_box, *g_middle, *g_buttons;
   Fl_Box           *icon, *box, *slider_box = NULL, *dummy;
@@ -98,6 +96,8 @@ int dialog_message(const char *label_but_ret
   bool input_field = false;
   bool scaler_field = false;
   const char *label_icon = "!";
+  const char *label_but_ret = fl_ok;
+  const char *label_but = fl_cancel;
 
 
   /* labels and message type settings */
@@ -133,15 +133,11 @@ int dialog_message(const char *label_but_ret
     case MESSAGE_TYPE_SCALE:
       scaler_field = true;
       with_icon_box = false;
+      scale_step = scale_step_;
+      if (scale_init < scale_min || scale_init > scale_max) {
+        scale_init = scale_min;
+      }
       break;
-  }
-
-  if (!label_but_ret) {
-    label_but_ret = fl_ok;
-  }
-
-  if (!label_but) {
-    label_but = fl_cancel;
   }
 
 

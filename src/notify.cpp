@@ -56,11 +56,11 @@ public:
   virtual ~close_box() { }
 
   int handle(int event) {
-    ret = Fl_Box::handle(event);
+    int rv = Fl_Box::handle(event);
     if (event == FL_RELEASE) {
       do_callback();
     }
-    return ret;
+    return rv;
   }
 };
 
@@ -107,7 +107,7 @@ static void callback(void *o)
   win->hide();
 }
 
-int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
+static int notification_box(double time_s, int fadeout_ms, const char *notify_icon, bool force_nanosvg)
 {
   int n, h = 160
   ,   title_h = 0
@@ -150,7 +150,7 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
       o->callback(close_cb); }
 
     if (notify_icon) {
-      Fl_RGB_Image *img = img_to_rgb(notify_icon);
+      Fl_RGB_Image *img = img_to_rgb(notify_icon, force_nanosvg);
       if (img) {
         int img_w = img->w();
         int img_h = img->h();
@@ -189,15 +189,16 @@ int notification_box(double time_s, int fadeout_ms, const char *notify_icon)
   if (time_s > 0) {
     Fl::add_timeout(time_s, callback, &fadeout_ms);
   }
-  ret = Fl::run();
+
+  int rv = Fl::run();
 
   if (rgb) {
     delete rgb;
   }
-  return ret;
+  return rv;
 }
 
-int run_libnotify(const char *appname, int timeout, const char *notify_icon)
+static int run_libnotify(const char *appname, int timeout, const char *notify_icon)
 {
 #ifdef DYNAMIC_NOTIFY
   /* dlopen() libnotify */
@@ -238,6 +239,7 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
 
   char *resolved_path = NULL;
   NotifyNotification *n;
+  int rv = 0;
 
   notify_init(appname);
 
@@ -259,7 +261,7 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
 
   if (!notify_notification_show(n, NULL)) {
     std::cerr << "error: notify_notification_show()" << std::endl;
-    ret = 1;
+    rv = 1;
   }
 
   notify_uninit();
@@ -268,10 +270,10 @@ int run_libnotify(const char *appname, int timeout, const char *notify_icon)
   if (resolved_path) {
     free(resolved_path);
   }
-  return ret;
+  return rv;
 }
 
-int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify)
+int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg)
 {
   if (timeout < 1) {
     std::cerr << "error: timeout shorter than 1 second: " << timeout << std::endl;
@@ -291,11 +293,11 @@ int dialog_notify(const char *appname, int timeout, const char *notify_icon, boo
     title = "No title";
   }
 
-  ret = libnotify ? run_libnotify(appname, timeout, notify_icon) : 1;
+  int rv = libnotify ? run_libnotify(appname, timeout, notify_icon) : 1;
 
-  if (ret != 0) {
-    ret = notification_box(timeout, 500, notify_icon);
+  if (rv != 0) {
+    rv = notification_box(timeout, 500, notify_icon, force_nanosvg);
   }
-  return ret;
+  return rv;
 }
 
