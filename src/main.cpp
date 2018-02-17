@@ -157,7 +157,7 @@ int main(int argc, char **argv)
   ,      arg_ok_label(ap, "TEXT", "Set the OK button text", {"ok-label"})
   ,      arg_cancel_label(ap, "TEXT", "Set the CANCEL button text", {"cancel-label"})
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
-  ,      arg_separator(ap, "SEPARATOR", "Set common separator character", {"separator"})
+  ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)", {"separator"})
   ,      arg_window_icon(ap, "FILE", "Set the window icon; supported are: bmp gif jpg png svg svgz xbm xpm", {"window-icon"});
 #ifdef WITH_RSVG
   ARG_T  arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
@@ -351,14 +351,20 @@ int main(int argc, char **argv)
   char separator = '|';
   if (arg_separator) {
     std::string s = args::get(arg_separator);
-    if (s.size() == 0) {
-      std::cerr << argv[0] << ": error `--separator': empty separator" << std::endl;
-      return 1;
-    } else if (s.size() > 1) {
-      std::cerr << argv[0] << ": error `--separator': separator must be 1 character" << std::endl;
-      return 1;
+    if (s == "\\n") {
+      separator = '\n';
+    } else if (s == "\\t") {
+      separator = '\t';
+    } else {
+      if (s.size() == 0) {
+        std::cerr << argv[0] << ": error `--separator': empty separator" << std::endl;
+        return 1;
+      } else if (s.size() > 1) {
+        std::cerr << argv[0] << ": error `--separator': separator must be a single character" << std::endl;
+        return 1;
+      }
+      separator = s[0];
     }
-    separator = s[0];
   }
 
   if (arg_geometry) {
