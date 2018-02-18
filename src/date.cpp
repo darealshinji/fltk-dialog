@@ -157,7 +157,7 @@ int dialog_date(std::string format)
   run_window(win, g1);
 
   if (ret == 0) {
-    std::cout << format_date(format, year->value(), month->value() + 1, day->value()) << std::endl;
+    std::cout << quote << format_date(format, year->value(), month->value() + 1, day->value()) << quote << std::endl;
   }
   return ret;
 }

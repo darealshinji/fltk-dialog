@@ -82,7 +82,7 @@ int dialog_calendar(std::string format, bool arabic)
   run_window(win, calendar);
 
   if (ret == 0) {
-    std::cout << format_date(format, calendar->year(), calendar->month(), calendar->day()) << std::endl;
+    std::cout << quote << format_date(format, calendar->year(), calendar->month(), calendar->day()) << quote << std::endl;
   }
   return ret;
 }

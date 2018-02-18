@@ -80,13 +80,15 @@ static void dnd_callback(const char *items)
 
   if (strncmp(items, "file:///", 8) == 0) {
     std::string s(items + 7);
-    repstr("\nfile://", "\n", s);
+    std::string q(quote);
+    repstr("\nfile://", q + "\n" + q, s);
+    s.pop_back();  /* remove trailing newline */
     char *ch = strdup(s.c_str());
     fl_decode_uri(ch);
-    std::cout << ch;
+    std::cout << quote << ch << quote << std::endl;
     free(ch);
   } else {
-    std::cout << items << std::endl;
+    std::cout << quote << items << quote << std::endl;
   }
 }
 

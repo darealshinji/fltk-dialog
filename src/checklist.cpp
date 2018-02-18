@@ -122,11 +122,15 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
     for (int i = 1; i <= count; ++i) {
       if (return_value) {
         if (browser->checked(i)) {
+          list.append(quote);
           list.append(browser->text(i));
+          list.append(quote);
           list.push_back(separator);
         }
       } else {
+        list.append(quote);
         list += (browser->checked(i)) ? "TRUE" : "FALSE";
+        list.append(quote);
         list.push_back(separator);
       }
     }

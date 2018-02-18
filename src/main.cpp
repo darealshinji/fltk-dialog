@@ -78,6 +78,7 @@ enum dialogTypes {
 
 const char *title = NULL;
 const char *msg = NULL;
+const char *quote = "";
 
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
@@ -159,6 +160,7 @@ int main(int argc, char **argv)
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)", {"separator"})
   ,      arg_window_icon(ap, "FILE", "Set the window icon; supported are: bmp gif jpg png svg svgz xbm xpm", {"window-icon"});
+  ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
 #ifdef WITH_RSVG
   ARG_T  arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
 #endif
@@ -323,6 +325,7 @@ int main(int argc, char **argv)
   always_on_top = arg_always_on_top ? true : false;
   bool return_number = arg_return_number ? true : false;
   bool libnotify = arg_libnotify ? true : false;
+  quote = arg_quoted_output ? "\"" : "";
 #ifdef WITH_RSVG
   bool force_nanosvg = arg_force_nanosvg ? true : false;
 #else

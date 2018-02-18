@@ -112,9 +112,9 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   if (ret == 0) {
     int item = entries->value();
     if (return_number) {
-      std::cout << (item + 1) << std::endl;
+      std::cout << quote << (item + 1) << quote << std::endl;
     } else {
-      std::cout << itemlist_v[item] << std::endl;
+      std::cout << quote << itemlist_v[item] << quote << std::endl;
     }
   }
 

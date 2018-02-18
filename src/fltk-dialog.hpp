@@ -82,7 +82,7 @@ enum {
   NATIVE_QT5
 };
 
-extern const char *title, *msg;
+extern const char *title, *msg, *quote;
 extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;

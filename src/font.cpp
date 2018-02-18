@@ -322,8 +322,8 @@ int dialog_font()
   run_window(font_win, NULL);
 
   if (ret == 0) {
-    std::cout << Fl::get_font_name((Fl_Font) fd_text->font, NULL) << "|"
-      << fd_size->value() << std::endl;
+    std::cout << quote << Fl::get_font_name((Fl_Font) fd_text->font, NULL)
+      << quote << "|" << quote << fd_size->value() << quote << std::endl;
   }
 
   delete[] fd_sizes;

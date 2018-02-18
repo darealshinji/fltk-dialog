@@ -111,7 +111,7 @@ static int dialog_file_chooser_fltk(int mode)
   Fl::run();
 
   if (fc->value()) {
-    std::cout << fc->value() << std::endl;
+    std::cout << quote << fc->value() << quote << std::endl;
     return 0;
   }
   return 1;
@@ -134,7 +134,7 @@ static int dialog_native_file_chooser_gtk(int mode)
   fc->title();
 
   if (fc->show() == 0) {
-    std::cout << fc->filename() << std::endl;
+    std::cout << quote << fc->filename() << quote << std::endl;
     return 0;
   }
   return 1;
@@ -204,7 +204,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 
   dlerror();
 
-  GETPROCADDRESS(handle, int, getfilenameqt, (int, char, const char*))
+  GETPROCADDRESS(handle, int, getfilenameqt, (int, char, const char*, const char*))
 
   error = dlerror();
 
@@ -219,7 +219,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
   }
 
-  int rv = getfilenameqt(mode, separator, title);
+  int rv = getfilenameqt(mode, separator, quote, title);
   dlclose(handle);
   DELETE(plugin);
 

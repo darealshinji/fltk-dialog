@@ -120,10 +120,10 @@ int dialog_color()
     double h = 0, s = 0, v = 0;
     Fl_Color_Chooser::rgb2hsv(r,g,b, h,s,v);
 
-    printf("%.3f %.3f %.3f|", r, g, b);         /* RGB values [0.000-1.000] */
-    printf("%d %d %d|", colr, colg, colb);      /* RGB values [0-255] */
-    printf("#%02x%02x%02x|", colr, colg, colb); /* HTML hex value */
-    printf("%.3f %.3f %.3f\n", h,s,v);          /* HSV values */
+    printf("%s%.3f %.3f %.3f%s|", quote, r,g,b, quote);         /* RGB values [0.000-1.000] */
+    printf("%s%d %d %d%s|", quote, colr,colg,colb, quote);      /* RGB values [0-255] */
+    printf("%s#%02x%02x%02x%s|", quote, colr,colg,colb, quote); /* HTML hex value */
+    printf("%s%.3f %.3f %.3f%s\n", quote, h,s,v, quote);        /* HSV values */
   }
 
   return ret;

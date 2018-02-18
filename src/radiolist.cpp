@@ -123,11 +123,13 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
   run_window(win, g1);
 
   if (ret == 0) {
+    std::cout << quote;
     if (return_number) {
-      std::cout << browser_rv << std::endl;
+      std::cout << browser_rv;
     } else {
-      std::cout << browser->text(browser_rv) << std::endl;
+      std::cout << browser->text(browser_rv);
     }
+    std::cout << quote << std::endl;
   }
   return ret;
 }

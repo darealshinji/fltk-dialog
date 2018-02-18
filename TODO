@@ -2,6 +2,5 @@
  * write --forms dialog
  * use libfribidi?
  * fix resizing issues on short labels (i.e. ./fltk-dialog --text X --close-label X)
- * --quoted-output
- * --output-separator
+ * --output-separator (maybe)
 

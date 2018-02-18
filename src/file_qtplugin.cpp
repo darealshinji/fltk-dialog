@@ -47,7 +47,7 @@
 
 
 extern "C"
-int getfilenameqt(int mode, char separator, const char *title)
+int getfilenameqt(int mode, char separator, const char *quote, const char *title)
 {
   char fake_argv0[] = "getfilenameqt()";
   char *fake_argv[] = { fake_argv0 };
@@ -67,9 +67,15 @@ int getfilenameqt(int mode, char separator, const char *title)
 
   if (dialog->exec()) {
     QStringList strList;
+    QString s(separator);
+    if (!quote) {
+      /* just in case that quote happens to be NULL */
+      quote = "";
+    }
+    s = quote + s + quote;
     strList << dialog->selectedFiles();
-    QString str = strList.join(QChar(separator));
-    std::cout << str.toUtf8().constData() << std::endl;
+    QString str = strList.join(s);
+    std::cout << quote << str.toUtf8().constData() << quote << std::endl;
     rv = 0;
   }
 
