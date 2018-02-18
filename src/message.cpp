@@ -82,7 +82,7 @@ int dialog_message(int type
 ,                  double scale_step_
 ,                  double scale_init)
 {
-  Fl_Group         *g_icon, *g_box, *g_middle, *g_buttons;
+  Fl_Group         *g_icon, *g_box, *g_message, *g_middle, *g_buttons;
   Fl_Box           *icon, *box, *slider_box = NULL, *dummy;
   Fl_Input         *input = NULL;
   Fl_Slider        *slider = NULL;
@@ -156,12 +156,12 @@ int dialog_message(int type
     label_but_alt_w = measure_button_width(label_but_alt, 15);
   }
 
-  win_w = msg_w + 30;
+  win_w = msg_w + 26;
   win_h = msg_h + 58;
   min_h = 74;
 
   if (with_icon_box) {
-    win_w += 50;
+    win_w += 60;
     win_h += 40;
     min_w += 60;
     min_h += 40;
@@ -200,49 +200,45 @@ int dialog_message(int type
   win->size_range(win_w, win_h, max_w, max_h);
   win->callback(close_cb, esc_ret);
   {
-    /* icon box */
-    if (with_icon_box) {
-      g_icon = new Fl_Group(/*x*/ 0,
-                            /*y*/ 0,
-                            /*w*/ 70,
-                            /*h*/ win_h - input_off - 58);
-      {
-        icon = new Fl_Box(10, 10, 50, 50);
-        icon->box(FL_THIN_UP_BOX);
-        icon->labelfont(FL_TIMES_BOLD);
-        icon->labelsize(34);
-        icon->color(FL_WHITE);
-        icon->labelcolor(FL_BLUE);
-        icon->label(label_icon);
-      }
-      g_icon->resizable(NULL);
-      g_icon->end();
-    }
+    int box_x, box_w;
+    int box_h = win_h - input_off - 58;
 
-    /* message area */
-    g_box = new Fl_Group(/*x*/ 0,
-                         /*y*/ 0,
-                         /*w*/ win_w - 60,
-                         /*h*/ win_h - input_off - 58);
+    g_message = new Fl_Group(0, 0, win_w, box_h);
     {
-      int box_x, box_w;
+      /* icon box */
       if (with_icon_box) {
-        box_x = 69;
-        box_w = win_w - 69;
+        box_x = 70;
+        box_w = win_w - 80;
+
+        g_icon = new Fl_Group(0, 0, box_x, box_h);
+        {
+          icon = new Fl_Box(10, 10, 50, 50);
+          icon->box(FL_THIN_UP_BOX);
+          icon->labelfont(FL_TIMES_BOLD);
+          icon->labelsize(34);
+          icon->color(FL_WHITE);
+          icon->labelcolor(FL_BLUE);
+          icon->label(label_icon);
+        }
+        g_icon->resizable(NULL);
+        g_icon->end();
       } else {
         box_x = 10;
         box_w = win_w - 20;
       }
-      box = new Fl_Box(/*x*/ box_x,
-                       /*y*/ 10,
-                       /*w*/ box_w,
-                       /*h*/ win_h - input_off - 58,
-                       /*l*/ msg);
-      box->align(FL_ALIGN_INSIDE|FL_ALIGN_TOP_LEFT|FL_ALIGN_WRAP);
-      box->box(FL_NO_BOX);
+
+      /* message area */
+      g_box = new Fl_Group(box_x, 0, box_w, box_h);
+      {
+        box = new Fl_Box(box_x, 10, box_w, box_h, msg);
+        box->align(FL_ALIGN_INSIDE|FL_ALIGN_TOP_LEFT|FL_ALIGN_WRAP);
+        box->box(FL_NO_BOX);
+      }
+      g_box->resizable(box);
+      g_box->end();
     }
-    g_box->resizable(box);
-    g_box->end();
+    g_message->resizable(box);
+    g_message->end();
 
     /* input field / scaler */
     if (input_field) {
@@ -292,10 +288,7 @@ int dialog_message(int type
     }
 
     /* buttons */
-    g_buttons = new Fl_Group(/*x*/ 0,
-                             /*y*/ win_h - 58,
-                             /*w*/ win_w,
-                             /*h*/ 58);
+    g_buttons = new Fl_Group(0, win_h - 58, win_w, 58);
     {
       int offset_alt = label_but_alt ? label_but_alt_w + 10 : 0;
       int offset = label_but_ret_w + offset_alt;
