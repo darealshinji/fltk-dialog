@@ -104,10 +104,10 @@ index 4b4ce1d..3402dc2 100644
 -  {"hex"},
 -  {"hsv"},
 -  {0}
-+  { "rgb",  0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
-+  { "byte", 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
-+  { "hex",  0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
-+  { "hsv",  0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 },
++  { "rgb",  0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
++  { "byte", 0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
++  { "hex",  0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
++  { "hsv",  0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
 +  { 0,0,0,0,0,0,0,0,0 }
  };
  
