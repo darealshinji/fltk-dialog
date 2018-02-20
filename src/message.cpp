@@ -91,7 +91,7 @@ int dialog_message(int type
 
   std::string s;
   int msg_w, msg_h, win_w, win_h, min_w, min_h, input_off = 0;
-  int label_but_ret_w, label_but_w, label_but_alt_w = 0;
+  int label_but_ret_w, label_but_w = 0, label_but_alt_w = 0;
   int esc_ret = 1;
   bool input_field = false;
   bool scaler_field = false;
@@ -134,8 +134,10 @@ int dialog_message(int type
       scaler_field = true;
       with_icon_box = false;
       scale_step = scale_step_;
-      if (scale_init < scale_min || scale_init > scale_max) {
+      if (scale_init < scale_min) {
         scale_init = scale_min;
+      } else if (scale_init > scale_max) {
+        scale_init = scale_max;
       }
       break;
   }
@@ -150,21 +152,30 @@ int dialog_message(int type
   delete tmp;
 
   label_but_ret_w = measure_button_width(label_but_ret, 40);
-  label_but_w = measure_button_width(label_but, 15);
 
+  if (type != MESSAGE_TYPE_INFO) {
+    label_but_w = measure_button_width(label_but, 15);
+  }
   if (label_but_alt) {
     label_but_alt_w = measure_button_width(label_but_alt, 15);
   }
 
   win_w = msg_w + 26;
   win_h = msg_h + 58;
+
   min_h = 74;
+  min_w = label_but_ret_w + label_but_w + label_but_alt_w + 20;
+
+  if (label_but_alt) {
+    min_w += 20;
+  } else if (type != MESSAGE_TYPE_INFO) {
+    min_w += 10;
+  }
 
   if (with_icon_box) {
     win_w += 60;
     win_h += 40;
-    min_w += 60;
-    min_h += 40;
+    min_h += 30;
   }
 
   if (input_field) {
@@ -174,16 +185,6 @@ int dialog_message(int type
   }
   win_h += input_off;
   min_h += input_off;
-
-  if (!label_but_alt) {
-    if (type == MESSAGE_TYPE_INFO) {
-      min_w = label_but_ret_w + 20;
-    } else {
-      min_w = label_but_ret_w + label_but_w + 30;
-    }
-  } else {
-    min_w = label_but_ret_w + label_but_w + label_but_alt_w + 40;
-  }
 
   if (win_w < min_w) {
     win_w = min_w;
@@ -197,7 +198,7 @@ int dialog_message(int type
   /* initialize window */
 
   win = new Fl_Double_Window(win_w, win_h, title);
-  win->size_range(win_w, win_h, max_w, max_h);
+  win->size_range(min_w, min_h, max_w, max_h);
   win->callback(close_cb, esc_ret);
   {
     int box_x, box_w;
