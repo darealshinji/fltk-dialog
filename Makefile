@@ -70,7 +70,7 @@ main_CXXFLAGS += -DUSE_SYSTEM_PLUGINS
 main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
 endif
 ifneq ($(WITH_RSVG),no)
-main_CXXFLAGS += -DWITH_WINDOW_ICON -DWITH_RSVG
+main_CXXFLAGS += -DWITH_RSVG
 OBJS          += src/dlopen_rsvg_plugin.o
 endif
 ifneq ($(DYNAMIC_NOTIFY),no)
