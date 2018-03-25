@@ -61,12 +61,11 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
   Fl_Group   *g1, *g1a, *g2;
   Fl_Box     *dummy1, *dummy2;
   Fl_Button  *but_cancel;
+
   std::vector<std::string> radiolist_v;
-
   split(radiolist_options, separator, radiolist_v);
-  int count = radiolist_v.size();
 
-  if (count < 1) {
+  if (radiolist_v.size() < 2) {
     title = "error: radiolist";
     msg = "Two or more options required!";
     dialog_message(MESSAGE_TYPE_WARNING);
@@ -84,14 +83,14 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
     {
       g1a = new Fl_Group(0, 0, 420, 290);
       {
-        for (int i = 0; i < count; ++i)
+        for (size_t i = 0; i < radiolist_v.size(); ++i)
         {
           browser = new radiolist_browser(10, 10, 400, 289);
           browser->when(FL_WHEN_CHANGED);
           browser->box(FL_THIN_DOWN_BOX);
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
           browser->clear_visible_focus();
-          for (int j = 0; j < count; ++j) {
+          for (size_t j = 0; j < radiolist_v.size(); ++j) {
             browser->add(radiolist_v[j].c_str());
           }
           browser->callback(callback);

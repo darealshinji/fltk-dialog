@@ -54,17 +54,9 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
   Fl_Check_Browser *browser;
 
   std::vector<std::string> checklist_v;
-  std::vector<long> counter_v;
-  int count = 0;
-
   split(checklist_options, separator, checklist_v);
 
-  for (size_t i = 0; i < checklist_v.size(); ++i) {
-    counter_v.push_back((long) i);
-    ++count;
-  }
-
-  if (count < 1) {
+  if (checklist_v.size() < 2) {
     title = "error: checklist";
     msg = "Two or more options required!";
     dialog_message(MESSAGE_TYPE_INFO);
@@ -86,7 +78,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
         browser->box(FL_THIN_DOWN_BOX);
         browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
         browser->clear_visible_focus();
-        for (int i = 0; i < count; ++i) {
+        for (size_t i = 0; i < checklist_v.size(); ++i) {
           browser->add(checklist_v[i].c_str());
         }
         if (check_all) {
@@ -119,7 +111,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
 
   if (ret == 0) {
     std::string list;
-    for (int i = 1; i <= count; ++i) {
+    for (size_t i = 1; i <= checklist_v.size(); ++i) {
       if (return_value) {
         if (browser->checked(i)) {
           list.append(quote);
