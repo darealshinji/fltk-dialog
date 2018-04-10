@@ -2129,6 +2129,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
 : ${CFLAGS="-O3 -Wall"}
 : ${CXXFLAGS="-O3 -Wall"}
 
@@ -4335,34 +4336,6 @@ fi
 fi
 
 
-## fribidi
-have_fribidi="no"
-if test "x$use_fribidi" = "xyes"; then :
-
-  {
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package fribidi" >&5
-$as_echo_n "checking for package fribidi... " >&6; }
-  if test "x$(pkg-config --exists fribidi; echo $?)" = "x0"; then :
-
-    ax_cv_pkg_check_modules_simple_fribidi="yes"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-else
-
-    ax_cv_pkg_check_modules_simple_fribidi="no"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-fi
-}
-  if test "x$ax_cv_pkg_check_modules_simple_fribidi" = "xyes"; then :
-  have_fribidi="yes"
-fi
-
-fi
-
-
 ## Xft
 have_xft="no"
 CFLAGS_backup="$CFLAGS"
@@ -4450,7 +4423,7 @@ HAVE_QT4=$have_qt4
 
 HAVE_QT5=$have_qt5
 
-WITH_FRIBIDI=$have_fribidi
+WITH_FRIBIDI=$use_fribidi
 
 WITH_RSVG=$use_rsvg
 
@@ -4488,6 +4461,22 @@ fi
 else
 
     as_fn_error $? "cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'" "$LINENO" 5
+
+fi
+
+fi
+if test "x$use_fribidi" = "xyes"; then :
+
+  if test -e "fribidi/configure"; then :
+
+    echo "=== configuring in fribidi ($PWD/fribidi)"
+    cd fribidi || exit 1
+    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-deprecated || exit 1
+    cd -
+
+else
+
+    as_fn_error $? "cannot find \`fribidi/configure'; please add fribidi sources or re-run \`$0' with \`--disable-fribidi'" "$LINENO" 5
 
 fi
 

@@ -60,6 +60,11 @@ static std::string text = "\n"
     "by the Flek development team and\n"
     "copyright \xc2\xa9 2016-2018 by djcj <djcj@gmx.de>\n"
     "\n"
+#ifdef WITH_FRIBIDI
+    "This build is using FriBidi, released under GNU LGPL 2.1\n"
+    "https://github.com/fribidi/fribidi\n"
+    "\n"
+#endif
     "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
 
 static void callback(Fl_Widget *o)

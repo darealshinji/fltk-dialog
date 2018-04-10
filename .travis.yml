@@ -5,6 +5,8 @@ compiler: gcc
 addons:
   apt:
     packages:
+      - autoconf
+      - automake
       - libx11-dev
       - libxcursor-dev
       - libxext-dev
@@ -21,12 +23,8 @@ addons:
       - libxml2-dev
       - libcroco3-dev
 
-before_script:
-  - wget -c http://http.debian.net/debian/pool/main/libr/librsvg/librsvg_2.40.18.orig.tar.xz
-  - tar xf librsvg_2.40.18.orig.tar.xz
-  - mv librsvg-2.40.18 librsvg
-
 script:
+  - ./autogen.sh
   - ./configure --enable-hardening --enable-rsvg && make -j4 V=1
 
 after_success:

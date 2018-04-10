@@ -82,8 +82,9 @@ main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
 endif
 ifneq ($(WITH_FRIBIDI),no)
-main_CXXFLAGS += -DWITH_FRIBIDI $(shell pkg-config --cflags fribidi)
-main_LIBS     += $(shell pkg-config --libs fribidi)
+main_CXXFLAGS += -DWITH_FRIBIDI -Ifribidi/lib
+libfribidi     = fribidi/lib/.libs/libfribidi.a
+main_LIBS     += $(libfribidi)
 endif
 
 plugin_CXXFLAGS :=
@@ -130,8 +131,13 @@ endif
 libfltk    = fltk/build/lib/libfltk.a
 main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lm -lpthread
 
+ifneq ($(WITH_FRIBIDI),no)
+OBJS_deps += $(libfribidi)
+endif
+
 ifneq ($(WITH_RSVG),no)
-librsvg = librsvg/.libs/librsvg-2.a
+librsvg    = librsvg/.libs/librsvg-2.a
+OBJS_deps += $(librsvg)
 endif
 
 ifeq ($(V),1)
@@ -157,6 +163,7 @@ define MAKE_CLEAN
   [ ! -f fltk/makeinclude ] || $(MAKE) -C fltk $@
   [ ! -f fltk/build/Makefile ] || $(MAKE) -C fltk/build clean
   [ ! -f librsvg/Makefile ] || $(MAKE) -C librsvg $@
+  [ ! -f fribidi/Makefile ] || $(MAKE) -C fribidi $@
 endef
 
 define NL
@@ -184,11 +191,10 @@ maintainer-clean: distclean
 	-rm -f configure
 	-rm -rf librsvg
 
-ifneq ($(WITH_RSVG),no)
-$(OBJS): $(libfltk) $(librsvg)
-else
-$(OBJS): $(libfltk)
-endif
+$(OBJS): $(OBJS_deps)
+
+$(libfribidi):
+	$(MAKE) -C fribidi V=$(make_verbose) dist_man_MANS='' dist_noinst_MANS=''
 
 $(BIN): $(OBJS)
 	$(msg_CXXLD)

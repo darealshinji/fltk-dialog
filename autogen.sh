@@ -15,7 +15,12 @@ if [ ! -e librsvg/configure ]; then
   mv librsvg-2.40.18 librsvg
 fi
 
+if [ ! -e fribidi/configure ]; then
+  autoreconf -if fribidi
+fi
+
 rm -rf autom4te.cache
-echo "running autoconf"
-autoconf
+
+set -x
+autoreconf -if
 

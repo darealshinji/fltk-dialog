@@ -16,6 +16,8 @@ m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
 
 AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issues])
 AC_CONFIG_SRCDIR([src/main.cpp])
+dnl AC_CONFIG_AUX_DIR([fribidi])
+
 : ${CFLAGS="-O3 -Wall"}
 : ${CXXFLAGS="-O3 -Wall"}
 
@@ -161,14 +163,6 @@ AS_IF([test "x$use_qt" = "xyes"], [
 ])
 
 
-## fribidi
-have_fribidi="no"
-AS_IF([test "x$use_fribidi" = "xyes"], [
-  AX_PKG_CHECK_MODULES_SIMPLE([fribidi], [fribidi])
-  AS_IF([test "x$ax_cv_pkg_check_modules_simple_fribidi" = "xyes"], [have_fribidi="yes"])
-])
-
-
 ## Xft
 have_xft="no"
 CFLAGS_backup="$CFLAGS"
@@ -197,7 +191,7 @@ AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
 AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
-AC_SUBST([WITH_FRIBIDI], [$have_fribidi])
+AC_SUBST([WITH_FRIBIDI], [$use_fribidi])
 AC_SUBST([WITH_RSVG], [$use_rsvg])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
@@ -223,8 +217,19 @@ AS_IF([test "x$use_rsvg" = "xyes"], [
     AC_MSG_ERROR([cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'])
   ])
 ])
+AS_IF([test "x$use_fribidi" = "xyes"], [
+  AS_IF([test -e "fribidi/configure"], [
+    echo "=== configuring in fribidi ($PWD/fribidi)"
+    cd fribidi || exit 1
+    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-deprecated || exit 1
+    cd -
+  ], [
+    AC_MSG_ERROR([cannot find \`fribidi/configure'; please add fribidi sources or re-run \`$0' with \`--disable-fribidi'])
+  ])
+])
 
 AC_CONFIG_FILES([config.mak])
+dnl AC_CONFIG_SUBDIRS([fribidi])
 AC_OUTPUT
 
 # run cmake
