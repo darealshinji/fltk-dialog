@@ -1,5 +1,5 @@
 m4_include([ax_check_compile_flag.m4])
-m4_include([ax_cxx_compile_stdcxx.m4])
+dnl m4_include([ax_cxx_compile_stdcxx.m4])
 
 # AX_PKG_CHECK_MODULES_SIMPLE(prefix, pkg-module)
 m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
@@ -41,9 +41,9 @@ AC_ARG_ENABLE([hardening],
 AC_ARG_ENABLE([small],
   [AS_HELP_STRING([--enable-small], [optimize for small size])],
   [enable_small="yes"], [enable_small="no"])
-AC_ARG_ENABLE([cxx11],
-  [AS_HELP_STRING([--enable-cxx11], [use C++11 even if C++14 is available])],
-  [enable_cxx11="yes"], [enable_cxx11="no"])
+dnl AC_ARG_ENABLE([cxx11],
+dnl   [AS_HELP_STRING([--enable-cxx11], [use C++11 even if C++14 is available])],
+dnl   [enable_cxx11="yes"], [enable_cxx11="no"])
 AC_ARG_ENABLE([strip],
   [AS_HELP_STRING([--enable-strip], [strip binary])],
   [LDFLAGS="$LDFLAGS -s"], [])
@@ -80,13 +80,14 @@ AC_ARG_ENABLE([system-zlib],
 
 
 ## check build flags
-# we need C++11 or higher
-AS_IF([test "x$enable_cxx11" = "xyes"],
-  [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])],
-  [AX_CXX_COMPILE_STDCXX([14], [noext], [optional])
-   AS_IF([test "x$HAVE_CXX14" = "x0"],
-         [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])])
-])
+CXXFLAGS="$CXXFLAGS -std=gnu++11"
+dnl # we need C++11 or higher
+dnl AS_IF([test "x$enable_cxx11" = "xyes"],
+dnl   [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])],
+dnl   [AX_CXX_COMPILE_STDCXX([14], [noext], [optional])
+dnl    AS_IF([test "x$HAVE_CXX14" = "x0"],
+dnl          [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])])
+dnl ])
 AS_IF([test "x$enable_small" = "xyes"], [
   CFLAGS="$CFLAGS -g0 -Os -ffunction-sections -fdata-sections"
   CXXFLAGS="$CXXFLAGS -g0 -Os -ffunction-sections -fdata-sections"
