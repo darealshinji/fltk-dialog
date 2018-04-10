@@ -78,7 +78,10 @@ static Fl_Return_Button *but_ok = NULL;
 static Fl_Button        *but_cancel = NULL;
 static Fl_Progress      *bar = NULL, *bar_main = NULL;
 static int ret = 1;
+
+#ifdef WITH_FRIBIDI
 static bool msg_alloc = false;
+#endif
 
 static int pulsate_val = 0;
 

@@ -40,7 +40,9 @@
 
 static Fl_Double_Window *win;
 static int ret = 1;
+#ifdef WITH_FRIBIDI
 static bool msg_alloc = false;
+#endif
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();

@@ -121,10 +121,11 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
   Fl_Font font = FL_HELVETICA;
   Fl_Font font_t = FL_HELVETICA_BOLD;
   Fl_RGB_Image *rgb = NULL;
-  bool title_alloc = false, msg_alloc = false;
   std::string title_wrapped, message_wrapped;
 
 #ifdef WITH_FRIBIDI
+  bool title_alloc = false, msg_alloc = false;
+
   if (use_fribidi) {
     if (title && (title = fribidi_parse_line(title)) != NULL) {
       title_alloc = true;
