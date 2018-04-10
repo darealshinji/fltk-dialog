@@ -40,12 +40,11 @@
 #   and this notice are preserved.  This file is offered as-is, without any
 #   warranty.
 
-#serial 7
+#serial 8
 
 dnl  This macro is based on the code from the AX_CXX_COMPILE_STDCXX_11 macro
 dnl  (serial version number 13).
 
-AX_REQUIRE_DEFINED([AC_MSG_WARN])
 AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
   m4_if([$1], [11], [ax_cxx_compile_alternatives="11 0x"],
         [$1], [14], [ax_cxx_compile_alternatives="14 1y"],
@@ -78,7 +77,8 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
       AC_CACHE_CHECK(whether $CXX supports C++$1 features with $switch,
                      $cachevar,
         [ac_save_CXX="$CXX"
-         CXX="$CXX $switch"
+         #CXX="$CXX $switch"
+         CXXFLAGS="$CXXFLAGS $switch"  # djcj: append to CXXFLAGS, not CXX
          AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_testbody_$1])],
           [eval $cachevar=yes],
           [eval $cachevar=no])
@@ -106,7 +106,8 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
         AC_CACHE_CHECK(whether $CXX supports C++$1 features with $switch,
                        $cachevar,
           [ac_save_CXX="$CXX"
-           CXX="$CXX $switch"
+           #CXX="$CXX $switch"
+           CXXFLAGS="$CXXFLAGS $switch"  # djcj: append to CXXFLAGS, not CXX
            AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_testbody_$1])],
             [eval $cachevar=yes],
             [eval $cachevar=no])
@@ -141,7 +142,6 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
               [define if the compiler supports basic C++$1 syntax])
   fi
   AC_SUBST(HAVE_CXX$1)
-  m4_if([$1], [17], [AC_MSG_WARN([C++17 is not yet standardized, so the checks may change in incompatible ways anytime])])
 ])
 
 

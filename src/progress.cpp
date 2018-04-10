@@ -78,6 +78,7 @@ static Fl_Return_Button *but_ok = NULL;
 static Fl_Button        *but_cancel = NULL;
 static Fl_Progress      *bar = NULL, *bar_main = NULL;
 static int ret = 1;
+static bool msg_alloc = false;
 
 static int pulsate_val = 0;
 
@@ -94,9 +95,15 @@ static bool running = true
 
 static long kill_pid = -1;
 
-static void close_cb(Fl_Widget *, long p) {
+static void close_cb(Fl_Widget *, long p)
+{
   win->hide();
   ret = (int) p;
+#ifdef WITH_FRIBIDI
+  if (msg_alloc && msg) {
+    free((void *)msg);
+  }
+#endif
 }
 
 static void cancel_cb(Fl_Widget *o) {
@@ -106,7 +113,8 @@ static void cancel_cb(Fl_Widget *o) {
   close_cb(o, 1);
 }
 
-static void progress_finished(void) {
+static void progress_finished(void)
+{
   if (autoclose) {
     close_cb(nullptr, 0);
   } else {
@@ -127,7 +135,19 @@ static void parse_line(const char *ch)
   if (running) {
     if (ch[0] == '#' && ch[1] != '\0') {
       /* "#comment" line found, change the label */
-      box->copy_label(ch + 1);
+#ifdef WITH_FRIBIDI
+      char *tmp = NULL;
+      if (use_fribidi) {
+        tmp = fribidi_parse_line(ch + 1);
+      }
+      if (tmp) {
+        box->copy_label(tmp);
+        free(tmp);
+      } else
+#endif
+      {
+        box->copy_label(ch + 1);
+      }
     } else if (!pulsate && ch[0] >= '0' && ch[0] <= '9') {
       /* number found, update the progress bar */
       std::stringstream ss;
@@ -225,12 +245,18 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long kill_pid_, bool aut
   Fl_Box *dummy;
   int h = 140, offset = 0;
 
-  if (!title) {
-    title = "FLTK progress window";
+#ifdef WITH_FRIBIDI
+  if (msg && use_fribidi && (msg = fribidi_parse_line(msg)) != NULL) {
+    msg_alloc = true;
   }
+#endif
 
   if (!msg) {
     msg = "Progress indicator";
+  }
+
+  if (!title) {
+    title = "FLTK progress window";
   }
 
   pulsate = pulsate_;

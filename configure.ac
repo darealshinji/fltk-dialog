@@ -59,6 +59,9 @@ AC_ARG_ENABLE([qt5],
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
+AC_ARG_ENABLE([fribidi],
+  [AS_HELP_STRING([--disable-fribidi], [disable fribidi support])],
+  [use_fribidi="no"], [use_fribidi="yes"])
 AC_ARG_ENABLE([rsvg],
   [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
   [use_rsvg="yes"], [use_rsvg="no"])
@@ -157,6 +160,14 @@ AS_IF([test "x$use_qt" = "xyes"], [
 ])
 
 
+## fribidi
+have_fribidi="no"
+AS_IF([test "x$use_fribidi" = "xyes"], [
+  AX_PKG_CHECK_MODULES_SIMPLE([fribidi], [fribidi])
+  AS_IF([test "x$ax_cv_pkg_check_modules_simple_fribidi" = "xyes"], [have_fribidi="yes"])
+])
+
+
 ## Xft
 have_xft="no"
 CFLAGS_backup="$CFLAGS"
@@ -185,6 +196,7 @@ AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
 AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
+AC_SUBST([WITH_FRIBIDI], [$have_fribidi])
 AC_SUBST([WITH_RSVG], [$use_rsvg])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])

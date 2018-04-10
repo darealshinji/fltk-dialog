@@ -66,13 +66,29 @@ static void callback(Fl_Widget *) {
 extern "C" void *ti_getline(void *p)
 {
   std::string line;
+
   for (int i = 0; std::getline(std::cin, line); ) {
     Fl::lock();
-    browser->add(line.c_str());
+
+#ifdef WITH_FRIBIDI
+    char *tmp = NULL;
+    if (use_fribidi) {
+      tmp = fribidi_parse_line(line.c_str());
+    }
+    if (tmp) {
+      browser->add(tmp);
+      free(tmp);
+    } else
+#endif
+    {
+      browser->add(line.c_str());
+    }
+
     if (p) {
       ++i;
       browser->bottomline(i);
     }
+
     Fl::unlock();
     Fl::awake(win);
   }
@@ -109,9 +125,24 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
         win->callback(close_cb, 1);
         but_y = browser_h + 10;
 
-        std::string s = " " + std::string(checkbox);
-        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26, s.c_str());
+        std::string s;
+        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26);
         checkbutton->callback(callback);
+#ifdef WITH_FRIBIDI
+        char *tmp = NULL;
+        if (use_fribidi) {
+          tmp = fribidi_parse_line(checkbox);
+        }
+        if (tmp) {
+          s = " " + std::string(tmp);
+          checkbutton->copy_label(s.c_str());
+          free(tmp);
+        } else
+#endif
+        {
+          s = " " + std::string(checkbox);
+          checkbutton->copy_label(s.c_str());
+        }
 
         but_w = measure_button_width(fl_cancel, 20);
         but = new Fl_Button(win->w() - 10 - but_w, but_y + 36, but_w, 26, fl_cancel);

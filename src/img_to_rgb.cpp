@@ -106,7 +106,7 @@ static char *gzip_uncompress(const char *file)
         return NULL;
     }
     output.append((char *)out, sizeof(out) - strm.avail_out);
-    if (output.size() > SVG_MAX) {
+    if (output.size() >= SVG_MAX) {
       inflateEnd(&strm);
       delete data;
       return NULL;
@@ -206,7 +206,7 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
   }
 
   /* get filetype from extension */
-  if (HASEXT(file, ".svg") && st.st_size <= SVG_MAX) {
+  if (HASEXT(file, ".svg") && st.st_size < SVG_MAX) {
     rgb = svg_to_rgb(file, false, force_nanosvg);
   } else if ((HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) && st.st_size < SVGZ_MAX) {
     rgb = svg_to_rgb(file, true, force_nanosvg);
@@ -214,16 +214,19 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
     Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
     if (xpm) {
       rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
+      delete xpm;
     }
   } else if (HASEXT(file, ".xbm")) {
-    Fl_XBM_Image in(file);
-    Fl_Image_Surface surf(in.w(), in.h());
-    surf.set_current();
+    Fl_XBM_Image *in = new Fl_XBM_Image(file);
+    Fl_Image_Surface *surf = new Fl_Image_Surface(in->w(), in->h());
+    surf->set_current();
     fl_color(FL_WHITE);
-    fl_rectf(0, 0, in.w(), in.h());
+    fl_rectf(0, 0, in->w(), in->h());
     fl_color(FL_BLACK);
-    in.draw(0, 0);
-    rgb = surf.image();
+    in->draw(0, 0);
+    rgb = surf->image();
+    delete surf;
+    delete in;
   }
 
   /* get filetype from magic bytes */

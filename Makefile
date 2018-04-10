@@ -9,6 +9,7 @@ HAVE_QT          ?= no
 HAVE_QT4         ?= no
 HAVE_QT5         ?= no
 WITH_RSVG        ?= no
+WITH_FRIBIDI     ?= no
 DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
 
@@ -79,6 +80,10 @@ main_LIBS     += -ldl
 else
 main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
+endif
+ifneq ($(WITH_FRIBIDI),no)
+main_CXXFLAGS += -DWITH_FRIBIDI $(shell pkg-config --cflags fribidi)
+main_LIBS     += $(shell pkg-config --libs fribidi)
 endif
 
 plugin_CXXFLAGS :=

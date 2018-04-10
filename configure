@@ -628,6 +628,7 @@ LIBOBJS
 EMBEDDED_PLUGINS
 DYNAMIC_NOTIFY
 WITH_RSVG
+WITH_FRIBIDI
 HAVE_QT5
 HAVE_QT4
 HAVE_QT
@@ -706,6 +707,7 @@ enable_qt
 enable_qt4
 enable_qt5
 enable_dynamic_notify
+enable_fribidi
 enable_rsvg
 enable_embedded_plugins
 enable_system_jpeg
@@ -1355,6 +1357,7 @@ Optional Features:
   --disable-dynamic-notify
                           disable dynamically loading libnotify (link directly
                           against shared or static library)
+  --disable-fribidi       disable fribidi support
   --enable-rsvg           build rsvg plugin
   --disable-embedded-plugins
                           don't embed Qt file chooser plugins into executable
@@ -3535,6 +3538,13 @@ else
   dynamic_notify="yes"
 fi
 
+# Check whether --enable-fribidi was given.
+if test "${enable_fribidi+set}" = set; then :
+  enableval=$enable_fribidi; use_fribidi="no"
+else
+  use_fribidi="yes"
+fi
+
 # Check whether --enable-rsvg was given.
 if test "${enable_rsvg+set}" = set; then :
   enableval=$enable_rsvg; use_rsvg="yes"
@@ -3902,7 +3912,8 @@ if eval \${$cachevar+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_save_CXX="$CXX"
-           CXX="$CXX $switch"
+           #CXX="$CXX $switch"
+           CXXFLAGS="$CXXFLAGS $switch"  # djcj: append to CXXFLAGS, not CXX
            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -4239,7 +4250,6 @@ $as_echo "$as_me: No compiler with C++11 support was found" >&6;}
 $as_echo "#define HAVE_CXX11 1" >>confdefs.h
 
   fi
-
 
 
 else
@@ -4689,7 +4699,8 @@ if eval \${$cachevar+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_save_CXX="$CXX"
-           CXX="$CXX $switch"
+           #CXX="$CXX $switch"
+           CXXFLAGS="$CXXFLAGS $switch"  # djcj: append to CXXFLAGS, not CXX
            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -5148,7 +5159,6 @@ $as_echo "#define HAVE_CXX14 1" >>confdefs.h
   fi
 
 
-
    if test "x$HAVE_CXX14" = "x0"; then :
     ax_cxx_compile_alternatives="11 0x"    ax_cxx_compile_cxx11_required=true
   ac_ext=cpp
@@ -5476,7 +5486,8 @@ if eval \${$cachevar+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_save_CXX="$CXX"
-           CXX="$CXX $switch"
+           #CXX="$CXX $switch"
+           CXXFLAGS="$CXXFLAGS $switch"  # djcj: append to CXXFLAGS, not CXX
            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -5813,7 +5824,6 @@ $as_echo "$as_me: No compiler with C++11 support was found" >&6;}
 $as_echo "#define HAVE_CXX11 1" >>confdefs.h
 
   fi
-
 
 
 fi
@@ -6581,6 +6591,34 @@ fi
 fi
 
 
+## fribidi
+have_fribidi="no"
+if test "x$use_fribidi" = "xyes"; then :
+
+  {
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for package fribidi" >&5
+$as_echo_n "checking for package fribidi... " >&6; }
+  if test "x$(pkg-config --exists fribidi; echo $?)" = "x0"; then :
+
+    ax_cv_pkg_check_modules_simple_fribidi="yes"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+    ax_cv_pkg_check_modules_simple_fribidi="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+}
+  if test "x$ax_cv_pkg_check_modules_simple_fribidi" = "xyes"; then :
+  have_fribidi="yes"
+fi
+
+fi
+
+
 ## Xft
 have_xft="no"
 CFLAGS_backup="$CFLAGS"
@@ -6667,6 +6705,8 @@ HAVE_QT=$have_qt
 HAVE_QT4=$have_qt4
 
 HAVE_QT5=$have_qt5
+
+WITH_FRIBIDI=$have_fribidi
 
 WITH_RSVG=$use_rsvg
 

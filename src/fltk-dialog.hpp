@@ -61,6 +61,30 @@
 #endif
 
 enum {
+  DIALOG_ABOUT,
+  DIALOG_CALENDAR,
+  DIALOG_CHECKLIST,
+  DIALOG_COLOR,
+  DIALOG_DATE,
+  DIALOG_DIR_CHOOSER,
+  DIALOG_DND,
+  DIALOG_DROPDOWN,
+  DIALOG_FILE_CHOOSER,
+  DIALOG_FONT,
+  DIALOG_HTML,
+  DIALOG_INPUT,
+  DIALOG_MESSAGE,
+  DIALOG_NOTIFY,
+  DIALOG_PASSWORD,
+  DIALOG_PROGRESS,
+  DIALOG_RADIOLIST,
+  DIALOG_QUESTION,
+  DIALOG_SCALE,
+  DIALOG_TEXTINFO,
+  DIALOG_WARNING
+};
+
+enum {
   MESSAGE_TYPE_INFO,
   MESSAGE_TYPE_WARNING,
   MESSAGE_TYPE_QUESTION,
@@ -83,7 +107,7 @@ enum {
 };
 
 extern const char *title, *msg, *quote;
-extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top;
+extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top, use_fribidi;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;
 
@@ -101,6 +125,10 @@ std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 std::string format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
+
+#ifdef WITH_FRIBIDI
+char *fribidi_parse_line(const char *input);
+#endif
 
 int dialog_message(int type = MESSAGE_TYPE_WARNING
 ,                  bool with_icon_box = true

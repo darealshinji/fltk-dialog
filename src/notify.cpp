@@ -121,11 +121,32 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
   Fl_Font font = FL_HELVETICA;
   Fl_Font font_t = FL_HELVETICA_BOLD;
   Fl_RGB_Image *rgb = NULL;
+  bool title_alloc = false, msg_alloc = false;
   std::string title_wrapped, message_wrapped;
+
+#ifdef WITH_FRIBIDI
+  if (use_fribidi) {
+    if (title && (title = fribidi_parse_line(title)) != NULL) {
+      title_alloc = true;
+    }
+    if (msg && (msg = fribidi_parse_line(msg)) != NULL) {
+      msg_alloc = true;
+    }
+  }
+#endif
 
   n = w - icon_wh - 30;
   title_wrapped = text_wrap(title, n, font_t, fs_title);
   message_wrapped = text_wrap(msg, n, font, fs_message);
+
+#ifdef WITH_FRIBIDI
+  if (title_alloc && title) {
+    free((void *)title);
+  }
+  if (msg_alloc && msg) {
+    free((void *)msg);
+  }
+#endif
 
   fl_font(font, fs_title);
   fl_measure(title_wrapped.c_str(), n = 0, title_h);
@@ -157,10 +178,10 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
         if (img_w > icon_wh || img_h > icon_wh) {
           aspect_ratio_scale(img_w, img_h, icon_wh);
           rgb = (Fl_RGB_Image *)img->copy(img_w, img_h);
+          delete img;
         } else {
-          rgb = (Fl_RGB_Image *)img->copy();
+          rgb = img;
         }
-        delete img;
         Fl_Box *o = new Fl_Box(10, 10, icon_wh, icon_wh);
         o->image(rgb);
       }

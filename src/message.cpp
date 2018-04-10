@@ -106,11 +106,26 @@ int dialog_message(int type
     title = "Window Title";
   }
 
+  if (msg) {
+#ifdef WITH_FRIBIDI
+    char *tmp = NULL;
+    if (use_fribidi) {
+      tmp = fribidi_parse_line(msg);
+    }
+    if (tmp) {
+      s = translate(tmp);
+      free(tmp);
+      msg = s.c_str();
+    } else
+#endif
+    {
+      s = translate(msg);
+      msg = s.c_str();
+    }
+  }
+
   if (!msg) {
     msg = "No message";
-  } else {
-    s = translate(msg);
-    msg = s.c_str();
   }
 
   switch (type) {

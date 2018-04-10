@@ -91,7 +91,19 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
           browser->clear_visible_focus();
           for (size_t j = 0; j < radiolist_v.size(); ++j) {
-            browser->add(radiolist_v[j].c_str());
+#ifdef WITH_FRIBIDI
+            char *tmp = NULL;
+            if (use_fribidi) {
+              tmp = fribidi_parse_line(radiolist_v[j].c_str());
+            }
+            if (tmp) {
+              browser->add(tmp);
+              free(tmp);
+            } else
+#endif
+            {
+              browser->add(radiolist_v[j].c_str());
+            }
           }
           browser->callback(callback);
         }

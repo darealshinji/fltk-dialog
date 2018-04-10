@@ -98,6 +98,25 @@ int dialog_dnd()
   Fl_Group *g;
   Fl_Box   *text, *dummy;
   Fl_Return_Button *but_close;
+  std::string s;
+
+  if (msg) {
+#ifdef WITH_FRIBIDI
+    char *tmp = NULL;
+    if (use_fribidi) {
+      tmp = fribidi_parse_line(msg);
+    }
+    if (tmp) {
+      s = translate(tmp);
+      free(tmp);
+      msg = s.c_str();
+    } else
+#endif
+    {
+      s = translate(msg);
+      msg = s.c_str();
+    }
+  }
 
   if (!msg) {
     msg = "drop stuff here";

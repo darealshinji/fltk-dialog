@@ -33,30 +33,23 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#ifdef WITH_FRIBIDI
+#include <fribidi.h>
+#endif
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
 
-bool always_on_top = false;
+#ifdef WITH_FRIBIDI
+#define FRIBIDI_MAX_STRLEN 65000
+#endif
 
-void run_window(Fl_Double_Window *o, Fl_Widget *w);
-void set_size(Fl_Double_Window *o, Fl_Widget *w);
-void set_position(Fl_Double_Window *o);
-void set_taskbar(Fl_Double_Window *o);  /* place before show() */
-void set_undecorated(Fl_Double_Window *o);  /* place after show() */
-void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
-int measure_button_width(const char *label, int extra_width);
-void aspect_ratio_scale(int &w, int &h, const int limit);
-void split(const std::string &s, char c, std::vector<std::string> &v);
-void repstr(const std::string &from, const std::string &to, std::string &s);
-std::string translate(const char *inputText);
-std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
-void print_date(std::string format, int y, int m, int d);
-size_t strlastcasecmp(const char *s1, const char *s2);
+bool always_on_top = false;
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
 {
@@ -105,7 +98,8 @@ void set_taskbar(Fl_Double_Window *o) {
   }
 }
 
-void set_undecorated(Fl_Double_Window *o) {
+void set_undecorated(Fl_Double_Window *o)
+{
   if (window_decoration) {
     o->border(1);
   } else {
@@ -113,8 +107,7 @@ void set_undecorated(Fl_Double_Window *o) {
   }
 }
 
-void set_always_on_top(Fl_Double_Window *o)
-{
+void set_always_on_top(Fl_Double_Window *o) {
   if (always_on_top) {
     fl_always_on_top(o);
   }
@@ -170,7 +163,8 @@ void split(const std::string &s, char c, std::vector<std::string> &v)
   }
 }
 
-void repstr(const std::string &from, const std::string &to, std::string &s) {
+void repstr(const std::string &from, const std::string &to, std::string &s)
+{
   if (!from.empty()) {
     for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size()) {
       s.replace(pos, from.size(), to);
@@ -284,4 +278,50 @@ size_t strlastcasecmp(const char *s1, const char *s2)
 
   return n;
 }
+
+/* Returns pointer to allocated string or NULL on error. */
+#ifdef WITH_FRIBIDI
+char *fribidi_parse_line(const char *input)
+{
+  char *source;
+  char buffer[FRIBIDI_MAX_STRLEN];
+  size_t size;
+  FriBidiParType base = FRIBIDI_PAR_LTR;
+  FriBidiStrIndex len, *ltov = NULL, *vtol = NULL;
+  FriBidiChar logical[FRIBIDI_MAX_STRLEN];
+  FriBidiChar visual[FRIBIDI_MAX_STRLEN];
+  FriBidiLevel *levels = NULL;
+  FriBidiCharSet charset;
+
+  if (!input || strlen(input) == 0) {
+    return NULL;
+  }
+
+  charset = fribidi_parse_charset("UTF-8");
+  fribidi_set_mirroring(true);
+  fribidi_set_reorder_nsm(false);
+
+  source = strdup(input);
+  size = strlen(source);
+  strncpy(buffer, source, size);
+  len = fribidi_charset_to_unicode(charset, buffer, size, logical);
+
+  if (len == 0) {
+    free(source);
+    return NULL;
+  }
+
+  if (fribidi_log2vis(logical, len, &base, visual, ltov, vtol, levels)) {
+    len = fribidi_remove_bidi_marks(visual, len, ltov, vtol, levels);
+    if (len > 0) {
+      fribidi_unicode_to_charset(charset, visual, len, buffer);
+      free(source);
+      return strdup(buffer);
+    }
+  }
+
+  free(source);
+  return NULL;
+}
+#endif  /* WITH_FRIBIDI */
 

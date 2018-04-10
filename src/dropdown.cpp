@@ -40,10 +40,16 @@
 
 static Fl_Double_Window *win;
 static int ret = 1;
+static bool msg_alloc = false;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = (int) p;
+#ifdef WITH_FRIBIDI
+  if (msg_alloc && msg) {
+    free((void *)msg);
+  }
+#endif
 }
 
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator)
@@ -55,6 +61,12 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   Fl_Button        *but_cancel;
 
   std::vector<std::string> itemlist_v;
+
+#ifdef WITH_FRIBIDI
+  if (msg && use_fribidi && (msg = fribidi_parse_line(msg)) != NULL) {
+    msg_alloc = true;
+  }
+#endif
 
   if (!msg) {
     msg = "Select an option";
@@ -75,11 +87,28 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   struct Fl_Menu_Item menu_items[itemlist_v.size() + 1];
 
   for (size_t i = 0; i < itemlist_v.size(); i++) {
-    menu_items[i] = {
-      (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str(),
-      0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
-    };
+    menu_items[i] = { 0,0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 };
+
+#ifdef WITH_FRIBIDI
+    if (use_fribidi) {
+      if (itemlist_v[i] == "") {
+        menu_items[i].text = strdup("<EMPTY>");
+      } else {
+        char *tmp = fribidi_parse_line(itemlist_v[i].c_str());
+        if (tmp) {
+          menu_items[i].text = strdup(tmp);
+          free(tmp);
+        } else {
+          menu_items[i].text = strdup(itemlist_v[i].c_str());
+        }
+      }
+    } else
+#endif
+    {
+      menu_items[i].text = (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str();
+    }
   }
+
   menu_items[itemlist_v.size()] = { 0,0,0,0,0,0,0,0,0 };
 
   win = new Fl_Double_Window(320, 110, title);
@@ -117,6 +146,16 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
       std::cout << quote << itemlist_v[item] << quote << std::endl;
     }
   }
+
+#ifdef WITH_FRIBIDI
+  if (use_fribidi) {
+    for (size_t i = 0; i < itemlist_v.size(); i++) {
+      if (menu_items[i].text) {
+        free((void *)menu_items[i].text);
+      }
+    }
+  }
+#endif
 
   return ret;
 }

@@ -52,33 +52,13 @@ typedef args::ValueFlag<std::string> ARGS_T;
 #define GETCSTR(a,b)  if (b) { a = args::get(b).c_str(); }
 #define GETVAL(a,b)   if (b) { a = args::get(b); }
 
-enum dialogTypes {
-  DIALOG_ABOUT,
-  DIALOG_CALENDAR,
-  DIALOG_CHECKLIST,
-  DIALOG_COLOR,
-  DIALOG_DATE,
-  DIALOG_DIR_CHOOSER,
-  DIALOG_DND,
-  DIALOG_DROPDOWN,
-  DIALOG_FILE_CHOOSER,
-  DIALOG_FONT,
-  DIALOG_HTML,
-  DIALOG_INPUT,
-  DIALOG_MESSAGE,
-  DIALOG_NOTIFY,
-  DIALOG_PASSWORD,
-  DIALOG_PROGRESS,
-  DIALOG_RADIOLIST,
-  DIALOG_QUESTION,
-  DIALOG_SCALE,
-  DIALOG_TEXTINFO,
-  DIALOG_WARNING
-};
-
 const char *title = NULL;
 const char *msg = NULL;
 const char *quote = "";
+
+#ifdef WITH_FRIBIDI
+bool use_fribidi = true;
+#endif
 
 /* get dimensions of the main screen work area */
 int max_w = Fl::w();
@@ -177,6 +157,9 @@ int main(int argc, char **argv)
   ARG_T  arg_no_system_colors(ap, "no-system-colors", "Use FLTK's default gray color scheme", {"no-system-colors"})
   ,      arg_undecorated(ap, "undecorated", "Set window undecorated", {"undecorated"})
   ,      arg_skip_taskbar(ap, "skip-taskbar", "Don't show window in taskbar", {"skip-taskbar"})
+#ifdef WITH_FRIBIDI
+  ,      arg_disable_fribidi(ap, "disable-fribidi", "Disable fribidi support", {"disable-fribidi"})
+#endif
   ,      arg_message(ap, "message", "Display message dialog", {"message"})
   ,      arg_warning(ap, "warning", "Display warning dialog", {"warning"})
   ,      arg_question(ap, "question", "Display question dialog", {"question"})
@@ -330,6 +313,9 @@ int main(int argc, char **argv)
   bool force_nanosvg = arg_force_nanosvg ? true : false;
 #else
   bool force_nanosvg = false;
+#endif
+#ifdef WITH_FRIBIDI
+  use_fribidi = arg_disable_fribidi ? false : true;
 #endif
 
   GETCSTR(msg, arg_text);

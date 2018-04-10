@@ -79,7 +79,19 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
         browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
         browser->clear_visible_focus();
         for (size_t i = 0; i < checklist_v.size(); ++i) {
-          browser->add(checklist_v[i].c_str());
+#ifdef WITH_FRIBIDI
+          char *tmp = NULL;
+          if (use_fribidi) {
+            tmp = fribidi_parse_line(checklist_v[i].c_str());
+          }
+          if (tmp) {
+            browser->add(tmp);
+            free(tmp);
+          } else
+#endif
+          {
+            browser->add(checklist_v[i].c_str());
+          }
         }
         if (check_all) {
           browser->check_all();
