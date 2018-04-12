@@ -10,6 +10,7 @@ HAVE_QT4         ?= no
 HAVE_QT5         ?= no
 WITH_RSVG        ?= no
 WITH_FRIBIDI     ?= no
+SYSTEM_FRIBIDI   ?= no
 DYNAMIC_NOTIFY   ?= yes
 EMBEDDED_PLUGINS ?= yes
 
@@ -42,11 +43,13 @@ OBJS = \
 	src/version.o \
 	$(NULL)
 
+libfltk   = fltk/build/lib/libfltk.a
+OBJS_deps = $(libfltk)
 
 
 # default build flags
 CFLAGS   ?= -O3 -Wall
-CXXFLAGS ?= -O3 -Wall -std=c++11
+CXXFLAGS ?= -O3 -Wall -std=gnu++11
 
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra -Wno-unused-parameter $(CXXFLAGS) $(CPPFLAGS)
@@ -76,15 +79,22 @@ OBJS          += src/dlopen_rsvg_plugin.o
 endif
 ifneq ($(DYNAMIC_NOTIFY),no)
 main_CXXFLAGS += -DDYNAMIC_NOTIFY
-main_LIBS     += -ldl
 else
 main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
 endif
+
 ifneq ($(WITH_FRIBIDI),no)
-main_CXXFLAGS += -DWITH_FRIBIDI -Ifribidi/lib
+main_CXXFLAGS += -DWITH_FRIBIDI
+ifneq ($(SYSTEM_FRIBIDI),no)
+main_CXXFLAGS += -DSYSTEM_FRIBIDI $(shell pkg-config --cflags fribidi)
+main_LIBS     += $(shell pkg-config --libs fribidi)
+else
+main_CXXFLAGS += -Ifribidi/lib
 libfribidi     = fribidi/lib/.libs/libfribidi.a
 main_LIBS     += $(libfribidi)
+OBJS_deps     += $(libfribidi)
+endif
 endif
 
 plugin_CXXFLAGS :=
@@ -115,7 +125,7 @@ main_LIBS += fltk/build/lib/libfltk_jpeg.a
 endif
 
 ifneq ($(SYSTEM_PNG),no)
-main_LIBS         += -lpng
+main_LIBS += -lpng
 else
 fltk_cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="OFF"
 main_LIBS += fltk/build/lib/libfltk_png.a
@@ -128,12 +138,9 @@ fltk_cmake_config += -DOPTION_USE_SYSTEM_ZLIB="OFF"
 main_LIBS += fltk/build/lib/libfltk_z.a
 endif
 
-libfltk    = fltk/build/lib/libfltk.a
-main_LIBS += $(libfltk) $(shell fltk/build/fltk-config --use-images --ldflags) -lm -lpthread
-
-ifneq ($(WITH_FRIBIDI),no)
-OBJS_deps += $(libfribidi)
-endif
+main_LIBS += $(libfltk)
+main_LIBS += $(shell fltk/build/fltk-config --use-images --ldflags | sed -e 's| -lfltk_images||; s| -lpng||; s| -lz||; s| -lfltk||')
+main_LIBS += -ldl -lm -lpthread
 
 ifneq ($(WITH_RSVG),no)
 librsvg    = librsvg/.libs/librsvg-2.a
@@ -193,9 +200,6 @@ maintainer-clean: distclean
 
 $(OBJS): $(OBJS_deps)
 
-$(libfribidi):
-	$(MAKE) -C fribidi V=$(make_verbose) dist_man_MANS='' dist_noinst_MANS=''
-
 $(BIN): $(OBJS)
 	$(msg_CXXLD)
 	$(Q)$(CXX) -o $@ $^ $(LDFLAGS) $(main_LIBS) $(LIBS)
@@ -207,7 +211,6 @@ $(BIN): $(OBJS)
 .cpp.o:
 	$(msg_CXX)
 	$(Q)$(CXX) $(main_CXXFLAGS) -c -o $@ $<
-
 
 fltk/build/fltk-config: $(libfltk)
 
@@ -232,111 +235,24 @@ icon_png.h: src/icon.png
 	$(msg_GENH)
 	$(Q)xxd -i $< > $@
 
+ifneq ($(WITH_FRIBIDI),no)
+ifeq ($(SYSTEM_FRIBIDI),no)
+fribidi/configure:
+	autoreconf -if fribidi
+
+fribidi/Makefile: fribidi/configure
+	cd fribidi && ./configure --disable-shared --disable-deprecated
+
+$(libfribidi): $(libfltk) fribidi/Makefile
+	$(MAKE) -C fribidi V=$(make_verbose) dist_man_MANS='' dist_noinst_MANS=''
+endif
+endif
+
 ifneq ($(HAVE_QT),no)
-qtplugins =
-
-ifneq ($(HAVE_QT4),no)
-qtplugins += qt4gui.so
+include qt.mak
 endif
-ifneq ($(HAVE_QT5),no)
-qtplugins += qt5gui.so
-endif
-
-qtgui_so.h: $(qtplugins)
-	$(msg_GENH)
-	$(Q)rm -f $@
-ifneq ($(HAVE_QT4),no)
-	$(Q)xxd -i qt4gui.so >> $@
-endif
-ifneq ($(HAVE_QT5),no)
-	$(Q)xxd -i qt5gui.so >> $@
-endif
-
-qt4gui.so: src/file_qtplugin_qt4.o
-	$(msg_CXXLDSO)
-	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs QtGui QtCore)
-
-qt5gui.so: src/file_qtplugin_qt5.o
-	$(msg_CXXLDSO)
-	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs Qt5Widgets Qt5Core)
-
-src/file_qtplugin_qt4.o: src/file_qtplugin.cpp icon_qrc.h
-	$(msg_CXX)
-	$(Q)$(CXX) $(plugin_CXXFLAGS) -Wno-unused-variable $(shell pkg-config --cflags QtGui QtCore) -c -o $@ $<
-
-src/file_qtplugin_qt5.o: src/file_qtplugin.cpp icon_qrc.h
-	$(msg_CXX)
-	$(Q)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
-
-icon_qrc.h: src/icon.png
-	$(msg_GENH)
-	$(Q)printf "static const unsigned char qt_resource_data[] = {\n " > $@
-	$(Q)printf "%08x" $$(wc -c < $<) | sed 's|.\{2\}| 0x&,|g' >> $@
-	$(Q)printf "\n" >> $@
-	$(Q)xxd -i < $< >> $@
-	$(Q)printf "};\n" >> $@
-
-ifneq ($(EMBEDDED_PLUGINS),no)
-src/file_dlopen_qtplugin.o: qtgui_so.h
-else
-src/file_dlopen_qtplugin.o: $(qtplugins)
-endif
-
-src/file.cpp: qtgui_so.h
-src/file_qtplugin.cpp: $(libfltk)
-endif # HAVE_QT
-
 ifneq ($(WITH_RSVG),no)
-rsvg_convert_so.h: rsvg_convert.so
-	$(msg_GENH)
-	$(Q)xxd -i $< > $@
-
-rsvg_modules = glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6
-
-rsvg_convert.so: src/rsvg_convert.o $(librsvg)
-	$(msg_CCLDSO)
-	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs $(rsvg_modules)) -lm
-
-src/rsvg_convert.cpp: $(librsvg)
-src/rsvg_convert.o: src/rsvg_convert.cpp
-	$(msg_CC)
-	$(Q)$(CXX) -I librsvg $(plugin_CXXFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags $(rsvg_modules)) -c -o $@ $<
-
-$(librsvg): librsvg/Makefile
-	$(MAKE) -C librsvg V=$(make_verbose)
-
-librsvg/Makefile:
-	cd librsvg && ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic
-
-ifneq ($(EMBEDDED_PLUGINS),no)
-src/dlopen_rsvg_plugin.o: rsvg_convert_so.h
-else
-src/dlopen_rsvg_plugin.o: rsvg_convert.so
+include rsvg.mak
 endif
 
-endif # WITH_RSVG
-
-
-DISTFILES = fltk/ librsvg/ patches/ src/ \
-	ax_check_compile_flag.m4 \
-	ax_cxx_compile_stdcxx.m4 \
-	config.mak.in \
-	configure \
-	configure.ac \
-	COPYING.LGPL-2 \
-	LICENSE \
-	Makefile \
-	README.md
-
-DISTDIR = fltk-dialog-src
-
-dist: distclean
-	-rm -rf $(DISTDIR)
-	-rm -f $(DISTDIR).tar.xz
-	mkdir $(DISTDIR)
-	cp -r $(DISTFILES) $(DISTDIR)
-	cd $(DISTDIR) && autoconf
-	-rm -rf $(DISTDIR)/autom4te.cache
-	tar cfJ $(DISTDIR).tar.xz $(DISTDIR)
-	-rm -rf $(DISTDIR)
 

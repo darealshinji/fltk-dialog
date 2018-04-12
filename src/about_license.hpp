@@ -116,7 +116,7 @@ static const char *license =
     "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n"
     "USA.\n"
 #endif  /* WITH_RSVG */
-#ifdef WITH_FRIBIDI
+#if defined(WITH_FRIBIDI) && !defined(SYSTEM_FRIBIDI)
     "\n"
     "\n"
     "\n"
@@ -137,7 +137,7 @@ static const char *license =
     "You should have received a copy of the GNU Lesser General Public License along\n"
     "with GNU FriBidi, in a file named COPYING; if not, write to the Free Software\n"
     "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA\n"
-#endif  /* WITH_FRIBIDI */
+#endif  /* WITH_FRIBIDI && !SYSTEM_FRIBIDI */
     "\n"
     "\n"
     "\n"

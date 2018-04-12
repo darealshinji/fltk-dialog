@@ -1,5 +1,4 @@
 m4_include([ax_check_compile_flag.m4])
-dnl m4_include([ax_cxx_compile_stdcxx.m4])
 
 # AX_PKG_CHECK_MODULES_SIMPLE(prefix, pkg-module)
 m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
@@ -16,7 +15,6 @@ m4_define([AX_PKG_CHECK_MODULES_SIMPLE], [{
 
 AC_INIT([fltk-dialog], [0.1], [https://github.com/darealshinji/fltk-dialog/issues])
 AC_CONFIG_SRCDIR([src/main.cpp])
-dnl AC_CONFIG_AUX_DIR([fribidi])
 
 : ${CFLAGS="-O3 -Wall"}
 : ${CXXFLAGS="-O3 -Wall"}
@@ -43,9 +41,6 @@ AC_ARG_ENABLE([hardening],
 AC_ARG_ENABLE([small],
   [AS_HELP_STRING([--enable-small], [optimize for small size])],
   [enable_small="yes"], [enable_small="no"])
-dnl AC_ARG_ENABLE([cxx11],
-dnl   [AS_HELP_STRING([--enable-cxx11], [use C++11 even if C++14 is available])],
-dnl   [enable_cxx11="yes"], [enable_cxx11="no"])
 AC_ARG_ENABLE([strip],
   [AS_HELP_STRING([--enable-strip], [strip binary])],
   [LDFLAGS="$LDFLAGS -s"], [])
@@ -61,15 +56,18 @@ AC_ARG_ENABLE([qt5],
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
-AC_ARG_ENABLE([fribidi],
-  [AS_HELP_STRING([--disable-fribidi], [disable fribidi support])],
-  [use_fribidi="no"], [use_fribidi="yes"])
 AC_ARG_ENABLE([rsvg],
   [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
   [use_rsvg="yes"], [use_rsvg="no"])
 AC_ARG_ENABLE([embedded-plugins],
   [AS_HELP_STRING([--disable-embedded-plugins], [don't embed Qt file chooser plugins into executable but load them from LIBDIR/fltk-dialog])],
   [use_embedded_plugins="no"], [use_embedded_plugins="yes"])
+AC_ARG_ENABLE([fribidi],
+  [AS_HELP_STRING([--disable-fribidi], [disable fribidi support])],
+  [use_fribidi="no"], [use_fribidi="yes"])
+AC_ARG_ENABLE([system-fribidi],
+  [AS_HELP_STRING([--enable-system-fribidi], [link against system fribidi])],
+  [use_system_fribidi="yes" use_fribidi="yes"], [use_system_fribidi="no"])
 AC_ARG_ENABLE([system-jpeg],
   [AS_HELP_STRING([--enable-system-jpeg], [link against system libjpeg])],
   [use_system_jpeg="yes"], [use_system_jpeg="no"])
@@ -82,14 +80,6 @@ AC_ARG_ENABLE([system-zlib],
 
 
 ## check build flags
-CXXFLAGS="$CXXFLAGS -std=gnu++11"
-dnl # we need C++11 or higher
-dnl AS_IF([test "x$enable_cxx11" = "xyes"],
-dnl   [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])],
-dnl   [AX_CXX_COMPILE_STDCXX([14], [noext], [optional])
-dnl    AS_IF([test "x$HAVE_CXX14" = "x0"],
-dnl          [AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])])
-dnl ])
 AS_IF([test "x$enable_small" = "xyes"], [
   CFLAGS="$CFLAGS -g0 -Os -ffunction-sections -fdata-sections"
   CXXFLAGS="$CXXFLAGS -g0 -Os -ffunction-sections -fdata-sections"
@@ -141,6 +131,38 @@ AS_IF([test "x$use_notify" = "xno"], [
 ])
 
 
+## fribidi checks
+have_fribidi="yes"
+AS_IF([test "x$use_fribidi" = "xyes" -a "x$use_system_fribidi" = "xyes"], [
+  # fribidi headers
+  AX_PKG_CHECK_MODULES_SIMPLE([fribidi], [fribidi])
+  AS_IF([test "x$ax_cv_pkg_check_modules_simple_fribidi" = "xyes"], [
+    CFLAGS_backup="$CFLAGS"
+    CPPFLAGS_backup="$CPPFLAGS"
+    CFLAGS="$CFLAGS $(pkg-config --cflags fribidi)"
+    CPPFLAGS="$CPPFLAGS $(pkg-config --cflags fribidi)"
+    AC_CHECK_HEADER([fribidi.h], [have_fribidi="yes"], [have_fribidi="no"])
+    CFLAGS="$CFLAGS_backup"
+    CPPFLAGS="$CPPFLAGS_backup"
+  ])
+  # fribidi library functions
+  AS_IF([test "x$have_fribidi" = "xyes"], [
+    AC_CHECK_LIB([fribidi], [fribidi_parse_charset], [have_fribidi="yes"], [have_fribidi="no"])
+    AC_CHECK_LIB([fribidi], [fribidi_set_mirroring], [have_fribidi="yes"], [have_fribidi="no"])
+    AC_CHECK_LIB([fribidi], [fribidi_set_reorder_nsm], [have_fribidi="yes"], [have_fribidi="no"])
+    AC_CHECK_LIB([fribidi], [fribidi_charset_to_unicode], [have_fribidi="yes"], [have_fribidi="no"])
+    AC_CHECK_LIB([fribidi], [fribidi_log2vis], [have_fribidi="yes"], [have_fribidi="no"])
+    AC_CHECK_LIB([fribidi], [fribidi_remove_bidi_marks], [have_fribidi="yes"], [have_fribidi="no"])
+    AC_CHECK_LIB([fribidi], [fribidi_unicode_to_charset], [have_fribidi="yes"], [have_fribidi="no"])
+  ])
+  AS_IF([test "x$have_fribidi" != "xyes"], [
+    AC_MSG_ERROR([re-run \`$0' without \`--enable-system-fribidi'])
+  ])
+], [
+  have_fribidi="no"
+])
+
+
 ## Qt checks
 have_qt="no"
 have_qt4="no"
@@ -174,6 +196,7 @@ AC_CHECK_HEADER([X11/Xft/Xft.h], [
 ])
 CFLAGS="$CFLAGS_backup"
 CPPFLAGS="$CPPFLAGS_backup"
+# force Xft because otherwise fonts will look very ugly
 AS_IF([test "x$have_xft" != "xyes"], [exit 1])
 
 
@@ -185,13 +208,14 @@ AS_IF([test "$exec_prefix" = NONE], [exec_prefix=/usr/local])
 AC_SUBST([PREFIX], [$prefix])
 AC_SUBST([EPREFIX], [$exec_prefix])
 AC_SUBST([LIBDIR], [$libdir])
+AC_SUBST([WITH_FRIBIDI], [$use_fribidi])
+AC_SUBST([SYSTEM_FRIBIDI], [$use_system_fribidi])
 AC_SUBST([SYSTEM_JPEG], [$use_system_jpeg])
 AC_SUBST([SYSTEM_PNG], [$use_system_png])
 AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
 AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
-AC_SUBST([WITH_FRIBIDI], [$use_fribidi])
 AC_SUBST([WITH_RSVG], [$use_rsvg])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
@@ -217,7 +241,7 @@ AS_IF([test "x$use_rsvg" = "xyes"], [
     AC_MSG_ERROR([cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'])
   ])
 ])
-AS_IF([test "x$use_fribidi" = "xyes"], [
+AS_IF([test "x$use_fribidi" = "xyes" -a "x$use_system_fribidi" != "xyes"], [
   AS_IF([test -e "fribidi/configure"], [
     echo "=== configuring in fribidi ($PWD/fribidi)"
     cd fribidi || exit 1
@@ -229,7 +253,6 @@ AS_IF([test "x$use_fribidi" = "xyes"], [
 ])
 
 AC_CONFIG_FILES([config.mak])
-dnl AC_CONFIG_SUBDIRS([fribidi])
 AC_OUTPUT
 
 # run cmake

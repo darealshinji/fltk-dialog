@@ -257,8 +257,6 @@ static int dialog_native_file_chooser(int mode)
 
   return rv;
 #else  /* HAVE_QT */
-  (void) argc;
-  (void) argv;
   return dialog_native_file_chooser_gtk(mode);
 #endif  /* HAVE_QT */
 }

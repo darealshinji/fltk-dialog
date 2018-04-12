@@ -6,6 +6,7 @@ HAVE_QT4          = @HAVE_QT4@
 HAVE_QT5          = @HAVE_QT5@
 DYNAMIC_NOTIFY    = @DYNAMIC_NOTIFY@
 WITH_FRIBIDI      = @WITH_FRIBIDI@
+SYSTEM_FRIBIDI    = @SYSTEM_FRIBIDI@
 WITH_RSVG         = @WITH_RSVG@
 EMBEDDED_PLUGINS  = @EMBEDDED_PLUGINS@
 prefix            = @PREFIX@
@@ -14,5 +15,5 @@ libdir            = @LIBDIR@
 CC                = @CC@
 CXX               = @CXX@
 CFLAGS            = @CFLAGS@
-CXXFLAGS          = @CXXFLAGS@
+CXXFLAGS          = -std=gnu++11 @CXXFLAGS@
 LDFLAGS           = @LDFLAGS@
