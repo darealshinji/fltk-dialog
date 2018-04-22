@@ -346,7 +346,7 @@ int main(int argc, char **argv)
       separator = '\t';
     } else {
       if (s.size() == 0) {
-        std::cerr << argv[0] << ": error `--separator': empty separator" << std::endl;
+        std::cerr << argv[0] << ": error `--separator': empty string" << std::endl;
         return 1;
       } else if (s.size() > 1) {
         std::cerr << argv[0] << ": error `--separator': separator must be a single character" << std::endl;
@@ -685,9 +685,9 @@ int main(int argc, char **argv)
     case DIALOG_SCALE:
       return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
-      return dialog_file_chooser(FILE_CHOOSER, native_mode, separator);
+      return dialog_file_chooser(FILE_CHOOSER, native_mode); //, separator);
     case DIALOG_DIR_CHOOSER:
-      return dialog_file_chooser(DIR_CHOOSER, native_mode, separator);
+      return dialog_file_chooser(DIR_CHOOSER, native_mode); //, separator);
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, notify_icon, libnotify, force_nanosvg);
     case DIALOG_PROGRESS:

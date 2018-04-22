@@ -145,7 +145,7 @@ int dialog_color(void);
 int dialog_date(std::string format);
 int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
-int dialog_file_chooser(int file_mode, int native_mode, char separator);
+int dialog_file_chooser(int file_mode, int native_mode); //, char separator);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);

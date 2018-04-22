@@ -43,7 +43,7 @@
 
 #include "fltk-dialog.hpp"
 
-static char separator;
+//static char separator;
 
 static int dialog_file_chooser_fltk(int mode)
 {
@@ -204,7 +204,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 
   dlerror();
 
-  GETPROCADDRESS(handle, int, getfilenameqt, (int, char, const char*, const char*))
+  GETPROCADDRESS(handle, int, getfilenameqt, (int, /* char, */ const char*, const char*))
 
   error = dlerror();
 
@@ -219,7 +219,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
   }
 
-  int rv = getfilenameqt(mode, separator, quote, title);
+  int rv = getfilenameqt(mode, /* separator, */ quote, title);
   dlclose(handle);
   DELETE(plugin);
 
@@ -275,9 +275,9 @@ static int dialog_native_file_chooser_qt(int qt_major, int mode)
 }
 #endif  /* HAVE_QT */
 
-int dialog_file_chooser(int file_mode, int native_mode, char separator_)
+int dialog_file_chooser(int file_mode, int native_mode) //, char separator_)
 {
-  separator = separator_;
+  //separator = separator_;
 
   switch (native_mode) {
     case NATIVE_ANY:

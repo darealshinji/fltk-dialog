@@ -47,7 +47,7 @@
 
 
 extern "C"
-int getfilenameqt(int mode, char separator, const char *quote, const char *title)
+int getfilenameqt(int mode, /* char separator, */ const char *quote, const char *title)
 {
   char fake_argv0[] = "getfilenameqt()";
   char *fake_argv[] = { fake_argv0 };
@@ -62,20 +62,22 @@ int getfilenameqt(int mode, char separator, const char *quote, const char *title
   if (mode == DIR_CHOOSER) {
     dialog->setFileMode(QFileDialog::Directory);
   } else /* if (mode == FILE_CHOOSER) */ {
-    dialog->setFileMode(QFileDialog::ExistingFiles);
+    dialog->setFileMode(QFileDialog::ExistingFile);
+    //dialog->setFileMode(QFileDialog::ExistingFiles);
   }
 
   if (dialog->exec()) {
-    QStringList strList;
-    QString s(separator);
+    //QStringList strList;
+    //QString s(separator);
     if (!quote) {
       /* just in case that quote happens to be NULL */
       quote = "";
     }
-    s = quote + s + quote;
-    strList << dialog->selectedFiles();
-    QString str = strList.join(s);
-    std::cout << quote << str.toUtf8().constData() << quote << std::endl;
+    //s = quote + s + quote;
+    //strList << dialog->selectedFiles();
+    //QString str = strList.join(s);
+    //std::cout << quote << str.toUtf8().constData() << quote << std::endl;
+    std::cout << quote << dialog->selectedFiles().at(0).toLocal8Bit().constData() << quote << std::endl;
     rv = 0;
   }
 
