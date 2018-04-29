@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 language: cpp
 compiler: gcc
 
@@ -23,11 +23,8 @@ addons:
       - libxml2-dev
       - libcroco3-dev
 
-before_script:
-  - wget -c -q http://http.debian.net/debian/pool/main/libr/librsvg/librsvg_2.40.18.orig.tar.xz && tar xf librsvg_2.40.18.orig.tar.xz && mv librsvg-2.40.18 librsvg
-  - autoreconf -if fribidi && autoreconf -if
-
 script:
+  - ./autogen.sh
   - ./configure --enable-hardening --enable-rsvg && make -j4 V=1
 
 after_success:
