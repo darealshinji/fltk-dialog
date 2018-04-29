@@ -4,3 +4,6 @@
 [submodule "fribidi"]
 	path = fribidi
 	url = https://github.com/fribidi/fribidi
+[submodule "librsvg"]
+	path = librsvg
+	url = https://github.com/darealshinji/librsvg

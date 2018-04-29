@@ -235,7 +235,7 @@ AS_IF([test "x$use_rsvg" = "xyes"], [
     done
     echo "=== configuring in librsvg ($PWD/librsvg)"
     cd librsvg || exit 1
-    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
+    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-tools --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
     cd -
   ], [
     AC_MSG_ERROR([cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'])

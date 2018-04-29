@@ -196,7 +196,6 @@ mostlyclean:
 
 maintainer-clean: distclean
 	-rm -f configure
-	-rm -rf librsvg
 
 $(OBJS): $(OBJS_deps)
 

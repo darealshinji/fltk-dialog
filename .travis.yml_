@@ -24,8 +24,7 @@ addons:
       - libcroco3-dev
 
 script:
-  - ./autogen.sh
-  - ./configure --enable-hardening --enable-rsvg && make -j4 V=1
+  - ./autogen.sh && ./configure --enable-hardening --enable-rsvg && make -j4 V=1
 
 after_success:
   - mkdir out && cp fltk-dialog out && strip --strip-all out/*
