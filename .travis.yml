@@ -23,8 +23,10 @@ addons:
       - libxml2-dev
       - libcroco3-dev
 
-script:
+before_script:
   - ./autogen.sh
+
+script:
   - ./configure --enable-hardening --enable-rsvg && make -j4 V=1
 
 after_success:
