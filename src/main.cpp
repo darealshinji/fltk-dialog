@@ -652,15 +652,17 @@ int main(int argc, char **argv)
   }
 
   /* set window icon */
+  Fl_RGB_Image *icon = NULL;
+
   if (arg_window_icon) {
-    Fl_RGB_Image *rgb = img_to_rgb(args::get(arg_window_icon).c_str(), force_nanosvg);
-    if (rgb) {
-      Fl_Window::default_icon(rgb);
-      delete rgb;
-    }
-  } else {
-    Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
+    icon = img_to_rgb(args::get(arg_window_icon).c_str(), force_nanosvg);
   }
+
+  if (!icon) {
+    icon = new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len);
+  }
+
+  Fl_Window::default_icon(icon);
 
   if (!arg_no_system_colors && !arg_notification) {
     Fl::get_system_colors();

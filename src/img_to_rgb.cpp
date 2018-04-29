@@ -193,8 +193,7 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
 {
   FILE *fp;
   size_t len;
-  unsigned char bytes[16] = {0};
-  Fl_RGB_Image *rgb = NULL;
+  unsigned char bytes[8] = {0};
   struct stat st;
 
 #ifndef WITH_RSVG
@@ -206,59 +205,76 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
   }
 
   /* get filetype from extension */
-  if (HASEXT(file, ".svg") && st.st_size < SVG_MAX) {
-    rgb = svg_to_rgb(file, false, force_nanosvg);
-  } else if ((HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) && st.st_size < SVGZ_MAX) {
-    rgb = svg_to_rgb(file, true, force_nanosvg);
-  } else if (HASEXT(file, ".xpm")) {
-    Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
-    if (xpm) {
-      rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
-      delete xpm;
+  if (HASEXT(file, ".svg")) {
+    if (st.st_size < SVG_MAX) {
+      return svg_to_rgb(file, false, force_nanosvg);
     }
-  } else if (HASEXT(file, ".xbm")) {
+    return NULL;
+  }
+
+  if (HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) {
+    if (st.st_size < SVGZ_MAX) {
+      return svg_to_rgb(file, true, force_nanosvg);
+    }
+    return NULL;
+  }
+
+  if (HASEXT(file, ".xpm")) {
+    Fl_XPM_Image *xpm = new Fl_XPM_Image(file);
+    if (!xpm) {
+      return NULL;
+    }
+    return new Fl_RGB_Image(xpm, Fl_Color(0));
+  }
+
+  if (HASEXT(file, ".xbm")) {
     Fl_XBM_Image *in = new Fl_XBM_Image(file);
+    if (!in) {
+      return NULL;
+    }
     Fl_Image_Surface *surf = new Fl_Image_Surface(in->w(), in->h());
+    if (!surf) {
+      delete in;
+      return NULL;
+    }
     surf->set_current();
     fl_color(FL_WHITE);
     fl_rectf(0, 0, in->w(), in->h());
     fl_color(FL_BLACK);
     in->draw(0, 0);
-    rgb = surf->image();
-    delete surf;
-    delete in;
+    return surf->image();
   }
 
   /* get filetype from magic bytes */
-  if (!rgb) {
-    if (!(fp = fopen(file, "r"))) {
-      return NULL;
-    }
-    len = fread(bytes, 1, sizeof(bytes), fp);
-    if (ferror(fp) || len < sizeof(bytes)) {
-      fclose(fp);
-      return NULL;
-    }
+  if (!(fp = fopen(file, "r"))) {
+    return NULL;
+  }
 
-    if (memcmp(bytes, "\x89PNG\x0D\x0A\x1A\x0A", 8) == 0) {
-      rgb = new Fl_PNG_Image(file);
-    }
-    else if (memcmp(bytes, "\xFF\xD8\xFF\xDB", 4) == 0 ||
-            (memcmp(bytes, "\xFF\xD8\xFF\xE0", 4) == 0 && memcmp(bytes + 6, "JFIF\x00\x01", 6) == 0) ||
-            (memcmp(bytes, "\xFF\xD8\xFF\xE1", 4) == 0 && memcmp(bytes + 6, "Exif\x00\x00", 6) == 0)) {
-      rgb = new Fl_JPEG_Image(file);
-    }
-    else if (memcmp(bytes, "BM", 2) == 0) {
-      rgb = new Fl_BMP_Image(file);
-    }
-    else if (memcmp(bytes, "GIF87a", 6) == 0 || memcmp(bytes, "GIF89a", 6) == 0) {
-      Fl_GIF_Image *gif = new Fl_GIF_Image(file);
-      if (gif) {
-        rgb = new Fl_RGB_Image(gif, Fl_Color(0));
-      }
+  len = fread(bytes, 1, sizeof(bytes), fp);
+  if (ferror(fp) || len < sizeof(bytes)) {
+    fclose(fp);
+    return NULL;
+  }
+
+  if (memcmp(bytes, "\211PNG", 4) == 0) {
+    return new Fl_PNG_Image(file);
+  }
+
+  if (memcmp(bytes, "\377\330\377", 3) == 0 && bytes[3] >= 0xc0 && bytes[3] <= 0xef) {
+    return new Fl_JPEG_Image(file);
+  }
+
+  if (memcmp(bytes, "BM", 2) == 0) {
+    return new Fl_BMP_Image(file);
+  }
+
+  if (memcmp(bytes, "GIF87a", 6) == 0 || memcmp(bytes, "GIF89a", 6) == 0) {
+    Fl_GIF_Image *gif = new Fl_GIF_Image(file);
+    if (gif) {
+      return new Fl_RGB_Image(gif, Fl_Color(0));
     }
   }
 
-  return rgb;
+  return NULL;
 }
 

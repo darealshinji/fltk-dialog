@@ -45,9 +45,7 @@
 
 #include "fltk-dialog.hpp"
 
-#ifdef WITH_FRIBIDI
 #define FRIBIDI_MAX_STRLEN 65000
-#endif
 
 bool always_on_top = false;
 
