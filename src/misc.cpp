@@ -29,6 +29,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/x.H>
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -281,7 +282,6 @@ size_t strlastcasecmp(const char *s1, const char *s2)
 #ifdef WITH_FRIBIDI
 char *fribidi_parse_line(const char *input)
 {
-  char *source;
   char buffer[FRIBIDI_MAX_STRLEN];
   size_t size;
   FriBidiParType base = FRIBIDI_PAR_LTR;
@@ -291,7 +291,7 @@ char *fribidi_parse_line(const char *input)
   FriBidiLevel *levels = NULL;
   FriBidiCharSet charset;
 
-  if (!input || strlen(input) == 0) {
+  if (!input || (size = strlen(input)) == 0) {
     return NULL;
   }
 
@@ -299,13 +299,10 @@ char *fribidi_parse_line(const char *input)
   fribidi_set_mirroring(true);
   fribidi_set_reorder_nsm(false);
 
-  source = strdup(input);
-  size = strlen(source);
-  strncpy(buffer, source, size);
+  strncpy(buffer, input, size);
   len = fribidi_charset_to_unicode(charset, buffer, size, logical);
 
   if (len == 0) {
-    free(source);
     return NULL;
   }
 
@@ -313,13 +310,34 @@ char *fribidi_parse_line(const char *input)
     len = fribidi_remove_bidi_marks(visual, len, ltov, vtol, levels);
     if (len > 0) {
       fribidi_unicode_to_charset(charset, visual, len, buffer);
-      free(source);
       return strdup(buffer);
     }
   }
 
-  free(source);
   return NULL;
 }
 #endif  /* WITH_FRIBIDI */
+
+int save_to_temp(unsigned char *data, unsigned int data_len, std::string &dest)
+{
+  char path[] = "/tmp/file-XXXXXX";
+
+  if (mkstemp(path) == -1) {
+    std::cerr << "error: cannot create temporary file: " << path << std::endl;
+    return 1;
+  }
+
+  std::ofstream out(path, std::ios::out|std::ios::binary);
+  if (!out) {
+    std::cerr << "error: cannot open file: " << path << std::endl;
+    return 1;
+  }
+
+  out.write((char *)data, (std::streamsize)data_len);
+  out.close();
+
+  dest = std::string(path);
+  return 0;
+}
+
 

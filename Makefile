@@ -75,7 +75,6 @@ main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
 endif
 ifneq ($(WITH_RSVG),no)
 main_CXXFLAGS += -DWITH_RSVG
-OBJS          += src/dlopen_rsvg_plugin.o
 endif
 ifneq ($(DYNAMIC_NOTIFY),no)
 main_CXXFLAGS += -DDYNAMIC_NOTIFY
@@ -186,7 +185,7 @@ clean: mostlyclean
 	$(MAKE_CLEAN)
 
 distclean: mostlyclean
-	-rm -rf fltk/build autom4te.cache
+	-rm -rf fltk/build autom4te.cache librsvg/autom4te.cache
 	-rm -f aclocal.m4 config.mak config.log config.status fribidi/gen.tab/fribidi-unicode-version.h
 	$(MAKE_CLEAN)
 	test ! -f fltk/patches_applied_stamp || (cd fltk && patch -p1 -R < ../fltk_patches.diff && rm patches_applied_stamp)

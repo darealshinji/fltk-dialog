@@ -20,8 +20,8 @@ librsvg/Makefile:
 	cd librsvg && ./configure --disable-shared --disable-tools --disable-introspection --disable-pixbuf-loader --with-pic
 
 ifneq ($(EMBEDDED_PLUGINS),no)
-src/dlopen_rsvg_plugin.o: rsvg_convert_so.h
+src/img_to_rgb.o: rsvg_convert_so.h
 else
-src/dlopen_rsvg_plugin.o: rsvg_convert.so
+src/img_to_rgb.o: rsvg_convert.so
 endif
 

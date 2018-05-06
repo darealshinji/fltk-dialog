@@ -38,6 +38,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,6 +50,11 @@
 #include "fltk-dialog.hpp"
 #include "nanosvg.h"
 #include "nanosvgrast.h"
+
+#if defined(WITH_RSVG) && !defined(USE_SYSTEM_PLUGINS)
+/* xxd -i rsvg_convert.so > rsvg_convert_so.h */
+# include "rsvg_convert_so.h"
+#endif
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
@@ -169,6 +175,64 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 }
 
 #ifdef WITH_RSVG
+Fl_RGB_Image *rsvg_to_rgb(const char *file)
+{
+  std::string plugin;
+
+#ifdef USE_SYSTEM_PLUGINS
+# define DELETE(x)
+  plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
+#else
+# define DELETE(x) unlink(x)
+  if (save_to_temp(rsvg_convert_so, rsvg_convert_so_len, plugin) == 1) {
+    return NULL;
+  }
+#endif
+
+  Fl_RGB_Image *rgb = NULL;
+  int len;
+  unsigned char *data;
+
+  /* dlopen() library */
+
+  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
+  char *error = dlerror();
+
+  if (!handle) {
+    std::cerr << error << std::endl;
+    DELETE(plugin.c_str());
+    return NULL;
+  }
+
+  dlerror();
+
+# define LOAD_SYMBOL(type,func,param) \
+  GETPROCADDRESS(handle,type,func,param) \
+  error = dlerror(); \
+  if (error) { \
+    std::cerr << "error: cannot load symbol\n" << error << std::endl; \
+    dlclose(handle); \
+    return NULL; \
+  }
+
+  LOAD_SYMBOL(int, rsvg_to_png_convert, (const char *))
+  LOAD_SYMBOL(unsigned char *, rsvg_to_png_get_data, (void))
+
+  len = rsvg_to_png_convert(file);
+  data = rsvg_to_png_get_data();
+
+  if (data && len > 0) {
+    Fl_RGB_Image *tmp = new Fl_PNG_Image(NULL, data, len);
+    rgb = (Fl_RGB_Image *)tmp->copy();
+    delete tmp;
+  }
+
+  dlclose(handle);
+  DELETE(plugin.c_str());
+
+  return rgb;
+}
+
 static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_nanosvg)
 {
   Fl_RGB_Image *rgb = NULL;
@@ -187,7 +251,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_na
 }
 #else
 # define svg_to_rgb(a,b,c) nsvg_to_rgb(a,b)
-#endif
+#endif /* WITH_RSVG */
 
 Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
 {

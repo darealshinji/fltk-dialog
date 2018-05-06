@@ -143,62 +143,39 @@ static int dialog_native_file_chooser_gtk(int mode)
 #ifdef HAVE_QT
 static int dlopen_getfilenameqt(int qt_major, int mode)
 {
+  std::string plugin;
+
 #ifdef USE_SYSTEM_PLUGINS
-
 # define DELETE(x)
-
-  char plugin[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
-
+  plugin = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
 # ifdef HAVE_QT4
   if (qt_major == 4) {
-    plugin[strlen(plugin)-7] = '4';
+    plugin[plugin.size() - 7] = '4';
   }
 # endif
-
 #else
-
-  /* save attached libraries to disk */
-
 # define DELETE(x) unlink(x)
-
-  char plugin[] = "/tmp/qtgui.so.XXXXXX";
-  const char *array_data;
-  std::streamsize array_length;
-
-  array_data = (char *)QTGUI_SO;
-  array_length = (std::streamsize) QTGUI_SO_LEN;
-
+  unsigned char *qtgui_so = QTGUI_SO;
+  unsigned int qtgui_so_len = QTGUI_SO_LEN;
 # if (QTDEF == 5) && defined(HAVE_QT4)
   if (qt_major == 4) {
-    array_data = (char *)qt4gui_so;
-    array_length = (std::streamsize) qt4gui_so_len;
+    qtgui_so = qt4gui_so;
+    qtgui_so_len = qt4gui_so_len;
   }
 # endif
-
-  if (mkstemp(plugin) == -1) {
-    std::cerr << "error: cannot create temporary file: " << plugin << std::endl;
+  if (save_to_temp(qtgui_so, qtgui_so_len, plugin) == 1) {
     return -1;
   }
-
-  std::ofstream out(plugin, std::ios::out|std::ios::binary);
-  if (!out) {
-    std::cerr << "error: cannot open file: " << plugin << std::endl;
-    return -1;
-  }
-
-  out.write(array_data, array_length);
-  out.close();
-
 #endif  /* USE_SYSTEM_PLUGINS */
 
   /* dlopen() library */
 
-  void *handle = dlopen(plugin, RTLD_LAZY);
+  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
   char *error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
-    DELETE(plugin);
+    DELETE(plugin.c_str());
     return -1;
   }
 
@@ -211,7 +188,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
   if (error) {
     std::cerr << "error: cannot load symbol\n" << error << std::endl;
     dlclose(handle);
-    DELETE(plugin);
+    DELETE(plugin.c_str());
     return -1;
   }
 
@@ -221,7 +198,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 
   int rv = getfilenameqt(mode, /* separator, */ quote, title);
   dlclose(handle);
-  DELETE(plugin);
+  DELETE(plugin.c_str());
 
   return rv;
 }
