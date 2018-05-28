@@ -299,6 +299,10 @@ char *fribidi_parse_line(const char *input)
   fribidi_set_mirroring(true);
   fribidi_set_reorder_nsm(false);
 
+  if (size >= FRIBIDI_MAX_STRLEN) {
+    size = FRIBIDI_MAX_STRLEN - 1;
+  }
+
   strncpy(buffer, input, size);
   len = fribidi_charset_to_unicode(charset, buffer, size, logical);
 
