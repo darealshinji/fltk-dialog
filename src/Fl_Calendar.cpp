@@ -31,6 +31,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <sstream>
 
 #define FL_CALENDAR_COLOR      fl_lighter(FL_GRAY)
 #define FL_CALENDAR_COLOR2     fl_darker(FL_GRAY)
@@ -76,32 +78,55 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
   }
 }
 
-static void int_to_str (char *t, int n)
+static const char *int_to_str (int n)
 {
+  std::stringstream ss;
+  std::string s;
+  ss << n;
+
   if (arabic_) {
-    const char *f;
-    char c[32];
-    sprintf (c, "%d", n);
-    memset (t, '\0', strlen(t));
-    for (size_t i = 0; i < strlen (c) && c[i] != '\0'; i++) {
-      switch (c[i]) {
-        case '1': f = "\xD9\xA1"; break;
-        case '2': f = "\xD9\xA2"; break;
-        case '3': f = "\xD9\xA3"; break;
-        case '4': f = "\xD9\xA4"; break;
-        case '5': f = "\xD9\xA5"; break;
-        case '6': f = "\xD9\xA6"; break;
-        case '7': f = "\xD9\xA7"; break;
-        case '8': f = "\xD9\xA8"; break;
-        case '9': f = "\xD9\xA9"; break;
+    std::string tmp = ss.str();
+    ss.clear();
+    for (size_t i = 0; i < tmp.size(); i++) {
+      switch (tmp[i]) {
+        case '1':
+          s.append ("\xD9\xA1");
+          break;
+        case '2':
+          s.append ("\xD9\xA2");
+          break;
+        case '3':
+          s.append ("\xD9\xA3");
+          break;
+        case '4':
+          s.append ("\xD9\xA4");
+          break;
+        case '5':
+          s.append ("\xD9\xA5");
+          break;
+        case '6':
+          s.append ("\xD9\xA6");
+          break;
+        case '7':
+          s.append ("\xD9\xA7");
+          break;
+        case '8':
+          s.append ("\xD9\xA8");
+          break;
+        case '9':
+          s.append ("\xD9\xA9");
+          break;
         case '0':
-        default:  f = "\xD9\xA0"; break;
+        default:
+          s.append ("\xD9\xA0");
+          break;
       }
-      strcat (t, f);
     }
   } else {
-    sprintf (t, "%d", n);
+    s = ss.str();
   }
+
+  return s.c_str();
 }
 
 void
@@ -133,7 +158,6 @@ Fl_Calendar_Base::update ()
   int dow = day_of_week (year (), month (), 0);
   int dim = days_in_month (month (), leap_year (year ()));
   int i, j, n, wk[6][3];
-  char tmp[32];
 
   int dipm_month;  /* previous month */
   int dipm_year;   /* year of previous month */
@@ -148,8 +172,7 @@ Fl_Calendar_Base::update ()
 
   /* last days of previous month */
   for (i = 0; i < dow; i++) {
-    int_to_str (tmp, i-dow+dipm+1);
-    days[i]->copy_label (tmp);
+    days[i]->copy_label (int_to_str (i-dow+dipm+1));
     days[i]->color (FL_CALENDAR_COLOR);
     days[i]->selection_color (FL_CALENDAR_COLOR);
     days[i]->labelcolor (fl_darker(FL_WHITE));
@@ -166,8 +189,7 @@ Fl_Calendar_Base::update ()
       wk[j][2] = year ();
       j++;
     }
-    int_to_str (tmp, n);
-    days[i]->copy_label (tmp);
+    days[i]->copy_label (int_to_str (n));
     days[i]->color (FL_CALENDAR_COLOR);
     days[i]->selection_color (FL_CALENDAR_COLOR2);
     days[i]->labelcolor (FL_BLACK);
@@ -192,8 +214,7 @@ Fl_Calendar_Base::update ()
       }
       j++;
     }
-    int_to_str (tmp, n);
-    days[i]->copy_label (tmp);
+    days[i]->copy_label (int_to_str (n));
     days[i]->color (FL_CALENDAR_COLOR);
     days[i]->selection_color (FL_CALENDAR_COLOR);
     days[i]->labelcolor (fl_darker(FL_WHITE));
@@ -207,8 +228,7 @@ Fl_Calendar_Base::update ()
     } else if (n > 53) {
       n = 1;
     }
-    int_to_str (tmp, n);
-    weeknumbers[i]->copy_label (tmp);
+    weeknumbers[i]->copy_label (int_to_str (n));
   }
 }
 
@@ -340,8 +360,6 @@ Fl_Calendar::Fl_Calendar (int x, int y, int w, int h, const char *l)
 void
 Fl_Calendar::update ()
 {
-  char tmp_m[32];
-  char tmp_y[32];
   const char *_month_name[] = {
     fdate_mon_jan,
     fdate_mon_feb,
@@ -359,11 +377,8 @@ Fl_Calendar::update ()
 
   Fl_Calendar_Base::update ();
 
-  sprintf (tmp_m, "%s", _month_name[month ()-1]);
-  int_to_str (tmp_y, year ());
-
-  caption_m->copy_label (tmp_m);
-  caption_y->copy_label (tmp_y);
+  caption_m->copy_label (_month_name[month ()-1]);
+  caption_y->copy_label (int_to_str (year ()));
 
   redraw ();
 }
