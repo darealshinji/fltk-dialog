@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <sstream>
 
 #define FL_CALENDAR_COLOR      fl_lighter(FL_GRAY)
 #define FL_CALENDAR_COLOR2     fl_darker(FL_GRAY)
@@ -42,6 +41,30 @@ static bool arabic_ = false;
 
 static void fl_calendar_prv_month_cb (Fl_Widget *, void *b);
 static void fl_calendar_nxt_month_cb (Fl_Widget *, void *b);
+
+static const char *int_to_str (int n)
+{
+  std::string s, zero = "0";
+  int pos = 0;
+
+  if (arabic_) {
+    zero = "\xD9\xA0";
+    pos = 1;
+  }
+
+  if (n == 0) {
+    return zero.c_str();
+  }
+
+  while (n != 0) {
+    std::string tmp = s;
+    s = zero + tmp;
+    s[pos] += n % 10;
+    n /= 10;
+  }
+
+  return s.c_str();
+}
 
 static void fl_calendar_button_cb (Fl_Widget *a, void *b)
 {
@@ -76,57 +99,6 @@ Fl_Calendar_Base::Fl_Calendar_Base (int x, int y, int w, int h, const char *l)
     days[i]->color (FL_CALENDAR_COLOR);
     days[i]->clear_visible_focus ();
   }
-}
-
-static const char *int_to_str (int n)
-{
-  std::stringstream ss;
-  std::string s;
-  ss << n;
-
-  if (arabic_) {
-    std::string tmp = ss.str();
-    ss.clear();
-    for (size_t i = 0; i < tmp.size(); i++) {
-      switch (tmp[i]) {
-        case '1':
-          s.append ("\xD9\xA1");
-          break;
-        case '2':
-          s.append ("\xD9\xA2");
-          break;
-        case '3':
-          s.append ("\xD9\xA3");
-          break;
-        case '4':
-          s.append ("\xD9\xA4");
-          break;
-        case '5':
-          s.append ("\xD9\xA5");
-          break;
-        case '6':
-          s.append ("\xD9\xA6");
-          break;
-        case '7':
-          s.append ("\xD9\xA7");
-          break;
-        case '8':
-          s.append ("\xD9\xA8");
-          break;
-        case '9':
-          s.append ("\xD9\xA9");
-          break;
-        case '0':
-        default:
-          s.append ("\xD9\xA0");
-          break;
-      }
-    }
-  } else {
-    s = ss.str();
-  }
-
-  return s.c_str();
 }
 
 void
@@ -460,14 +432,16 @@ Fl_Calendar::handle (int event)
           m = month ();
           y = year ();
           md = days_in_month (m, leap_year (y));
-          d = d + o + md;
+          //d = d + o + md;
+          d = md;
           set_date (y, m, d);
         } else {
           next_month ();
           m = month ();
           y = year ();
           md = days_in_month (m, leap_year (y));
-          d = d + o - md;
+          //d = d + o - md;
+          d = 1;
           set_date (y, m, d);
         }
       }
@@ -476,20 +450,6 @@ Fl_Calendar::handle (int event)
   }  /* switch (event) */
   return Fl_Group::handle (event);
 }
-
-/*
-void
-Fl_Calendar::selection_color (Fl_Color c)
-{
-  Fl_Widget::selection_color(c);
-  for (int i = 0; i < (6*7); i++) {
-    if (days[i]->color() == days[i]->selection_color()) {
-      days[i]->color(c);
-    }
-    days[i]->selection_color(c);
-  }
-}
-*/
 
 int
 Fl_Calendar::selected_day (int d)
