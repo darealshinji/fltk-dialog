@@ -43,16 +43,13 @@
 # else
 #  if defined(HAVE_QT5) && !defined(HAVE_QT4)
 #   define QTDEF 5
+#   define qt4gui_so     qt5gui_so
+#   define qt4gui_so_len qt5gui_so_len
 #  elif !defined(HAVE_QT5) && defined(HAVE_QT4)
 #   define QTDEF 4
+#   define qt5gui_so     qt4gui_so
+#   define qt5gui_so_len qt4gui_so_len
 #  endif
-# endif
-# if (QTDEF == 4)
-#  define QTGUI_SO      qt4gui_so
-#  define QTGUI_SO_LEN  qt4gui_so_len
-# else
-#  define QTGUI_SO      qt5gui_so
-#  define QTGUI_SO_LEN  qt5gui_so_len
 # endif
 #endif
 

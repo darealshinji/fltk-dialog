@@ -148,22 +148,14 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 #ifdef USE_SYSTEM_PLUGINS
 # define DELETE(x)
   plugin = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
-# ifdef HAVE_QT4
   if (qt_major == 4) {
     plugin[plugin.size() - 7] = '4';
   }
-# endif
 #else
 # define DELETE(x) unlink(x)
-  unsigned char *qtgui_so = QTGUI_SO;
-  unsigned int qtgui_so_len = QTGUI_SO_LEN;
-# if (QTDEF == 5) && defined(HAVE_QT4)
-  if (qt_major == 4) {
-    qtgui_so = qt4gui_so;
-    qtgui_so_len = qt4gui_so_len;
-  }
-# endif
-  if (save_to_temp(qtgui_so, qtgui_so_len, plugin) == 1) {
+  if (qt_major == 4 && save_to_temp(qt4gui_so, qt4gui_so_len, plugin) == 1) {
+    return -1;
+  } else if (save_to_temp(qt5gui_so, qt5gui_so_len, plugin) == 1) {
     return -1;
   }
 #endif  /* USE_SYSTEM_PLUGINS */
