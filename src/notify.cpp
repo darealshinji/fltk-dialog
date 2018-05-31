@@ -142,10 +142,10 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
 
 #ifdef WITH_FRIBIDI
   if (title_alloc && title) {
-    free((void *)title);
+    delete title;
   }
   if (msg_alloc && msg) {
-    free((void *)msg);
+    delete msg;
   }
 #endif
 

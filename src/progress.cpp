@@ -104,7 +104,7 @@ static void close_cb(Fl_Widget *, long p)
   ret = (int) p;
 #ifdef WITH_FRIBIDI
   if (msg_alloc && msg) {
-    free((void *)msg);
+    delete msg;
   }
 #endif
 }
@@ -145,7 +145,7 @@ static void parse_line(const char *ch)
       }
       if (tmp) {
         box->copy_label(tmp);
-        free(tmp);
+        delete tmp;
       } else
 #endif
       {

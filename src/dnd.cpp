@@ -108,8 +108,8 @@ int dialog_dnd()
     }
     if (tmp) {
       s = translate(tmp);
-      free(tmp);
       msg = s.c_str();
+      delete tmp;
     } else
 #endif
     {

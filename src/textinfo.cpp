@@ -77,7 +77,7 @@ extern "C" void *ti_getline(void *p)
     }
     if (tmp) {
       browser->add(tmp);
-      free(tmp);
+      delete tmp;
     } else
 #endif
     {
@@ -136,7 +136,7 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
         if (tmp) {
           s = " " + std::string(tmp);
           checkbutton->copy_label(s.c_str());
-          free(tmp);
+          delete tmp;
         } else
 #endif
         {

@@ -85,6 +85,7 @@ endif
 
 ifneq ($(WITH_FRIBIDI),no)
 main_CXXFLAGS += -DWITH_FRIBIDI
+OBJS          += src/fribidi_parse_line.o
 ifneq ($(SYSTEM_FRIBIDI),no)
 main_CXXFLAGS += -DSYSTEM_FRIBIDI $(shell pkg-config --cflags fribidi)
 main_LIBS     += $(shell pkg-config --libs fribidi)

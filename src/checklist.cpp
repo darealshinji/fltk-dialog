@@ -86,7 +86,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
           }
           if (tmp) {
             browser->add(tmp);
-            free(tmp);
+            delete tmp;
           } else
 #endif
           {

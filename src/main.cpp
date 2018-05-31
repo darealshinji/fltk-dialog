@@ -85,7 +85,7 @@ static void measure_cb(const Fl_Label *o, int &w, int &h) {
   fl_measure(o->value, w, h, 0);
 }
 
-static int esc_handler(int event) {
+static int esc_handler(int /*event*/) {
   if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape) {
     return 1; /* ignore Escape key */
   }
@@ -675,17 +675,17 @@ int main(int argc, char **argv)
     case DIALOG_ABOUT:
       return about();
     case DIALOG_MESSAGE:
-      return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
+      return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt, arabic);
     case DIALOG_WARNING:
-      return dialog_message(MESSAGE_TYPE_WARNING, with_icon_box, but_alt);
+      return dialog_message(MESSAGE_TYPE_WARNING, with_icon_box, but_alt, arabic);
     case DIALOG_QUESTION:
-      return dialog_message(MESSAGE_TYPE_QUESTION, with_icon_box, but_alt);
+      return dialog_message(MESSAGE_TYPE_QUESTION, with_icon_box, but_alt, arabic);
     case DIALOG_INPUT:
-      return dialog_message(MESSAGE_TYPE_INPUT, false, but_alt);
+      return dialog_message(MESSAGE_TYPE_INPUT, false, but_alt, arabic);
     case DIALOG_PASSWORD:
-      return dialog_message(MESSAGE_TYPE_PASSWORD, false, but_alt);
+      return dialog_message(MESSAGE_TYPE_PASSWORD, false, but_alt, arabic);
     case DIALOG_SCALE:
-      return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
+      return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, arabic, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
       return dialog_file_chooser(FILE_CHOOSER, native_mode); //, separator);
     case DIALOG_DIR_CHOOSER:

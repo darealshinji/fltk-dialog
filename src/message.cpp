@@ -77,6 +77,7 @@ static void callback(Fl_Widget *o, void *p)
 int dialog_message(int type
 ,                  bool with_icon_box
 ,                  const char *label_but_alt
+,                  bool arabic
 ,                  double scale_min
 ,                  double scale_max
 ,                  double scale_step_
@@ -114,7 +115,7 @@ int dialog_message(int type
     }
     if (tmp) {
       s = translate(tmp);
-      free(tmp);
+      delete tmp;
       msg = s.c_str();
     } else
 #endif
@@ -247,7 +248,8 @@ int dialog_message(int type
       g_box = new Fl_Group(box_x, 0, box_w, box_h);
       {
         box = new Fl_Box(box_x, 10, box_w, box_h, msg);
-        box->align(FL_ALIGN_INSIDE|FL_ALIGN_TOP_LEFT|FL_ALIGN_WRAP);
+        Fl_Align align_tlr = arabic ? FL_ALIGN_TOP_RIGHT : FL_ALIGN_TOP_LEFT;
+        box->align(FL_ALIGN_INSIDE|align_tlr|FL_ALIGN_WRAP);
         box->box(FL_NO_BOX);
       }
       g_box->resizable(box);

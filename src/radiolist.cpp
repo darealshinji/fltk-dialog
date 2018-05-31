@@ -98,7 +98,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
             }
             if (tmp) {
               browser->add(tmp);
-              free(tmp);
+              delete tmp;
             } else
 #endif
             {

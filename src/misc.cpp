@@ -34,9 +34,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#ifdef WITH_FRIBIDI
-#include <fribidi.h>
-#endif
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +42,6 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-
-#define FRIBIDI_MAX_STRLEN 65000
 
 bool always_on_top = false;
 
@@ -277,50 +272,6 @@ size_t strlastcasecmp(const char *s1, const char *s2)
 
   return n;
 }
-
-/* Returns pointer to allocated string or NULL on error. */
-#ifdef WITH_FRIBIDI
-char *fribidi_parse_line(const char *input)
-{
-  char buffer[FRIBIDI_MAX_STRLEN];
-  size_t size;
-  FriBidiParType base = FRIBIDI_PAR_LTR;
-  FriBidiStrIndex len, *ltov = NULL, *vtol = NULL;
-  FriBidiChar logical[FRIBIDI_MAX_STRLEN];
-  FriBidiChar visual[FRIBIDI_MAX_STRLEN];
-  FriBidiLevel *levels = NULL;
-  FriBidiCharSet charset;
-
-  if (!input || (size = strlen(input)) == 0) {
-    return NULL;
-  }
-
-  charset = fribidi_parse_charset("UTF-8");
-  fribidi_set_mirroring(true);
-  fribidi_set_reorder_nsm(false);
-
-  if (size >= FRIBIDI_MAX_STRLEN) {
-    size = FRIBIDI_MAX_STRLEN - 1;
-  }
-
-  strncpy(buffer, input, size);
-  len = fribidi_charset_to_unicode(charset, buffer, size, logical);
-
-  if (len == 0) {
-    return NULL;
-  }
-
-  if (fribidi_log2vis(logical, len, &base, visual, ltov, vtol, levels)) {
-    len = fribidi_remove_bidi_marks(visual, len, ltov, vtol, levels);
-    if (len > 0) {
-      fribidi_unicode_to_charset(charset, visual, len, buffer);
-      return strdup(buffer);
-    }
-  }
-
-  return NULL;
-}
-#endif  /* WITH_FRIBIDI */
 
 int save_to_temp(unsigned char *data, unsigned int data_len, std::string &dest)
 {

@@ -49,7 +49,7 @@ static void close_cb(Fl_Widget *, long p) {
   ret = (int) p;
 #ifdef WITH_FRIBIDI
   if (msg_alloc && msg) {
-    free((void *)msg);
+    delete msg;
   }
 #endif
 }
@@ -99,7 +99,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
         char *tmp = fribidi_parse_line(itemlist_v[i].c_str());
         if (tmp) {
           menu_items[i].text = strdup(tmp);
-          free(tmp);
+          delete tmp;
         } else {
           menu_items[i].text = strdup(itemlist_v[i].c_str());
         }

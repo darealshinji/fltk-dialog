@@ -131,6 +131,7 @@ char *fribidi_parse_line(const char *input);
 int dialog_message(int type = MESSAGE_TYPE_WARNING
 ,                  bool with_icon_box = true
 ,                  const char *label_but_alt = NULL
+,                  bool arabic = false
 ,                  double scale_min = 0
 ,                  double scale_max = 100
 ,                  double scale_step = 1

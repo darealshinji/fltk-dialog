@@ -38,10 +38,12 @@
 #include "fltk_png.h"
 #define FLTK_PNG_WIDTH  229
 #define FLTK_PNG_HEIGHT 70
+#define MY_URL "https://github.com/darealshinji/fltk-dialog"
 
 static Fl_Double_Window *win;
 static Fl_Text_Buffer *buffer;
 static bool license_displayed = false;
+static const char *label_license = "Licenses";
 
 static std::string text = "\n"
     "FLTK dialog: run dialog boxes from shell scripts\n"
@@ -51,7 +53,7 @@ static std::string text = "\n"
     "\n"
     /* http://www.utf8-chartable.de/ */
     "Copyright \xc2\xa9 2016-2018 djcj <djcj@gmx.de>\n"
-    "https://github.com/darealshinji/fltk-dialog\n"
+    MY_URL "\n"
     "\n"
     "The FLTK library and the font widget are\n"
     "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
@@ -60,9 +62,9 @@ static std::string text = "\n"
     "by the Flek development team and\n"
     "copyright \xc2\xa9 2016-2018 by djcj <djcj@gmx.de>\n"
     "\n"
-#if defined(WITH_FRIBIDI) && !defined(SYSTEM_FRIBIDI)
-    "This build is using FriBidi, released under GNU LGPL 2.1\n"
-    "https://github.com/fribidi/fribidi\n"
+#ifdef WITH_FRIBIDI
+    "The FriBidi parsing code is copyright \xc2\xa9 2003-2011\n"
+    "by the FFmpeg developers and contributors.\n"
     "\n"
 #endif
     "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
@@ -70,7 +72,7 @@ static std::string text = "\n"
 static void callback(Fl_Widget *o)
 {
   if (license_displayed) {
-    o->label("License");
+    o->label(label_license);
     buffer->text(text.c_str());
     license_displayed = false;
   } else {
@@ -80,12 +82,11 @@ static void callback(Fl_Widget *o)
   }
 }
 
-static void url_cb(Fl_Widget *, void *p)
+static void url_cb(Fl_Widget *)
 {
-  const char *uri = (char *)p;
   char errmsg[512] = {0};
   std::string warnmsg;
-  if (!fl_open_uri(uri, errmsg, sizeof(errmsg))) {
+  if (!fl_open_uri(MY_URL, errmsg, sizeof(errmsg))) {
     title = "Error";
     warnmsg = "Error: " + std::string(errmsg);
     msg = warnmsg.c_str();
@@ -124,14 +125,15 @@ int about()
 
     g2 = new Fl_Group(0, h - 40, w, 40);
     {
-      int but_w = measure_button_width("License", 20);
-      but_lic = new Fl_Button(10, h - 40, but_w, 28, "License");
+      int but_w = measure_button_width(label_license, 20);
+      but_lic = new Fl_Button(10, h - 40, but_w, 28, label_license);
       but_lic->callback(callback);
       range_w += but_w;
 
-      but_w = measure_button_width("Homepage", 20);
-      but_hp = new Fl_Button(but_lic->w() + 20, h - 40, but_w, 28, "Homepage");
-      but_hp->callback(url_cb, (void *)"https://github.com/darealshinji/fltk-dialog");
+      const char *label_homepage = "Homepage";
+      but_w = measure_button_width(label_homepage, 20);
+      but_hp = new Fl_Button(but_lic->w() + 20, h - 40, but_w, 28, label_homepage);
+      but_hp->callback(url_cb);
       range_w += but_w;
 
       but_w = measure_button_width(fl_close, 40);
