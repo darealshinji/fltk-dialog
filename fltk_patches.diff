@@ -1,3 +1,30 @@
+diff --git a/FL/Fl_Device.H b/FL/Fl_Device.H
+index 4b5329f..ba31218 100644
+--- a/FL/Fl_Device.H
++++ b/FL/Fl_Device.H
+@@ -33,6 +33,11 @@
+ #include <FL/Fl_RGB_Image.H>
+ #include <stdlib.h>
+ 
++#ifdef __GNUC__
++# pragma GCC diagnostic push
++# pragma GCC diagnostic ignored "-Wunused-parameter"
++#endif
++
+ class Fl_Graphics_Driver;
+ class Fl_Font_Descriptor;
+ /** \brief Points to the driver that currently receives all graphics requests */
+@@ -629,6 +634,10 @@ public:
+   Fl_RGB_Image* rectangle_capture(Fl_Widget *widget, int x, int y, int w, int h) {return NULL;}
+ };
+ 
++#ifdef __GNUC__
++# pragma GCC diagnostic pop
++#endif
++
+ #endif // Fl_Device_H
+ 
+ //
 diff --git a/FL/Fl_File_Chooser.H b/FL/Fl_File_Chooser.H
 index 344f52d..84a4295 100644
 --- a/FL/Fl_File_Chooser.H
@@ -92,7 +119,7 @@ index ecdfedd..934052a 100644
      }
      if (!v || v->submenu()) return 1;
 diff --git a/src/Fl_Color_Chooser.cxx b/src/Fl_Color_Chooser.cxx
-index 4b4ce1d..3402dc2 100644
+index 4b4ce1d..8d164f9 100644
 --- a/src/Fl_Color_Chooser.cxx
 +++ b/src/Fl_Color_Chooser.cxx
 @@ -92,11 +92,11 @@ enum {
