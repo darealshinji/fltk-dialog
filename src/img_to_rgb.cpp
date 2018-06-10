@@ -320,6 +320,8 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
     return NULL;
   }
 
+  fclose(fp);
+
   if (memcmp(bytes, "\211PNG", 4) == 0) {
     return new Fl_PNG_Image(file);
   }
