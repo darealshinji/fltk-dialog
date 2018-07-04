@@ -39,8 +39,8 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Slider.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/fl_draw.H>
 
 #include <fstream>
 #include <iostream>
@@ -54,36 +54,85 @@
 
 #include "fltk-dialog.hpp"
 
-#define PULSATE_USLEEP 10000
-
-class nograb_slider : public Fl_Slider
+class loop_bar : public Fl_Widget
 {
+  /* values between 0.0 and 1.0 */
+  double slider_size_, value_;
+
+protected:
+  void draw();
+
 public:
-  nograb_slider(int X, int Y, int W, int H)
-      : Fl_Slider(X, Y, W, H) { }
+  loop_bar(int x, int y, int w, int h);
 
-  virtual ~nograb_slider() { }
+  double slider_size() const {
+    return slider_size_;
+  }
+  void slider_size(double v) {
+    slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2;
+  }
 
-  int handle(int) {
-    /* don't do anything if
-     * we grab the slider */
-    return 0;
-  };
+  double value() const {
+    return value_;
+  }
+  void value(double v) {
+    value_ = v;
+  }
 };
 
-static nograb_slider    *slider = NULL;
+void loop_bar::draw()
+{
+  int dx, dy, dw, dh, sw, bx1, bx2, by, bh;
+  double max;
+
+  /* box borders */
+  dx = Fl::box_dx(box());
+  dy = Fl::box_dy(box());
+  dw = Fl::box_dw(box());
+  dh = Fl::box_dh(box());
+
+  /* main box */
+  fl_push_clip(x(), y(), w(), h());
+  draw_box(box(), x(), y(), w(), h(), active_r() ? color() : fl_inactive(color()));
+  fl_pop_clip();
+
+  /* slider */
+  if (value_ > 0.0 && value_ < 1.0) {
+    sw = (int)(slider_size_ * w());
+    max = w() + sw;
+    bx1 = x() + dx;
+    bx2 = bx1 + (int)(value_ * max) - sw;
+    by = y() + dy;
+    bh = h() - dh;
+
+    fl_push_clip(bx1, by, w() - dw, bh);
+    draw_box(FL_FLAT_BOX, bx2, by, sw - dw, bh,
+             active_r() ? selection_color() : fl_inactive(selection_color()));
+    fl_pop_clip();
+  }
+}
+
+loop_bar::loop_bar(int x, int y, int w, int h) : Fl_Widget(x, y, w, h)
+{
+  box(FL_DOWN_BOX);
+  color(fl_darker(color()));
+  selection_color(fl_lighter(FL_BLUE));
+  value(0.0);
+  slider_size(0.2);
+}
+
+static loop_bar         *lp = NULL;
 static Fl_Double_Window *win = NULL;
 static Fl_Box           *box = NULL;
 static Fl_Return_Button *but_ok = NULL;
 static Fl_Button        *but_cancel = NULL;
 static Fl_Progress      *bar = NULL, *bar_main = NULL;
 static int ret = 1;
+static pthread_t t1, t2;
 
 #ifdef WITH_FRIBIDI
 static bool msg_alloc = false;
 #endif
-
-static int pulsate_val = 0;
 
 static
 unsigned int percent = 0
@@ -100,6 +149,8 @@ static long kill_pid = -1;
 
 static void close_cb(Fl_Widget *, long p)
 {
+  pthread_cancel(t1);
+  pthread_cancel(t2);
   win->hide();
   ret = (int) p;
 #ifdef WITH_FRIBIDI
@@ -128,8 +179,8 @@ static void progress_finished(void)
   }
 
   if (pulsate) {
-    slider->value(100);
-    slider->deactivate();
+    lp->value(0.0);
+    lp->deactivate();
   }
 }
 
@@ -213,15 +264,14 @@ extern "C" void *progress_getline(void *)
 extern "C" void *pulsate_bar_thread(void *)
 {
   while (running) {
-    if (percent >= 100) {
-      pulsate_val = -1;  /* move from right to left */
-    } else if (percent <= 0) {
-      pulsate_val = 1;  /* move from left to right */
-    }
-    percent += pulsate_val;
-
     Fl::lock();
-    slider->value(percent);
+
+    double val = lp->value() + 0.001;
+    if (val > 1.0) {
+      val = 0.0;
+    }
+    lp->value(val);
+    Fl::redraw();
 
     if (kill_pid > 1 && kill((pid_t) kill_pid, 0) == -1) {
       running = false;  /* the watched process has stopped */
@@ -231,7 +281,7 @@ extern "C" void *pulsate_bar_thread(void *)
     Fl::awake(win);
 
     /* has an effect on the pulsate speed */
-    usleep(PULSATE_USLEEP);
+    usleep(1200);
   }
 
   if (!running) {
@@ -286,13 +336,7 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long kill_pid_, bool aut
       box->align(FL_ALIGN_RIGHT);
 
       if (pulsate) {
-        slider = new nograb_slider(10, 50, 300, 30);
-        slider->type(1);
-        slider->minimum(0);
-        slider->maximum(100);
-        slider->color(fl_darker(FL_GRAY));
-        slider->value(0);
-        slider->slider_size(0.1);
+        lp = new loop_bar(10, 50, 300, 30);
       } else {
         if (multi > 1) {
           bar_main = new Fl_Progress(10, 50, 300, 30, "0%");
@@ -351,8 +395,6 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long kill_pid_, bool aut
   win->show();
   set_undecorated(win);
   set_always_on_top(win);
-
-  pthread_t t1, t2;
 
   if (pulsate) {
     /* the pulsating bar is running in its own thread */
