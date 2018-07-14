@@ -122,7 +122,7 @@ std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 std::string format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
-int save_to_temp(unsigned char *data, unsigned int data_len, std::string &dest);
+int save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest);
 
 #ifdef WITH_FRIBIDI
 char *fribidi_parse_line(const char *input);

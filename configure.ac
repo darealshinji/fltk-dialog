@@ -56,6 +56,9 @@ AC_ARG_ENABLE([qt5],
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
+AC_ARG_ENABLE([dynamic-uuid],
+  [AS_HELP_STRING([--disable-dynamic-uuid], [disable dynamically loading libuuid (link directly against shared or static library)])],
+  [dynamic_uuid="no"], [dynamic_uuid="yes"])
 AC_ARG_ENABLE([rsvg],
   [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
   [use_rsvg="yes"], [use_rsvg="no"])
@@ -116,7 +119,7 @@ AS_IF([test "x$use_notify" = "xno"], [
       CPPFLAGS="$CPPFLAGS_backup"
     ])
     # libnotify library functions
-    AS_IF([test "$xhave_libnotify" = "xyes"], [
+    AS_IF([test "x$have_libnotify" = "xyes"], [
       AC_CHECK_LIB([notify], [notify_init], [have_libnotify="yes"], [have_libnotify="no"])
       AC_CHECK_LIB([notify], [notify_is_initted], [have_libnotify="yes"], [have_libnotify="no"])
       AC_CHECK_LIB([notify], [notify_notification_new], [have_libnotify="yes"], [have_libnotify="no"])
@@ -124,8 +127,37 @@ AS_IF([test "x$use_notify" = "xno"], [
       AC_CHECK_LIB([notify], [notify_notification_show], [have_libnotify="yes"], [have_libnotify="no"])
       AC_CHECK_LIB([notify], [notify_uninit], [have_libnotify="yes"], [have_libnotify="no"])
     ])
-    AS_IF([test "$xhave_libnotify" != "xyes"], [
+    AS_IF([test "x$have_libnotify" != "xyes"], [
       AC_MSG_ERROR([re-run \`$0' without \`--disable-dynamic-notify'])
+    ])
+  ])
+])
+
+
+## libuuid checks
+have_libuuid="yes"
+AS_IF([test "x$use_libuuid" = "xno"], [
+  dynamic_uuid="no"
+  have_libuuid="no"
+], [
+  AS_IF([test "x$dynamic_uuid" != "xyes"], [
+    # uuid headers
+    AX_PKG_CHECK_MODULES_SIMPLE([uuid], [uuid])
+    AS_IF([test "x$ax_cv_pkg_check_modules_simple_uuid" = "xyes"], [
+      CFLAGS_backup="$CFLAGS"
+      CPPFLAGS_backup="$CPPFLAGS"
+      CFLAGS="$CFLAGS $(pkg-config --cflags uuid)"
+      CPPFLAGS="$CPPFLAGS $(pkg-config --cflags uuid)"
+      AC_CHECK_HEADER([uuid/uuid.h], [have_uuid="yes"], [have_uuid="no"])
+      CFLAGS="$CFLAGS_backup"
+      CPPFLAGS="$CPPFLAGS_backup"
+    ])
+    # uuid library functions
+    AS_IF([test "x$have_uuid" = "xyes"], [
+      AC_CHECK_LIB([uuid], [uuid_generate], [have_uuid="yes"], [have_uuid="no"])
+    ])
+    AS_IF([test "x$have_uuid" != "xyes"], [
+      AC_MSG_ERROR([re-run \`$0' without \`--disable-dynamic-uuid'])
     ])
   ])
 ])
@@ -218,6 +250,7 @@ AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
 AC_SUBST([WITH_RSVG], [$use_rsvg])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
+AC_SUBST([DYNAMIC_UUID], [$dynamic_uuid])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 
 

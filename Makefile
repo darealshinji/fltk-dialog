@@ -12,6 +12,7 @@ WITH_RSVG        ?= no
 WITH_FRIBIDI     ?= no
 SYSTEM_FRIBIDI   ?= no
 DYNAMIC_NOTIFY   ?= yes
+DYNAMIC_UUID     ?= yes
 EMBEDDED_PLUGINS ?= yes
 
 BIN  = fltk-dialog
@@ -81,6 +82,12 @@ main_CXXFLAGS += -DDYNAMIC_NOTIFY
 else
 main_CXXFLAGS += $(shell pkg-config --cflags libnotify)
 main_LIBS     += $(shell pkg-config --libs libnotify)
+endif
+ifneq ($(DYNAMIC_UUID),no)
+main_CXXFLAGS += -DDYNAMIC_UUID
+else
+main_CXXFLAGS += $(shell pkg-config --cflags uuid)
+main_LIBS     += $(shell pkg-config --libs uuid)
 endif
 
 ifneq ($(WITH_FRIBIDI),no)

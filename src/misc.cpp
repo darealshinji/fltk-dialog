@@ -43,6 +43,14 @@
 
 #include "fltk-dialog.hpp"
 
+#ifdef DYNAMIC_UUID
+# include <dlfcn.h>
+# define UUID_STR_LEN 37
+typedef unsigned char uuid_t[16];
+#else
+# include <uuid/uuid.h>
+#endif
+
 bool always_on_top = false;
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
@@ -273,9 +281,43 @@ size_t strlastcasecmp(const char *s1, const char *s2)
   return n;
 }
 
-int save_to_temp(unsigned char *data, unsigned int data_len, std::string &dest)
+int save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest)
 {
-  char path[] = "/tmp/file-XXXXXX";
+  const std::string alphanum =
+    "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "0123456789" "abcdefghijklmnopqrstuvwxyz";
+  std::string s = "/tmp/file-";
+  int alphanum_len = alphanum.length();
+  uuid_t id = {0};
+
+#ifdef DYNAMIC_UUID
+  void *handle = dlopen("libuuid.so.1", RTLD_LAZY);
+
+  if (handle) {
+    dlerror();
+    GETPROCADDRESS(handle, void, uuid_generate, (uuid_t))
+
+    if (!dlerror()) {
+      uuid_generate(id);
+    }
+    dlclose(handle);
+  }
+#else
+  uuid_generate(id);
+#endif  /* DYNAMIC_UUID */
+
+  for (size_t i = 0; i < sizeof(id); i++) {
+    int n = (int)id[i];
+    if (n >= alphanum_len) {
+      n %= alphanum_len;
+    }
+    s.push_back(alphanum[n]);
+  }
+
+  s += "XXXXXX";
+
+  char path[s.length() + 1] = {0};
+  strncpy(path, s.c_str(), s.length());
 
   if (mkstemp(path) == -1) {
     std::cerr << "error: cannot create temporary file: " << path << std::endl;
