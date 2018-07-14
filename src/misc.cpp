@@ -316,7 +316,7 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
 
   s += "XXXXXX";
 
-  char path[s.length() + 1] = {0};
+  char *path = new char[s.length() + 1]();
   strncpy(path, s.c_str(), s.length());
 
   if (mkstemp(path) == -1) {
@@ -334,6 +334,8 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
   out.close();
 
   dest = std::string(path);
+
+  delete path;
   return 0;
 }
 
