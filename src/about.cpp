@@ -36,8 +36,6 @@
 #include "about_license.hpp"
 
 #include "fltk_png.h"
-#define FLTK_PNG_WIDTH  229
-#define FLTK_PNG_HEIGHT 70
 #define MY_URL "https://github.com/darealshinji/fltk-dialog"
 
 static Fl_Double_Window *win;
@@ -105,19 +103,23 @@ int about()
   Fl_Text_Display *display;
   Fl_Return_Button *but_close;
   Fl_Button *but_lic, *but_hp;
-  int w = 500, h = 500, range_w = 40;
+  const int w = 500, h = 500;
+  int range_w = 40;
+
+  Fl_PNG_Image *logo = new Fl_PNG_Image(NULL, src_fltk_png, src_fltk_png_len);
+  int logo_h = logo->h();
 
   win = new Fl_Double_Window(w, h, "FLTK dialog");
   win->callback(close_cb);
   {
-    box = new Fl_Box(0, 20, w, FLTK_PNG_HEIGHT);
+    box = new Fl_Box(0, 20, w, logo_h);
     box->box(FL_NO_BOX);
-    box->image(new Fl_PNG_Image(NULL, src_fltk_png, (int)src_fltk_png_len));
+    box->image(logo);
 
-    g1 = new Fl_Group(10, FLTK_PNG_HEIGHT + 40, w - 20, h - FLTK_PNG_HEIGHT - 90);
+    g1 = new Fl_Group(10, logo_h + 40, w - 20, h - logo_h - 90);
     {
       buffer = new Fl_Text_Buffer();
-      display = new Fl_Text_Display(10, FLTK_PNG_HEIGHT + 40, w - 20, h - FLTK_PNG_HEIGHT - 90);
+      display = new Fl_Text_Display(10, logo_h + 40, w - 20, h - logo_h - 90);
       display->buffer(buffer);
       buffer->text(text.c_str());
     }
@@ -147,7 +149,7 @@ int about()
     g2->resizable(dummy);
     g2->end();
   }
-  win->size_range(range_w, FLTK_PNG_HEIGHT + 130, max_w, max_h);
+  win->size_range(range_w, logo_h + 130, max_w, max_h);
   run_window(win, g1);
 
   return 0;
