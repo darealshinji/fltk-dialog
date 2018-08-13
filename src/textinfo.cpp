@@ -40,20 +40,30 @@
 
 #include "fltk-dialog.hpp"
 
-// (n=1; while (test $n -le 1000); do echo "Line $n"; n=$(($((n))+1)); done) | ./fltk-dialog --text-info --auto-scroll --checkbox="I confirm"
+/***
+
+(echo "Line 1/5"; n=2; \
+ while (test $n -le 5); do \
+ sleep 1; echo "Line $n/5"; n=$(($((n))+1)); done \
+) | \
+ ./fltk-dialog --text-info --auto-scroll --checkbox="I confirm" --no-system-colors
+
+***/
 
 static Fl_Double_Window *win;
 static Fl_Multi_Browser *browser;
+static Fl_Check_Button *checkbutton;
 static Fl_Return_Button *but_ret;
-static bool checkbutton_set = false;
+static bool checkbutton_set, autoscroll;
 static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
-static void callback(Fl_Widget *) {
+static void callback(Fl_Widget *)
+{
   if (checkbutton_set) {
     checkbutton_set = false;
     but_ret->deactivate();
@@ -63,7 +73,7 @@ static void callback(Fl_Widget *) {
   }
 }
 
-extern "C" void *ti_getline(void *p)
+extern "C" void *ti_getline(void *)
 {
   std::string line;
 
@@ -84,7 +94,7 @@ extern "C" void *ti_getline(void *p)
       browser->add(line.c_str());
     }
 
-    if (p) {
+    if (autoscroll) {
       ++i;
       browser->bottomline(i);
     }
@@ -92,21 +102,30 @@ extern "C" void *ti_getline(void *p)
     Fl::unlock();
     Fl::awake(win);
   }
+
+  Fl::lock();
+  checkbutton->activate();
+  Fl::unlock();
+  Fl::awake(win);
+
   return nullptr;
 }
 
-int dialog_textinfo(bool autoscroll, const char *checkbox)
+int dialog_textinfo(bool autoscroll_, const char *checkbox)
 {
-  Fl_Group         *g;
-  Fl_Box           *dummy;
-  Fl_Check_Button  *checkbutton;
-  Fl_Button        *but;
+  Fl_Group *g;
+  Fl_Box *dummy;
+  Fl_Button *but;
+  int browser_h = checkbox ? 418 : 444;
+  int but_y = browser_h + 20;
+  int but_w;
+  pthread_t t;
+
+  autoscroll = autoscroll_;
 
   if (!title) {
     title = "FLTK text info window";
   }
-
-  int browser_h = checkbox ? 418 : 444;
 
   win = new Fl_Double_Window(400, 500, title);
   {
@@ -114,8 +133,6 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
 
     g = new Fl_Group(0, browser_h, 400, 500);
     {
-      int but_y = browser_h + 20;
-      int but_w;
       if (!checkbox) {
         win->callback(close_cb, 0);
         but_w = measure_button_width(fl_close, 40);
@@ -125,7 +142,7 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
         win->callback(close_cb, 1);
         but_y = browser_h + 10;
 
-        std::string s;
+        std::string s = " ";
         checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26);
         checkbutton->callback(callback);
 #ifdef WITH_FRIBIDI
@@ -134,15 +151,16 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
           tmp = fribidi_parse_line(checkbox);
         }
         if (tmp) {
-          s = " " + std::string(tmp);
-          checkbutton->copy_label(s.c_str());
+          s.append(tmp);
           delete tmp;
         } else
 #endif
         {
-          s = " " + std::string(checkbox);
-          checkbutton->copy_label(s.c_str());
+          s.append(checkbox);
         }
+        checkbutton->copy_label(s.c_str());
+        checkbutton->deactivate();
+        checkbutton_set = false;
 
         but_w = measure_button_width(fl_cancel, 20);
         but = new Fl_Button(win->w() - 10 - but_w, but_y + 36, but_w, 26, fl_cancel);
@@ -170,8 +188,7 @@ int dialog_textinfo(bool autoscroll, const char *checkbox)
   set_undecorated(win);
   set_always_on_top(win);
 
-  pthread_t t;
-  pthread_create(&t, 0, &ti_getline, (void *)autoscroll);
+  pthread_create(&t, 0, &ti_getline, NULL);
 
   Fl::run();
 

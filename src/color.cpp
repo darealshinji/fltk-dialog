@@ -48,17 +48,17 @@ public:
 
 static void callback(Fl_Widget *o, void *vv)
 {
-  Fl_Color_Chooser *c = (Fl_Color_Chooser *)o;
-  ColorChip *v = (ColorChip *)vv;
-  v->r = uchar(255 * c->r() + 0.5);
-  v->g = uchar(255 * c->g() + 0.5);
-  v->b = uchar(255 * c->b() + 0.5);
+  Fl_Color_Chooser *c = dynamic_cast<Fl_Color_Chooser *>(o);
+  ColorChip *v = reinterpret_cast<ColorChip *>(vv);
+  v->r = static_cast<uchar>(255 * c->r() + 0.5);
+  v->g = static_cast<uchar>(255 * c->g() + 0.5);
+  v->b = static_cast<uchar>(255 * c->b() + 0.5);
   v->damage(FL_DAMAGE_EXPOSE);
 }
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
 int dialog_color()
@@ -113,6 +113,8 @@ int dialog_color()
     g = chooser->g();
     b = chooser->b();
 
+    /* need to use round() so it matches
+     * the values from the widgets */
     int colr = round(255 * r);
     int colg = round(255 * g);
     int colb = round(255 * b);

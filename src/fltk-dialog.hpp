@@ -35,7 +35,7 @@
 
 #define GETPROCADDRESS(handle,type,func,param) \
   typedef type (*func##_t) param; \
-  func##_t func = (func##_t) dlsym(handle, STRINGIFY(func));
+  func##_t func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func)));
 
 #ifdef HAVE_QT
 # if defined(HAVE_QT5) && defined(HAVE_QT4)
@@ -120,7 +120,7 @@ void split(const std::string &s, char c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
-std::string format_date(std::string format, int y, int m, int d);
+char *format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 int save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest);
 

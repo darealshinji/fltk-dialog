@@ -52,6 +52,7 @@ typedef unsigned char uuid_t[16];
 #endif
 
 bool always_on_top = false;
+static char date[512] = {0};
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
 {
@@ -133,19 +134,16 @@ int measure_button_width(const char *label, int extra_width)
 
 void aspect_ratio_scale(int &w, int &h, const int limit)
 {
-  float fw = (float)w;
-  float fh = (float)h;
-
-  if (fw/fh == 1.0) {
-    w = limit;
-    h = limit;
+  if (w == h) {
+    w = h = limit;
   } else {
+    double dw = w, dh = h;
     if (w > h) {
       w = limit;
-      h = (int)(fh/(fw/(float)limit));
+      h = dh/(dw/limit);
     } else {
       h = limit;
-      w = (int)(fw/(fh/(float)limit));
+      w = dw/(dh/limit);
     }
   }
 }
@@ -235,23 +233,19 @@ std::string text_wrap(const char *text, int linewidth, Fl_Font font, int font_si
   return oss.str();
 }
 
-std::string format_date(std::string format, int y, int m, int d)
+char *format_date(std::string format, int y, int m, int d)
 {
-  std::stringstream ss;
-
-  char date[256] = {0};
   struct tm time;
 
-  if (format.empty() || format == "") {
+  if (format.empty() || format == "" || format.find('%') == std::string::npos) {
     format = "%Y-%m-%d";
   }
-
-  ss << y << "-" << m << "-" << d;
+  sprintf(date, "%d-%d-%d", y, m, d);
   memset(&time, 0, sizeof(struct tm));
-  strptime(ss.str().c_str(), "%Y-%m-%d", &time);
+  strptime(date, "%Y-%m-%d", &time);
   strftime(date, sizeof(date), format.c_str(), &time);
 
-  return std::string(date);
+  return date;
 }
 
 /* Compares the last bytes of s1 and s2 and returns the number
@@ -287,8 +281,8 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
     "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "0123456789" "abcdefghijklmnopqrstuvwxyz";
   std::string s = "/tmp/file-";
-  int alphanum_len = alphanum.length();
   uuid_t id = {0};
+  char *path;
 
 #ifdef DYNAMIC_UUID
   void *handle = dlopen("libuuid.so.1", RTLD_LAZY);
@@ -297,8 +291,11 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
     dlerror();
     GETPROCADDRESS(handle, void, uuid_generate, (uuid_t))
 
-    if (!dlerror()) {
+    char *error = dlerror();
+    if (!error) {
       uuid_generate(id);
+    } else {
+      std::cerr << "error: " << error << std::endl;
     }
     dlclose(handle);
   }
@@ -307,35 +304,36 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
 #endif  /* DYNAMIC_UUID */
 
   for (size_t i = 0; i < sizeof(id); i++) {
-    int n = (int)id[i];
-    if (n >= alphanum_len) {
-      n %= alphanum_len;
+    unsigned int n = static_cast<unsigned int>(id[i]);
+    if (n >= alphanum.length()) {
+      n %= alphanum.length();
     }
     s.push_back(alphanum[n]);
   }
 
   s += "XXXXXX";
 
-  char *path = new char[s.length() + 1]();
-  strncpy(path, s.c_str(), s.length());
+  path = strdup(s.c_str());
 
   if (mkstemp(path) == -1) {
     std::cerr << "error: cannot create temporary file: " << path << std::endl;
+    free(path);
     return 1;
   }
 
   std::ofstream out(path, std::ios::out|std::ios::binary);
   if (!out) {
     std::cerr << "error: cannot open file: " << path << std::endl;
+    free(path);
     return 1;
   }
 
-  out.write((char *)data, (std::streamsize)data_len);
+  out.write(reinterpret_cast<const char *>(data), data_len);
   out.close();
 
   dest = std::string(path);
 
-  delete path;
+  free(path);
   return 0;
 }
 

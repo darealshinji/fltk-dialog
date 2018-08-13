@@ -58,7 +58,7 @@ static void callback(Fl_Widget *)
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
 int dialog_date(std::string format)

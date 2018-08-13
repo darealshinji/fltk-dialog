@@ -102,7 +102,7 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
     std::cerr << self << ": " << cmd << ": input is not an integer number" << std::endl;
     return 1;
   }
-  val = (int)l;
+  val = l;
   return 0;
 }
 
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
     Fl::get_system_colors();
     Fl::scheme("gtk+");
     Fl::visual(FL_DOUBLE|FL_INDEX);
-    Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len));
+    Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len));
     l10n();
     position_center = true;
     return about();
@@ -659,7 +659,7 @@ int main(int argc, char **argv)
   }
 
   if (!icon) {
-    icon = new Fl_PNG_Image(NULL, src_icon_png, (int)src_icon_png_len);
+    icon = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
   }
 
   Fl_Window::default_icon(icon);
@@ -693,7 +693,7 @@ int main(int argc, char **argv)
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, notify_icon, libnotify, force_nanosvg);
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, (unsigned int) multi, kill_pid, autoclose, hide_cancel);
+      return dialog_progress(pulsate, multi, kill_pid, autoclose, hide_cancel);
     case DIALOG_TEXTINFO:
       return dialog_textinfo(autoscroll, checkbox);
     case DIALOG_CHECKLIST:

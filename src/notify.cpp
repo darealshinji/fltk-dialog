@@ -53,8 +53,6 @@ public:
   close_box(int X, int Y, int W, int H, const char *L=0)
     : Fl_Box(X, Y, W, H, L) { }
 
-  virtual ~close_box() { }
-
   int handle(int event) {
     int rv = Fl_Box::handle(event);
     if (event == FL_RELEASE) {
@@ -68,59 +66,57 @@ static void close_cb(Fl_Widget *, void *) {
   win->hide();
 }
 
-static void callback(void *o)
+static void callback(void *)
 {
   const int step = 10; /* pixels */
-  int ms = *(int *)o;
+  const int fadeout_ms = 500;
 
-  if (ms > 0) {
-    int bord = Fl::w() - win->x() - win->w();
-    int usec = (ms*1000) / ((win->w() + bord)/step);
+  int bord = Fl::w() - win->x() - win->w();
+  int usec = (fadeout_ms*1000) / ((win->w() + bord)/step);
 
-    /* move to right screen boundary until the remaining
-     * space is smaller than "step" */
-    while ((Fl::w() - win->x() - win->w()) > step) {
-      win->position(win->x() + step, win->y());
-      Fl::flush();
-      usleep(usec);
-    }
+  /* move to right screen boundary until the remaining
+   * space is smaller than "step" */
+  while ((Fl::w() - win->x() - win->w()) > step) {
+    win->position(win->x() + step, win->y());
+    Fl::flush();
+    usleep(usec);
+  }
 
-    /* make window "step - [remaining space]" pixels smaller and
-     * move to right screen boundary */
-    bord = Fl::w() - win->x() - win->w();
-    if (bord > 0) {
-      win->size(win->w() - step + bord, win->h());
-      win->position(win->x() + bord, win->y());
-      Fl::flush();
-      usleep(usec);
-    }
+  /* make window "step - [remaining space]" pixels smaller and
+   * move to right screen boundary */
+  bord = Fl::w() - win->x() - win->w();
+  if (bord > 0) {
+    win->size(win->w() - step + bord, win->h());
+    win->position(win->x() + bord, win->y());
+    Fl::flush();
+    usleep(usec);
+  }
 
-    /* make window smaller until its width is less than "step" */
-    while (win->w() > step) {
-      win->size(win->w() - step, win->h());
-      win->position(win->x() + step, win->y());
-      Fl::flush();
-      usleep(usec);
-    }
+  /* make window smaller until its width is less than "step" */
+  while (win->w() > step) {
+    win->size(win->w() - step, win->h());
+    win->position(win->x() + step, win->y());
+    Fl::flush();
+    usleep(usec);
   }
 
   win->hide();
 }
 
-static int notification_box(double time_s, int fadeout_ms, const char *notify_icon, bool force_nanosvg)
+static int notification_box(double time_s, const char *notify_icon, bool force_nanosvg)
 {
   int n, h = 160
   ,   title_h = 0
   ,   message_h = 0;
 
   const int w = 400
-  ,         icon_wh = 64
+  ,         limit = 64
   ,         fs_title = 18
   ,         fs_message = 14;
 
   Fl_Font font = FL_HELVETICA;
   Fl_Font font_t = FL_HELVETICA_BOLD;
-  Fl_RGB_Image *rgb = NULL;
+  Fl_Image *rgb = NULL;
   std::string title_wrapped, message_wrapped;
 
 #ifdef WITH_FRIBIDI
@@ -136,7 +132,7 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
   }
 #endif
 
-  n = w - icon_wh - 30;
+  n = w - limit - 30;
   title_wrapped = text_wrap(title, n, font_t, fs_title);
   message_wrapped = text_wrap(msg, n, font, fs_message);
 
@@ -176,19 +172,19 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
       if (img) {
         int img_w = img->w();
         int img_h = img->h();
-        if (img_w > icon_wh || img_h > icon_wh) {
-          aspect_ratio_scale(img_w, img_h, icon_wh);
-          rgb = (Fl_RGB_Image *)img->copy(img_w, img_h);
+        if (img_w > limit || img_h > limit) {
+          aspect_ratio_scale(img_w, img_h, limit);
+          rgb = img->copy(img_w, img_h);
           delete img;
         } else {
           rgb = img;
         }
-        Fl_Box *o = new Fl_Box(10, 10, icon_wh, icon_wh);
+        Fl_Box *o = new Fl_Box(10, 10, limit, limit);
         o->image(rgb);
       }
     }
 
-    n = 20 + icon_wh;
+    n = 20 + limit;
 
     { /* title */
       Fl_Box *o = new Fl_Box(n, 10, 0, 0, title_wrapped.c_str());
@@ -209,7 +205,7 @@ static int notification_box(double time_s, int fadeout_ms, const char *notify_ic
   fl_always_on_top(win);
 
   if (time_s > 0) {
-    Fl::add_timeout(time_s, callback, &fadeout_ms);
+    Fl::add_timeout(time_s, callback);
   }
 
   int rv = Fl::run();
@@ -239,7 +235,7 @@ static int run_libnotify(const char *appname, int timeout, const char *notify_ic
   GETPROCADDRESS(handle,type,func,param) \
   error = dlerror(); \
   if (error) { \
-    std::cerr << "error: cannot load symbol\n" << error << std::endl; \
+    std::cerr << "error: " << error << std::endl; \
     dlclose(handle); \
     return 1; \
   }
@@ -318,7 +314,7 @@ int dialog_notify(const char *appname, int timeout, const char *notify_icon, boo
   int rv = libnotify ? run_libnotify(appname, timeout, notify_icon) : 1;
 
   if (rv != 0) {
-    rv = notification_box(timeout, 500, notify_icon, force_nanosvg);
+    rv = notification_box(timeout, notify_icon, force_nanosvg);
   }
   return rv;
 }

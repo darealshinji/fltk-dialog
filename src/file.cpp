@@ -178,7 +178,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
   error = dlerror();
 
   if (error) {
-    std::cerr << "error: cannot load symbol\n" << error << std::endl;
+    std::cerr << "error: " << error << std::endl;
     dlclose(handle);
     DELETE(plugin.c_str());
     return -1;

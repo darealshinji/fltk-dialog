@@ -52,15 +52,22 @@
 #include "nanosvgrast.h"
 
 #if defined(WITH_RSVG) && !defined(USE_SYSTEM_PLUGINS)
-/* xxd -i rsvg_convert.so > rsvg_convert_so.h */
 # include "rsvg_convert_so.h"
+#endif
+
+#ifdef WITH_RSVG
+# define FORCE_NANOSVG      force_nanosvg
+# define SVG_TO_RGB(a,b,c)  svg_to_rgb(a,b,c)
+#else
+# define FORCE_NANOSVG      /**/
+# define SVG_TO_RGB(a,b,c)  nsvg_to_rgb(a,b)
 #endif
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
-#define IMGFILE_MAX  10*1024*1024
-#define SVGZ_MAX        1024*1024
-#define SVG_MAX       3*1024*1024
+#define IMGFILE_MAX  (10*1024*1024)
+#define SVGZ_MAX        (1024*1024)
+#define SVG_MAX       (3*1024*1024)
 
 static char *gzip_uncompress(const char *file)
 {
@@ -99,7 +106,7 @@ static char *gzip_uncompress(const char *file)
   }
 
   strm.avail_in = size;
-  strm.next_in = (unsigned char *)data;
+  strm.next_in = reinterpret_cast<unsigned char *>(data);
   do {
     strm.avail_out = sizeof(out);
     strm.next_out = out;
@@ -111,7 +118,7 @@ static char *gzip_uncompress(const char *file)
         delete data;
         return NULL;
     }
-    output.append((char *)out, sizeof(out) - strm.avail_out);
+    output.append(reinterpret_cast<const char *>(out), sizeof(out) - strm.avail_out);
     if (output.size() >= SVG_MAX) {
       inflateEnd(&strm);
       delete data;
@@ -133,7 +140,7 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   NSVGrasterizer *r;
   char *data;
   unsigned char *img;
-  Fl_RGB_Image *rgb, *rgb_copy;
+  Fl_RGB_Image *rgb;
   int w, h;
   float scalex, scaley;
 
@@ -164,14 +171,12 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   r = nsvgCreateRasterizer();
   nsvgRasterizeFull(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
-  rgb_copy = (Fl_RGB_Image *)rgb->copy();
 
-  delete rgb;
   delete img;
   nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
 
-  return rgb_copy;
+  return rgb;
 }
 
 #ifdef WITH_RSVG
@@ -180,7 +185,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
   std::string plugin;
 
 #ifdef USE_SYSTEM_PLUGINS
-# define DELETE(x)
+# define DELETE(x) /**/
   plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
 #else
 # define DELETE(x) unlink(x)
@@ -191,7 +196,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 
   Fl_RGB_Image *rgb = NULL;
   int len;
-  unsigned char *data;
+  const unsigned char *data;
 
   /* dlopen() library */
 
@@ -208,23 +213,20 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 
 # define LOAD_SYMBOL(type,func,param) \
   GETPROCADDRESS(handle,type,func,param) \
-  error = dlerror(); \
-  if (error) { \
-    std::cerr << "error: cannot load symbol\n" << error << std::endl; \
+  if ((error = dlerror()) != NULL) { \
+    std::cerr << error << std::endl; \
     dlclose(handle); \
     return NULL; \
   }
 
   LOAD_SYMBOL(int, rsvg_to_png_convert, (const char *))
-  LOAD_SYMBOL(unsigned char *, rsvg_to_png_get_data, (void))
+  LOAD_SYMBOL(const unsigned char *, rsvg_to_png_get_data, (void))
 
   len = rsvg_to_png_convert(file);
   data = rsvg_to_png_get_data();
 
   if (data && len > 0) {
-    Fl_RGB_Image *tmp = new Fl_PNG_Image(NULL, data, len);
-    rgb = (Fl_RGB_Image *)tmp->copy();
-    delete tmp;
+    rgb = new Fl_PNG_Image(NULL, data, len);
   }
 
   dlclose(handle);
@@ -249,20 +251,14 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_na
   }
   return rgb;
 }
-#else
-# define svg_to_rgb(a,b,c) nsvg_to_rgb(a,b)
 #endif /* WITH_RSVG */
 
-Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
+Fl_RGB_Image *img_to_rgb(const char *file, bool FORCE_NANOSVG)
 {
   FILE *fp;
   size_t len;
-  unsigned char bytes[8] = {0};
+  unsigned char bytes[8];
   struct stat st;
-
-#ifndef WITH_RSVG
-  (void) force_nanosvg;
-#endif
 
   if (!file || stat(file, &st) == -1 || st.st_size > IMGFILE_MAX) {
     return NULL;
@@ -271,14 +267,14 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
   /* get filetype from extension */
   if (HASEXT(file, ".svg")) {
     if (st.st_size < SVG_MAX) {
-      return svg_to_rgb(file, false, force_nanosvg);
+      return SVG_TO_RGB(file, false, FORCE_NANOSVG);
     }
     return NULL;
   }
 
   if (HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) {
     if (st.st_size < SVGZ_MAX) {
-      return svg_to_rgb(file, true, force_nanosvg);
+      return SVG_TO_RGB(file, true, FORCE_NANOSVG);
     }
     return NULL;
   }

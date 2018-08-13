@@ -190,7 +190,7 @@ static void fd_size_cb(Fl_Widget *)
 
 static void close_cb(Fl_Widget *, long p) {
   font_win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
 int dialog_font()
@@ -223,7 +223,7 @@ int dialog_font()
     if (!(++n &(0x1f))) {
       label[i++] = '\n';
     }
-    i += fl_utf8encode((unsigned int) c, label + i);
+    i += fl_utf8encode(c, label + i);
   }
   label[i] = 0;
 
@@ -284,7 +284,7 @@ int dialog_font()
 
   for (i = 0; i < k; i++) {
     int t;
-    const char *name = Fl::get_font_name((Fl_Font) i, &t);
+    const char *name = Fl::get_font_name(i, &t);
     char buffer[128];
 
     if (t) {
@@ -307,7 +307,7 @@ int dialog_font()
     fd_fonts->add(name);
 
     int *s;
-    n = Fl::get_font_sizes((Fl_Font) i, s);
+    n = Fl::get_font_sizes(i, s);
     fd_numsizes[i] = n;
     if (n) {
       fd_sizes[i] = new int[n];
@@ -322,7 +322,7 @@ int dialog_font()
   run_window(font_win, NULL);
 
   if (ret == 0) {
-    std::cout << quote << Fl::get_font_name((Fl_Font) fd_text->font, NULL)
+    std::cout << quote << Fl::get_font_name(fd_text->font, NULL)
       << quote << "|" << quote << fd_size->value() << quote << std::endl;
   }
 

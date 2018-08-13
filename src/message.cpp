@@ -49,28 +49,30 @@ static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
 static void callback(Fl_Widget *o, void *p)
 {
   std::stringstream ss;
-  value = ((Fl_Valuator *)o)->value();
+  Fl_Valuator *v = dynamic_cast<Fl_Valuator *>(o);
+  Fl_Box *b = reinterpret_cast<Fl_Box *>(p);
+  double rounded_val = static_cast<int>(scale_step);
 
-  if (scale_step == (float)((int) scale_step)) {
+  value = v->value();
+
+  if (scale_step == rounded_val) {
     /* integer value */
-    ss << (int) value;
+    ss << static_cast<int>(value);
   } else {
     /* floating point value;
-     * convert into char with fixed positions after decimal point */
-    ss << (scale_step - (float)((int) scale_step));
-    int precision = ss.str().size() - 2;
-    ss.str("");
-    ss.clear();
-    ss << std::fixed << std::setprecision(precision) << value;
+     * convert into string with fixed positions after decimal point */
+    std::stringstream tmp;
+    tmp << (scale_step - rounded_val);
+    ss << std::fixed << std::setprecision(tmp.str().size() - 2) << value;
   }
 
-  ((Fl_Box *)p)->copy_label(ss.str().c_str());
+  b->copy_label(ss.str().c_str());
   Fl::redraw();
 }
 

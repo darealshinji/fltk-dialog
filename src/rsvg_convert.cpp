@@ -33,20 +33,19 @@
 static std::string png_data;
 
 static void callback(int *w, int *h, gpointer data) {
-  RsvgDimensionData *d = (RsvgDimensionData *)data;
+  RsvgDimensionData *d = static_cast<RsvgDimensionData *>(data);
   *w = d->width;
   *h = d->height;
 }
 
-static cairo_status_t write_func(void *v, const unsigned char *data, unsigned int length) {
-  (void)v;
-  png_data.append((char *)data, length);
+static cairo_status_t write_func(void *, const unsigned char *data, unsigned int length) {
+  png_data.append(reinterpret_cast<const char *>(data), length);
   return CAIRO_STATUS_SUCCESS;
 }
 
 /* use this after rsvg_to_png_convert() */
-extern "C" unsigned char *rsvg_to_png_get_data(void) {
-  return png_data.empty() ? NULL : (unsigned char *)png_data.c_str();
+extern "C" const unsigned char *rsvg_to_png_get_data(void) {
+  return png_data.empty() ? NULL : reinterpret_cast<const unsigned char *>(png_data.c_str());
 }
 
 extern "C" int rsvg_to_png_convert(const char *input_file)
@@ -55,7 +54,6 @@ extern "C" int rsvg_to_png_convert(const char *input_file)
   GInputStream *stream;
   GError *error = NULL;
   GFileInfo *info;
-  bool gzip = false;
   RsvgHandle *handle;
   RsvgDimensionData dim;
   cairo_surface_t *surf;
@@ -64,7 +62,7 @@ extern "C" int rsvg_to_png_convert(const char *input_file)
   g_type_init();
 
   file = g_file_new_for_commandline_arg(input_file);
-  stream = (GInputStream *)g_file_read(file, NULL, &error);
+  stream = reinterpret_cast<GInputStream *>(g_file_read(file, NULL, &error));
 
   if (error) {
     g_clear_object(&stream);
@@ -77,18 +75,15 @@ extern "C" int rsvg_to_png_convert(const char *input_file)
   if (info) {
     const char *type = g_file_info_get_content_type(info);
     char *mime = g_content_type_from_mime_type("application/x-gzip");
+
     if (type && g_content_type_is_a(type, mime)) {
-      gzip = true;
+      GZlibDecompressor *decomp = g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_GZIP);
+      GInputStream *new_stream = g_converter_input_stream_new(stream, reinterpret_cast<GConverter *>(decomp));
+      g_object_unref(stream);
+      stream = new_stream;
     }
     g_free(mime);
     g_object_unref(info);
-  }
-
-  if (gzip) {
-    GZlibDecompressor *decomp = g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_GZIP);
-    GInputStream *new_stream = g_converter_input_stream_new(stream, G_CONVERTER(decomp));
-    g_object_unref(stream);
-    stream = new_stream;
   }
 
   if (!stream) {

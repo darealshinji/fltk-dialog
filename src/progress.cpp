@@ -44,7 +44,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <pthread.h>
 #include <signal.h>
@@ -98,10 +97,10 @@ void loop_bar::draw()
 
   /* slider */
   if (value_ > 0.0 && value_ < 1.0) {
-    sw = (int)(slider_size_ * w());
+    sw = slider_size_ * w();
     max = w() + sw;
     bx1 = x() + dx;
-    bx2 = bx1 + (int)(value_ * max) - sw;
+    bx2 = bx1 + (value_ * max) - sw;
     by = y() + dy;
     bh = h() - dh;
 
@@ -145,14 +144,14 @@ static bool running = true
 ,           autoclose = false
 ,           hide_cancel = false;
 
-static long kill_pid = -1;
+static long pid = -1;
 
 static void close_cb(Fl_Widget *, long p)
 {
   pthread_cancel(t1);
   pthread_cancel(t2);
   win->hide();
-  ret = (int) p;
+  ret = p;
 #ifdef WITH_FRIBIDI
   if (msg_alloc && msg) {
     delete msg;
@@ -160,9 +159,10 @@ static void close_cb(Fl_Widget *, long p)
 #endif
 }
 
-static void cancel_cb(Fl_Widget *o) {
-  if (kill_pid > 1) {
-    kill((pid_t) kill_pid, 1);
+static void cancel_cb(Fl_Widget *o)
+{
+  if (pid > getpid()) {
+    kill(pid, 1);
   }
   close_cb(o, 1);
 }
@@ -170,7 +170,7 @@ static void cancel_cb(Fl_Widget *o) {
 static void progress_finished(void)
 {
   if (autoclose) {
-    close_cb(nullptr, 0);
+    close_cb(NULL, 0);
   } else {
     if (!hide_cancel) {
       but_cancel->deactivate();
@@ -203,19 +203,18 @@ static void parse_line(const char *ch)
         box->copy_label(ch + 1);
       }
     } else if (!pulsate && ch[0] >= '0' && ch[0] <= '9') {
+      char buf[16] = {0};
+
       /* number found, update the progress bar */
-      std::stringstream ss;
-      std::string l1, l2;
       percent = atoi(ch);
       if (percent >= 100) {
         percent = 100;
-        running = (multi > 1) ? true : false;
+        running = multi > 1;
         iteration++;
       }
-      ss << percent;
-      l1 = ss.str() + "%";
+      snprintf(buf, sizeof(buf), "%d%%", percent);
       bar->value(percent);
-      bar->copy_label(l1.c_str());
+      bar->copy_label(buf);
 
       /* update the main progress bar too if --multi=n was given */
       if (multi > 1) {
@@ -228,11 +227,9 @@ static void parse_line(const char *ch)
           multi_percent = multi * 100;
           running = false;
         }
-        ss.str(std::string());
-        ss << (multi_percent / multi);
-        l2 = ss.str() + "%";
+        snprintf(buf, sizeof(buf), "%d%%", (multi_percent / multi));
         bar_main->value(multi_percent);
-        bar_main->copy_label(l2.c_str());
+        bar_main->copy_label(buf);
       }
     } else if (pulsate && strcmp(ch, "STOP") == 0) {
       /* stop now */
@@ -273,8 +270,9 @@ extern "C" void *pulsate_bar_thread(void *)
     lp->value(val);
     Fl::redraw();
 
-    if (kill_pid > 1 && kill((pid_t) kill_pid, 0) == -1) {
+    if (pid > getpid() && kill(pid, 0) == -1) {
       running = false;  /* the watched process has stopped */
+      pid = -1;
     }
 
     Fl::unlock();
@@ -292,7 +290,7 @@ extern "C" void *pulsate_bar_thread(void *)
   return nullptr;
 }
 
-int dialog_progress(bool pulsate_, unsigned int multi_, long kill_pid_, bool autoclose_, bool hide_cancel_)
+int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclose_, bool hide_cancel_)
 {
   Fl_Group *g;
   Fl_Box *dummy;
@@ -314,7 +312,7 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long kill_pid_, bool aut
 
   pulsate = pulsate_;
   multi = pulsate ? 1 : multi_;
-  kill_pid = kill_pid_;
+  pid = pid_;
   autoclose = autoclose_;
   hide_cancel = hide_cancel_;
 

@@ -69,13 +69,13 @@ static const char *int_to_str (int n)
 static void fl_calendar_button_cb (Fl_Widget *a, void *b)
 {
   long j = 0;
-  Fl_Calendar *c = (Fl_Calendar *)b;
+  Fl_Calendar *c = reinterpret_cast<Fl_Calendar *>(b);
   Fl_Button   *sb;
   int numdays = c->days_in_month () + 1;
   for (int i = 1; i < numdays; i++) {
     sb = c->day_button(i);
     sb->color (FL_CALENDAR_COLOR);
-    if ((Fl_Button *)a == sb) {
+    if (dynamic_cast<Fl_Button *>(a) == sb) {
       c->selected_day (i);
       j = i;
       sb->color (FL_CALENDAR_COLOR2);
@@ -215,28 +215,28 @@ Fl_Calendar_Base::day_button (int i)
 
 static void
 fl_calendar_prv_month_cb (Fl_Widget *, void *b) {
-  Fl_Calendar *c = (Fl_Calendar *)b;
+  Fl_Calendar *c = reinterpret_cast<Fl_Calendar *>(b);
   c->previous_month ();
   c->do_callback(c, 0L);
 }
 
 static void
 fl_calendar_nxt_month_cb (Fl_Widget *, void *b) {
-  Fl_Calendar *c = (Fl_Calendar *)b;
+  Fl_Calendar *c = reinterpret_cast<Fl_Calendar *>(b);
   c->next_month ();
   c->do_callback(c, 0L);
 }
 
 static void
 fl_calendar_prv_year_cb (Fl_Widget *, void *b) {
-  Fl_Calendar *c = (Fl_Calendar *)b;
+  Fl_Calendar *c = reinterpret_cast<Fl_Calendar *>(b);
   c->previous_year ();
   c->do_callback(c, 0L);
 }
 
 static void
 fl_calendar_nxt_year_cb (Fl_Widget *, void *b) {
-  Fl_Calendar *c = (Fl_Calendar *)b;
+  Fl_Calendar *c = reinterpret_cast<Fl_Calendar *>(b);
   c->next_year ();
   c->do_callback(c, 0L);
 }
@@ -457,13 +457,5 @@ Fl_Calendar::selected_day (int d)
   selected_day_ = d;
   if (d) day(d);
   return d;
-}
-
-Fl_Calendar_Base::~Fl_Calendar_Base ()
-{
-}
-
-Fl_Calendar::~Fl_Calendar ()
-{
 }
 

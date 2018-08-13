@@ -40,7 +40,7 @@ static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
 int dialog_calendar(std::string format, bool arabic)

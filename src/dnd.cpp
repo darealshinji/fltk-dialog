@@ -47,8 +47,6 @@ public:
   dnd_box(int X, int Y, int W, int H, const char *L=0)
     : Fl_Box(X, Y, W, H, L) { }
 
-  virtual ~dnd_box() { }
-
   int handle(int event) {
     int rv = Fl_Box::handle(event);
     switch (event) {
@@ -135,8 +133,9 @@ int dialog_dnd()
 
     g = new Fl_Group(0, 244, 400, 56);
     {
-      int but_w = measure_button_width("Drop count:");
-      text = new Fl_Box(10, 244 + 20, but_w, 26, "Drop count:");
+      const char *l = "Drop count:";
+      int but_w = measure_button_width(l);
+      text = new Fl_Box(10, 244 + 20, but_w, 26, l);
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
 

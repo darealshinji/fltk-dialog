@@ -45,7 +45,7 @@ static int ret = 1;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 }
 
 static void callback(Fl_Widget *) {
@@ -58,9 +58,9 @@ static void callback(Fl_Widget *) {
 
 int dialog_radiolist(std::string radiolist_options, bool return_number, char separator)
 {
-  Fl_Group   *g1, *g1a, *g2;
-  Fl_Box     *dummy1, *dummy2;
-  Fl_Button  *but_cancel;
+  Fl_Group *g1, *g1a, *g2;
+  Fl_Box *dummy1, *dummy2;
+  Fl_Button *but_cancel;
 
   std::vector<std::string> radiolist_v;
   split(radiolist_options, separator, radiolist_v);

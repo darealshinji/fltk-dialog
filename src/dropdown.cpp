@@ -46,7 +46,7 @@ static bool msg_alloc = false;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
-  ret = (int) p;
+  ret = p;
 #ifdef WITH_FRIBIDI
   if (msg_alloc && msg) {
     delete msg;
@@ -153,7 +153,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   if (use_fribidi) {
     for (size_t i = 0; i < itemlist_v.size(); i++) {
       if (menu_items[i].text) {
-        free((void *)menu_items[i].text);
+        free(const_cast<char *>(menu_items[i].text));
       }
     }
   }

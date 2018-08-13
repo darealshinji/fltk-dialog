@@ -66,8 +66,6 @@ public:
   Fl_Button * days[7*6];
   Fl_Box * weeknumbers[6];
 
-  ~Fl_Calendar_Base();
-
 };
 
 /**
@@ -173,8 +171,6 @@ class Fl_Calendar : public Fl_Calendar_Base
   Fl_Repeat_Button * nxt_year;
   Fl_Repeat_Button * prv_year;
   int selected_day_;
-
-  ~Fl_Calendar();
 
 };
 
