@@ -275,7 +275,7 @@ size_t strlastcasecmp(const char *s1, const char *s2)
   return n;
 }
 
-int save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest)
+bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest)
 {
   const std::string alphanum =
     "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -318,14 +318,14 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
   if (mkstemp(path) == -1) {
     std::cerr << "error: cannot create temporary file: " << path << std::endl;
     free(path);
-    return 1;
+    return false;
   }
 
   std::ofstream out(path, std::ios::out|std::ios::binary);
   if (!out) {
     std::cerr << "error: cannot open file: " << path << std::endl;
     free(path);
-    return 1;
+    return false;
   }
 
   out.write(reinterpret_cast<const char *>(data), data_len);
@@ -334,7 +334,7 @@ int save_to_temp(const unsigned char *data, const unsigned int data_len, std::st
   dest = std::string(path);
 
   free(path);
-  return 0;
+  return true;
 }
 
 

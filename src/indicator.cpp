@@ -202,7 +202,7 @@ static bool convert_icon(const char *in, std::string &out)
 
   /* Should I write a separate function to create only a
    * temporary filename without creating the actual file? */
-  if (!in || access(in, R_OK) != 0 || fl_filename_isdir(in) || save_to_temp(dummy, 1, out) != 0) {
+  if (!in || access(in, R_OK) != 0 || fl_filename_isdir(in) || !save_to_temp(dummy, 1, out)) {
     return false;
   }
 
@@ -220,13 +220,10 @@ static bool convert_icon(const char *in, std::string &out)
     }
 
     std::ofstream ofs(out, std::ios::out|std::ios::binary);
-
     if (ofs) {
-      const char *data = *rgb->data();
-      svpng(ofs, img_w, img_h, reinterpret_cast<const unsigned char*>(data), 1);
+      svpng(ofs, img_w, img_h, reinterpret_cast<const unsigned char*>(*rgb->data()), 1);
       ofs.close();
     }
-
     delete rgb;
   }
 

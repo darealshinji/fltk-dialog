@@ -193,7 +193,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
   plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
 #else
 # define DELETE(x) unlink(x)
-  if (save_to_temp(rsvg_convert_so, rsvg_convert_so_len, plugin) == 1) {
+  if (!save_to_temp(rsvg_convert_so, rsvg_convert_so_len, plugin)) {
     return NULL;
   }
 #endif

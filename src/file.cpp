@@ -153,9 +153,9 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
   }
 #else
 # define DELETE(x) unlink(x)
-  if (qt_major == 4 && save_to_temp(qt4gui_so, qt4gui_so_len, plugin) == 1) {
+  if (qt_major == 4 && !save_to_temp(qt4gui_so, qt4gui_so_len, plugin)) {
     return -1;
-  } else if (save_to_temp(qt5gui_so, qt5gui_so_len, plugin) == 1) {
+  } else if (!save_to_temp(qt5gui_so, qt5gui_so_len, plugin)) {
     return -1;
   }
 #endif  /* USE_SYSTEM_PLUGINS */
