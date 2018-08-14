@@ -31,6 +31,7 @@ OBJS = \
 	src/font.o \
 	src/html.o \
 	src/img_to_rgb.o \
+	src/indicator.o \
 	src/l10n.o \
 	src/main.o \
 	src/message.o \
@@ -231,9 +232,14 @@ $(libfltk): $(libpng_a) fltk/build/Makefile
 	$(MAKE) -C fltk/build $(cmake_verbose)
 
 src/about.cpp: fltk_png.h
+src/indicator.cpp: default_tray_icon_png.h
 src/main.cpp: icon_png.h
 
 fltk_png.h: src/fltk.png
+	$(msg_GENH)
+	$(Q)xxd -i $< > $@
+
+default_tray_icon_png.h: src/default_tray_icon.png
 	$(msg_GENH)
 	$(Q)xxd -i $< > $@
 

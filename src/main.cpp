@@ -139,6 +139,7 @@ int main(int argc, char **argv)
   ,      arg_cancel_label(ap, "TEXT", "Set the CANCEL button text", {"cancel-label"})
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)", {"separator"})
+  /* Should I merge --window-icon, --notify-icon and --indicator-icon to --icon? */
   ,      arg_window_icon(ap, "FILE", "Set the window icon; supported are: bmp gif jpg png svg svgz xbm xpm", {"window-icon"});
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
 #ifdef WITH_RSVG
@@ -177,8 +178,9 @@ int main(int argc, char **argv)
   ,      arg_radiolist(ap, "OPT1|OPT2[|..]", "Display a radio button list", {"radiolist"})
   ,      arg_dropdown(ap, "OPT1|OPT2[|..]", "Display a dropdown menu", {"dropdown"})
   ,      arg_html(ap, "FILE", "Display HTML viewer", {"html"});
-  ARG_T  arg_text_info(ap, "text-info", "Display text information dialog", {"text-info"});
-  ARG_T  arg_notification(ap, "notification", "Display a notification pop-up", {"notification"});
+  ARG_T  arg_text_info(ap, "text-info", "Display text information dialog", {"text-info"})
+  ,      arg_notification(ap, "notification", "Display a notification pop-up", {"notification"});
+  ARGS_T arg_indicator(ap, "COMMAND", "create an indicator/tray entry as a launcher for a given command", {"indicator"});
   ARG_T  arg_font(ap, "font", "Display font selection dialog", {"font"});
 
   args::Group g_mwq_options(ap_main, "Message/warning/question options:");
@@ -249,6 +251,9 @@ int main(int argc, char **argv)
   ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout value may be "
                        "ignored by some desktop environments)", {"libnotify"});
+
+  args::Group g_indicator_options(ap_main, "Indicator options:");
+  ARGS_T arg_indicator_icon(g_indicator_options, "PATH", "Set the indicator/tray icon", {"indicator-icon"});
 
   std::string appendix = "  using FLTK version " + get_fltk_version() + " - http://www.fltk.org\n\n"
     "  https://github.com/darealshinji/fltk-dialog\n";
@@ -471,6 +476,16 @@ int main(int argc, char **argv)
   }
   GETVAL(timeout, arg_timeout);
   GETCSTR(notify_icon, arg_notify_icon);
+
+  /* indicator */
+  const char *indicator_command = NULL;
+  const char *indicator_icon = NULL;
+  if (arg_indicator) {
+    dialog = DIALOG_INDICATOR;
+    indicator_command = args::get(arg_indicator).c_str();
+    dialog_count++;
+  }
+  GETCSTR(indicator_icon, arg_indicator_icon);
 
   /* progress */
   int multi = 1;
@@ -714,6 +729,8 @@ int main(int argc, char **argv)
       return dialog_color();
     case DIALOG_FONT:
       return dialog_font();
+    case DIALOG_INDICATOR:
+      return dialog_indicator(indicator_command, indicator_icon);
     default:
       break;
   }
