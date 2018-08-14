@@ -140,7 +140,7 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   NSVGrasterizer *r;
   char *data;
   unsigned char *img;
-  Fl_RGB_Image *rgb;
+  Fl_RGB_Image *rgb, *rgb_copy;
   int w, h;
   float scalex, scaley;
 
@@ -172,11 +172,15 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   nsvgRasterizeFull(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
 
+  /* need to copy the data */
+  rgb_copy = dynamic_cast<Fl_RGB_Image *>(rgb->copy());
+
+  delete rgb;
   delete img;
   nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
 
-  return rgb;
+  return rgb_copy;
 }
 
 #ifdef WITH_RSVG
