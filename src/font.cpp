@@ -145,12 +145,12 @@ static void fd_fonts_cb(Fl_Widget *)
     /* many sizes */
     int j = 1;
     for (int i = 1; i < 64 || i < s[n - 1]; i++) {
-      char buf[20];
+      char buf[16];
       if (j < n && i == s[j]) {
-        sprintf(buf, "@b%d", i);
+        snprintf(buf, sizeof(buf), "@b%d", i);
         j++;
       } else {
-        sprintf(buf, "%d", i);
+        snprintf(buf, sizeof(buf), "%d", i);
       }
       fd_size->add(buf);
     }
@@ -162,8 +162,8 @@ static void fd_fonts_cb(Fl_Widget *)
       if (s[i] <= fd_pickedsize) {
         w = i;
       }
-      char buf[20];
-      sprintf(buf, "@b%d", s[i]);
+      char buf[16];
+      snprintf(buf, sizeof(buf), "@b%d", s[i]);
       fd_size->add(buf);
     }
     fd_size->value(w + 1);

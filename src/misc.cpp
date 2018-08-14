@@ -240,7 +240,7 @@ char *format_date(std::string format, int y, int m, int d)
   if (format.empty() || format == "" || format.find('%') == std::string::npos) {
     format = "%Y-%m-%d";
   }
-  sprintf(date, "%d-%d-%d", y, m, d);
+  snprintf(date, sizeof(date), "%d-%d-%d", y, m, d);
   memset(&time, 0, sizeof(struct tm));
   strptime(date, "%Y-%m-%d", &time);
   strftime(date, sizeof(date), format.c_str(), &time);
