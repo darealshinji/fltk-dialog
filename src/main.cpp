@@ -139,8 +139,7 @@ int main(int argc, char **argv)
   ,      arg_cancel_label(ap, "TEXT", "Set the CANCEL button text", {"cancel-label"})
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)", {"separator"})
-  /* Should I merge --window-icon, --notify-icon and --indicator-icon to --icon? */
-  ,      arg_window_icon(ap, "FILE", "Set the window icon; supported are: bmp gif jpg png svg svgz xbm xpm", {"window-icon"});
+  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif jpg png svg svgz xbm xpm", {"icon"});
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
 #ifdef WITH_RSVG
   ARG_T  arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
@@ -249,12 +248,8 @@ int main(int argc, char **argv)
 
   args::Group g_notification_options(ap_main, "Notification options:");
   ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds", {"timeout"});
-  ARGS_T arg_notify_icon(g_notification_options, "PATH", "Set the icon for the notification box", {"notify-icon"});
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout value may be "
                        "ignored by some desktop environments)", {"libnotify"});
-
-  args::Group g_indicator_options(ap_main, "Indicator options:");
-  ARGS_T arg_indicator_icon(g_indicator_options, "PATH", "Set the indicator/tray icon", {"indicator-icon"});
 
   std::string appendix = "  using FLTK version " + get_fltk_version() + " - http://www.fltk.org\n\n"
     "  https://github.com/darealshinji/fltk-dialog\n";
@@ -470,23 +465,19 @@ int main(int argc, char **argv)
 
   /* notification */
   int timeout = 5;
-  const char *notify_icon = NULL;
   if (arg_notification) {
     dialog = DIALOG_NOTIFY;
     dialog_count++;
   }
   GETVAL(timeout, arg_timeout);
-  GETCSTR(notify_icon, arg_notify_icon);
 
   /* indicator */
   const char *indicator_command = NULL;
-  const char *indicator_icon = NULL;
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     indicator_command = args::get(arg_indicator).c_str();
     dialog_count++;
   }
-  GETCSTR(indicator_icon, arg_indicator_icon);
 
   /* progress */
   int multi = 1;
@@ -591,10 +582,6 @@ int main(int argc, char **argv)
       return use_only_with(argv[0], "--timeout", "--notification");
     }
 
-    if (notify_icon) {
-      return use_only_with(argv[0], "--notify-icon", "--notification");
-    }
-
     if (libnotify) {
       return use_only_with(argv[0], "--libnotify", "--notification");
     }
@@ -667,21 +654,24 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  /* set window icon */
-  Fl_RGB_Image *icon = NULL;
+  /* set window icon and system colors */
+  Fl_RGB_Image *rgb = NULL;
+  const char *icon = NULL;
 
-  if (arg_window_icon) {
-    icon = img_to_rgb(args::get(arg_window_icon).c_str(), force_nanosvg);
-  }
+  GETCSTR(icon, arg_icon);
 
-  if (!icon) {
-    icon = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
-  }
+  if (dialog != DIALOG_NOTIFY && dialog != DIALOG_INDICATOR) {
+    rgb = img_to_rgb(icon, force_nanosvg);
 
-  Fl_Window::default_icon(icon);
+    if (!rgb) {
+      rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
+    }
 
-  if (!arg_no_system_colors && !arg_notification) {
-    Fl::get_system_colors();
+    Fl_Window::default_icon(rgb);
+
+    if (!arg_no_system_colors) {
+      Fl::get_system_colors();
+    }
   }
 
   /* recommended in Fl_Double_Window.H */
@@ -707,7 +697,7 @@ int main(int argc, char **argv)
     case DIALOG_DIR_CHOOSER:
       return dialog_file_chooser(DIR_CHOOSER, native_mode); //, separator);
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], timeout, notify_icon, libnotify, force_nanosvg);
+      return dialog_notify(argv[0], timeout, icon, libnotify, force_nanosvg);
     case DIALOG_PROGRESS:
       return dialog_progress(pulsate, multi, kill_pid, autoclose, hide_cancel);
     case DIALOG_TEXTINFO:
@@ -731,7 +721,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, indicator_icon, force_nanosvg);
+      return dialog_indicator(indicator_command, icon, force_nanosvg);
     default:
       break;
   }
