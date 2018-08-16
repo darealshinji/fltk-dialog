@@ -76,7 +76,7 @@ bool resizable = true
 
 static void draw_cb(const Fl_Label *o, int x, int y, int w, int h, Fl_Align a) {
   fl_font(o->font, o->size);
-  fl_color((Fl_Color)o->color);
+  fl_color(o->color);
   fl_draw(o->value, x, y, w, h, a, o->image, 0);
 }
 
@@ -180,7 +180,8 @@ int main(int argc, char **argv)
   ,      arg_html(ap, "FILE", "Display HTML viewer", {"html"});
   ARG_T  arg_text_info(ap, "text-info", "Display text information dialog", {"text-info"})
   ,      arg_notification(ap, "notification", "Display a notification pop-up", {"notification"});
-  ARGS_T arg_indicator(ap, "COMMAND", "create an indicator/tray entry as a launcher for a given command", {"indicator"});
+  ARGS_T arg_indicator(ap, "COMMAND", "create an indicator/tray entry as a launcher for a given command; a right or middle mouse button click will "
+                       "remove the icon without launching the command; use --text to set a tooltip message", {"indicator"});
   ARG_T  arg_font(ap, "font", "Display font selection dialog", {"font"});
 
   args::Group g_mwq_options(ap_main, "Message/warning/question options:");
@@ -730,7 +731,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, indicator_icon);
+      return dialog_indicator(indicator_command, indicator_icon, force_nanosvg);
     default:
       break;
   }

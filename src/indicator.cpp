@@ -22,249 +22,130 @@
  * SOFTWARE.
  */
 
+// TODO: get tray area height
+
 #include <FL/Fl.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_PNG_Image.H>
-#include <FL/filename.H>
+#include <FL/Fl_Double_Window.H>
+#include <FL/x.H>
 
 #include <iostream>
-#include <fstream>
-#include <dlfcn.h>
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "indicator.h"
 #include "default_tray_icon_png.h"
 
-/* I could use libpng since FLTK is built against it anyway,
- * but I guess this function is easier to use and it's very small */
-#define SVPNG_LINKAGE  static inline
-#define SVPNG_OUTPUT   std::ostream &ofs
-#define SVPNG_PUT(x)   ofs.put(x)
-#include "svpng.h"
+class click_box : public Fl_Box
+{
+public:
+  click_box(int X, int Y, int W, int H)
+    : Fl_Box(X, Y, W, H) { }
 
-PROTO( void,             gtk_init,                            (int*, char***) )
-PROTO( GtkWidget*,       gtk_window_new,                      (GtkWindowType) )
-PROTO( GtkActionGroup*,  gtk_action_group_new,                (const gchar*) )
-PROTO( void,             gtk_action_group_add_actions,        (GtkActionGroup*, const GtkActionEntry*, guint, gpointer) )
-PROTO( GtkUIManager*,    gtk_ui_manager_new,                  (void) )
-PROTO( void,             gtk_ui_manager_insert_action_group,  (GtkUIManager*, GtkActionGroup*, gint) )
-PROTO( guint,            gtk_ui_manager_add_ui_from_string,   (GtkUIManager*, const gchar*, gssize, GError**) )
-PROTO( GtkWidget*,       gtk_ui_manager_get_widget,           (GtkUIManager*, const gchar*) )
-PROTO( void,             gtk_main,                            (void) )
-PROTO( void,             gtk_main_quit,                       (void) )
-PROTO( void,             g_object_set_data,                   (GObject*, const gchar*, gpointer) )
-PROTO( AppIndicator*,    app_indicator_new,                   (const gchar*, const gchar*, AppIndicatorCategory) )
-PROTO( void,             app_indicator_set_status,            (AppIndicator*, AppIndicatorStatus) )
-PROTO( void,             app_indicator_set_attention_icon,    (AppIndicator*, const gchar*) )
-PROTO( void,             app_indicator_set_menu,              (AppIndicator*, GtkMenu*) )
-
-/* Is it safe to always assume a 22 pixels tray hight? */
-static const int tray_icon_limit = 22;
-
-static void *libgtk_handle, *libappindicator_handle;
-static char *error;
-static const char *command = NULL;
-
-static void callback(void);
-static void close_cb(void);
-
-static GtkActionEntry entries[] = {
-  { "Launch", NULL, "_Launch", NULL, NULL, callback },
-  { "Close",  NULL, "_Close",  NULL, NULL, close_cb },
+  int handle(int event) {
+    if (event == FL_RELEASE) {
+      do_callback();
+      return 1;
+    }
+    return Fl_Box::handle(event);
+  }
 };
-static const guint n_entries = 2;
 
-static const gchar *ui_info =
-  "<ui>"
-    "<popup name='IndicatorPopup'>"
-      "<menuitem action='Launch' />"
-      "<menuitem action='Close' />"
-    "</popup>"
-  "</ui>";
+static Fl_Double_Window *win;
+static const char *command;
 
-static void callback(void) {
-  execl("/bin/sh", "sh", "-c", command, NULL);
-  _exit(127);
-}
-
-static void close_cb(void) {
-  if (libgtk_handle) {
-    gtk_main_quit();
-  }
-}
-
-static void handle_dlopen_error(void)
+static void callback(Fl_Widget *)
 {
-  if (error) {
-    std::cerr << error << std::endl;
-  }
+  win->hide();
 
-  if (libgtk_handle) {
-    dlclose(libgtk_handle);
-  }
-
-  if (libappindicator_handle) {
-    dlclose(libappindicator_handle);
+  /* right and middle mouse button only remove the indicator */
+  if (command && strlen(command) > 0 && Fl::event_button() == FL_LEFT_MOUSE) {
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    _exit(127);
   }
 }
 
-static bool create_tray_entry(const char *icon)
+static int create_tray_entry(const char *icon, bool force_nanosvg)
 {
-  GtkWidget *window, *indicator_menu;
-  GtkActionGroup *action_group;
-  GtkUIManager *uim;
-  AppIndicator *indicator;
-  void *handle;
+  click_box *box;
+  Fl_RGB_Image *rgb = NULL;
+  Fl_Color flcol = 0;
+  Window dock;
+  XColor xcol;
+  XImage *image;
+  XEvent ev;
 
-  /* dlopen() libraries */
+  std::string s = "run command: ";
+  const char *tt;
+  char atom_tray_name[128];
 
-  libappindicator_handle = dlopen("libappindicator.so.1", RTLD_LAZY);
-  error = dlerror();
-  if (!libappindicator_handle) {
-    handle_dlopen_error();
-    return false;
+  if (msg) {
+    tt = msg;
+  } else {
+    s.append(command);
+    tt = s.c_str();
   }
 
-  libgtk_handle = dlopen("libgtk-x11-2.0.so.0", RTLD_LAZY);
-  error = dlerror();
-  if (!libgtk_handle) {
-    handle_dlopen_error();
-    return false;
+  snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
+  dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
+  if (!dock) {
+    return 1;
   }
 
-  dlerror();
-
-  /* load symbols */
-
-# define LOAD_SYMBOL(func) \
-  func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func))); \
-  if ((error = dlerror()) != NULL) { \
-    handle_dlopen_error(); \
-    return 1; \
+  if (icon && strlen(icon) > 0) {
+    rgb = img_to_rgb(icon, force_nanosvg);
   }
 
-  handle = libgtk_handle;
-  LOAD_SYMBOL(gtk_init)
-  LOAD_SYMBOL(gtk_window_new)
-  LOAD_SYMBOL(gtk_action_group_new)
-  LOAD_SYMBOL(gtk_action_group_add_actions)
-  LOAD_SYMBOL(gtk_ui_manager_new)
-  LOAD_SYMBOL(gtk_ui_manager_insert_action_group)
-  LOAD_SYMBOL(gtk_ui_manager_add_ui_from_string)
-  LOAD_SYMBOL(gtk_ui_manager_get_widget)
-  LOAD_SYMBOL(gtk_main)
-  LOAD_SYMBOL(gtk_main_quit)
-  LOAD_SYMBOL(g_object_set_data)
-
-  handle = libappindicator_handle;
-  LOAD_SYMBOL(app_indicator_new)
-  LOAD_SYMBOL(app_indicator_set_status)
-  LOAD_SYMBOL(app_indicator_set_attention_icon)
-  LOAD_SYMBOL(app_indicator_set_menu)
-
-# undef LOAD_SYMBOL
-
-  /* create Gtk menu */
-
-  gtk_init(NULL, NULL);
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-
-  action_group = gtk_action_group_new ("AppActions");
-  gtk_action_group_add_actions (action_group, entries, n_entries, window);
-
-  uim = gtk_ui_manager_new();
-  g_object_set_data (reinterpret_cast<GObject *>(window), "ui-manager", uim);
-  gtk_ui_manager_insert_action_group (uim, action_group, 0);
-
-  if (!gtk_ui_manager_add_ui_from_string (uim, ui_info, -1, NULL)) {
-    dlclose(libgtk_handle);
-    dlclose(libappindicator_handle);
-    return false;
-  }
-
-  /* create indicator */
-
-  indicator = app_indicator_new ("fltk-dialog", icon, APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
-  indicator_menu = gtk_ui_manager_get_widget (uim, "/ui/IndicatorPopup");
-  app_indicator_set_status (indicator, APP_INDICATOR_STATUS_ACTIVE);
-  app_indicator_set_attention_icon (indicator, "indicator-messages-new");
-  app_indicator_set_menu (indicator, reinterpret_cast<GtkMenu *>(indicator_menu));
-
-  gtk_main();
-
-  return true;
-}
-
-static bool convert_icon(const char *in, std::string &out)
-{
-  Fl_Image *rgb, *img;
-  unsigned char dummy[1] = {0};
-
-  /* Should I write a separate function to create only a
-   * temporary filename without creating the actual file? */
-  if (!in || access(in, R_OK) != 0 || fl_filename_isdir(in) || !save_to_temp(dummy, 1, out)) {
-    return false;
-  }
-
-  if ((img = img_to_rgb(in, false)) != NULL) {
-    int img_w = img->w();
-    int img_h = img->h();
-
-    if (img_w > tray_icon_limit || img_h > tray_icon_limit) {
-      /* resize image */
-      aspect_ratio_scale(img_w, img_h, tray_icon_limit);
-      rgb = img->copy(img_w, img_h);
-      delete img;
-    } else {
-      rgb = img;
-    }
-
-    std::ofstream ofs(out, std::ios::out|std::ios::binary);
-    if (ofs) {
-      svpng(ofs, img_w, img_h, reinterpret_cast<const unsigned char*>(*rgb->data()), 1);
-      ofs.close();
-    }
+  win = new Fl_Double_Window(32, 32);
+  box = new click_box(0, 0, win->w(), win->h());
+  if (rgb) {
+    box->image(rgb->copy(22, 22));
     delete rgb;
+  } else {
+    box->image(new Fl_PNG_Image(NULL, src_default_tray_icon_png, src_default_tray_icon_png_len));
   }
+  box->tooltip(tt);
+  box->callback(callback);
+  win->clear_border();
+  win->end();
+  win->show();
 
-  return true;
+  memset(&ev, 0, sizeof(ev));
+  ev.xclient.type = ClientMessage;
+  ev.xclient.window = dock;
+  ev.xclient.message_type = XInternAtom(fl_display, "_NET_SYSTEM_TRAY_OPCODE", False);
+  ev.xclient.format = 32;
+  ev.xclient.data.l[0] = fl_event_time;
+  ev.xclient.data.l[1] = 0;  // SYSTEM_TRAY_REQUEST_DOCK
+  ev.xclient.data.l[2] = fl_xid(win);
+  ev.xclient.data.l[3] = 0;
+  ev.xclient.data.l[4] = 0;
+  XSendEvent(fl_display, dock, False, NoEventMask, &ev);
+  XSync(fl_display, False);
+
+  image = XGetImage(fl_display, RootWindow(fl_display, DefaultScreen(fl_display)),
+                    win->x() + 1, win->y() + 1, 1, 1, AllPlanes, XYPixmap);
+  xcol.pixel = XGetPixel(image, 0, 0);
+  XFree(image);
+
+  XQueryColor(fl_display, DefaultColormap(fl_display, DefaultScreen(fl_display)), &xcol);
+  Fl::set_color(flcol, xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
+  win->color(flcol);
+  win->redraw();
+
+  return Fl::run();
 }
 
-int dialog_indicator(const char *command_, const char *icon)
+int dialog_indicator(const char *command_, const char *icon, bool force_nanosvg)
 {
-  std::string tmp;
-  const char *trayicon = NULL;
-  bool default_icon = false;
-  int ret = 0;
-
   command = command_;
 
-  if (icon == NULL || strlen(icon) == 0) {
-    default_icon = true;
-  } else if (!convert_icon(icon, tmp)) {
-    std::cerr << "error: converting icon failed; falling back to default icon" << std::endl;
-    default_icon = true;
-  }
-
-  if (default_icon) {
-    save_to_temp(src_default_tray_icon_png, src_default_tray_icon_png_len, tmp);
-  }
-
-  if (!tmp.empty()) {
-    trayicon = tmp.c_str();
-  }
-
-  Fl::run();
-
-  if (!create_tray_entry(trayicon)) {
+  if (create_tray_entry(icon, force_nanosvg) != 0) {
     std::cerr << "error: cannot create tray/indicator entry" << std::endl;
-    ret = 1;
+    return 1;
   }
-
-  if (!tmp.empty()) {
-    unlink(tmp.c_str());
-  }
-
-  return ret;
+  return 0;
 }
 

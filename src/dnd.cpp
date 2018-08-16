@@ -48,19 +48,16 @@ public:
     : Fl_Box(X, Y, W, H, L) { }
 
   int handle(int event) {
-    int rv = Fl_Box::handle(event);
     switch (event) {
       case FL_DND_ENTER:
       case FL_DND_DRAG:
       case FL_DND_RELEASE:
-        rv = 1;
-        break;
+        return 1;
       case FL_PASTE:
         dnd_callback(Fl::event_text());
-        rv = 1;
-        break;
+        return 1;
     }
-    return rv;
+    return Fl_Box::handle(event);
   }
 };
 

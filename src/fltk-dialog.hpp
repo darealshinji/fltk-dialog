@@ -152,7 +152,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 int dialog_file_chooser(int file_mode, int native_mode); //, char separator);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
-int dialog_indicator(const char *command, const char *indicator_icon);
+int dialog_indicator(const char *command, const char *indicator_icon, bool force_nanosvg);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox);
