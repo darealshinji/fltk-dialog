@@ -20,4 +20,5 @@ a.out
 *.bak
 
 *.vcxproj.user
-
+.bzr/
+.bzrignore
