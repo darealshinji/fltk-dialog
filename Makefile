@@ -232,20 +232,15 @@ $(libfltk): $(libpng_a) fltk/build/Makefile
 	$(MAKE) -C fltk/build $(cmake_verbose)
 
 src/about.cpp: fltk_png.h
-src/indicator.cpp: default_tray_icon_png.h
-src/main.cpp: icon_png.h
+src/indicator.cpp src/main.cpp: icon_png.h
 
 fltk_png.h: src/fltk.png
 	$(msg_GENH)
-	$(Q)xxd -i $< > $@
-
-default_tray_icon_png.h: src/default_tray_icon.png
-	$(msg_GENH)
-	$(Q)xxd -i $< > $@
+	$(Q)xxd -i $< > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
 icon_png.h: src/icon.png
 	$(msg_GENH)
-	$(Q)xxd -i $< > $@
+	$(Q)xxd -i $< > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
 ifneq ($(WITH_FRIBIDI),no)
 ifeq ($(SYSTEM_FRIBIDI),no)

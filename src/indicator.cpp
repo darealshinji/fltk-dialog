@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-// TODO: get tray area height
-
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
@@ -36,7 +34,7 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "default_tray_icon_png.h"
+#include "icon_png.h"
 
 class click_box : public Fl_Box
 {
@@ -54,7 +52,60 @@ public:
 };
 
 static Fl_Double_Window *win;
-static const char *command;
+static click_box *box;
+static Fl_RGB_Image *rgb;
+static const char *command, *icon;
+static bool force_nanosvg;
+
+static void set_size(void *)
+{
+  int w = win->w();
+  int h = win->h();
+
+  if (h == 0) {
+    /* repeat until the window was resized to the tray's size */
+    Fl::repeat_timeout(0.001, set_size);
+    return;
+  }
+
+  if (w > h) {
+    h = w;
+  } else {
+    w = h;
+  }
+
+  if (h > 256) {
+    w = h = 256;
+  } else if (h > 128) {
+    w = h = 128;
+  } else if (h > 96) {
+    w = h = 96;
+  } else if (h > 64) {
+    w = h = 64;
+  } else if (h > 48) {
+    w = h = 48;
+  } else if (h > 32) {
+    w = h = 32;
+  } else if (h > 22) {
+    w = h = 22;
+  } else {
+    w = h = 16;
+  }
+
+  if (icon && strlen(icon) > 0) {
+    rgb = img_to_rgb(icon, force_nanosvg);
+  }
+
+  if (!rgb) {
+    rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
+  }
+
+  box->image(rgb->copy(w, h));
+  box->size(w, h);
+  win->size(w, h);
+  win->redraw();
+  delete rgb;
+}
 
 static void callback(Fl_Widget *)
 {
@@ -67,10 +118,8 @@ static void callback(Fl_Widget *)
   }
 }
 
-static int create_tray_entry(const char *icon, bool force_nanosvg)
+static int create_tray_entry(void)
 {
-  click_box *box;
-  Fl_RGB_Image *rgb = NULL;
   Fl_Color flcol = 0;
   Window dock;
   XColor xcol;
@@ -94,22 +143,14 @@ static int create_tray_entry(const char *icon, bool force_nanosvg)
     return 1;
   }
 
-  if (icon && strlen(icon) > 0) {
-    rgb = img_to_rgb(icon, force_nanosvg);
+  win = new Fl_Double_Window(0, 0, 0, 0);
+  {
+    box = new click_box(0, 0, 0, 0);
+    box->tooltip(tt);
+    box->callback(callback);
   }
-
-  win = new Fl_Double_Window(32, 32);
-  box = new click_box(0, 0, win->w(), win->h());
-  if (rgb) {
-    box->image(rgb->copy(22, 22));
-    delete rgb;
-  } else {
-    box->image(new Fl_PNG_Image(NULL, src_default_tray_icon_png, src_default_tray_icon_png_len));
-  }
-  box->tooltip(tt);
-  box->callback(callback);
-  win->clear_border();
   win->end();
+  win->clear_border();
   win->show();
 
   memset(&ev, 0, sizeof(ev));
@@ -135,17 +176,22 @@ static int create_tray_entry(const char *icon, bool force_nanosvg)
   win->color(flcol);
   win->redraw();
 
+  Fl::add_timeout(0.005, set_size);
+
   return Fl::run();
 }
 
-int dialog_indicator(const char *command_, const char *icon, bool force_nanosvg)
+int dialog_indicator(const char *command_, const char *icon_, bool force_nanosvg_)
 {
   command = command_;
+  icon = icon_;
+  force_nanosvg = force_nanosvg_;
 
-  if (create_tray_entry(icon, force_nanosvg) != 0) {
+  if (create_tray_entry() != 0) {
     std::cerr << "error: cannot create tray/indicator entry" << std::endl;
     return 1;
   }
+
   return 0;
 }
 
