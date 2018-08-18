@@ -37,7 +37,7 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
-#define INIT_SIZE 1
+#define INIT_SIZE 0
 
 class nobox_Fl_Menu_Button : public Fl_Menu_Button
 {
@@ -56,6 +56,7 @@ static Fl_Single_Window *win;
 static nobox_Fl_Menu_Button *but;
 static const char *command, *icon;
 static bool force_nanosvg;
+static int it = 0;
 
 static void set_size(void *)
 {
@@ -65,7 +66,11 @@ static void set_size(void *)
   int h = win->h();
 
   if (w == INIT_SIZE || h == INIT_SIZE) {
-    Fl::repeat_timeout(0.001, set_size);
+    it++;
+    /* don't loop forever */
+    if (it < 5000) {
+      Fl::repeat_timeout(0.001, set_size);
+    }
     return;
   }
 
@@ -167,7 +172,7 @@ static int create_tray_entry(void)
   Fl::set_color(flcol, xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
   win->color(flcol);
 
-  Fl::add_timeout(0.005, set_size);
+  Fl::add_timeout(0.005, set_size);  /* 5 ms */
 
   return Fl::run();
 }
