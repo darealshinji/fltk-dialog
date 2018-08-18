@@ -23,18 +23,21 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/Fl_Box.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Single_Window.H>
 #include <FL/x.H>
 
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
+
+#define INIT_SIZE 1
 
 class nobox_Fl_Menu_Button : public Fl_Menu_Button
 {
@@ -49,47 +52,29 @@ protected:
   }
 };
 
-static Fl_Double_Window *win;
+static Fl_Single_Window *win;
 static nobox_Fl_Menu_Button *but;
-static Fl_RGB_Image *rgb;
 static const char *command, *icon;
 static bool force_nanosvg;
 
 static void set_size(void *)
 {
+  Fl_RGB_Image *rgb = NULL;
+
   int w = win->w();
   int h = win->h();
 
-  //if (w == 0 && h == 0) {
-  if (h == 0) {
-    /* repeat until the window was resized to the tray's size */
+  if (w == INIT_SIZE || h == INIT_SIZE) {
     Fl::repeat_timeout(0.001, set_size);
     return;
   }
 
   if (w > h) {
     h = w;
-  } else {
-    w = h;
   }
 
-  if (h > 256) {
-    w = h = 256;
-  } else if (h > 128) {
-    w = h = 128;
-  } else if (h > 96) {
-    w = h = 96;
-  } else if (h > 64) {
-    w = h = 64;
-  } else if (h > 48) {
-    w = h = 48;
-  } else if (h > 32) {
-    w = h = 32;
-  } else if (h > 22) {
-    w = h = 22;
-  } else {
-    w = h = 16;
-  }
+  win->size(h, h);
+  but->size(h, h);
 
   if (icon && strlen(icon) > 0) {
     rgb = img_to_rgb(icon, force_nanosvg);
@@ -99,11 +84,16 @@ static void set_size(void *)
     rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
   }
 
-  but->image(rgb->copy(w, h));
-  but->size(w, h);
-  win->size(w, h);
+  /* make icon a bit smaller than the area */
+  if ((h *= 0.72) > 0) {
+    but->image(rgb->copy(h, h));
+  }
+
   win->redraw();
-  delete rgb;
+
+  if (rgb) {
+    delete rgb;
+  }
 }
 
 static void callback(Fl_Widget *, void *)
@@ -129,20 +119,14 @@ static int create_tray_entry(void)
   XEvent ev;
   char atom_tray_name[128];
 
-  snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
-  dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
-  if (!dock) {
-    return 1;
-  }
-
   Fl_Menu_Item menu_items[] = {
     { "Run command", 0, callback, 0,0, FL_NORMAL_LABEL, 0, 14, 0 },
     { "Close",       0, close_cb, 0,0, FL_NORMAL_LABEL, 0, 14, 0 },
     { 0,0,0,0,0,0,0,0,0 }
   };
 
-  win = new Fl_Double_Window(0, 0, 0, 0);
-  but = new nobox_Fl_Menu_Button(0, 0, 0, 0);
+  win = new Fl_Single_Window(INIT_SIZE, INIT_SIZE);
+  but = new nobox_Fl_Menu_Button(0, 0, INIT_SIZE, INIT_SIZE);
   but->menu(menu_items);
   if (msg) {
     but->tooltip(msg);
@@ -150,6 +134,15 @@ static int create_tray_entry(void)
   win->end();
   win->clear_border();
   win->show();
+  if (!win->shown()) {
+    return 1;
+  }
+
+  snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
+  dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
+  if (!dock) {
+    return 1;
+  }
 
   memset(&ev, 0, sizeof(ev));
   ev.xclient.type = ClientMessage;
@@ -164,6 +157,7 @@ static int create_tray_entry(void)
   XSendEvent(fl_display, dock, False, NoEventMask, &ev);
   XSync(fl_display, False);
 
+  /* get tray color and set as background */
   image = XGetImage(fl_display, RootWindow(fl_display, DefaultScreen(fl_display)),
                     win->x() + 1, win->y() + 1, 1, 1, AllPlanes, XYPixmap);
   xcol.pixel = XGetPixel(image, 0, 0);
@@ -172,7 +166,6 @@ static int create_tray_entry(void)
   XQueryColor(fl_display, DefaultColormap(fl_display, DefaultScreen(fl_display)), &xcol);
   Fl::set_color(flcol, xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
   win->color(flcol);
-  win->redraw();
 
   Fl::add_timeout(0.005, set_size);
 
