@@ -24,7 +24,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
+#include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Double_Window.H>
@@ -36,23 +36,21 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
-class click_box : public Fl_Box
+class nobox_Fl_Menu_Button : public Fl_Menu_Button
 {
 public:
-  click_box(int X, int Y, int W, int H)
-    : Fl_Box(X, Y, W, H) { }
+  nobox_Fl_Menu_Button(int X, int Y, int W, int H)
+    : Fl_Menu_Button(X, Y, W, H) { }
 
-  int handle(int event) {
-    if (event == FL_RELEASE) {
-      do_callback();
-      return 1;
-    }
-    return Fl_Box::handle(event);
+protected:
+  void draw() {
+    draw_box(FL_NO_BOX, color());
+    draw_label();
   }
 };
 
 static Fl_Double_Window *win;
-static click_box *box;
+static nobox_Fl_Menu_Button *but;
 static Fl_RGB_Image *rgb;
 static const char *command, *icon;
 static bool force_nanosvg;
@@ -62,6 +60,7 @@ static void set_size(void *)
   int w = win->w();
   int h = win->h();
 
+  //if (w == 0 && h == 0) {
   if (h == 0) {
     /* repeat until the window was resized to the tray's size */
     Fl::repeat_timeout(0.001, set_size);
@@ -100,22 +99,25 @@ static void set_size(void *)
     rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
   }
 
-  box->image(rgb->copy(w, h));
-  box->size(w, h);
+  but->image(rgb->copy(w, h));
+  but->size(w, h);
   win->size(w, h);
   win->redraw();
   delete rgb;
 }
 
-static void callback(Fl_Widget *)
+static void callback(Fl_Widget *, void *)
 {
   win->hide();
 
-  /* right and middle mouse button only remove the indicator */
-  if (command && strlen(command) > 0 && Fl::event_button() == FL_LEFT_MOUSE) {
+  if (command && strlen(command) > 0) {
     execl("/bin/sh", "sh", "-c", command, NULL);
     _exit(127);
   }
+}
+
+static void close_cb(Fl_Widget *, void *) {
+  win->hide();
 }
 
 static int create_tray_entry(void)
@@ -125,17 +127,7 @@ static int create_tray_entry(void)
   XColor xcol;
   XImage *image;
   XEvent ev;
-
-  std::string s = "run command: ";
-  const char *tt;
   char atom_tray_name[128];
-
-  if (msg) {
-    tt = msg;
-  } else {
-    s.append(command);
-    tt = s.c_str();
-  }
 
   snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
   dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
@@ -143,11 +135,17 @@ static int create_tray_entry(void)
     return 1;
   }
 
+  Fl_Menu_Item menu_items[] = {
+    { "Run command", 0, callback, 0,0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { "Close",       0, close_cb, 0,0, FL_NORMAL_LABEL, 0, 14, 0 },
+    { 0,0,0,0,0,0,0,0,0 }
+  };
+
   win = new Fl_Double_Window(0, 0, 0, 0);
-  {
-    box = new click_box(0, 0, 0, 0);
-    box->tooltip(tt);
-    box->callback(callback);
+  but = new nobox_Fl_Menu_Button(0, 0, 0, 0);
+  but->menu(menu_items);
+  if (msg) {
+    but->tooltip(msg);
   }
   win->end();
   win->clear_border();
