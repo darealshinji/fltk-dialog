@@ -23,8 +23,8 @@
  */
 
 #include <FL/Fl.H>
-#include <FL/Fl_Menu_Button.H>
-#include <FL/Fl_Menu_Item.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Single_Window.H>
 #include <FL/x.H>
@@ -37,27 +37,108 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
-#define INIT_SIZE 0
-
-class nobox_Fl_Menu_Button : public Fl_Menu_Button
+class simple_button : public Fl_Box
 {
 public:
-  nobox_Fl_Menu_Button(int X, int Y, int W, int H)
-    : Fl_Menu_Button(X, Y, W, H) { }
+  simple_button(int X, int Y, int W, int H, const char *L=0)
+    : Fl_Box(X, Y, W, H, L)
+  { }
 
-protected:
-  void draw() {
-    draw_box(FL_NO_BOX, color());
-    draw_label();
+  int handle(int event) {
+    if (event == FL_PUSH) {
+      do_callback();
+    }
+    return Fl_Box::handle(event);
   }
 };
 
+class menu_window : public Fl_Single_Window
+{
+public:
+  menu_window(int X, int Y, int W, int H, const char *L=0)
+    : Fl_Single_Window(X, Y, W, H, L)
+  { }
+
+  int handle(int event) {
+    if (event == FL_UNFOCUS) {
+      do_callback();
+    }
+    return Fl_Single_Window::handle(event);
+  }
+};
+
+class menu_entry : public Fl_Button
+{
+public:
+  menu_entry(int X, int Y, int W, int H, const char *L=0);
+
+  int handle(int event) {
+    switch (event) {
+      case FL_ENTER:
+        color(selection_color());
+        parent()->redraw();
+        break;
+      case FL_LEAVE:
+        color(FL_BACKGROUND_COLOR);
+        parent()->redraw();
+        break;
+    }
+    return Fl_Button::handle(event);
+  }
+};
+
+menu_entry::menu_entry(int X, int Y, int W, int H, const char *L)
+ : Fl_Button(X, Y, W, H, L)
+{
+  box(FL_FLAT_BOX);
+  down_box(FL_FLAT_BOX);
+  align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+  color(FL_BACKGROUND_COLOR);
+  selection_color(fl_rgb_color(0, 128, 255));  /* light blue */
+  clear_visible_focus();
+}
+
 static Fl_Single_Window *win;
-static nobox_Fl_Menu_Button *but;
+static simple_button *but;
+static menu_window *menu;
 static const char *command, *icon;
 static bool force_nanosvg;
 static int it = 0;
 
+static void popup_cb(Fl_Widget *)
+{
+  if (menu->shown()) {
+    menu->hide();
+    /* box color becomes invisible */
+    but->box(FL_NO_BOX);
+  } else {
+    /* box color becomes visible */
+    but->box(FL_FLAT_BOX);
+    /* reposition window, just in case */
+    menu->position(win->x(), win->y());
+    menu->show();
+  }
+  win->redraw();
+}
+
+static void close_cb(Fl_Widget *, void *) {
+  if (menu->shown()) {
+    menu->hide();
+  }
+  win->hide();
+}
+
+static void callback(Fl_Widget *, void *)
+{
+  close_cb(NULL, NULL);
+
+  if (command && strlen(command) > 0) {
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    _exit(127);
+  }
+}
+
+/* bug: sometimes the width remains smaller than the height */
 static void set_size(void *)
 {
   Fl_RGB_Image *rgb = NULL;
@@ -65,7 +146,7 @@ static void set_size(void *)
   int w = win->w();
   int h = win->h();
 
-  if (w == INIT_SIZE || h == INIT_SIZE) {
+  if (w == 0 || h == 0) {
     it++;
     /* don't loop forever */
     if (it < 5000) {
@@ -101,20 +182,6 @@ static void set_size(void *)
   }
 }
 
-static void callback(Fl_Widget *, void *)
-{
-  win->hide();
-
-  if (command && strlen(command) > 0) {
-    execl("/bin/sh", "sh", "-c", command, NULL);
-    _exit(127);
-  }
-}
-
-static void close_cb(Fl_Widget *, void *) {
-  win->hide();
-}
-
 static int create_tray_entry(void)
 {
   Fl_Color flcol = 0;
@@ -124,24 +191,47 @@ static int create_tray_entry(void)
   XEvent ev;
   char atom_tray_name[128];
 
-  Fl_Menu_Item menu_items[] = {
-    { "Run command", 0, callback, 0,0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { "Close",       0, close_cb, 0,0, FL_NORMAL_LABEL, 0, 14, 0 },
-    { 0,0,0,0,0,0,0,0,0 }
-  };
-
-  win = new Fl_Single_Window(INIT_SIZE, INIT_SIZE);
-  but = new nobox_Fl_Menu_Button(0, 0, INIT_SIZE, INIT_SIZE);
-  but->menu(menu_items);
-  if (msg) {
-    but->tooltip(msg);
+  win = new Fl_Single_Window(0, 0);
+  {
+    but = new simple_button(0, 0, 0, 0);
+    but->box(FL_NO_BOX);
+    if (msg) {
+      but->tooltip(msg);
+    }
+    but->callback(popup_cb);
   }
   win->end();
-  win->clear_border();
+  win->border(0);
   win->show();
   if (!win->shown()) {
     return 1;
   }
+
+  menu = new menu_window(0, 0, 140, 52);
+  {
+    menu_entry *m1 = new menu_entry(0,  0, 140, 26, "  Run command");
+    menu_entry *m2 = new menu_entry(0, 26, 140, 26, "  Quit");
+    m1->callback(callback);
+    m2->callback(close_cb);
+
+    if (command) {
+      char buf[36];
+      const char *appendix = "[...]";
+      const int len = 5;  /* strlen(appendix) */
+      const int limit = sizeof(buf) - 1;
+
+      if (strlen(command) > limit) {
+        strncpy(buf, command, limit - len);
+        strcat(buf, appendix);
+        m1->copy_tooltip(buf);
+      } else {
+        m1->tooltip(command);
+      }
+    }
+  }
+  menu->callback(popup_cb);
+  menu->end();
+  menu->border(0);
 
   snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
   dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
@@ -167,9 +257,10 @@ static int create_tray_entry(void)
                     win->x() + 1, win->y() + 1, 1, 1, AllPlanes, XYPixmap);
   xcol.pixel = XGetPixel(image, 0, 0);
   XFree(image);
-
   XQueryColor(fl_display, DefaultColormap(fl_display, DefaultScreen(fl_display)), &xcol);
+
   Fl::set_color(flcol, xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
+  but->color(fl_lighter(flcol));
   win->color(flcol);
 
   Fl::add_timeout(0.005, set_size);  /* 5 ms */
