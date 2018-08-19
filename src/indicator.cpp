@@ -37,6 +37,11 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
+/* Issues:
+ *  - sometimes the width remains smaller than the height
+ *  - popup menu position remains the same
+ */
+
 class simple_button : public Fl_Box
 {
 public:
@@ -76,10 +81,12 @@ public:
     switch (event) {
       case FL_ENTER:
         color(selection_color());
+        labelcolor(FL_WHITE);
         parent()->redraw();
         break;
       case FL_LEAVE:
         color(FL_BACKGROUND_COLOR);
+        labelcolor(FL_BLACK);
         parent()->redraw();
         break;
     }
@@ -93,8 +100,7 @@ menu_entry::menu_entry(int X, int Y, int W, int H, const char *L)
   box(FL_FLAT_BOX);
   down_box(FL_FLAT_BOX);
   align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
-  color(FL_BACKGROUND_COLOR);
-  selection_color(fl_rgb_color(0, 128, 255));  /* light blue */
+  selection_color(FL_BLUE);
   clear_visible_focus();
 }
 
@@ -104,41 +110,47 @@ static menu_window *menu;
 static const char *command, *icon;
 static bool force_nanosvg;
 static int it = 0;
+//static bool size_fixed = false;
 
 static void popup_cb(Fl_Widget *)
 {
+  /* fixes window size but has no actual effect on the tray */
+  /*
+  if (!size_fixed) {
+    int w = win->w(), h = win->h();
+    if (w != h) {
+      int n = (w > h) ? w : h;
+      win->size(n, n);
+      but->size(n, n);
+    }
+    size_fixed = true;
+  }
+  */
+
   if (menu->shown()) {
     menu->hide();
-    /* box color becomes invisible */
-    but->box(FL_NO_BOX);
+    but->box(FL_NO_BOX);  /* box color becomes invisible */
   } else {
-    /* box color becomes visible */
-    but->box(FL_FLAT_BOX);
-    /* reposition window, just in case */
+    but->box(FL_FLAT_BOX);  /* box color becomes visible */
     menu->position(win->x(), win->y());
     menu->show();
   }
   win->redraw();
 }
 
-static void close_cb(Fl_Widget *, void *) {
+static void close_cb(Fl_Widget *, long exec_command)
+{
   if (menu->shown()) {
     menu->hide();
   }
   win->hide();
-}
 
-static void callback(Fl_Widget *, void *)
-{
-  close_cb(NULL, NULL);
-
-  if (command && strlen(command) > 0) {
+  if (exec_command && command && strlen(command) > 0) {
     execl("/bin/sh", "sh", "-c", command, NULL);
     _exit(127);
   }
 }
 
-/* bug: sometimes the width remains smaller than the height */
 static void set_size(void *)
 {
   Fl_RGB_Image *rgb = NULL;
@@ -155,12 +167,10 @@ static void set_size(void *)
     return;
   }
 
-  if (w > h) {
-    h = w;
-  }
+  int n = (w > h) ? w : h;
 
-  win->size(h, h);
-  but->size(h, h);
+  win->size(n, n);
+  but->size(n, n);
 
   if (icon && strlen(icon) > 0) {
     rgb = img_to_rgb(icon, force_nanosvg);
@@ -171,8 +181,8 @@ static void set_size(void *)
   }
 
   /* make icon a bit smaller than the area */
-  if ((h *= 0.72) > 0) {
-    but->image(rgb->copy(h, h));
+  if ((n *= 0.72) > 0) {
+    but->image(rgb->copy(n, n));
   }
 
   win->redraw();
@@ -192,6 +202,7 @@ static int create_tray_entry(void)
   char atom_tray_name[128];
 
   win = new Fl_Single_Window(0, 0);
+  win->callback(close_cb, 0);
   {
     but = new simple_button(0, 0, 0, 0);
     but->box(FL_NO_BOX);
@@ -211,8 +222,8 @@ static int create_tray_entry(void)
   {
     menu_entry *m1 = new menu_entry(0,  0, 140, 26, "  Run command");
     menu_entry *m2 = new menu_entry(0, 26, 140, 26, "  Quit");
-    m1->callback(callback);
-    m2->callback(close_cb);
+    m1->callback(close_cb, 1);
+    m2->callback(close_cb, 0);
 
     if (command) {
       char buf[36];
