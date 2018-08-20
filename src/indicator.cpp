@@ -132,7 +132,7 @@ static void popup_cb(Fl_Widget *)
     but->box(FL_NO_BOX);  /* box color becomes invisible */
   } else {
     but->box(FL_FLAT_BOX);  /* box color becomes visible */
-    menu->position(win->x(), win->y());
+    menu->position(Fl::event_x_root() - Fl::event_x(), Fl::event_y_root() - Fl::event_y());
     menu->show();
   }
   win->redraw();
