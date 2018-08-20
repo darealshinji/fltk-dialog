@@ -1,0 +1,33 @@
+Source: fltk-dialog
+Section: misc
+Priority: optional
+Maintainer: Israel Dahl <israeldahl@gmail.com>
+Build-Depends:
+ debhelper (>= 9.0.0),
+ gcc-multilib [amd64],
+ g++-multilib [amd64],
+ libc6,
+ libx11-dev,
+ libxcursor-dev,
+ libxext-dev,
+ libxfixes-dev,
+ libxft-dev,
+ libxinerama-dev,
+ cmake,
+ libnotify-dev,
+ libgcc1,
+ libstdc++6,
+ libx11-dev,
+ libxpm-dev,
+ fluid,
+ vim-common,
+ pkg-config,
+Standards-Version: 3.9.7
+Homepage: https://github.com/darealshinji/fltk-dialog/
+
+Package: fltk-dialog
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends:
+Description: FLTK Dialog
+  This is a simple FLTK-based dialog application

@@ -56,7 +56,8 @@ CXXFLAGS ?= -O3 -Wall -std=gnu++11
 # fltk-dialog build flags
 main_CXXFLAGS := -Wall -Wextra $(CXXFLAGS) $(CPPFLAGS)
 main_CXXFLAGS += -I. -Isrc -Isrc/misc -Ifltk/build -Ifltk -DFLTK_STATIC
-main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
+main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*') -std=c++11
+# add -std=c++11 for std::string pop_back()
 
 # libfltk build flags
 fltk_CFLAGS   := -Wall $(CFLAGS) $(CPPFLAGS)
