@@ -37,10 +37,7 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
-/* Issues:
- *  - sometimes the width remains smaller than the height
- *  - popup menu position remains the same
- */
+/* Issue: starting too many instances makes the icons disappear or their size uneven */
 
 class simple_button : public Fl_Box
 {
@@ -66,6 +63,7 @@ public:
 
   int handle(int event) {
     if (event == FL_UNFOCUS) {
+      hide();
       do_callback();
     }
     return Fl_Single_Window::handle(event);
@@ -104,45 +102,82 @@ menu_entry::menu_entry(int X, int Y, int W, int H, const char *L)
   clear_visible_focus();
 }
 
+#define INIT_SIZE 0
+
 static Fl_Single_Window *win;
 static simple_button *but;
-static menu_window *menu;
+static menu_window *menu = NULL;
 static const char *command, *icon;
 static bool force_nanosvg;
 static int it = 0;
-//static bool size_fixed = false;
+
+static void popup_cb(Fl_Widget *);
+static void popdown_cb(Fl_Widget *);
+static void menu_cb(Fl_Widget *);
+static void close_cb(Fl_Widget *, long exec_command);
+
+static void init_menu(void)
+{
+  menu = new menu_window(0, 0, 140, 52);
+  {
+    menu_entry *m1 = new menu_entry(0,  0, 140, 26, "  Run command");
+    menu_entry *m2 = new menu_entry(0, 26, 140, 26, "  Quit");
+    m1->callback(close_cb, 1);
+    m2->callback(close_cb, 0);
+
+    if (command) {
+      char buf[36];
+      const char *appendix = "[...]";
+      const int len = 5;  /* strlen(appendix) */
+      const int limit = sizeof(buf) - 1;
+
+      if (strlen(command) > limit) {
+        strncpy(buf, command, limit - len);
+        strcat(buf, appendix);
+        m1->copy_tooltip(buf);
+      } else {
+        m1->tooltip(command);
+      }
+    }
+  }
+  menu->callback(menu_cb);
+  menu->end();
+  menu->border(0);
+}
+
+static void menu_cb(Fl_Widget *) {
+  //menu->hide();
+  but->box(FL_NO_BOX);
+  but->callback(popup_cb);
+  win->redraw();
+}
 
 static void popup_cb(Fl_Widget *)
 {
-  /* fixes window size but has no actual effect on the tray */
-  /*
-  if (!size_fixed) {
-    int w = win->w(), h = win->h();
-    if (w != h) {
-      int n = (w > h) ? w : h;
-      win->size(n, n);
-      but->size(n, n);
-    }
-    size_fixed = true;
+  if (win->w() != win->h()) {
+    std::cerr << "error: unexpected uneven button size:"
+      " w=" << win->w() << ", h=" << win->h() << std::endl;
   }
-  */
+  if (!menu) {
+    init_menu();
+  }
+  but->box(FL_FLAT_BOX);
+  but->callback(popdown_cb);
+  win->redraw();
+  menu->position(Fl::event_x_root() - Fl::event_x(), Fl::event_y_root() - Fl::event_y());
+  menu->show();
+}
 
-  if (menu->shown()) {
-    menu->hide();
-    but->box(FL_NO_BOX);  /* box color becomes invisible */
-  } else {
-    but->box(FL_FLAT_BOX);  /* box color becomes visible */
-    menu->position(Fl::event_x_root() - Fl::event_x(), Fl::event_y_root() - Fl::event_y());
-    menu->show();
-  }
+static void popdown_cb(Fl_Widget *) {
+  menu->hide();
+  but->box(FL_NO_BOX);
+  but->callback(popup_cb);
   win->redraw();
 }
 
 static void close_cb(Fl_Widget *, long exec_command)
 {
-  if (menu->shown()) {
-    menu->hide();
-  }
+  menu->hide();
   win->hide();
 
   if (exec_command && command && strlen(command) > 0) {
@@ -158,7 +193,7 @@ static void set_size(void *)
   int w = win->w();
   int h = win->h();
 
-  if (w == 0 || h == 0) {
+  if (w == INIT_SIZE || h == INIT_SIZE) {
     it++;
     /* don't loop forever */
     if (it < 5000) {
@@ -185,8 +220,6 @@ static void set_size(void *)
     but->image(rgb->copy(n, n));
   }
 
-  win->redraw();
-
   if (rgb) {
     delete rgb;
   }
@@ -196,53 +229,10 @@ static int create_tray_entry(void)
 {
   Fl_Color flcol = 0;
   Window dock;
+  XEvent ev;
   XColor xcol;
   XImage *image;
-  XEvent ev;
   char atom_tray_name[128];
-
-  win = new Fl_Single_Window(0, 0);
-  win->callback(close_cb, 0);
-  {
-    but = new simple_button(0, 0, 0, 0);
-    but->box(FL_NO_BOX);
-    if (msg) {
-      but->tooltip(msg);
-    }
-    but->callback(popup_cb);
-  }
-  win->end();
-  win->border(0);
-  win->show();
-  if (!win->shown()) {
-    return 1;
-  }
-
-  menu = new menu_window(0, 0, 140, 52);
-  {
-    menu_entry *m1 = new menu_entry(0,  0, 140, 26, "  Run command");
-    menu_entry *m2 = new menu_entry(0, 26, 140, 26, "  Quit");
-    m1->callback(close_cb, 1);
-    m2->callback(close_cb, 0);
-
-    if (command) {
-      char buf[36];
-      const char *appendix = "[...]";
-      const int len = 5;  /* strlen(appendix) */
-      const int limit = sizeof(buf) - 1;
-
-      if (strlen(command) > limit) {
-        strncpy(buf, command, limit - len);
-        strcat(buf, appendix);
-        m1->copy_tooltip(buf);
-      } else {
-        m1->tooltip(command);
-      }
-    }
-  }
-  menu->callback(popup_cb);
-  menu->end();
-  menu->border(0);
 
   snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
   dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
@@ -250,6 +240,24 @@ static int create_tray_entry(void)
     return 1;
   }
 
+  win = new Fl_Single_Window(INIT_SIZE, INIT_SIZE);
+  {
+    but = new simple_button(0, 0, INIT_SIZE, INIT_SIZE);
+    but->box(FL_NO_BOX);
+    if (msg) {
+      but->tooltip(msg);
+    }
+    but->callback(popup_cb);
+  }
+  win->when(FL_WHEN_NEVER);
+  win->end();
+  win->border(0);
+  win->show();
+  if (!win->shown()) {
+    return 1;
+  }
+
+  /* dock window */
   memset(&ev, 0, sizeof(ev));
   ev.xclient.type = ClientMessage;
   ev.xclient.window = dock;
@@ -276,7 +284,7 @@ static int create_tray_entry(void)
 
   Fl::add_timeout(0.005, set_size);  /* 5 ms */
 
-  return Fl::run();
+  return 0;
 }
 
 int dialog_indicator(const char *command_, const char *icon_, bool force_nanosvg_)
@@ -289,6 +297,8 @@ int dialog_indicator(const char *command_, const char *icon_, bool force_nanosvg
     std::cerr << "error: cannot create tray/indicator entry" << std::endl;
     return 1;
   }
+
+  Fl::run();
 
   return 0;
 }
