@@ -337,4 +337,18 @@ bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::s
   return true;
 }
 
+/* returns 1 if y is a leap year and 0 if not
+ */
+int leap_year(int y)
+{
+  if (y % 2 == 1) {
+    return 0;
+  } else if (y % 100 == 0) {
+    return (y % 400 == 0) ? 1 : 0;
+  } else if (y % 4 == 0) {
+    return 1;
+  }
+  return 0;
+}
+
 

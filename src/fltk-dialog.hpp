@@ -61,6 +61,25 @@
 # define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 #endif
 
+/* Must be initialized locally like this:
+ * Fl_Menu_Item item_month[] = { INIT_ITEM_MONTH };
+ */
+#define MONTH_ITEM(x)  month_names[x], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
+#define INIT_ITEM_MONTH \
+  { MONTH_ITEM(1)     }, \
+  { MONTH_ITEM(2)     }, \
+  { MONTH_ITEM(3)     }, \
+  { MONTH_ITEM(4)     }, \
+  { MONTH_ITEM(5)     }, \
+  { MONTH_ITEM(6)     }, \
+  { MONTH_ITEM(7)     }, \
+  { MONTH_ITEM(8)     }, \
+  { MONTH_ITEM(9)     }, \
+  { MONTH_ITEM(10)    }, \
+  { MONTH_ITEM(11)    }, \
+  { MONTH_ITEM(12)    }, \
+  { 0,0,0,0,0,0,0,0,0 }
+
 enum {
   DIALOG_ABOUT,
   DIALOG_CALENDAR,
@@ -108,6 +127,11 @@ enum {
   NATIVE_QT5
 };
 
+extern const char *weekdays[7];
+extern const char *month_names[13];
+extern const int days_in_month[2][13];
+extern const int ordinal_day[2][13];
+
 extern const char *title, *msg, *quote;
 extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top, use_fribidi;
 extern int override_x, override_y, override_w, override_h;
@@ -128,6 +152,7 @@ std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 char *format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest);
+int leap_year(int y);
 
 #ifdef WITH_FRIBIDI
 char *fribidi_parse_line(const char *input);

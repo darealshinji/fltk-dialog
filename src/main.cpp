@@ -635,8 +635,8 @@ int main(int argc, char **argv)
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
   }
 
-  /* keep fltk's '@' symbols enabled for HTML and Date dialogs */
-  if (dialog != DIALOG_HTML && dialog != DIALOG_DATE) {
+  /* keep fltk's '@' symbols enabled for HTML, date and calendar dialogs */
+  if (dialog != DIALOG_HTML && dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE) {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
 

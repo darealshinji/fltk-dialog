@@ -34,7 +34,6 @@
 #include <iostream>
 #include <time.h>
 
-#include "FDate.H"
 #include "fltk-dialog.hpp"
 
 
@@ -45,11 +44,8 @@ static int ret = 1;
 
 static void callback(Fl_Widget *)
 {
-  int dim = FDate::days[month->value() + 1];
+  int dim = days_in_month[leap_year(year->value())][month->value() + 1];
 
-  if (FDate::leap_year(year->value()) && dim == 28) {
-    ++dim;
-  }
   if (day->value() > dim) {
     day->value(dim);
   }
@@ -67,32 +63,9 @@ int dialog_date(std::string format)
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
+  Fl_Menu_Item      item_month[] = { INIT_ITEM_MONTH };
 
-  const char *mnames[] = {
-    fdate_mon_jan, fdate_mon_feb, fdate_mon_mar, fdate_mon_apr,
-    fdate_mon_may, fdate_mon_jun, fdate_mon_jul, fdate_mon_aug,
-    fdate_mon_sep, fdate_mon_oct, fdate_mon_nov, fdate_mon_dec
-  };
-
-#define MONTH_ITEM(x) mnames[x - 1], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
-
-  Fl_Menu_Item item_month[] = {
-    { MONTH_ITEM(JANUARY)   },
-    { MONTH_ITEM(FEBRUARY)  },
-    { MONTH_ITEM(MARCH)     },
-    { MONTH_ITEM(APRIL)     },
-    { MONTH_ITEM(MAY)       },
-    { MONTH_ITEM(JUNE)      },
-    { MONTH_ITEM(JULY)      },
-    { MONTH_ITEM(AUGUST)    },
-    { MONTH_ITEM(SEPTEMBER) },
-    { MONTH_ITEM(OCTOBER)   },
-    { MONTH_ITEM(NOVEMBER)  },
-    { MONTH_ITEM(DECEMBER)  },
-    { 0,0,0,0,0,0,0,0,0 }
-  };
-
-  time_t t          = time(0);
+  time_t t          = time(NULL);
   struct tm *time   = localtime(&t);
   int current_year  = time->tm_year + 1900;
   int current_month = time->tm_mon;  /* January = 0 */

@@ -24,14 +24,15 @@
 
 /* Simple custom-made localization */
 
+// TODO: replace macros with arrays?
+
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
+#include <FL/Fl_Menu_Item.H>
 
 #include <string>
 #include <stdlib.h>
 
-#include "FDate.H"
-#include "Fl_Calendar.H"
 #include "l10n.hpp"
 #include "fltk-dialog.hpp"
 
@@ -41,26 +42,26 @@
 #define FL_NO_(x)     fl_no = FL_NO_##x
 #define FL_CLOSE_(x)  fl_close = FL_CLOSE_##x
 
-#define FDATE_MO_(x) fdate_mo = FDATE_MO_##x
-#define FDATE_TU_(x) fdate_tu = FDATE_TU_##x
-#define FDATE_WE_(x) fdate_we = FDATE_WE_##x
-#define FDATE_TH_(x) fdate_th = FDATE_TH_##x
-#define FDATE_FR_(x) fdate_fr = FDATE_FR_##x
-#define FDATE_SA_(x) fdate_sa = FDATE_SA_##x
-#define FDATE_SU_(x) fdate_su = FDATE_SU_##x
+#define FDATE_MO_(x)  weekdays[0] = FDATE_MO_##x
+#define FDATE_TU_(x)  weekdays[1] = FDATE_TU_##x
+#define FDATE_WE_(x)  weekdays[2] = FDATE_WE_##x
+#define FDATE_TH_(x)  weekdays[3] = FDATE_TH_##x
+#define FDATE_FR_(x)  weekdays[4] = FDATE_FR_##x
+#define FDATE_SA_(x)  weekdays[5] = FDATE_SA_##x
+#define FDATE_SU_(x)  weekdays[6] = FDATE_SU_##x
 
-#define FDATE_MON_JAN_(x) fdate_mon_jan = FDATE_MON_JAN_##x
-#define FDATE_MON_FEB_(x) fdate_mon_feb = FDATE_MON_FEB_##x
-#define FDATE_MON_MAR_(x) fdate_mon_mar = FDATE_MON_MAR_##x
-#define FDATE_MON_APR_(x) fdate_mon_apr = FDATE_MON_APR_##x
-#define FDATE_MON_MAY_(x) fdate_mon_may = FDATE_MON_MAY_##x
-#define FDATE_MON_JUN_(x) fdate_mon_jun = FDATE_MON_JUN_##x
-#define FDATE_MON_JUL_(x) fdate_mon_jul = FDATE_MON_JUL_##x
-#define FDATE_MON_AUG_(x) fdate_mon_aug = FDATE_MON_AUG_##x
-#define FDATE_MON_SEP_(x) fdate_mon_sep = FDATE_MON_SEP_##x
-#define FDATE_MON_OCT_(x) fdate_mon_oct = FDATE_MON_OCT_##x
-#define FDATE_MON_NOV_(x) fdate_mon_nov = FDATE_MON_NOV_##x
-#define FDATE_MON_DEC_(x) fdate_mon_dec = FDATE_MON_DEC_##x
+#define FDATE_MON_JAN_(x)  month_names[1]  = FDATE_MON_JAN_##x
+#define FDATE_MON_FEB_(x)  month_names[2]  = FDATE_MON_FEB_##x
+#define FDATE_MON_MAR_(x)  month_names[3]  = FDATE_MON_MAR_##x
+#define FDATE_MON_APR_(x)  month_names[4]  = FDATE_MON_APR_##x
+#define FDATE_MON_MAY_(x)  month_names[5]  = FDATE_MON_MAY_##x
+#define FDATE_MON_JUN_(x)  month_names[6]  = FDATE_MON_JUN_##x
+#define FDATE_MON_JUL_(x)  month_names[7]  = FDATE_MON_JUL_##x
+#define FDATE_MON_AUG_(x)  month_names[8]  = FDATE_MON_AUG_##x
+#define FDATE_MON_SEP_(x)  month_names[9]  = FDATE_MON_SEP_##x
+#define FDATE_MON_OCT_(x)  month_names[10] = FDATE_MON_OCT_##x
+#define FDATE_MON_NOV_(x)  month_names[11] = FDATE_MON_NOV_##x
+#define FDATE_MON_DEC_(x)  month_names[12] = FDATE_MON_DEC_##x
 
 #define FL_L10N_(x) \
   FL_OK_(x); \
@@ -97,16 +98,44 @@
   WEEKDAYS_L10N_(x); \
   MONTHS_L10N_(x)
 
+const char *weekdays[7] = {
+  "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"
+};
+
+const char *month_names[13] = {
+  NULL,
+  "January",
+  "Febuary",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+};
+
+const int days_in_month[2][13] = {
+  { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+  { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+};
+
+const int ordinal_day[2][13] = {
+  { 0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
+  { 0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
+};
+
 /* returns true if language is Arabic */
 bool l10n(void)
 {
   std::string region, lang;
   char *env;
 
-  if (!(env = getenv("LANG"))) {
-    if (!(env = getenv("LANGUAGE"))) {
-      return false;
-    }
+  if (!(env = getenv("LANG")) && !(env = getenv("LANGUAGE"))) {
+    return false;
   }
   region = std::string(env);
   region = region.substr(0,5);

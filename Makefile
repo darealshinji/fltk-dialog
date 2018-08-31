@@ -25,9 +25,7 @@ OBJS = \
 	src/date.o \
 	src/dnd.o \
 	src/dropdown.o \
-	src/FDate.o \
 	src/file.o \
-	src/Fl_Calendar.o \
 	src/font.o \
 	src/html.o \
 	src/img_to_rgb.o \
