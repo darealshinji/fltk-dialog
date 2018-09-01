@@ -53,7 +53,6 @@ static const Fl_Color cdark = fl_darker(FL_GRAY);
 static int selected_year = 0, selected_month = 0, selected_day = 0;
 static int last_days_of_prev_m = 0;
 
-static bool arabic = false;
 static int ret = 1;
 
 static void callback(Fl_Widget *, long n);
@@ -63,21 +62,20 @@ static void set_calendar(bool get_current_day=true, int y=0, int m=0, int d=0);
 
 static const char *int_to_str(unsigned int n, std::string &s)
 {
-  if (!arabic) {
-    std::stringstream ss;
-    ss << n;
-    s = ss.str();
+  std::stringstream ss;
+
+  if (selected_language == LANG_AR) {
+    s.clear();
+    while (n != 0) {
+      s.insert(0, "\xD9\xA0");
+      s[1] += n % 10;
+      n /= 10;
+    }
     return s.c_str();
   }
 
-  s.clear();
-
-  while (n != 0) {
-    s.insert(0, "\xD9\xA0");
-    s[1] += n % 10;
-    n /= 10;
-  }
-
+  ss << n;
+  s = ss.str();
   return s.c_str();
 }
 
@@ -281,18 +279,15 @@ static void close_cb(Fl_Widget *, long p) {
   ret = p;
 }
 
-int dialog_calendar(std::string format, bool arabic_)
+int dialog_calendar(std::string format)
 {
   Fl_Group         *g1, *g2, *g3;
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
-  Fl_Menu_Item      item_month[] = { INIT_ITEM_MONTH };
 
   const int but_h = 28;
   int but_w = 36, line = 1;
-
-  arabic = arabic_;
 
   if (!title) {
     title = "FLTK calendar";
@@ -333,7 +328,7 @@ int dialog_calendar(std::string format, bool arabic_)
       }
 
       for (int i = 0; i < 7; i++) {
-        { Fl_Box *o = new Fl_Box(but_w*i + 10 + but_w, but_h + 20, but_w, but_h, weekdays[i]);
+        { Fl_Box *o = new Fl_Box(but_w*i + 10 + but_w, but_h + 20, but_w, but_h, weekdays[selected_language][i]);
          o->box(FL_FLAT_BOX);
          //o->labelcolor(???);
          o->color(cdark); }

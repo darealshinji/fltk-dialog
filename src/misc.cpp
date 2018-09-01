@@ -54,6 +54,16 @@ typedef unsigned char uuid_t[16];
 bool always_on_top = false;
 static char date[512] = {0};
 
+const int days_in_month[2][13] = {
+  { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+  { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+};
+
+const int ordinal_day[2][13] = {
+  { 0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
+  { 0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
+};
+
 void run_window(Fl_Double_Window *o, Fl_Widget *w)
 {
   if (w) {

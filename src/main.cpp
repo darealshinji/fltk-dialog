@@ -286,7 +286,7 @@ int main(int argc, char **argv)
 
   /* do the localization BEFORE we set
    * the user-specified button labels */
-  bool arabic = l10n();
+  l10n();
 
   int dialog_count = 0;  /* check if two or more dialog options were specified */
   int dialog = DIALOG_MESSAGE;  /* default message type */
@@ -680,17 +680,17 @@ int main(int argc, char **argv)
     case DIALOG_ABOUT:
       return about();
     case DIALOG_MESSAGE:
-      return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt, arabic);
+      return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
     case DIALOG_WARNING:
-      return dialog_message(MESSAGE_TYPE_WARNING, with_icon_box, but_alt, arabic);
+      return dialog_message(MESSAGE_TYPE_WARNING, with_icon_box, but_alt);
     case DIALOG_QUESTION:
-      return dialog_message(MESSAGE_TYPE_QUESTION, with_icon_box, but_alt, arabic);
+      return dialog_message(MESSAGE_TYPE_QUESTION, with_icon_box, but_alt);
     case DIALOG_INPUT:
-      return dialog_message(MESSAGE_TYPE_INPUT, false, but_alt, arabic);
+      return dialog_message(MESSAGE_TYPE_INPUT, false, but_alt);
     case DIALOG_PASSWORD:
-      return dialog_message(MESSAGE_TYPE_PASSWORD, false, but_alt, arabic);
+      return dialog_message(MESSAGE_TYPE_PASSWORD, false, but_alt);
     case DIALOG_SCALE:
-      return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, arabic, scale_min, scale_max, scale_step, scale_init);
+      return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
       return dialog_file_chooser(FILE_CHOOSER, native_mode); //, separator);
     case DIALOG_DIR_CHOOSER:
@@ -708,7 +708,7 @@ int main(int argc, char **argv)
     case DIALOG_DROPDOWN:
       return dialog_dropdown(dropdown_options, return_number, separator);
     case DIALOG_CALENDAR:
-      return dialog_calendar(format, arabic);
+      return dialog_calendar(format);
     case DIALOG_DATE:
       return dialog_date(format);
     case DIALOG_DND:

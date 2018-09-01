@@ -26,6 +26,7 @@
 #define FLTK_DIALOG_HPP
 
 #include <FL/Fl.H>
+#include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Double_Window.H>
 #include <string>
 #include <vector>
@@ -60,25 +61,6 @@
 #ifndef FLTK_DIALOG_MODULE_PATH
 # define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 #endif
-
-/* Must be initialized locally like this:
- * Fl_Menu_Item item_month[] = { INIT_ITEM_MONTH };
- */
-#define MONTH_ITEM(x)  month_names[x], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0
-#define INIT_ITEM_MONTH \
-  { MONTH_ITEM(1)     }, \
-  { MONTH_ITEM(2)     }, \
-  { MONTH_ITEM(3)     }, \
-  { MONTH_ITEM(4)     }, \
-  { MONTH_ITEM(5)     }, \
-  { MONTH_ITEM(6)     }, \
-  { MONTH_ITEM(7)     }, \
-  { MONTH_ITEM(8)     }, \
-  { MONTH_ITEM(9)     }, \
-  { MONTH_ITEM(10)    }, \
-  { MONTH_ITEM(11)    }, \
-  { MONTH_ITEM(12)    }, \
-  { 0,0,0,0,0,0,0,0,0 }
 
 enum {
   DIALOG_ABOUT,
@@ -127,15 +109,33 @@ enum {
   NATIVE_QT5
 };
 
-extern const char *weekdays[7];
-extern const char *month_names[13];
-extern const int days_in_month[2][13];
-extern const int ordinal_day[2][13];
+enum {
+  LANG_EN,
+  LANG_AR,
+  LANG_DE,
+  LANG_ES,
+  LANG_FR,
+  LANG_IT,
+  LANG_JA,
+  LANG_PT,
+  LANG_RU,
+  LANG_ZH,
+  LANG_ZH_TW,
+  LANG_COUNT
+};
 
 extern const char *title, *msg, *quote;
 extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top, use_fribidi;
 extern int override_x, override_y, override_w, override_h;
 extern int win_w, win_h, max_w, max_h;
+
+extern const char *weekdays[LANG_COUNT][7];
+extern const char *month_names[LANG_COUNT][13];
+extern Fl_Menu_Item item_month[13];
+extern int selected_language;
+
+extern const int days_in_month[2][13];
+extern const int ordinal_day[2][13];
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w);
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
@@ -161,14 +161,13 @@ char *fribidi_parse_line(const char *input);
 int dialog_message(int type = MESSAGE_TYPE_WARNING
 ,                  bool with_icon_box = true
 ,                  const char *label_but_alt = NULL
-,                  bool arabic = false
 ,                  double scale_min = 0
 ,                  double scale_max = 100
 ,                  double scale_step = 1
 ,                  double scale_init = 0);
 
 int about(void);
-int dialog_calendar(std::string format, bool arabic);
+int dialog_calendar(std::string format);
 int dialog_checklist(std::string checklist_options, bool return_value, bool check_all, char separator);
 int dialog_color(void);
 int dialog_date(std::string format);
@@ -187,7 +186,7 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 #ifdef WITH_RSVG
 Fl_RGB_Image *rsvg_to_rgb(const char *file);
 #endif
-bool l10n(void);
+void l10n(void);
 std::string get_fltk_version(void);
 
 #endif  /* !FLTK_DIALOG_HPP */

@@ -63,7 +63,6 @@ int dialog_date(std::string format)
   Fl_Box           *dummy1, *dummy2;
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
-  Fl_Menu_Item      item_month[] = { INIT_ITEM_MONTH };
 
   time_t t          = time(NULL);
   struct tm *time   = localtime(&t);
