@@ -343,7 +343,7 @@ static void close_cb(Fl_Widget *, long l)
     selected_file = NULL;
   }
 
-  for (int i = 0; i <= br->size(); i++) {
+  for (int i = 0; i <= br->size(); ++i) {
     if (br->data(i)) {
       free(br->data(i));
     }
@@ -427,7 +427,7 @@ static void br_change_dir(void)
   int n = fl_filename_list(current_dir.c_str(), &list);
 
   if (n > 0) {
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; ++i) {
       size_t len = strlen(list[i]->d_name);
 
       if (len > 1 && list[i]->d_name[len-1] == '/') {
@@ -445,7 +445,7 @@ static void br_change_dir(void)
   }
 
   /* clear browser */
-  for (int i = 0; i <= br->size(); i++) {
+  for (int i = 0; i <= br->size(); ++i) {
     if (br->data(i)) {
       free(br->data(i));
     }
@@ -458,7 +458,7 @@ static void br_change_dir(void)
     std::sort(vec.begin(), vec.end(), ignorecaseSort);
 
     /* list directories */
-    for (auto it = vec.begin(); it != vec.end(); it++) {
+    for (auto it = vec.begin(); it != vec.end(); ++it) {
       std::string &s = *it;
       if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
         std::string path = current_dir;
@@ -488,7 +488,7 @@ static void br_change_dir(void)
 
     /* list files */
     if (list_files) {
-      for (auto it = vec2.begin(); it != vec2.end(); it++) {
+      for (auto it = vec2.begin(); it != vec2.end(); ++it) {
         std::string &s = *it;
         if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
           std::string path = current_dir;
@@ -631,7 +631,7 @@ char *file_chooser(const char *title, int mode)
             for (const auto type : xdg_types) {
               /* begin at the last vector entry; if there were multiple entries
                * of the same XDG type we pick the last one added to the config file */
-              for (auto it = vec.end() - 1; it >= vec.begin(); it--) {
+              for (auto it = vec.end() - 1; it >= vec.begin(); --it) {
                 std::string &s = *it;
                 if (s.substr(0, type.size()) == type) {
                   std::string dir = s.substr(type.size());
@@ -656,7 +656,7 @@ char *file_chooser(const char *title, int mode)
             vec.clear();
             std::sort(vec2.begin(), vec2.end(), ignorecaseSort2);
 
-            for (auto it = vec2.begin(); it != vec2.end(); it++) {
+            for (auto it = vec2.begin(); it != vec2.end(); ++it) {
               std::string &s = *it;
               Fl_Button *o = new Fl_Button(10, b->y() + 30, 100, 30);
               o->label(s.c_str() + s.rfind('/') + 1);

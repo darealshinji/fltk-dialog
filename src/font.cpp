@@ -109,7 +109,7 @@ class FontDisplay : public Fl_Widget
 public:
     int font, size;
 
-    FontDisplay(Fl_Boxtype B, int X, int Y, int W, int H, const char *L=0)
+    FontDisplay(Fl_Boxtype B, int X, int Y, int W, int H, const char *L=NULL)
       : Fl_Widget(X, Y, W, H, L)
     {
       box(B);
@@ -144,7 +144,7 @@ static void fd_fonts_cb(Fl_Widget *)
   } else if (s[0] == 0) {
     /* many sizes */
     int j = 1;
-    for (int i = 1; i < 64 || i < s[n - 1]; i++) {
+    for (int i = 1; i < 65 || i < s[n - 1]; ++i) {
       char buf[16];
       if (j < n && i == s[j]) {
         snprintf(buf, sizeof(buf), "@b%d", i);
@@ -158,7 +158,7 @@ static void fd_fonts_cb(Fl_Widget *)
   } else {
     /* some sizes */
     int w = 0;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; ++i) {
       if (s[i] <= fd_pickedsize) {
         w = i;
       }
@@ -208,7 +208,7 @@ int dialog_font()
   int i = strlen(label);
   unsigned long c;
 
-  for (c = ' ' + 1; c < 127; c++) {
+  for (c = ' ' + 1; c < 127; ++c) {
     if (!(c &0x1f)) {
       label[i++] = '\n';
     }
@@ -282,7 +282,7 @@ int dialog_font()
   fd_sizes = new int*[k];
   fd_numsizes = new int[k];
 
-  for (i = 0; i < k; i++) {
+  for (i = 0; i < k; ++i) {
     int t;
     const char *name = Fl::get_font_name(i, &t);
     char buffer[128];
@@ -311,7 +311,7 @@ int dialog_font()
     fd_numsizes[i] = n;
     if (n) {
       fd_sizes[i] = new int[n];
-      for (int j = 0; j < n; j++) {
+      for (int j = 0; j < n; ++j) {
         fd_sizes[i][j] = s[j];
       }
     }

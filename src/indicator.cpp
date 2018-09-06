@@ -42,7 +42,7 @@
 class simple_button : public Fl_Box
 {
 public:
-  simple_button(int X, int Y, int W, int H, const char *L=0)
+  simple_button(int X, int Y, int W, int H, const char *L=NULL)
     : Fl_Box(X, Y, W, H, L)
   { }
 
@@ -57,7 +57,7 @@ public:
 class menu_window : public Fl_Single_Window
 {
 public:
-  menu_window(int X, int Y, int W, int H, const char *L=0)
+  menu_window(int X, int Y, int W, int H, const char *L=NULL)
     : Fl_Single_Window(X, Y, W, H, L)
   { }
 
@@ -73,7 +73,7 @@ public:
 class menu_entry : public Fl_Button
 {
 public:
-  menu_entry(int X, int Y, int W, int H, const char *L=0);
+  menu_entry(int X, int Y, int W, int H, const char *L=NULL);
 
   inline int handle(int event) {
     switch (event) {

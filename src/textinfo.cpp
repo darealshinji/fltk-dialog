@@ -95,7 +95,7 @@ extern "C" void *ti_getline(void *)
     }
 
     if (autoscroll) {
-      ++i;
+      i++;
       browser->bottomline(i);
     }
 

@@ -105,7 +105,7 @@ void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
     int d1 = tw / 3;
     int d2 = tw - d1;
     int ty = cy + (check_size + d2) / 2 - d1 - 2;
-    for (int n = 0; n < 3; n++, ty++) {
+    for (int n = 0; n < 3; ++n, ++ty) {
       fl_pie(ox, oy, r, r, 0, 360);
     }
   }
@@ -115,12 +115,5 @@ void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
   }
   fl_color(col);
   fl_draw(s, X + check_size + 8, Y + tsize - 1);
-}
-
-void radiolist_browser::item_select(void *v, int) {
-  cb_item *i = reinterpret_cast<cb_item *>(v);
-  check_none();
-  i->checked = 1;
-  redraw();
 }
 

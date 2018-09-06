@@ -50,7 +50,7 @@ static Fl_Double_Window *win;
 class close_box : public Fl_Box
 {
 public:
-  close_box(int X, int Y, int W, int H, const char *L=0)
+  close_box(int X, int Y, int W, int H, const char *L=NULL)
     : Fl_Box(X, Y, W, H, L) { }
 
   inline int handle(int event) {

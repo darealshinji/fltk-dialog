@@ -218,7 +218,7 @@ std::string text_wrap(const char *text, int linewidth, Fl_Font font, int font_si
       if (w > linewidth) {
         /* word is longer than line -> split the word */
         w = 0;
-        for (size_t i = 0; i < word.size(); i++) {
+        for (size_t i = 0; i < word.size(); ++i) {
           int wi = fl_width(word[i]);
           if (w + wi > remain) {
             oss << '\n' << word[i];
@@ -273,13 +273,10 @@ size_t strlastcasecmp(const char *s1, const char *s2)
     return -1;
   }
 
-  while (len1 > 0 && len2 > 0) {
+  for ( ; len1 > 0 && len2 > 0; ++n, --len1, --len2) {
     if (tolower(s1[len1 - 1]) != tolower(s2[len2 - 1])) {
       break;
     }
-    ++n;
-    --len1;
-    --len2;
   }
 
   return n;
@@ -313,7 +310,7 @@ bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::s
   uuid_generate(id);
 #endif  /* DYNAMIC_UUID */
 
-  for (size_t i = 0; i < sizeof(id); i++) {
+  for (size_t i = 0; i < sizeof(id); ++i) {
     unsigned int n = static_cast<unsigned int>(id[i]);
     if (n >= alphanum.length()) {
       n %= alphanum.length();

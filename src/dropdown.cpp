@@ -92,7 +92,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 
   menu_items = new Fl_Menu_Item[vec_size + 1];
 
-  for (size_t i = 0; i < vec_size; i++) {
+  for (size_t i = 0; i < vec_size; ++i) {
     menu_items[i] = { 0,0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 };
 
 #ifdef WITH_FRIBIDI
@@ -156,7 +156,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 
 #ifdef WITH_FRIBIDI
   if (use_fribidi) {
-    for (size_t i = 0; i < vec_size; i++) {
+    for (size_t i = 0; i < vec_size; ++i) {
       if (menu_items[i].text) {
         free(const_cast<char *>(menu_items[i].text));
       }

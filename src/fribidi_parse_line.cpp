@@ -77,7 +77,7 @@ char *fribidi_parse_line(const char *input)
   fribidi_join_arabic(bidi_types, len, embedding_levels, ar_props);
   fribidi_shape(flags, embedding_levels, len, ar_props, unicodestr);
 
-  for (line_end = 0, line_start = 0; line_end < len; line_end++) {
+  for (line_end = 0, line_start = 0; line_end < len; ++line_end) {
     if (IS_NEWLINE(unicodestr[line_end]) || line_end == len - 1) {
       if (!fribidi_reorder_line(flags, bidi_types, line_end - line_start + 1, line_start,
                                 direction, embedding_levels, unicodestr, NULL))
@@ -89,7 +89,7 @@ char *fribidi_parse_line(const char *input)
   }
 
   /* Remove zero-width fill chars put in by libfribidi */
-  for (i = 0, j = 0; i < len; i++) {
+  for (i = 0, j = 0; i < len; ++i) {
     if (unicodestr[i] != FRIBIDI_CHAR_FILL) {
       unicodestr[j++] = unicodestr[i];
     }

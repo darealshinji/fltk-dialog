@@ -44,7 +44,7 @@ static void dnd_callback(const char *items);
 class dnd_box : public Fl_Box
 {
 public:
-  dnd_box(int X, int Y, int W, int H, const char *L=0)
+  dnd_box(int X, int Y, int W, int H, const char *L=NULL)
     : Fl_Box(X, Y, W, H, L) { }
 
   inline int handle(int event) {

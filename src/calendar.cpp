@@ -143,7 +143,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   if (wd == 0) {
     wd = 6;
   } else {
-    --wd;
+    wd--;
   }
 
   switch (m) {
@@ -204,7 +204,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   }
 
   /* ISO week numbers */
-  for ( ; i < 7; i++, wn++) {
+  for ( ; i < 7; ++i, ++wn) {
     if ((wn == 53 && leap_year(y) == 0) || wn > 53) {
       wn = 1;
     }
@@ -212,7 +212,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   }
 
   /* last days of previous month */
-  for (i = first_day, j = 0; i <= days_of_prev_m; i++, j++) {
+  for (i = first_day, j = 0; i <= days_of_prev_m; ++i, ++j) {
     but[j]->copy_label(int_to_str(i, tmp));
     but[j]->labelcolor(cfont_inactive);
     but[j]->color(clight);
@@ -220,7 +220,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   }
 
   /* days of current month */
-  for (i = 1; i <= days_of_m; i++, j++) {
+  for (i = 1; i <= days_of_m; ++i, ++j) {
     but[j]->copy_label(int_to_str(i, tmp));
     but[j]->labelcolor(cfont_active);
     but[j]->color((i == d) ? cdark : clight);
@@ -228,7 +228,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   }
 
   /* first days of next month */
-  for (i = 1; i <= first_days_of_next_m; i++, j++) {
+  for (i = 1; i <= first_days_of_next_m; ++i, ++j) {
     but[j]->copy_label(int_to_str(i, tmp));
     but[j]->labelcolor(cfont_inactive);
     but[j]->color(clight);
@@ -242,7 +242,7 @@ static void callback(Fl_Widget *, long n)
 {
   selected_day = n + 1 - last_days_of_prev_m;
 
-  for (int i = 0; i < 7*6; i++) {
+  for (int i = 0; i < 7*6; ++i) {
     but[i]->color(clight);
   }
   but[n]->color(cdark);
@@ -260,7 +260,7 @@ static void prev_month_cb(Fl_Widget *, long n)
 {
   selected_month = n;
   if (selected_month == 12) {
-    --selected_year;
+    selected_year--;
   }
   set_calendar(false, selected_year, selected_month, selected_day);
 }
@@ -269,7 +269,7 @@ static void next_month_cb(Fl_Widget *, long n)
 {
   selected_month = n;
   if (selected_month == 1) {
-    ++selected_year;
+    selected_year++;
   }
   set_calendar(false, selected_year, selected_month, selected_day);
 }
@@ -320,28 +320,28 @@ int dialog_calendar(std::string format)
 
     g2 = new Fl_Group(10, but_h + 20, win->w() - 20, but_h*7);
     {
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < 7; ++i) {
         box_weekn[i] = new Fl_Box(10, but_h * i + g2->y(), but_w, but_h);
         box_weekn[i]->box(FL_FLAT_BOX);
         box_weekn[i]->color(cdark);
         //box_weekn[i]->labelcolor(???);
       }
 
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < 7; ++i) {
         { Fl_Box *o = new Fl_Box(but_w*i + 10 + but_w, but_h + 20, but_w, but_h, weekdays[selected_language][i]);
          o->box(FL_FLAT_BOX);
          //o->labelcolor(???);
          o->color(cdark); }
       }
 
-      for (int i = 0; i < 7*6; i++) {
+      for (int i = 0; i < 7*6; ++i) {
         but[i] = new Fl_Button(but_w * (i%7) + 10 + but_w, but_h * line + g2->y(), but_w, but_h);
         but[i]->box(FL_FLAT_BOX);
         but[i]->color(clight);
         but[i]->selection_color(cdark);
         but[i]->clear_visible_focus();
         if (i % 7 == 6) {
-          ++line;
+          line++;
         }
       }
     }
