@@ -13,6 +13,7 @@ WITH_FRIBIDI     ?= no
 SYSTEM_FRIBIDI   ?= no
 DYNAMIC_NOTIFY   ?= yes
 DYNAMIC_UUID     ?= yes
+DYNAMIC_MAGIC    ?= yes
 EMBEDDED_PLUGINS ?= yes
 
 BIN  = fltk-dialog
@@ -26,6 +27,7 @@ OBJS = \
 	src/dnd.o \
 	src/dropdown.o \
 	src/file.o \
+	src/file_fltk.o \
 	src/font.o \
 	src/html.o \
 	src/img_to_rgb.o \
@@ -87,6 +89,11 @@ main_CXXFLAGS += -DDYNAMIC_UUID
 else
 main_CXXFLAGS += $(shell pkg-config --cflags uuid)
 main_LIBS     += $(shell pkg-config --libs uuid)
+endif
+ifneq ($(DYNAMIC_MAGIC),no)
+main_CXXFLAGS += -DDYNAMIC_MAGIC
+else
+main_LIBS     += -lmagic
 endif
 
 ifneq ($(WITH_FRIBIDI),no)
@@ -231,6 +238,15 @@ $(libfltk): $(libpng_a) fltk/build/Makefile
 
 src/about.cpp: fltk_png.h
 src/indicator.cpp src/main.cpp: icon_png.h
+src/file_fltk.cpp: octicons_png.h
+
+OCTICONS = src/octicons/arrow-up-gray.png \
+	src/octicons/arrow-up.png \
+	src/octicons/eye.png \
+	src/octicons/file-directory.png \
+	src/octicons/file.png \
+	src/octicons/file-symlink-directory.png \
+	src/octicons/file-symlink-file.png
 
 fltk_png.h: src/fltk.png
 	$(msg_GENH)
@@ -239,6 +255,12 @@ fltk_png.h: src/fltk.png
 icon_png.h: src/icon.png
 	$(msg_GENH)
 	$(Q)xxd -i $< > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
+
+octicons_png.h: $(OCTICONS)
+	$(msg_GENH)
+	$(Q)rm -f $@ $@_
+	$(Q)$(foreach ICON,$^,xxd -i $(ICON) >> $@_; )
+	$(Q)sed -i 's|^unsigned |static const unsigned |g' $@_ && mv $@_ $@
 
 ifneq ($(WITH_FRIBIDI),no)
 ifeq ($(SYSTEM_FRIBIDI),no)

@@ -1,5 +1,3 @@
-diff --git a/FL/Fl_Device.H b/FL/Fl_Device.H
-index 4b5329f..ba31218 100644
 --- a/FL/Fl_Device.H
 +++ b/FL/Fl_Device.H
 @@ -33,6 +33,11 @@
@@ -25,36 +23,6 @@ index 4b5329f..ba31218 100644
  #endif // Fl_Device_H
  
  //
-diff --git a/FL/Fl_File_Chooser.H b/FL/Fl_File_Chooser.H
-index 344f52d..84a4295 100644
---- a/FL/Fl_File_Chooser.H
-+++ b/FL/Fl_File_Chooser.H
-@@ -144,7 +144,9 @@ public:
-   void label(const char *l);
-   const char * label();
-   void ok_label(const char *l);
-+  void cancel_label(const char *l);
-   const char * ok_label();
-+  const char * cancel_label();
-   void preview(int e); 
-   int preview() const { return previewButton->value(); }; 
- private:
-@@ -168,6 +170,13 @@ public:
-   const char *value(int f = 1); 
-   void value(const char *filename); 
-   int visible();
-+  int x();
-+  int y();
-+  int w();
-+  int h();
-+  void resize(int X, int Y, int W, int H);
-+  void border(int b);
-+  void always_on_top();
-   /**
-    [standard text may be customized at run-time]
-   */
-diff --git a/FL/Fl_Help_Dialog.H b/FL/Fl_Help_Dialog.H
-index 92fba6d..6c99424 100644
 --- a/FL/Fl_Help_Dialog.H
 +++ b/FL/Fl_Help_Dialog.H
 @@ -63,6 +63,10 @@ private:
@@ -77,8 +45,6 @@ index 92fba6d..6c99424 100644
  };
  #endif
  
-diff --git a/FL/fl_ask.H b/FL/fl_ask.H
-index 79b56ec..6c9755c 100644
 --- a/FL/fl_ask.H
 +++ b/FL/fl_ask.H
 @@ -26,6 +26,7 @@
@@ -98,8 +64,6 @@ index 79b56ec..6c9755c 100644
  // pointers you can use to change FLTK to a foreign language:
  extern FL_EXPORT const char* fl_no;
  extern FL_EXPORT const char* fl_yes;
-diff --git a/src/Fl_Choice.cxx b/src/Fl_Choice.cxx
-index ecdfedd..934052a 100644
 --- a/src/Fl_Choice.cxx
 +++ b/src/Fl_Choice.cxx
 @@ -186,13 +186,13 @@ int Fl_Choice::handle(int e) {
@@ -118,8 +82,6 @@ index ecdfedd..934052a 100644
        color(c);
      }
      if (!v || v->submenu()) return 1;
-diff --git a/src/Fl_Color_Chooser.cxx b/src/Fl_Color_Chooser.cxx
-index 4b4ce1d..8d164f9 100644
 --- a/src/Fl_Color_Chooser.cxx
 +++ b/src/Fl_Color_Chooser.cxx
 @@ -92,11 +92,11 @@ enum {
@@ -139,84 +101,6 @@ index 4b4ce1d..8d164f9 100644
  };
  
  #ifndef FL_DOXYGEN
-diff --git a/src/Fl_File_Chooser.cxx b/src/Fl_File_Chooser.cxx
-index e8e9e68..cfa83e2 100644
---- a/src/Fl_File_Chooser.cxx
-+++ b/src/Fl_File_Chooser.cxx
-@@ -378,15 +378,32 @@ void Fl_File_Chooser::ok_label(const char *l) {
-   if (l) okButton->label(l);
-   int w=0, h=0;
-   okButton->measure_label(w, h);
-+  if (w < 60) w = 60;
-   okButton->resize(cancelButton->x() - 50 - w, cancelButton->y(),
-                    w + 40, 25);
-   okButton->parent()->init_sizes();
- }
- 
-+void Fl_File_Chooser::cancel_label(const char *l) {
-+  if (l) cancelButton->label(l);
-+  int w=0, h=0;
-+  cancelButton->measure_label(w, h);
-+  if (w < 60) w = 60;
-+  cancelButton->resize(cancelButton->parent()->w() - 10 - w, cancelButton->y(),
-+                       w + 20, 25);
-+  okButton->resize(cancelButton->x() - 10 - okButton->w(), okButton->y(),
-+                   okButton->w(), okButton->h());
-+  cancelButton->parent()->init_sizes();
-+}
-+
- const char * Fl_File_Chooser::ok_label() {
-   return (okButton->label());
- }
- 
-+const char * Fl_File_Chooser::cancel_label() {
-+  return (cancelButton->label());
-+}
-+
- int Fl_File_Chooser::shown() {
-   return window->shown();
- }
-@@ -443,10 +460,38 @@ void Fl_File_Chooser::user_data(void *d) {
-   data_ = d;
- }
- 
-+int Fl_File_Chooser::x() {
-+  return window->x();
-+}
-+
-+int Fl_File_Chooser::y() {
-+  return window->y();
-+}
-+
-+int Fl_File_Chooser::w() {
-+  return window->w();
-+}
-+
-+int Fl_File_Chooser::h() {
-+  return window->h();
-+}
-+
-+void Fl_File_Chooser::resize(int X, int Y, int W, int H) {
-+  window->resize(X, Y, W, H);
-+}
-+
- int Fl_File_Chooser::visible() {
-   return window->visible();
- }
- 
-+void Fl_File_Chooser::border(int b) {
-+  window->border(b);
-+}
-+
-+void Fl_File_Chooser::always_on_top() {
-+  fl_always_on_top(window);
-+}
-+
- Fl_Widget* Fl_File_Chooser::add_extra(Fl_Widget* gr) {
-   Fl_Widget* ret=ext_group;
-   if (gr==ext_group) {
-diff --git a/src/Fl_Help_Dialog.cxx b/src/Fl_Help_Dialog.cxx
-index 23a360a..ae4ae86 100644
 --- a/src/Fl_Help_Dialog.cxx
 +++ b/src/Fl_Help_Dialog.cxx
 @@ -144,6 +144,10 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
@@ -271,8 +155,6 @@ index 23a360a..ae4ae86 100644
  //
  // End of "$Id: Fl_Help_Dialog.cxx 10612 2015-03-10 01:41:55Z AlbrechtS $".
  //
-diff --git a/src/fl_ask.cxx b/src/fl_ask.cxx
-index fc3d22f..3f7db04 100644
 --- a/src/fl_ask.cxx
 +++ b/src/fl_ask.cxx
 @@ -613,6 +613,24 @@ void fl_message_title_default(const char *title) {

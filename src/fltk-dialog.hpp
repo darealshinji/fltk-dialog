@@ -173,7 +173,7 @@ int dialog_color(void);
 int dialog_date(std::string format);
 int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
-int dialog_file_chooser(int file_mode, int native_mode); //, char separator);
+int dialog_file_chooser(int file_mode, int native_mode);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
 int dialog_indicator(const char *command, const char *indicator_icon, bool force_nanosvg);
@@ -182,6 +182,7 @@ int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autocl
 int dialog_textinfo(bool autoscroll, const char *checkbox);
 int dialog_radiolist(std::string radiolist_options, bool return_number, char separator);
 
+char *file_chooser(const char *title, int mode);
 Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 #ifdef WITH_RSVG
 Fl_RGB_Image *rsvg_to_rgb(const char *file);
