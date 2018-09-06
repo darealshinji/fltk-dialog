@@ -53,12 +53,11 @@ public:
   close_box(int X, int Y, int W, int H, const char *L=0)
     : Fl_Box(X, Y, W, H, L) { }
 
-  int handle(int event) {
-    int rv = Fl_Box::handle(event);
+  inline int handle(int event) {
     if (event == FL_RELEASE) {
       do_callback();
     }
-    return rv;
+    return Fl_Box::handle(event);
   }
 };
 

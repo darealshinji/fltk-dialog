@@ -405,12 +405,12 @@ static void br_callback(Fl_Widget *)
 }
 
 /* make sure to call setlocale(LC_ALL, "") at startup */
-inline bool ignorecaseSort(std::string &s1, std::string &s2) {
+inline bool ignorecaseSort(std::string s1, std::string s2) {
   return (strcoll(s1.c_str(), s2.c_str()) < 0);
 }
 
 /* sort by basename */
-inline bool ignorecaseSort2(std::string &s1, std::string &s2) {
+inline bool ignorecaseSort2(std::string s1, std::string s2) {
   return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
 }
 
@@ -458,16 +458,17 @@ static void br_change_dir(void)
     std::sort(vec.begin(), vec.end(), ignorecaseSort);
 
     /* list directories */
-    for (size_t i = 0; i < vec.size(); i++) {
-      if (vec.at(i)[0] != '.' || (vec.at(i)[0] == '.' && show_dotfiles)) {
+    for (auto it = vec.begin(); it != vec.end(); it++) {
+      std::string &s = *it;
+      if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
         std::string path = current_dir;
         if (path != "/") {
           path.push_back('/');
         }
-        path += vec.at(i);
+        path += s;
 
         if (fl_filename_isdir(path.c_str())) {
-          std::string entry = bg[br->size() % 2] + " " + vec.at(i);
+          std::string entry = bg[br->size() % 2] + " " + s;
           br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
 
           struct stat st;
@@ -479,7 +480,7 @@ static void br_change_dir(void)
             br->icon(br->size(), &icon_dir);
           }
         } else if (list_files) {
-          vec2.push_back(vec.at(i));
+          vec2.push_back(s);
         }
       }
     }
@@ -487,16 +488,17 @@ static void br_change_dir(void)
 
     /* list files */
     if (list_files) {
-      for (size_t i = 0; i < vec2.size(); i++) {
-        if (vec2.at(i)[0] != '.' || (vec2.at(i)[0] == '.' && show_dotfiles)) {
+      for (auto it = vec2.begin(); it != vec2.end(); it++) {
+        std::string &s = *it;
+        if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
           std::string path = current_dir;
           if (path != "/") {
             path.push_back('/');
           }
-          path += vec2.at(i);
+          path += s;
 
           if (!fl_filename_isdir(path.c_str())) {
-            std::string entry = bg[br->size() % 2] + " " + vec2.at(i);
+            std::string entry = bg[br->size() % 2] + " " + s; // vec2.at(i);
             br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
 
             struct stat st;
@@ -629,9 +631,10 @@ char *file_chooser(const char *title, int mode)
             for (const auto type : xdg_types) {
               /* begin at the last vector entry; if there were multiple entries
                * of the same XDG type we pick the last one added to the config file */
-              for (int i = vec.size() - 1; i >= 0; i--) {
-                if (vec.at(i).substr(0, type.size()) == type) {
-                  std::string dir = vec.at(i).substr(type.size());
+              for (auto it = vec.end() - 1; it >= vec.begin(); it--) {
+                std::string &s = *it;
+                if (s.substr(0, type.size()) == type) {
+                  std::string dir = s.substr(type.size());
 
                   if (!fl_filename_isdir(dir.c_str())) {
                     if (type == "XDG_DESKTOP_DIR") {
@@ -653,11 +656,11 @@ char *file_chooser(const char *title, int mode)
             vec.clear();
             std::sort(vec2.begin(), vec2.end(), ignorecaseSort2);
 
-            for (size_t i = 0; i < vec2.size(); i++) {
-              const char *dir = vec2.at(i).c_str();
+            for (auto it = vec2.begin(); it != vec2.end(); it++) {
+              std::string &s = *it;
               Fl_Button *o = new Fl_Button(10, b->y() + 30, 100, 30);
-              o->label(dir + vec2.at(i).rfind('/') + 1);
-              o->callback(xdg_callback, reinterpret_cast<void *>(const_cast<char *>(dir)));
+              o->label(s.c_str() + s.rfind('/') + 1);
+              o->callback(xdg_callback, reinterpret_cast<void *>(const_cast<char *>(s.c_str())));
               o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
               o->clear_visible_focus();
               b = o;

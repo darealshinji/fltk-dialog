@@ -104,7 +104,8 @@ char *fribidi_parse_line(const char *input)
     goto out;
   }
 
-  len = fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, unicodestr, len, output);
+  //len =
+  fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, unicodestr, len, output);
 
 out:
   FREE(unicodestr)

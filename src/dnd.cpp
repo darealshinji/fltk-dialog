@@ -47,7 +47,7 @@ public:
   dnd_box(int X, int Y, int W, int H, const char *L=0)
     : Fl_Box(X, Y, W, H, L) { }
 
-  int handle(int event) {
+  inline int handle(int event) {
     switch (event) {
       case FL_DND_ENTER:
       case FL_DND_DRAG:

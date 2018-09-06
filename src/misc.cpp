@@ -158,7 +158,7 @@ void aspect_ratio_scale(int &w, int &h, const int limit)
   }
 }
 
-void split(const std::string &s, char c, std::vector<std::string> &v)
+void split(const std::string &s, char const c, std::vector<std::string> &v)
 {
   size_t i = 0;
   size_t j = s.find(c);

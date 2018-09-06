@@ -85,7 +85,7 @@
 /* slightly modified version of Fl_Check_Browser::item_draw() */
 void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
 {
-  cb_item *i = (cb_item *)v;
+  cb_item *i = reinterpret_cast<cb_item *>(v);
   char *s = i->text;
   int tsize = textsize();
   int check_size = tsize - 2;
@@ -115,5 +115,12 @@ void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
   }
   fl_color(col);
   fl_draw(s, X + check_size + 8, Y + tsize - 1);
+}
+
+void radiolist_browser::item_select(void *v, int) {
+  cb_item *i = reinterpret_cast<cb_item *>(v);
+  check_none();
+  i->checked = 1;
+  redraw();
 }
 

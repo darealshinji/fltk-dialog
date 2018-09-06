@@ -64,19 +64,11 @@ protected:
 public:
   loop_bar(int x, int y, int w, int h);
 
-  double slider_size() const {
-    return slider_size_;
-  }
-  void slider_size(double v) {
-    slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2;
-  }
+  inline double slider_size() const { return slider_size_; }
+  inline void slider_size(double v) { slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2; }
 
-  double value() const {
-    return value_;
-  }
-  void value(double v) {
-    value_ = v;
-  }
+  inline double value() const { return value_; }
+  inline void value(double v) { value_ = v; }
 };
 
 void loop_bar::draw()
@@ -96,17 +88,16 @@ void loop_bar::draw()
   fl_pop_clip();
 
   /* slider */
-  if (value_ > 0.0 && value_ < 1.0) {
-    sw = slider_size_ * w();
+  if (value() > 0.0 && value() < 1.0) {
+    sw = slider_size() * w();
     max = w() + sw;
     bx1 = x() + dx;
-    bx2 = bx1 + (value_ * max) - sw;
+    bx2 = bx1 + (value() * max) - sw;
     by = y() + dy;
     bh = h() - dh;
 
     fl_push_clip(bx1, by, w() - dw, bh);
-    draw_box(FL_FLAT_BOX, bx2, by, sw - dw, bh,
-             active_r() ? selection_color() : fl_inactive(selection_color()));
+    draw_box(FL_FLAT_BOX, bx2, by, sw - dw, bh, active_r() ? selection_color() : fl_inactive(selection_color()));
     fl_pop_clip();
   }
 }

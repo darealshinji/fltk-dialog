@@ -145,7 +145,7 @@ void set_undecorated(Fl_Double_Window *o);  /* place after show() */
 void set_always_on_top(Fl_Double_Window *o);  /* place after show() */
 int measure_button_width(const char *label, int extra_width = 0);
 void aspect_ratio_scale(int &w, int &h, const int limit);
-void split(const std::string &s, char c, std::vector<std::string> &v);
+void split(const std::string &s, char const c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
@@ -188,7 +188,14 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 Fl_RGB_Image *rsvg_to_rgb(const char *file);
 #endif
 void l10n(void);
+
+#ifdef FLTK_STATIC
+inline std::string get_fltk_version(void) {
+  return XSTRINGIFY(FL_MAJOR_VERSION) "." XSTRINGIFY(FL_MINOR_VERSION) "." XSTRINGIFY(FL_PATCH_VERSION);
+}
+#else
 std::string get_fltk_version(void);
+#endif
 
 #endif  /* !FLTK_DIALOG_HPP */
 

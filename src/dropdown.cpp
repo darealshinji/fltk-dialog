@@ -62,7 +62,10 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
-  std::vector<std::string> itemlist_v;
+  struct Fl_Menu_Item *menu_items;
+
+  std::vector<std::string> vec;
+  size_t vec_size;
 
 #ifdef WITH_FRIBIDI
   if (msg && use_fribidi && (msg = fribidi_parse_line(msg)) != NULL) {
@@ -78,40 +81,42 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
     title = "FLTK dropdown menu dialog";
   }
 
-  split(dropdown_list, separator, itemlist_v);
+  split(dropdown_list, separator, vec);
+  vec_size = vec.size();
 
-  if (itemlist_v.size() < 2) {
+  if (vec_size < 2) {
     msg = "ERROR: need at least 2 entries";
     dialog_message(MESSAGE_TYPE_INFO);
     return 1;
   }
 
-  struct Fl_Menu_Item menu_items[itemlist_v.size() + 1];
+  menu_items = new Fl_Menu_Item[vec_size + 1];
 
-  for (size_t i = 0; i < itemlist_v.size(); i++) {
+  for (size_t i = 0; i < vec_size; i++) {
     menu_items[i] = { 0,0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 };
 
 #ifdef WITH_FRIBIDI
     if (use_fribidi) {
-      if (itemlist_v[i] == "") {
+      if (vec.at(i) == "") {
         menu_items[i].text = strdup("<EMPTY>");
       } else {
-        char *tmp = fribidi_parse_line(itemlist_v[i].c_str());
+        char *tmp = fribidi_parse_line(vec.at(i).c_str());
         if (tmp) {
           menu_items[i].text = strdup(tmp);
           delete tmp;
         } else {
-          menu_items[i].text = strdup(itemlist_v[i].c_str());
+          menu_items[i].text = strdup(vec.at(i).c_str());
         }
       }
     } else
 #endif
     {
-      menu_items[i].text = (itemlist_v[i] == "") ? "<EMPTY>" : itemlist_v[i].c_str();
+      menu_items[i].text = (vec.at(i) == "") ? "<EMPTY>" : vec.at(i).c_str();
     }
   }
 
-  menu_items[itemlist_v.size()] = { 0,0,0,0,0,0,0,0,0 };
+  menu_items[vec_size] = { 0,0,0,0,0,0,0,0,0 };
+  vec.clear();
 
   win = new Fl_Double_Window(320, 110, title);
   win->size_range(320, 110, max_w, max_h);
@@ -141,23 +146,24 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   run_window(win, g);
 
   if (ret == 0) {
-    int item = entries->value();
+    int n = entries->value();
     if (return_number) {
-      std::cout << quote << (item + 1) << quote << std::endl;
+      std::cout << quote << n + 1 << quote << std::endl;
     } else {
-      std::cout << quote << itemlist_v[item] << quote << std::endl;
+      std::cout << quote << menu_items[n].text << quote << std::endl;
     }
   }
 
 #ifdef WITH_FRIBIDI
   if (use_fribidi) {
-    for (size_t i = 0; i < itemlist_v.size(); i++) {
+    for (size_t i = 0; i < vec_size; i++) {
       if (menu_items[i].text) {
         free(const_cast<char *>(menu_items[i].text));
       }
     }
   }
 #endif
+  delete[] menu_items;
 
   return ret;
 }

@@ -62,10 +62,10 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
   Fl_Box *dummy1, *dummy2;
   Fl_Button *but_cancel;
 
-  std::vector<std::string> radiolist_v;
-  split(radiolist_options, separator, radiolist_v);
+  std::vector<std::string> vec;
+  split(radiolist_options, separator, vec);
 
-  if (radiolist_v.size() < 2) {
+  if (vec.size() < 2) {
     title = "error: radiolist";
     msg = "Two or more options required!";
     dialog_message(MESSAGE_TYPE_WARNING);
@@ -83,18 +83,19 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
     {
       g1a = new Fl_Group(0, 0, 420, 290);
       {
-        for (size_t i = 0; i < radiolist_v.size(); ++i)
+        for (size_t i = 0; i < vec.size(); ++i)
         {
           browser = new radiolist_browser(10, 10, 400, 289);
           browser->when(FL_WHEN_CHANGED);
           browser->box(FL_THIN_DOWN_BOX);
           browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
           browser->clear_visible_focus();
-          for (size_t j = 0; j < radiolist_v.size(); ++j) {
+          for (auto it = vec.begin(); it != vec.end(); ++it) {
+            std::string &s = *it;
 #ifdef WITH_FRIBIDI
             char *tmp = NULL;
             if (use_fribidi) {
-              tmp = fribidi_parse_line(radiolist_v[j].c_str());
+              tmp = fribidi_parse_line(s.c_str());
             }
             if (tmp) {
               browser->add(tmp);
@@ -102,10 +103,11 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
             } else
 #endif
             {
-              browser->add(radiolist_v[j].c_str());
+              browser->add(s.c_str());
             }
           }
           browser->callback(callback);
+          vec.clear();
         }
         dummy1 = new Fl_Box(10, 288, 400, 1);
         dummy1->box(FL_NO_BOX);

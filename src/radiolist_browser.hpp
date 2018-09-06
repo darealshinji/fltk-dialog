@@ -36,12 +36,6 @@ public:
   }
 
   void item_draw(void *, int, int, int, int) const;
-
-  void item_select(void *v, int) {
-    cb_item *i = (cb_item *)v;
-    check_none();
-    i->checked = 1;
-    redraw();
-  }
+  void item_select(void *v, int);
 };
 
