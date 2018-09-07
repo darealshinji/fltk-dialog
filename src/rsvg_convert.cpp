@@ -48,6 +48,10 @@ extern "C" const unsigned char *rsvg_to_png_get_data(void) {
   return png_data.empty() ? NULL : reinterpret_cast<const unsigned char *>(png_data.c_str());
 }
 
+extern "C" void rsvg_to_png_clear(void) {
+  png_data.clear();
+}
+
 extern "C" int rsvg_to_png_convert(const char *input_file)
 {
   GFile *file;

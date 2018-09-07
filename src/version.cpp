@@ -26,6 +26,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "fltk-dialog.hpp"
+
 std::string get_fltk_version(void)
 {
 #ifdef FLTK_STATIC

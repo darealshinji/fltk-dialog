@@ -225,6 +225,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 
   LOAD_SYMBOL(int, rsvg_to_png_convert, (const char *))
   LOAD_SYMBOL(const unsigned char *, rsvg_to_png_get_data, (void))
+  LOAD_SYMBOL(void, rsvg_to_png_clear, (void))
 
   len = rsvg_to_png_convert(file);
   data = rsvg_to_png_get_data();
@@ -233,6 +234,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
     rgb = new Fl_PNG_Image(NULL, data, len);
   }
 
+  rsvg_to_png_clear();
   dlclose(handle);
   DELETE(plugin.c_str());
 
