@@ -47,7 +47,7 @@ public:
   dnd_box(int X, int Y, int W, int H, const char *L=NULL)
     : Fl_Box(X, Y, W, H, L) { }
 
-  inline int handle(int event) {
+  int handle(int event) {
     switch (event) {
       case FL_DND_ENTER:
       case FL_DND_DRAG:
@@ -94,6 +94,7 @@ int dialog_dnd()
   Fl_Box   *text, *dummy;
   Fl_Return_Button *but_close;
   std::string s;
+  int range;
 
   if (msg) {
 #ifdef WITH_FRIBIDI
@@ -122,7 +123,6 @@ int dialog_dnd()
   }
 
   win = new Fl_Double_Window(400, 244 + 56, title);
-  win->size_range(400, 244 + 56, max_w, max_h);
   win->callback(close_cb);
   {
     box = new dnd_box(10, 10, 380, 244, msg);
@@ -132,6 +132,7 @@ int dialog_dnd()
     {
       const char *l = "Drop count:";
       int but_w = measure_button_width(l);
+      range = but_w;
       text = new Fl_Box(10, 244 + 20, but_w, 26, l);
       text->box(FL_NO_BOX);
       text->align(FL_ALIGN_CENTER);
@@ -141,6 +142,7 @@ int dialog_dnd()
       count->align(FL_ALIGN_RIGHT);
 
       but_w = measure_button_width(fl_close, 40);
+      range += but_w + 60;
       dummy = new Fl_Box(389 - but_w, 260, 1, 1);
       dummy->box(FL_NO_BOX);
       but_close = new Fl_Return_Button(390 - but_w, 244 + 20, but_w, 26, fl_close);
@@ -149,7 +151,7 @@ int dialog_dnd()
     g->resizable(dummy);
     g->end();
   }
-  run_window(win, box);
+  run_window(win, box, range, 100);
 
   return 0;
 }

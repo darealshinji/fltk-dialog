@@ -26,6 +26,7 @@
 #define FLTK_DIALOG_HPP
 
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Double_Window.H>
 #include <string>
@@ -137,8 +138,9 @@ extern int selected_language;
 extern const int days_in_month[2][13];
 extern const int ordinal_day[2][13];
 
-void run_window(Fl_Double_Window *o, Fl_Widget *w);
+void run_window(Fl_Double_Window *o, Fl_Widget *w, int min_w, int min_h);
 void set_size(Fl_Double_Window *o, Fl_Widget *w);
+void set_size_range(Fl_Double_Window *o, int min_w, int min_h);
 void set_position(Fl_Double_Window *o);
 void set_taskbar(Fl_Double_Window *o);  /* place before show() */
 void set_undecorated(Fl_Double_Window *o);  /* place after show() */
@@ -188,14 +190,7 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 Fl_RGB_Image *rsvg_to_rgb(const char *file);
 #endif
 void l10n(void);
-
-#ifdef FLTK_STATIC
-inline std::string get_fltk_version(void) {
-  return XSTRINGIFY(FL_MAJOR_VERSION) "." XSTRINGIFY(FL_MINOR_VERSION) "." XSTRINGIFY(FL_PATCH_VERSION);
-}
-#else
 std::string get_fltk_version(void);
-#endif
 
 #endif  /* !FLTK_DIALOG_HPP */
 

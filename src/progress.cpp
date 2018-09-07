@@ -64,11 +64,11 @@ protected:
 public:
   loop_bar(int x, int y, int w, int h);
 
-  inline double slider_size() const { return slider_size_; }
-  inline void slider_size(double v) { slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2; }
+  double slider_size() const { return slider_size_; }
+  void slider_size(double v) { slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2; }
 
-  inline double value() const { return value_; }
-  inline void value(double v) { value_ = v; }
+  double value() const { return value_; }
+  void value(double v) { value_ = v; }
 };
 
 void loop_bar::draw()
@@ -285,7 +285,7 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclos
 {
   Fl_Group *g;
   Fl_Box *dummy;
-  int h = 140, offset = 0;
+  int h = 140, offset = 0, range = 80;
 
 #ifdef WITH_FRIBIDI
   if (msg && use_fribidi && (msg = fribidi_parse_line(msg)) != NULL) {
@@ -352,7 +352,7 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclos
         int but_x = win->w() - 10;
 
         if (!hide_cancel) {
-          but_w = measure_button_width(fl_cancel, 20);
+          range = but_w = measure_button_width(fl_cancel, 20);
           but_cancel = new Fl_Button(win->w() - 10 - but_w, 104 + offset, but_w, 26, fl_cancel);
           but_cancel->callback(cancel_cb);
           but_x = but_cancel->x() - 1;
@@ -365,6 +365,7 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclos
           but_ok->deactivate();
           but_ok->callback(close_cb, 0);
           but_x = but_ok->x() - 1;
+          range = win->w() - but_x - 30;
         }
 
         dummy = new Fl_Box(but_x, 103 + offset, 1, 1);
@@ -375,6 +376,7 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclos
     g->end();
   }
   set_size(win, g);
+  set_size_range(win, range, win->h());
   set_position(win);
   win->end();
 

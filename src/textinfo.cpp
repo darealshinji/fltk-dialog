@@ -52,7 +52,7 @@
 
 static Fl_Double_Window *win;
 static Fl_Multi_Browser *browser;
-static Fl_Check_Button *checkbutton;
+static Fl_Check_Button *checkbutton = NULL;
 static Fl_Return_Button *but_ret;
 static bool checkbutton_set, autoscroll;
 static int ret = 1;
@@ -103,9 +103,11 @@ extern "C" void *ti_getline(void *)
     Fl::awake(win);
   }
 
-  Fl::lock();
-  checkbutton->activate();
-  Fl::unlock();
+  if (checkbutton) {
+    Fl::lock();
+    checkbutton->activate();
+    Fl::unlock();
+  }
   Fl::awake(win);
 
   return nullptr;
@@ -118,7 +120,7 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
   Fl_Button *but;
   int browser_h = checkbox ? 418 : 444;
   int but_y = browser_h + 20;
-  int but_w;
+  int but_w, range;
   pthread_t t;
 
   autoscroll = autoscroll_;
@@ -135,7 +137,7 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
     {
       if (!checkbox) {
         win->callback(close_cb, 0);
-        but_w = measure_button_width(fl_close, 40);
+        range = but_w = measure_button_width(fl_close, 40);
         but_ret = new Fl_Return_Button(win->w() - 10 - but_w, but_y, but_w, 26, fl_close);
         but_ret->callback(close_cb, 0);
       } else {
@@ -163,6 +165,7 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
         checkbutton_set = false;
 
         but_w = measure_button_width(fl_cancel, 20);
+        range = but_w + 40;
         but = new Fl_Button(win->w() - 10 - but_w, but_y + 36, but_w, 26, fl_cancel);
         but->callback(close_cb, 1);
 
@@ -178,6 +181,7 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
     g->end();
   }
   set_size(win, browser);
+  set_size_range(win, range, checkbox ? 120 : 90);
   set_position(win);
   win->end();
 

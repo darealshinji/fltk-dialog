@@ -22,14 +22,15 @@
  * SOFTWARE.
  */
 
-#ifndef FLTK_STATIC
-
 #include <FL/Fl.H>
 #include <iostream>
 #include <sstream>
 
 std::string get_fltk_version(void)
 {
+#ifdef FLTK_STATIC
+  return XSTRINGIFY(FL_MAJOR_VERSION) "." XSTRINGIFY(FL_MINOR_VERSION) "." XSTRINGIFY(FL_PATCH_VERSION);
+#else
   int version, major, minor, patch;
   std::stringstream ss;
 
@@ -40,7 +41,6 @@ std::string get_fltk_version(void)
 
   ss << major << "." << minor << "." << patch;
   return ss.str();
-}
-
 #endif  /* !FLTK_STATIC */
+}
 

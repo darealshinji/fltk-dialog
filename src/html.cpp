@@ -29,19 +29,19 @@
 
 int dialog_html_viewer(const char *file)
 {
-  Fl_Help_Dialog *v = new Fl_Help_Dialog();
-  v->load(file);
+  Fl_Help_Dialog *o = new Fl_Help_Dialog();
+  o->load(file);
 
   if (!window_taskbar) {
-    v->border(0);
+    o->border(0);
   }
 
-  v->show();
+  o->show();
 
-  int new_x = v->x();
-  int new_y = v->y();
-  int new_w = v->w();
-  int new_h = v->h();
+  int new_x = o->x();
+  int new_y = o->y();
+  int new_w = o->w();
+  int new_h = o->h();
 
   if (resizable) {
     if (override_w > 0) {
@@ -64,16 +64,18 @@ int dialog_html_viewer(const char *file)
     }
   }
 
-  v->resize(new_x, new_y, new_w, new_h);
-
-  if (window_decoration) {
-    v->border(1);
-  } else {
-    v->border(0);
-  }
+  o->resize(new_x, new_y, new_w, new_h);
+  o->border(window_decoration ? 1 : 0);
 
   if (always_on_top) {
-    v->always_on_top();
+    o->always_on_top();
+  }
+
+  if (resizable) {
+    o->size_range(340, 100, max_w, max_h);
+  } else {
+    /* Hack! »Fl_Help_Dialog::window_->resizable(0)« doesn't work correctly. */
+    o->size_range(o->w(), o->h(), o->w(), o->h());
   }
 
   Fl::run();

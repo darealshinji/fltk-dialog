@@ -714,11 +714,10 @@ char *file_chooser(const char *title, int mode)
     g->resizable(g_main);
     g->end();
   }
-  win->size_range(400, 400);
   win->callback(close_cb, 1);
 
   home_callback(NULL);
-  run_window(win, g);
+  run_window(win, g, 320, 360);
 
   return selected_file;
 }

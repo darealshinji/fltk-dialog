@@ -294,7 +294,6 @@ int dialog_calendar(std::string format)
   }
 
   win = new Fl_Double_Window(but_w*8 + 20, but_h*9 + 40, title);
-  win->size_range(234, 196, max_w, max_h);
   win->callback(close_cb, 1);
   {
     g1 = new Fl_Group(0, 0, win->w(), but_h + 10);
@@ -364,7 +363,7 @@ int dialog_calendar(std::string format)
     g3->end();
   }
   set_calendar();
-  run_window(win, g2);
+  run_window(win, g2, 234, 196);
 
   if (ret == 0) {
     std::cout << quote << format_date(format, selected_year, selected_month, selected_day) << quote << std::endl;

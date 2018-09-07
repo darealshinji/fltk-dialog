@@ -25,23 +25,31 @@
  //
 --- a/FL/Fl_Help_Dialog.H
 +++ b/FL/Fl_Help_Dialog.H
-@@ -63,6 +63,10 @@ private:
+@@ -28,6 +28,7 @@
+ #ifndef Fl_Help_Dialog_H
+ #define Fl_Help_Dialog_H
+ #include <FL/Fl.H>
++#include <FL/fl_ask.H>
+ #include <FL/Fl_Double_Window.H>
+ #include <FL/Fl_Group.H>
+ #include <FL/Fl_Button.H>
+@@ -63,6 +64,8 @@ private:
    Fl_Help_View *view_;
    inline void cb_view__i(Fl_Help_View*, void*);
    static void cb_view_(Fl_Help_View*, void*);
-+
 +  Fl_Button *close_;
 +  static void cb_close_(Fl_Button*, void*);
-+
  public:
    ~Fl_Help_Dialog();
    int h();
-@@ -82,6 +86,8 @@ public:
+@@ -82,6 +85,10 @@ public:
    int w();
    int x();
    int y();
-+  void border(int b);
-+  void always_on_top();
++  void border(int b) { window_->border(b); }
++  void always_on_top() { fl_always_on_top(window_); }
++  void size_range(int w, int h, int xw, int xh) { window_->size_range(w, h, xw, xh); }
++  void resizable(Fl_Widget *o) { window_->resizable(o); }
  };
  #endif
  
@@ -140,21 +148,6 @@
        { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
          Fl_Group::current()->resizable(o);
        } // Fl_Box* o
-@@ -294,6 +304,14 @@ int Fl_Help_Dialog::y() {
-   return (window_->y());
- }
- 
-+void Fl_Help_Dialog::border(int b) {
-+  window_->border(b);
-+}
-+
-+void Fl_Help_Dialog::always_on_top() {
-+  fl_always_on_top(window_);
-+}
-+
- //
- // End of "$Id: Fl_Help_Dialog.cxx 10612 2015-03-10 01:41:55Z AlbrechtS $".
- //
 --- a/src/fl_ask.cxx
 +++ b/src/fl_ask.cxx
 @@ -613,6 +613,24 @@ void fl_message_title_default(const char *title) {

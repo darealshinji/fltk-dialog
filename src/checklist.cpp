@@ -55,6 +55,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
 
   std::vector<std::string> vec;
   size_t vec_size;
+  int range;
 
   split(checklist_options, separator, vec);
   vec_size = vec.size();
@@ -113,6 +114,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
     buttongroup = new Fl_Group(0, 310, 420, 42);
     {
       int but_w = measure_button_width(fl_cancel, 20);
+      range = but_w + 40;
       but_cancel = new Fl_Button(win->w() - 10 - but_w, 320, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
       but_w = measure_button_width(fl_ok, 40);
@@ -124,7 +126,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
     buttongroup->resizable(dummy2);
     buttongroup->end();
   }
-  run_window(win, g);
+  run_window(win, g, range, 100);
 
   if (ret == 0) {
     std::string list;

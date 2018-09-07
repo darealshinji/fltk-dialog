@@ -29,15 +29,14 @@ class radiolist_browser : public Fl_Check_Browser
 {
 public:
   radiolist_browser(int X, int Y, int W, int H)
-      : Fl_Check_Browser(X, Y, W, H) { }
+    : Fl_Check_Browser(X, Y, W, H) { }
 
-  virtual ~radiolist_browser() {
-    clear();
-  }
+  /* The destructor deletes all list items and destroys the browser. */
+  ~radiolist_browser() { clear(); }
 
-  void item_draw(void *, int, int, int, int) const;
+  void item_draw(void *v, int X, int Y, int, int) const;
 
-  inline void item_select(void *v, int) {
+  void item_select(void *v, int) {
     check_none();
     reinterpret_cast<cb_item *>(v)->checked = 1;
     redraw();

@@ -71,7 +71,6 @@ int dialog_color()
   Fl_Button        *but_cancel;
 
   double r = 1, g = 1, b = 1;
-  int range_w = 0;
 
   if (!title) {
     title = "color chooser";
@@ -87,11 +86,9 @@ int dialog_color()
     buttongroup = new Fl_Group(10, 165, 195, 25);
     {
       int but_w = measure_button_width(fl_cancel, 20);
-      range_w += but_w;
       but_cancel = new Fl_Button(win->w() - 10 - but_w, 165, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
       but_w = measure_button_width(fl_ok, 40);
-      range_w += but_w + 30;
       but_ok = new Fl_Return_Button(but_cancel->x() - 10 - but_w, 165, but_w, 26, fl_ok);
       but_ok->callback(close_cb, 0);
       dummy = new Fl_Box(but_ok->x() - 1, 165, 1, 1);
@@ -104,9 +101,7 @@ int dialog_color()
     chooser->callback(callback, color);
     chooser->mode(1);
   }
-  win->size_range(range_w, range_w - 26, max_w, max_h);
-  win->end();
-  run_window(win, chooser);
+  run_window(win, chooser, win->w(), win->h());
 
   if (ret == 0) {
     r = chooser->r();

@@ -36,7 +36,6 @@
 
 #include "fltk-dialog.hpp"
 
-
 static Fl_Double_Window *win;
 static Fl_Choice *month;
 static Fl_Spinner *year, *day;
@@ -75,7 +74,6 @@ int dialog_date(std::string format)
   }
 
   win = new Fl_Double_Window(400, 114, title);
-  win->size_range(400, 114, max_w, max_h);
   win->callback(close_cb, 1);
   {
     g1 = new Fl_Group(0, 0, 400, 114);
@@ -126,7 +124,7 @@ int dialog_date(std::string format)
     g2->resizable(dummy2);
     g2->end();
   }
-  run_window(win, g1);
+  run_window(win, g1, win->w(), win->h());
 
   if (ret == 0) {
     std::cout << quote << format_date(format, year->value(), month->value() + 1, day->value()) << quote << std::endl;

@@ -63,6 +63,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   Fl_Button        *but_cancel;
 
   struct Fl_Menu_Item *menu_items;
+  int range;
 
   std::vector<std::string> vec;
   size_t vec_size;
@@ -119,7 +120,6 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   vec.clear();
 
   win = new Fl_Double_Window(320, 110, title);
-  win->size_range(320, 110, max_w, max_h);
   win->callback(close_cb, 1);
   {
     g = new Fl_Group(0, 0, 320, 110);
@@ -130,6 +130,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
       entries->menu(menu_items);
 
       int but_w = measure_button_width(fl_cancel, 20);
+      range = but_w + 60;
       but_cancel = new Fl_Button(310 - but_w, 74, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
 
@@ -143,7 +144,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
     g->resizable(dummy);
     g->end();
   }
-  run_window(win, g);
+  run_window(win, g, range, win->h());
 
   if (ret == 0) {
     int n = entries->value();

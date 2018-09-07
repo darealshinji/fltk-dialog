@@ -64,11 +64,12 @@ const int ordinal_day[2][13] = {
   { 0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 }
 };
 
-void run_window(Fl_Double_Window *o, Fl_Widget *w)
+void run_window(Fl_Double_Window *o, Fl_Widget *w, int min_w, int min_h)
 {
   if (w) {
     set_size(o, w);
   }
+  set_size_range(o, min_w, min_h);
   set_position(o);
   o->end();
   set_taskbar(o);
@@ -88,6 +89,12 @@ void set_size(Fl_Double_Window *o, Fl_Widget *w)
   }
   if (override_h > 0) {
     o->size(o->w(), override_h);
+  }
+}
+
+void set_size_range(Fl_Double_Window *o, int min_w, int min_h) {
+  if (resizable) {
+    o->size_range(min_w, min_h, max_w, max_h);
   }
 }
 
@@ -111,13 +118,8 @@ void set_taskbar(Fl_Double_Window *o) {
   }
 }
 
-void set_undecorated(Fl_Double_Window *o)
-{
-  if (window_decoration) {
-    o->border(1);
-  } else {
-    o->border(0);
-  }
+void set_undecorated(Fl_Double_Window *o) {
+  o->border(window_decoration ? 1 : 0);
 }
 
 void set_always_on_top(Fl_Double_Window *o) {

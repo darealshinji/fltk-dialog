@@ -61,6 +61,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
   Fl_Group *g1, *g1a, *g2;
   Fl_Box *dummy1, *dummy2;
   Fl_Button *but_cancel;
+  int range;
 
   std::vector<std::string> vec;
   split(radiolist_options, separator, vec);
@@ -121,6 +122,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
     g2 = new Fl_Group(0, 290 + 20, 420, 36);
     {
       int but_w = measure_button_width(fl_cancel, 20);
+      range = but_w + 40;
       but_cancel = new Fl_Button(win->w() - 10 - but_w, 314, but_w, 26, fl_cancel);
       but_cancel->callback(close_cb, 1);
       but_w = measure_button_width(fl_ok, 40);
@@ -133,7 +135,7 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
     g2->resizable(dummy2);
     g2->end();
   }
-  run_window(win, g1);
+  run_window(win, g1, range, 100);
 
   if (ret == 0) {
     std::cout << quote;

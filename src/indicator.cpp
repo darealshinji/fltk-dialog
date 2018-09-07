@@ -46,7 +46,7 @@ public:
     : Fl_Box(X, Y, W, H, L)
   { }
 
-  inline int handle(int event) {
+  int handle(int event) {
     if (event == FL_PUSH) {
       do_callback();
     }
@@ -61,7 +61,7 @@ public:
     : Fl_Single_Window(X, Y, W, H, L)
   { }
 
-  inline int handle(int event) {
+  int handle(int event) {
     if (event == FL_UNFOCUS) {
       hide();
       do_callback();
@@ -75,7 +75,7 @@ class menu_entry : public Fl_Button
 public:
   menu_entry(int X, int Y, int W, int H, const char *L=NULL);
 
-  inline int handle(int event) {
+  int handle(int event) {
     switch (event) {
       case FL_ENTER:
         color(selection_color());

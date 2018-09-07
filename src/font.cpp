@@ -250,10 +250,10 @@ int dialog_font()
       fontgroup = new Fl_Group(0, 185, 550, 185);
       fontgroup->box(FL_FLAT_BOX);
       {
-        fd_fonts = new Fl_Hold_Browser(10, 190, 390, 170);
+        fd_fonts = new Fl_Hold_Browser(10, 190, 450, 170);
         fd_fonts->box(FL_FRAME_BOX);
         fd_fonts->callback(fd_fonts_cb);
-        fd_size = new Fl_Hold_Browser(410, 190, 130, 170);
+        fd_size = new Fl_Hold_Browser(470, 190, 70, 170);
         fd_size->box(FL_FRAME_BOX);
         fd_size->callback(fd_size_cb);
       }
@@ -319,7 +319,7 @@ int dialog_font()
 
   fd_fonts->value(1);
   fd_fonts_cb(fd_fonts);
-  run_window(font_win, NULL);
+  run_window(font_win, NULL, 210, 150);
 
   if (ret == 0) {
     std::cout << quote << Fl::get_font_name(fd_text->font, NULL)

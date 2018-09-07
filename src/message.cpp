@@ -215,7 +215,6 @@ int dialog_message(int type
   /* initialize window */
 
   win = new Fl_Double_Window(win_w, win_h, title);
-  win->size_range(min_w, min_h, max_w, max_h);
   win->callback(close_cb, esc_ret);
   {
     int box_x, box_w;
@@ -347,7 +346,7 @@ int dialog_message(int type
     g_buttons->resizable(dummy);
     g_buttons->end();
   }
-  run_window(win, g_box);
+  run_window(win, g_box, min_w, min_h);
 
   if (ret == 0) {
     if (input_field) {

@@ -145,8 +145,7 @@ int about()
     g2->resizable(dummy);
     g2->end();
   }
-  win->size_range(range_w, logo_h + 130, max_w, max_h);
-  run_window(win, g1);
+  run_window(win, g1, range_w, logo_h + 130);
 
   return 0;
 }
