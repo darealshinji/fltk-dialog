@@ -293,7 +293,7 @@ AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 dnl Don't use AC_CONFIG_SUBDIRS
 AS_IF([test "x$use_rsvg" = "xyes"], [
   AS_IF([test -e "librsvg/configure"], [
-    for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo libxml-2.0 libcroco-0.6 ; do
+    for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo pangoft2 libxml-2.0 libcroco-0.6 ; do
       AC_MSG_CHECKING([for package $module])
       AS_IF([test "x$(pkg-config --exists $module; echo $?)" = "x0"], [
         AC_MSG_RESULT([yes])
