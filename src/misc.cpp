@@ -282,7 +282,6 @@ char *save_to_temp(const unsigned char *data, const unsigned int data_len)
   const std::string alphanum =
     "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "0123456789" "abcdefghijklmnopqrstuvwxyz";
-  std::ofstream out;
   std::string s;
   char *path;
   uuid_t id = {0};
@@ -325,7 +324,7 @@ char *save_to_temp(const unsigned char *data, const unsigned int data_len)
     return NULL;
   }
 
-  out = std::ofstream(path, std::ios::out|std::ios::binary);
+  std::ofstream out(path, std::ios::out|std::ios::binary);
   if (!out) {
     std::cerr << "error: cannot open file: " << path << std::endl;
     free(path);

@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-//#define USE_SVPNG 1
-
 #include <iostream>
 #include <fstream>
 #include <dlfcn.h>
@@ -34,14 +32,7 @@
 #include "icon_png.h"
 #include "indicator_gtk.h"
 
-#ifdef USE_SVPNG
-# define SVPNG_LINKAGE  static
-# define SVPNG_OUTPUT   std::ostream &ofs
-# define SVPNG_PUT(x)   ofs.put(x)
-# include "svpng.h"
-#else
 extern "C" int rgb_to_png(const char *file, const unsigned char *rgba, int w, int h);
-#endif
 
 PROTO( void,             gtk_init,                            (int*, char***) )
 PROTO( GtkWidget*,       gtk_window_new,                      (GtkWindowType) )
