@@ -22,22 +22,14 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
-#include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Single_Window.H>
-#include <FL/x.H>
-
 #include <iostream>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
-
-/* Issue: starting too many instances makes the icons disappear or their size uneven */
+#include "indicator_gtk.h"
 
 class simple_button : public Fl_Box
 {
@@ -102,13 +94,12 @@ menu_entry::menu_entry(int X, int Y, int W, int H, const char *L)
   clear_visible_focus();
 }
 
-#define INIT_SIZE 0
-
-static Fl_Single_Window *win;
-static simple_button *but;
+static Fl_Single_Window *win = NULL;
+static Fl_RGB_Image *rgb = NULL;
+static simple_button *but = NULL;
 static menu_window *menu = NULL;
-static const char *command, *icon;
-static bool force_nanosvg;
+
+static const char *command = NULL;
 static int it = 0;
 
 static void popup_cb(Fl_Widget *);
@@ -126,15 +117,12 @@ static void init_menu(void)
     m2->callback(close_cb, 0);
 
     if (command) {
-      char buf[36];
-      const char *appendix = "[...]";
-      const int len = 5;  /* strlen(appendix) */
-      const int limit = sizeof(buf) - 1;
-
+      const int limit = 36;
       if (strlen(command) > limit) {
-        strncpy(buf, command, limit - len);
-        strcat(buf, appendix);
-        m1->copy_tooltip(buf);
+        std::string s = command;
+        s.erase(limit - 5);
+        s += "[...]";
+        m1->copy_tooltip(s.c_str());
       } else {
         m1->tooltip(command);
       }
@@ -146,7 +134,6 @@ static void init_menu(void)
 }
 
 static void menu_cb(Fl_Widget *) {
-  //menu->hide();
   but->box(FL_NO_BOX);
   but->callback(popup_cb);
   win->redraw();
@@ -175,25 +162,33 @@ static void popdown_cb(Fl_Widget *) {
   win->redraw();
 }
 
-static void close_cb(Fl_Widget *, long exec_command)
-{
-  menu->hide();
-  win->hide();
-
-  if (exec_command && command && strlen(command) > 0) {
+static void callback(void) {
+  if (command && strlen(command) > 0) {
     execl("/bin/sh", "sh", "-c", command, NULL);
     _exit(127);
   }
 }
 
+static void close_cb(Fl_Widget *, long exec_command)
+{
+  menu->hide();
+  win->hide();
+
+  if (rgb) {
+    delete rgb;
+  }
+
+  if (exec_command) {
+    callback();
+  }
+}
+
 static void set_size(void *)
 {
-  Fl_RGB_Image *rgb = NULL;
-
   int w = win->w();
   int h = win->h();
 
-  if (w == INIT_SIZE || h == INIT_SIZE) {
+  if (w == 0 || h == 0) {
     it++;
     /* don't loop forever */
     if (it < 5000) {
@@ -207,25 +202,18 @@ static void set_size(void *)
   win->size(n, n);
   but->size(n, n);
 
-  if (icon && strlen(icon) > 0) {
-    rgb = img_to_rgb(icon, force_nanosvg);
-  }
-
-  if (!rgb) {
-    rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
-  }
-
-  /* make icon a bit smaller than the area */
-  if ((n *= 0.72) > 0) {
-    but->image(rgb->copy(n, n));
-  }
-
   if (rgb) {
+    /* make icon a bit smaller than the area */
+    if ((n *= 0.72) > 4) {
+      but->image(rgb->copy(n, n));
+    }
+
     delete rgb;
+    rgb = NULL;
   }
 }
 
-static int create_tray_entry(void)
+static bool create_tray_entry_xlib(const char *icon, bool force_nanosvg)
 {
   Fl_Color flcol = 0;
   Window dock;
@@ -237,12 +225,12 @@ static int create_tray_entry(void)
   snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
   dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
   if (!dock) {
-    return 1;
+    return false;
   }
 
-  win = new Fl_Single_Window(INIT_SIZE, INIT_SIZE);
+  win = new Fl_Single_Window(0, 0);
   {
-    but = new simple_button(0, 0, INIT_SIZE, INIT_SIZE);
+    but = new simple_button(0, 0, 0, 0);
     but->box(FL_NO_BOX);
     if (msg) {
       but->tooltip(msg);
@@ -254,7 +242,7 @@ static int create_tray_entry(void)
   win->border(0);
   win->show();
   if (!win->shown()) {
-    return 1;
+    return false;
   }
 
   /* dock window */
@@ -282,24 +270,39 @@ static int create_tray_entry(void)
   but->color(fl_lighter(flcol));
   win->color(flcol);
 
-  Fl::add_timeout(0.005, set_size);  /* 5 ms */
-
-  return 0;
-}
-
-int dialog_indicator(const char *command_, const char *icon_, bool force_nanosvg_)
-{
-  command = command_;
-  icon = icon_;
-  force_nanosvg = force_nanosvg_;
-
-  if (create_tray_entry() != 0) {
-    std::cerr << "error: cannot create tray/indicator entry" << std::endl;
-    return 1;
+  if (icon && strlen(icon) > 0) {
+    rgb = img_to_rgb(icon, force_nanosvg);
   }
+
+  if (!rgb) {
+    rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
+  }
+
+  Fl::add_timeout(0.005, set_size);  /* 5 ms */
 
   Fl::run();
 
-  return 0;
+  return true;
+}
+
+int dialog_indicator(const char *command_, const char *icon, int flags, bool force_nanosvg)
+{
+  command = command_;
+
+  if (flags & INDICATOR_GTK) {
+    if (start_indicator_gtk(command, icon, force_nanosvg)) {
+      return 0;
+    }
+    if (flags & INDICATOR_X11) {
+      std::cerr << "warning: falling back to legacy X11 indicator" << std::endl;
+    }
+  }
+
+  if ((flags & INDICATOR_X11) && create_tray_entry_xlib(icon, force_nanosvg)) {
+    return 0;
+  }
+
+  std::cerr << "error: cannot create tray/indicator entry" << std::endl;
+  return 1;
 }
 

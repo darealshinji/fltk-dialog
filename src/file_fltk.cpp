@@ -22,19 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
-#include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Hold_Browser.H>
-#include <FL/Fl_Input.H>
-#include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Toggle_Button.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/filename.H>
-#include <FL/fl_draw.H>
-
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -93,6 +80,10 @@ static int selection = 0;
 static bool show_dotfiles = false, list_files = true;
 static char *selected_file = NULL;
 
+static void br_change_dir(void);
+static void selection_timeout(void);
+static Fl_Timeout_Handler th = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
+
 #define PNG(a,b)  static Fl_PNG_Image a(NULL, src_octicons_##b##_png, src_octicons_##b##_png_len);
 PNG(eye, eye)
 PNG(go_up, arrow_up)
@@ -101,8 +92,6 @@ PNG(icon_any, file)
 PNG(icon_dir, file_directory)
 PNG(icon_link_any, file_symlink_file)
 PNG(icon_link_dir, file_symlink_directory)
-
-static void br_change_dir(void);
 
 /* Format is XDG_xxx_DIR="$HOME/yyy", where yyy is a shell-escaped
  * homedir-relative path, or XDG_xxx_DIR="/yyy", where /yyy is an
@@ -121,29 +110,24 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
   xdg_conf = getenv("XDG_CONFIG_HOME");
 
   if (xdg_conf && strlen(xdg_conf) > 0) {
-    ifs.open(std::string(xdg_conf) + "/user-dirs.dirs");
+    ifs.open(std::string(xdg_conf) + "/user-dirs.dirs", std::ios::in|std::ios::ate);
     if (!ifs.is_open()) {
       xdg_conf = NULL;
     }
   }
 
   if (!xdg_conf) {
-    ifs.open(home_dir + "/.config/user-dirs.dirs");
+    ifs.open(home_dir + "/.config/user-dirs.dirs", std::ios::in|std::ios::ate);
     if (!ifs.is_open()) {
       return false;
     }
   }
 
-  /* user-dirs.dirs is automatically generated and it should
-   * be safe to not check for the filesize */
- /*
-  ifs.seekg(0, std::ios::end);
   if (ifs.tellg() > 1024*1024) {
     ifs.close();
     return false;
   }
   ifs.seekg(0, std::ios::beg);
-  */
 
   while (std::getline(ifs, line)) {
     size_t pos, pos2;
@@ -360,7 +344,7 @@ static void close_cb(Fl_Widget *, long l)
 
 static void br_callback(Fl_Widget *)
 {
-  Fl_Timeout_Handler th = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
+  //Fl_Timeout_Handler th = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
   const char *fname = reinterpret_cast<const char *>(br->data(br->value()));
 
   /* some workaround to change directories on double-click */
@@ -405,12 +389,12 @@ static void br_callback(Fl_Widget *)
 }
 
 /* make sure to call setlocale(LC_ALL, "") at startup */
-inline bool ignorecaseSort(std::string s1, std::string s2) {
+static bool ignorecaseSort(std::string s1, std::string s2) {
   return (strcoll(s1.c_str(), s2.c_str()) < 0);
 }
 
 /* sort by basename */
-inline bool ignorecaseSort2(std::string s1, std::string s2) {
+static bool ignorecaseSort2(std::string s1, std::string s2) {
   return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
 }
 
@@ -498,7 +482,7 @@ static void br_change_dir(void)
           path += s;
 
           if (!fl_filename_isdir(path.c_str())) {
-            std::string entry = bg[br->size() % 2] + " " + s; // vec2.at(i);
+            std::string entry = bg[br->size() % 2] + " " + s;
             br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
 
             struct stat st;
@@ -531,7 +515,7 @@ static void br_change_dir(void)
   infobox->label(NULL);
 }
 
-char *file_chooser(const char *title, int mode)
+char *file_chooser(int mode)
 {
   Fl_Button *b = NULL, *bt_cancel;
   Fl_Group *g, *g_top, *g_main, *g_main_left, *g_bottom, *g_bottom_inside;

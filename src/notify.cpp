@@ -22,15 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
-#include <FL/Fl_RGB_Image.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/fl_draw.H>
-#include <FL/x.H>
-
 #include <iostream>
 #include <string>
 #include <stdlib.h>
@@ -102,7 +93,7 @@ static void callback(void *)
   win->hide();
 }
 
-static int notification_box(double time_s, const char *notify_icon, bool force_nanosvg)
+static void notification_box(double time_s, const char *notify_icon, bool force_nanosvg)
 {
   int n, h = 160
   ,   title_h = 0
@@ -207,15 +198,14 @@ static int notification_box(double time_s, const char *notify_icon, bool force_n
     Fl::add_timeout(time_s, callback);
   }
 
-  int rv = Fl::run();
+  Fl::run();
 
   if (rgb) {
     delete rgb;
   }
-  return rv;
 }
 
-static int run_libnotify(const char *appname, int timeout, const char *notify_icon)
+static bool run_libnotify(const char *appname, int timeout, const char *notify_icon)
 {
 #ifdef DYNAMIC_NOTIFY
   /* dlopen() libnotify */
@@ -225,7 +215,7 @@ static int run_libnotify(const char *appname, int timeout, const char *notify_ic
 
   if (!handle) {
     std::cerr << error << std::endl;
-    return 1;
+    return false;
   }
 
   dlerror();
@@ -236,7 +226,7 @@ static int run_libnotify(const char *appname, int timeout, const char *notify_ic
   if (error) { \
     std::cerr << "error: " << error << std::endl; \
     dlclose(handle); \
-    return 1; \
+    return false; \
   }
 
   LOAD_SYMBOL( gboolean,             notify_init,                      (const char*) )
@@ -256,14 +246,14 @@ static int run_libnotify(const char *appname, int timeout, const char *notify_ic
 
   char *resolved_path = NULL;
   NotifyNotification *n;
-  int rv = 0;
+  bool rv = true;
 
   notify_init(appname);
 
   if (!notify_is_initted()) {
     std::cerr << "error: notify_init()" << std::endl;
     DLCLOSE_NOTIFY;
-    return 1;
+    return false;
   }
 
   if (notify_icon) {
@@ -278,7 +268,7 @@ static int run_libnotify(const char *appname, int timeout, const char *notify_ic
 
   if (!notify_notification_show(n, NULL)) {
     std::cerr << "error: notify_notification_show()" << std::endl;
-    rv = 1;
+    rv = false;
   }
 
   notify_uninit();
@@ -310,11 +300,12 @@ int dialog_notify(const char *appname, int timeout, const char *notify_icon, boo
     title = "No title";
   }
 
-  int rv = libnotify ? run_libnotify(appname, timeout, notify_icon) : 1;
-
-  if (rv != 0) {
-    rv = notification_box(timeout, notify_icon, force_nanosvg);
+  if (libnotify && run_libnotify(appname, timeout, notify_icon)) {
+    return 0;
   }
-  return rv;
+
+  notification_box(timeout, notify_icon, force_nanosvg);
+
+  return 0;
 }
 

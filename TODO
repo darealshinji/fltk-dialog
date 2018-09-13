@@ -1,4 +1,6 @@
  * finish documentation + HTML documentation (--html-doc)
  * write --forms dialog
  * --text-info: autoclose? disable close button until it's finished?
+ * --directory: hide "OK" button?
+ * dlopen() librsvg?
 

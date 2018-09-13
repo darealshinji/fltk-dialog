@@ -35,10 +35,6 @@
  * https://en.wikipedia.org/wiki/Arabic_Presentation_Forms-B
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Menu_Item.H>
-
 #include <string>
 #include <stdlib.h>
 

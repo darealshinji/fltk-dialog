@@ -26,12 +26,6 @@
  * source: https://github.com/Taywee/args */
 #include "args.hxx"
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/Fl_PNG_Image.H>
-
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -123,7 +117,8 @@ int main(int argc, char **argv)
     Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len));
     l10n();
     position_center = true;
-    return about();
+    about();
+    return 0;
   }
 
   args::ArgumentParser ap_main("FLTK dialog - run dialog boxes from shell scripts", "");
@@ -250,6 +245,11 @@ int main(int argc, char **argv)
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout value may be "
                        "ignored by some desktop environments)", {"libnotify"});
 
+  args::Group g_indicator_options(ap_main, "Indicator options:");
+  ARG_T  arg_force_legacy(g_indicator_options, "force-legacy", "Use the old X11 indicator system instead of libappindicator "
+                          "(this may not work on most DEs)", {"force-legacy"});
+  ARG_T  arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system", {"skip-legacy"});
+
   std::string appendix = "  using FLTK version " + get_fltk_version() + " - http://www.fltk.org\n\n"
     "  https://github.com/darealshinji/fltk-dialog\n";
 
@@ -304,15 +304,11 @@ int main(int argc, char **argv)
   window_taskbar = arg_skip_taskbar ? false : true;
   bool with_icon_box = arg_no_symbol ? false : true;
   resizable = arg_fixed ? false : true;
-  position_center = arg_center ? true : false;
-  always_on_top = arg_always_on_top ? true : false;
-  bool return_number = arg_return_number ? true : false;
-  bool libnotify = arg_libnotify ? true : false;
+  position_center = arg_center;
+  always_on_top = arg_always_on_top;
   quote = arg_quoted_output ? "\"" : "";
-#ifdef WITH_RSVG
-  bool force_nanosvg = arg_force_nanosvg ? true : false;
-#else
-  bool force_nanosvg = false;
+#if !defined(WITH_RSVG)
+  const bool arg_force_nanosvg = false;
 #endif
 #ifdef WITH_FRIBIDI
   use_fribidi = arg_disable_fribidi ? false : true;
@@ -472,18 +468,21 @@ int main(int argc, char **argv)
 
   /* indicator */
   const char *indicator_command = NULL;
+  int indicator_flags = INDICATOR_X11|INDICATOR_GTK;
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     indicator_command = args::get(arg_indicator).c_str();
+    if (arg_force_legacy) {
+      indicator_flags = INDICATOR_X11;
+    } else if (arg_skip_legacy) {
+      indicator_flags = INDICATOR_GTK;
+    }
     dialog_count++;
   }
 
   /* progress */
   int multi = 1;
   long kill_pid = -1;
-  bool pulsate = arg_pulsate ? true : false;
-  bool autoclose = arg_auto_close ? true : false;
-  bool hide_cancel = arg_no_cancel ? true : false;
   if (arg_progress) {
     dialog = DIALOG_PROGRESS;
     dialog_count++;
@@ -515,8 +514,6 @@ int main(int argc, char **argv)
     dialog = DIALOG_CHECKLIST;
     dialog_count++;
   }
-  bool check_all = arg_check_all ? true : false;
-  bool return_value = arg_return_value ? true : false;
 
   /* radiolist */
   std::string radiolist_options = "";
@@ -549,7 +546,6 @@ int main(int argc, char **argv)
   /* text-info */
   const char *checkbox = NULL;
   GETCSTR(checkbox, arg_checkbox);
-  bool autoscroll = arg_auto_scroll ? true : false;
   if (arg_text_info) {
     dialog = DIALOG_TEXTINFO;
     dialog_count++;
@@ -581,13 +577,13 @@ int main(int argc, char **argv)
       return use_only_with(argv[0], "--timeout", "--notification");
     }
 
-    if (libnotify) {
+    if (arg_libnotify) {
       return use_only_with(argv[0], "--libnotify", "--notification");
     }
   }
 
   if (dialog != DIALOG_PROGRESS) {
-    if (pulsate) {
+    if (arg_pulsate) {
       return use_only_with(argv[0], "--pulsate", "--progress");
     }
 
@@ -599,14 +595,14 @@ int main(int argc, char **argv)
       return use_only_with(argv[0], "--watch-pid", "--progress");
     }
 
-    if (autoclose) {
+    if (arg_auto_close) {
       return use_only_with(argv[0], "--auto-close", "--progress");
     }
 
-    if (hide_cancel) {
+    if (arg_no_cancel) {
       return use_only_with(argv[0], "--no-cancel", "--progress");
     }
-  } else if (dialog == DIALOG_PROGRESS && pulsate && arg_multi) {
+  } else if (dialog == DIALOG_PROGRESS && arg_pulsate && arg_multi) {
     return use_only_with(argv[0], "--multi", "--progress, but not with --pulsate");
   }
 
@@ -615,15 +611,15 @@ int main(int argc, char **argv)
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
 
-  if (return_value && dialog != DIALOG_CHECKLIST) {
+  if (arg_return_value && dialog != DIALOG_CHECKLIST) {
     return use_only_with(argv[0], "--return-value", "--checklist");
   }
 
-  if (check_all && dialog != DIALOG_CHECKLIST) {
+  if (arg_check_all && dialog != DIALOG_CHECKLIST) {
     return use_only_with(argv[0], "--check-all", "--checklist");
   }
 
-  if (return_number && (dialog != DIALOG_RADIOLIST && dialog != DIALOG_DROPDOWN)) {
+  if (arg_return_number && (dialog != DIALOG_RADIOLIST && dialog != DIALOG_DROPDOWN)) {
     return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
   }
 
@@ -631,8 +627,17 @@ int main(int argc, char **argv)
     return use_only_with(argv[0], "--format", "--calendar or --date");
   }
 
-  if ((autoscroll || checkbox) && dialog != DIALOG_TEXTINFO) {
+  if ((arg_auto_scroll || checkbox) && dialog != DIALOG_TEXTINFO) {
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
+  }
+
+  if (arg_force_legacy && arg_skip_legacy) {
+    std::cerr << argv[0] << ": cannot use `--force-legacy' and `--skip-legacy' together" << std::endl;
+    return 1;
+  }
+
+  if ((arg_force_legacy || arg_skip_legacy) && dialog != DIALOG_INDICATOR) {
+    return use_only_with(argv[0], "--force-legacy/--skip-legacy", "--indicator");
   }
 
   /* keep fltk's '@' symbols enabled for HTML, date and calendar dialogs */
@@ -660,7 +665,7 @@ int main(int argc, char **argv)
   GETCSTR(icon, arg_icon);
 
   if (dialog != DIALOG_NOTIFY && dialog != DIALOG_INDICATOR) {
-    rgb = img_to_rgb(icon, force_nanosvg);
+    rgb = img_to_rgb(icon, arg_force_nanosvg);
 
     if (!rgb) {
       rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
@@ -678,7 +683,8 @@ int main(int argc, char **argv)
 
   switch (dialog) {
     case DIALOG_ABOUT:
-      return about();
+      about();
+      return 0;
     case DIALOG_MESSAGE:
       return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
     case DIALOG_WARNING:
@@ -692,21 +698,21 @@ int main(int argc, char **argv)
     case DIALOG_SCALE:
       return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
-      return dialog_file_chooser(FILE_CHOOSER, native_mode); //, separator);
+      return dialog_file_chooser(FILE_CHOOSER, native_mode);
     case DIALOG_DIR_CHOOSER:
-      return dialog_file_chooser(DIR_CHOOSER, native_mode); //, separator);
+      return dialog_file_chooser(DIR_CHOOSER, native_mode);
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], timeout, icon, libnotify, force_nanosvg);
+      return dialog_notify(argv[0], timeout, icon, arg_libnotify, arg_force_nanosvg);
     case DIALOG_PROGRESS:
-      return dialog_progress(pulsate, multi, kill_pid, autoclose, hide_cancel);
+      return dialog_progress(arg_pulsate, multi, kill_pid, arg_auto_close, arg_no_cancel);
     case DIALOG_TEXTINFO:
-      return dialog_textinfo(autoscroll, checkbox);
+      return dialog_textinfo(arg_auto_scroll, checkbox);
     case DIALOG_CHECKLIST:
-      return dialog_checklist(checklist_options, return_value, check_all, separator);
+      return dialog_checklist(checklist_options, arg_return_value, arg_check_all, separator);
     case DIALOG_RADIOLIST:
-      return dialog_radiolist(radiolist_options, return_number, separator);
+      return dialog_radiolist(radiolist_options, arg_return_number, separator);
     case DIALOG_DROPDOWN:
-      return dialog_dropdown(dropdown_options, return_number, separator);
+      return dialog_dropdown(dropdown_options, arg_return_number, separator);
     case DIALOG_CALENDAR:
       return dialog_calendar(format);
     case DIALOG_DATE:
@@ -714,13 +720,14 @@ int main(int argc, char **argv)
     case DIALOG_DND:
       return dialog_dnd();
     case DIALOG_HTML:
-      return dialog_html_viewer(html);
+      dialog_html_viewer(html);
+      return 0;
     case DIALOG_COLOR:
       return dialog_color();
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, icon, force_nanosvg);
+      return dialog_indicator(indicator_command, icon, indicator_flags, arg_force_nanosvg);
     default:
       break;
   }

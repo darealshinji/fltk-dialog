@@ -22,13 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Button.H>
-#include <FL/x.H>
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -284,14 +277,15 @@ size_t strlastcasecmp(const char *s1, const char *s2)
   return n;
 }
 
-bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest)
+char *save_to_temp(const unsigned char *data, const unsigned int data_len)
 {
   const std::string alphanum =
     "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "0123456789" "abcdefghijklmnopqrstuvwxyz";
-  std::string s = "/tmp/file-";
-  uuid_t id = {0};
+  std::ofstream out;
+  std::string s;
   char *path;
+  uuid_t id = {0};
 
 #ifdef DYNAMIC_UUID
   void *handle = dlopen("libuuid.so.1", RTLD_LAZY);
@@ -312,8 +306,10 @@ bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::s
   uuid_generate(id);
 #endif  /* DYNAMIC_UUID */
 
+  s = "/tmp/file-";
+
   for (size_t i = 0; i < sizeof(id); ++i) {
-    unsigned int n = static_cast<unsigned int>(id[i]);
+    unsigned int n = id[i];
     if (n >= alphanum.length()) {
       n %= alphanum.length();
     }
@@ -321,29 +317,26 @@ bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::s
   }
 
   s += "XXXXXX";
-
   path = strdup(s.c_str());
 
   if (mkstemp(path) == -1) {
     std::cerr << "error: cannot create temporary file: " << path << std::endl;
     free(path);
-    return false;
+    return NULL;
   }
 
-  std::ofstream out(path, std::ios::out|std::ios::binary);
+  out = std::ofstream(path, std::ios::out|std::ios::binary);
   if (!out) {
     std::cerr << "error: cannot open file: " << path << std::endl;
     free(path);
-    return false;
+    return NULL;
   }
-
-  out.write(reinterpret_cast<const char *>(data), data_len);
+  if (data && data_len > 0) {
+    out.write(reinterpret_cast<const char *>(data), data_len);
+  }
   out.close();
 
-  dest = std::string(path);
-
-  free(path);
-  return true;
+  return path;
 }
 
 /* returns 1 if y is a leap year and 0 if not

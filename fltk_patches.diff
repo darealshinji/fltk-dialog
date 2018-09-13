@@ -1,28 +1,3 @@
---- a/FL/Fl_Device.H
-+++ b/FL/Fl_Device.H
-@@ -33,6 +33,11 @@
- #include <FL/Fl_RGB_Image.H>
- #include <stdlib.h>
- 
-+#ifdef __GNUC__
-+# pragma GCC diagnostic push
-+# pragma GCC diagnostic ignored "-Wunused-parameter"
-+#endif
-+
- class Fl_Graphics_Driver;
- class Fl_Font_Descriptor;
- /** \brief Points to the driver that currently receives all graphics requests */
-@@ -629,6 +634,10 @@ public:
-   Fl_RGB_Image* rectangle_capture(Fl_Widget *widget, int x, int y, int w, int h) {return NULL;}
- };
- 
-+#ifdef __GNUC__
-+# pragma GCC diagnostic pop
-+#endif
-+
- #endif // Fl_Device_H
- 
- //
 --- a/FL/Fl_Help_Dialog.H
 +++ b/FL/Fl_Help_Dialog.H
 @@ -28,6 +28,7 @@

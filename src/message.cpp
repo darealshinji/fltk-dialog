@@ -22,17 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
-#include <FL/Fl_Input.H>
-#include <FL/Fl_Return_Button.H>
-#include <FL/Fl_Slider.H>
-#include <FL/Fl_Valuator.H>
-#include <FL/Fl_Double_Window.H>
-
 #include <iostream>
 #include <iomanip>
 #include <ios>

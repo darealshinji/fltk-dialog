@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <iostream>
 #include <sstream>
 
 #include "fltk-dialog.hpp"

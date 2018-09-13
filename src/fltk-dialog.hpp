@@ -25,10 +25,55 @@
 #ifndef FLTK_DIALOG_HPP
 #define FLTK_DIALOG_HPP
 
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wshadow"
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <FL/Fl.H>
+#include <FL/filename.H>
 #include <FL/fl_ask.H>
-#include <FL/Fl_Menu_Item.H>
+#include <FL/fl_draw.H>
+#include <FL/x.H>
+
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Check_Browser.H>
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Choice.H>
+#include <FL/Fl_Color_Chooser.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Help_Dialog.H>
+#include <FL/Fl_Hold_Browser.H>
+#include <FL/Fl_Image_Surface.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Menu_Item.H>
+#include <FL/Fl_Multi_Browser.H>
+#include <FL/Fl_Native_File_Chooser.H>
+#include <FL/Fl_Progress.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Single_Window.H>
+#include <FL/Fl_Slider.H>
+#include <FL/Fl_Spinner.H>
+#include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Tile.H>
+#include <FL/Fl_Toggle_Button.H>
+#include <FL/Fl_Valuator.H>
+
+#include <FL/Fl_RGB_Image.H>
+#include <FL/Fl_BMP_Image.H>
+#include <FL/Fl_GIF_Image.H>
+#include <FL/Fl_JPEG_Image.H>
+#include <FL/Fl_PNG_Image.H>
+#include <FL/Fl_XBM_Image.H>
+#include <FL/Fl_XPM_Image.H>
+
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif
+
 #include <string>
 #include <vector>
 
@@ -111,6 +156,11 @@ enum {
 };
 
 enum {
+  INDICATOR_X11 = 1 << 1,
+  INDICATOR_GTK = 1 << 2
+};
+
+enum {
   LANG_EN,
   LANG_AR,
   LANG_DE,
@@ -128,7 +178,7 @@ enum {
 extern const char *title, *msg, *quote;
 extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top, use_fribidi;
 extern int override_x, override_y, override_w, override_h;
-extern int win_w, win_h, max_w, max_h;
+extern int max_w, max_h;
 
 extern const char *weekdays[LANG_COUNT][7];
 extern const char *month_names[LANG_COUNT][13];
@@ -153,7 +203,7 @@ std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 char *format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
-bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &dest);
+char *save_to_temp(const unsigned char *data, const unsigned int data_len);
 int leap_year(int y);
 
 #ifdef WITH_FRIBIDI
@@ -168,7 +218,7 @@ int dialog_message(int type = MESSAGE_TYPE_WARNING
 ,                  double scale_step = 1
 ,                  double scale_init = 0);
 
-int about(void);
+void about(void);
 int dialog_calendar(std::string format);
 int dialog_checklist(std::string checklist_options, bool return_value, bool check_all, char separator);
 int dialog_color(void);
@@ -177,14 +227,14 @@ int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
 int dialog_file_chooser(int file_mode, int native_mode);
 int dialog_font(void);
-int dialog_html_viewer(const char *file);
-int dialog_indicator(const char *command, const char *indicator_icon, bool force_nanosvg);
+void dialog_html_viewer(const char *file);
+int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool force_nanosvg);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox);
 int dialog_radiolist(std::string radiolist_options, bool return_number, char separator);
 
-char *file_chooser(const char *title, int mode);
+char *file_chooser(int mode);
 Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 #ifdef WITH_RSVG
 Fl_RGB_Image *rsvg_to_rgb(const char *file);

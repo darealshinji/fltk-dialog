@@ -22,11 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_File_Chooser.H>
-#include <FL/Fl_Native_File_Chooser.H>
-
 #include <iostream>
 #include <string>
 
@@ -45,7 +40,7 @@
 
 static int dialog_file_chooser_fltk(int mode)
 {
-  char *file = file_chooser(title, mode);
+  char *file = file_chooser(mode);
 
   if (file) {
     std::cout << quote << file << quote << std::endl;
@@ -81,31 +76,29 @@ static int dialog_native_file_chooser_gtk(int mode)
 #ifdef HAVE_QT
 static int dlopen_getfilenameqt(int qt_major, int mode)
 {
-  std::string plugin;
-
 #ifdef USE_SYSTEM_PLUGINS
 # define DELETE(x)
-  plugin = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
+  char plugin[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
   if (qt_major == 4) {
-    plugin[plugin.size() - 7] = '4';
+    plugin[strlen(plugin) - 7] = '4';
   }
 #else
-# define DELETE(x) unlink(x)
-  if (qt_major == 4 && !save_to_temp(qt4gui_so, qt4gui_so_len, plugin)) {
-    return -1;
-  } else if (!save_to_temp(qt5gui_so, qt5gui_so_len, plugin)) {
+# define DELETE(x)  unlink(x); free(x)
+  char *plugin = save_to_temp((qt_major == 4) ? qt4gui_so : qt5gui_so,
+                              (qt_major == 4) ? qt4gui_so_len : qt5gui_so_len);
+  if (!plugin) {
     return -1;
   }
 #endif  /* USE_SYSTEM_PLUGINS */
 
   /* dlopen() library */
 
-  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
+  void *handle = dlopen(plugin, RTLD_LAZY);
   char *error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
-    DELETE(plugin.c_str());
+    DELETE(plugin);
     return -1;
   }
 
@@ -118,7 +111,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
   if (error) {
     std::cerr << "error: " << error << std::endl;
     dlclose(handle);
-    DELETE(plugin.c_str());
+    DELETE(plugin);
     return -1;
   }
 
@@ -128,7 +121,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 
   int rv = getfilenameqt(mode, quote, title);
   dlclose(handle);
-  DELETE(plugin.c_str());
+  DELETE(plugin);
 
   return rv;
 }

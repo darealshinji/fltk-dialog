@@ -22,18 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Image_Surface.H>
-
-#include <FL/Fl_BMP_Image.H>
-#include <FL/Fl_GIF_Image.H>
-#include <FL/Fl_JPEG_Image.H>
-#include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_RGB_Image.H>
-#include <FL/Fl_XBM_Image.H>
-#include <FL/Fl_XPM_Image.H>
-
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -186,30 +174,31 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 #ifdef WITH_RSVG
 Fl_RGB_Image *rsvg_to_rgb(const char *file)
 {
-  std::string plugin;
+  Fl_RGB_Image *rgb = NULL;
+  int len;
+  const unsigned char *data;
+  void *handle;
+  char *error;
 
 #ifdef USE_SYSTEM_PLUGINS
 # define DELETE(x) /**/
-  plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
+  const char *plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
 #else
-# define DELETE(x) unlink(x)
-  if (!save_to_temp(rsvg_convert_so, rsvg_convert_so_len, plugin)) {
+# define DELETE(x)  unlink(x); free(x)
+  char *plugin = save_to_temp(rsvg_convert_so, rsvg_convert_so_len);
+  if (!plugin) {
     return NULL;
   }
 #endif
 
-  Fl_RGB_Image *rgb = NULL;
-  int len;
-  const unsigned char *data;
-
   /* dlopen() library */
 
-  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
-  char *error = dlerror();
+  handle = dlopen(plugin, RTLD_LAZY);
+  error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
-    DELETE(plugin.c_str());
+    DELETE(plugin);
     return NULL;
   }
 
@@ -220,6 +209,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
   if ((error = dlerror()) != NULL) { \
     std::cerr << error << std::endl; \
     dlclose(handle); \
+    DELETE(plugin); \
     return NULL; \
   }
 
@@ -236,7 +226,7 @@ Fl_RGB_Image *rsvg_to_rgb(const char *file)
 
   rsvg_to_png_clear();
   dlclose(handle);
-  DELETE(plugin.c_str());
+  DELETE(plugin);
 
   return rgb;
 }

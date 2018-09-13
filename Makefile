@@ -32,6 +32,7 @@ OBJS = \
 	src/html.o \
 	src/img_to_rgb.o \
 	src/indicator.o \
+	src/indicator_gtk.o \
 	src/l10n.o \
 	src/main.o \
 	src/message.o \
@@ -41,6 +42,7 @@ OBJS = \
 	src/progress.o \
 	src/radiolist.o \
 	src/radiolist_browser.o \
+	src/rgb_to_png.o \
 	src/textinfo.o \
 	src/version.o \
 	$(NULL)
@@ -54,8 +56,8 @@ CFLAGS   ?= -O3 -Wall
 CXXFLAGS ?= -O3 -Wall -std=gnu++11
 
 # fltk-dialog build flags
-main_CFLAGS   := -Wall -Wextra $(CFLAGS) $(CPPFLAGS) -I. -Isrc
-main_CXXFLAGS := -Wall -Wextra $(CXXFLAGS) $(CPPFLAGS)
+main_CFLAGS   := -Wall -Wextra -Wshadow $(CFLAGS) $(CPPFLAGS) -I. -Isrc
+main_CXXFLAGS := -Wall -Wextra -Wshadow $(CXXFLAGS) $(CPPFLAGS)
 main_CXXFLAGS += -I. -Isrc -Isrc/misc -Ifltk/build -Ifltk -DFLTK_STATIC
 main_CXXFLAGS += $(shell fltk/build/fltk-config --cxxflags 2>/dev/null | tr ' ' '\n' | grep '^-D.*')
 
@@ -142,6 +144,7 @@ ifneq ($(SYSTEM_PNG),no)
 main_LIBS += -lpng
 else
 fltk_cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="OFF"
+main_CFLAGS += -Ifltk/png
 main_LIBS += fltk/build/lib/libfltk_png.a
 endif
 

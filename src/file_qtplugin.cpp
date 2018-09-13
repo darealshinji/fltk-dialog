@@ -43,8 +43,11 @@
 # include "icon_qrc_qt4.hpp"
 #endif
 
-#include "fltk-dialog.hpp"
-
+//#include "fltk-dialog.hpp"
+enum {
+  FILE_CHOOSER,
+  DIR_CHOOSER
+};
 
 extern "C"
 int getfilenameqt(int mode, /* char separator, */ const char *quote, const char *title)

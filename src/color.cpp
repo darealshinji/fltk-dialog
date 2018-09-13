@@ -22,10 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Color_Chooser.H>
-
 #include <math.h>
 #include <stdio.h>
 

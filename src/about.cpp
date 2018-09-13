@@ -22,20 +22,10 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
-#include <FL/Fl_Return_Button.H>
-#include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Text_Display.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/filename.H>
-
 #include "fltk-dialog.hpp"
 #include "about_license.hpp"
-
 #include "fltk_png.h"
+
 #define MY_URL "https://github.com/darealshinji/fltk-dialog"
 
 static Fl_Double_Window *win;
@@ -92,7 +82,7 @@ static void close_cb(Fl_Widget *) {
   win->hide();
 }
 
-int about()
+void about()
 {
   Fl_Group *g1, *g2;
   Fl_Box *box, *dummy;
@@ -146,7 +136,5 @@ int about()
     g2->end();
   }
   run_window(win, g1, range_w, logo_h + 130);
-
-  return 0;
 }
 

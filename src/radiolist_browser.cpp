@@ -77,43 +77,43 @@
  *  USA.
  */
 
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wshadow"
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif
 
 #include "radiolist_browser.hpp"
 
-/* slightly modified version of Fl_Check_Browser::item_draw() */
+/* modified/simplified version of Fl_Check_Browser::item_draw() */
 void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
 {
   cb_item *i = reinterpret_cast<cb_item *>(v);
-  char *s = i->text;
   int tsize = textsize();
-  int check_size = tsize - 2;
+  int check_size = (tsize - 2) / 2;
   Fl_Color col = active_r() ? textcolor() : fl_inactive(textcolor());
-  int cy = Y + (tsize + 1 - check_size) / 2;
   X += 2;
 
   fl_color(active_r() ? FL_FOREGROUND_COLOR : fl_inactive(FL_FOREGROUND_COLOR));
 
-  int ox = X + check_size/2;
-  int oy = Y + check_size/2;
-  int r = check_size/2 - 1;
+  int ox = X + check_size;
+  int oy = Y + check_size;
+  int r = check_size - 1;
   fl_circle(ox+2, oy+2, r);
 
   if (i->checked) {
-    int tw = check_size - 4;
-    int d1 = tw / 3;
-    int d2 = tw - d1;
-    int ty = cy + (check_size + d2) / 2 - d1 - 2;
-    for (int n = 0; n < 3; ++n, ++ty) {
-      fl_pie(ox, oy, r, r, 0, 360);
-    }
+    fl_pie(ox, oy, r, r, 0, 360);
   }
   fl_font(textfont(), tsize);
   if (i->selected) {
     col = fl_contrast(col, selection_color());
   }
   fl_color(col);
-  fl_draw(s, X + check_size + 8, Y + tsize - 1);
+  fl_draw(i->text, X + tsize + 6, Y + tsize - 1);
 }
 

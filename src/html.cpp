@@ -22,12 +22,9 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/Fl_Help_Dialog.H>
-
 #include "fltk-dialog.hpp"
 
-int dialog_html_viewer(const char *file)
+void dialog_html_viewer(const char *file)
 {
   Fl_Help_Dialog *o = new Fl_Help_Dialog();
   o->load(file);
@@ -79,7 +76,5 @@ int dialog_html_viewer(const char *file)
   }
 
   Fl::run();
-
-  return 0;
 }
 
