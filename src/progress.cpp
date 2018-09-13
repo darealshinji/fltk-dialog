@@ -53,7 +53,7 @@ protected:
   void draw();
 
 public:
-  loop_bar(int x, int y, int w, int h);
+  loop_bar(int X, int Y, int W, int H);
 
   double slider_size() const { return slider_size_; }
   void slider_size(double v) { slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2; }
@@ -93,7 +93,8 @@ void loop_bar::draw()
   }
 }
 
-loop_bar::loop_bar(int x, int y, int w, int h) : Fl_Widget(x, y, w, h)
+loop_bar::loop_bar(int X, int Y, int W, int H)
+ : Fl_Widget(X, Y, W, H)
 {
   box(FL_DOWN_BOX);
   color(fl_darker(color()));
