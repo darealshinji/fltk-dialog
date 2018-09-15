@@ -52,6 +52,7 @@
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Multi_Browser.H>
 #include <FL/Fl_Native_File_Chooser.H>
+#include <FL/Fl_Preferences.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Single_Window.H>

@@ -36,14 +36,6 @@
 
 #include "fltk-dialog.hpp"
 
-#ifdef DYNAMIC_UUID
-# include <dlfcn.h>
-# define UUID_STR_LEN 37
-typedef unsigned char uuid_t[16];
-#else
-# include <uuid/uuid.h>
-#endif
-
 bool always_on_top = false;
 static char date[512] = {0};
 
@@ -279,40 +271,17 @@ size_t strlastcasecmp(const char *s1, const char *s2)
 
 char *save_to_temp(const unsigned char *data, const unsigned int data_len)
 {
-  const std::string alphanum =
-    "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "0123456789" "abcdefghijklmnopqrstuvwxyz";
   std::string s;
+  const char *uuid;
   char *path;
-  uuid_t id = {0};
-
-#ifdef DYNAMIC_UUID
-  void *handle = dlopen("libuuid.so.1", RTLD_LAZY);
-
-  if (handle) {
-    dlerror();
-    GETPROCADDRESS(handle, void, uuid_generate, (uuid_t))
-
-    char *error = dlerror();
-    if (!error) {
-      uuid_generate(id);
-    } else {
-      std::cerr << "error: " << error << std::endl;
-    }
-    dlclose(handle);
-  }
-#else
-  uuid_generate(id);
-#endif  /* DYNAMIC_UUID */
 
   s = "/tmp/file-";
+  uuid = Fl_Preferences::newUUID();
 
-  for (size_t i = 0; i < sizeof(id); ++i) {
-    unsigned int n = id[i];
-    if (n >= alphanum.length()) {
-      n %= alphanum.length();
-    }
-    s.push_back(alphanum[n]);
+  if (uuid) {
+    s += uuid;
+    s.append(1, '-');
+    uuid = NULL;
   }
 
   s += "XXXXXX";
