@@ -16,18 +16,12 @@ addons:
       - cmake
       - libqt4-dev
       - qtbase5-dev
-      - libglib2.0-dev
-      - libgdk-pixbuf2.0-dev
-      - libpango1.0-dev
-      - libcairo2-dev
-      - libxml2-dev
-      - libcroco3-dev
 
 script:
-  - ./autogen.sh && (./configure --enable-hardening --enable-rsvg || ./configure --enable-hardening) && make -j4 V=1
+  - ./autogen.sh && ./configure --enable-hardening && make -j4 V=1
 
 after_success:
-  - mkdir out && cp fltk-dialog out && strip --strip-all out/*
+  - mkdir out && cp fltk-dialog out/ && strip --strip-all out/fltk-dialog
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
   - bash ./upload.sh out/*
 

@@ -59,9 +59,6 @@ AC_ARG_ENABLE([dynamic-notify],
 AC_ARG_ENABLE([dynamic-magic],
   [AS_HELP_STRING([--disable-dynamic-magic], [disable dynamically loading libmagic (link directly against shared or static library)])],
   [dynamic_magic="no"], [dynamic_magic="yes"])
-AC_ARG_ENABLE([rsvg],
-  [AS_HELP_STRING([--enable-rsvg], [build rsvg plugin])],
-  [use_rsvg="yes"], [use_rsvg="no"])
 AC_ARG_ENABLE([embedded-plugins],
   [AS_HELP_STRING([--disable-embedded-plugins], [don't embed Qt file chooser plugins into executable but load them from LIBDIR/fltk-dialog])],
   [use_embedded_plugins="no"], [use_embedded_plugins="yes"])
@@ -251,32 +248,12 @@ AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
 AC_SUBST([HAVE_QT4], [$have_qt4])
 AC_SUBST([HAVE_QT5], [$have_qt5])
-AC_SUBST([WITH_RSVG], [$use_rsvg])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([DYNAMIC_MAGIC], [$dynamic_magic])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])
 
 
 dnl Don't use AC_CONFIG_SUBDIRS
-AS_IF([test "x$use_rsvg" = "xyes"], [
-  AS_IF([test -e "librsvg/configure"], [
-    for module in glib-2.0 gio-2.0 gdk-pixbuf-2.0 cairo pangocairo pangoft2 libxml-2.0 libcroco-0.6 ; do
-      AC_MSG_CHECKING([for package $module])
-      AS_IF([test "x$(pkg-config --exists $module; echo $?)" = "x0"], [
-        AC_MSG_RESULT([yes])
-      ], [
-        AC_MSG_RESULT([no])
-        exit 1
-      ])
-    done
-    echo "=== configuring in librsvg ($PWD/librsvg)"
-    cd librsvg || exit 1
-    CFLAGS="$CFLAGS $CPPFLAGS" ./configure --disable-shared --disable-tools --disable-introspection --disable-pixbuf-loader --with-pic || exit 1
-    cd -
-  ], [
-    AC_MSG_ERROR([cannot find \`librsvg/configure'; please add librsvg sources or re-run \`$0' without \`--enable-rsvg'])
-  ])
-])
 AS_IF([test "x$use_fribidi" = "xyes" -a "x$use_system_fribidi" != "xyes"], [
   AS_IF([test -e "fribidi/configure"], [
     echo "=== configuring in fribidi ($PWD/fribidi)"

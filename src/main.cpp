@@ -135,10 +135,8 @@ int main(int argc, char **argv)
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)", {"separator"})
   ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif jpg png svg svgz xbm xpm", {"icon"});
-  ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
-#ifdef WITH_RSVG
-  ARG_T  arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
-#endif
+  ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"})
+  ,      arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
   ,      arg_posx(ap, "NUMBER", "Set the X position of a window", {"posx"})
@@ -307,9 +305,6 @@ int main(int argc, char **argv)
   position_center = arg_center;
   always_on_top = arg_always_on_top;
   quote = arg_quoted_output ? "\"" : "";
-#if !defined(WITH_RSVG)
-  const bool arg_force_nanosvg = false;
-#endif
 #ifdef WITH_FRIBIDI
   use_fribidi = arg_disable_fribidi ? false : true;
 #endif

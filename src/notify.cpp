@@ -93,7 +93,7 @@ static void callback(void *)
   win->hide();
 }
 
-static void notification_box(double time_s, const char *notify_icon, bool force_nanosvg)
+static void notification_box(double time_s, Fl_RGB_Image *rgb)
 {
   int n, h = 160
   ,   title_h = 0
@@ -104,9 +104,9 @@ static void notification_box(double time_s, const char *notify_icon, bool force_
   ,         fs_title = 18
   ,         fs_message = 14;
 
-  Fl_Font font = FL_HELVETICA;
-  Fl_Font font_t = FL_HELVETICA_BOLD;
-  Fl_Image *rgb = NULL;
+  const Fl_Font font = FL_HELVETICA;
+  const Fl_Font font_t = FL_HELVETICA_BOLD;
+  Fl_Image *img = NULL;
   std::string title_wrapped, message_wrapped;
 
 #ifdef WITH_FRIBIDI
@@ -157,21 +157,18 @@ static void notification_box(double time_s, const char *notify_icon, bool force_
       close_box *o = new close_box(0, 0, w, h);
       o->callback(close_cb); }
 
-    if (notify_icon) {
-      Fl_RGB_Image *img = img_to_rgb(notify_icon, force_nanosvg);
-      if (img) {
-        int img_w = img->w();
-        int img_h = img->h();
-        if (img_w > limit || img_h > limit) {
-          aspect_ratio_scale(img_w, img_h, limit);
-          rgb = img->copy(img_w, img_h);
-          delete img;
-        } else {
-          rgb = img;
-        }
-        Fl_Box *o = new Fl_Box(10, 10, limit, limit);
-        o->image(rgb);
+    if (rgb) {
+      int img_w = rgb->w();
+      int img_h = rgb->h();
+      if (img_w > limit || img_h > limit) {
+        aspect_ratio_scale(img_w, img_h, limit);
+        img = rgb->copy(img_w, img_h);
+        delete rgb;
+      } else {
+        img = rgb;
       }
+      Fl_Box *o = new Fl_Box(10, 10, limit, limit);
+      o->image(img);
     }
 
     n = 20 + limit;
@@ -200,8 +197,8 @@ static void notification_box(double time_s, const char *notify_icon, bool force_
 
   Fl::run();
 
-  if (rgb) {
-    delete rgb;
+  if (img) {
+    delete img;
   }
 }
 
@@ -304,7 +301,7 @@ int dialog_notify(const char *appname, int timeout, const char *notify_icon, boo
     return 0;
   }
 
-  notification_box(timeout, notify_icon, force_nanosvg);
+  notification_box(timeout, img_to_rgb(notify_icon, force_nanosvg));
 
   return 0;
 }

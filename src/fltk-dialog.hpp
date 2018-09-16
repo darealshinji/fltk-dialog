@@ -237,9 +237,6 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
 
 char *file_chooser(int mode);
 Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
-#ifdef WITH_RSVG
-Fl_RGB_Image *rsvg_to_rgb(const char *file);
-#endif
 void l10n(void);
 std::string get_fltk_version(void);
 

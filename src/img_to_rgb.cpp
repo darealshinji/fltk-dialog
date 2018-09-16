@@ -36,20 +36,9 @@
 #include <zlib.h>
 
 #include "fltk-dialog.hpp"
+#include "img_to_rgb.h"
 #include "nanosvg.h"
 #include "nanosvgrast.h"
-
-#if defined(WITH_RSVG) && !defined(USE_SYSTEM_PLUGINS)
-# include "rsvg_convert_so.h"
-#endif
-
-#ifdef WITH_RSVG
-# define FORCE_NANOSVG      force_nanosvg
-# define SVG_TO_RGB(a,b,c)  svg_to_rgb(a,b,c)
-#else
-# define FORCE_NANOSVG      /**/
-# define SVG_TO_RGB(a,b,c)  nsvg_to_rgb(a,b)
-#endif
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
@@ -57,22 +46,38 @@
 #define SVGZ_MAX        (1024*1024)
 #define SVG_MAX       (3*1024*1024)
 
-static char *gzip_uncompress(const char *file)
+#define DEFAULT_DPI  90.0
+#define DEFAULT_WH   64
+#define DEFAULT_WHF  64.0
+
+static std::string png_data;
+
+static void callback(int *w, int *h, gpointer data) {
+  RsvgDimensionData *d = static_cast<RsvgDimensionData *>(data);
+  *w = d->width;
+  *h = d->height;
+}
+
+static cairo_status_t write_func(void *, const unsigned char *data, unsigned int length) {
+  png_data.append(reinterpret_cast<const char *>(data), length);
+  return CAIRO_STATUS_SUCCESS;
+}
+
+static bool gzip_uncompress(const char *file, std::string &output)
 {
   std::streampos size;
-  std::string output;
   char *data;
   unsigned char out[16*1024];
   z_stream strm;
 
   if (!file) {
-    return NULL;
+    return false;
   }
 
   std::ifstream ifs(file, std::ios::in|std::ios::binary|std::ios::ate);
 
   if (!ifs.is_open()) {
-    return NULL;
+    return false;
   }
 
   size = ifs.tellg();
@@ -90,7 +95,7 @@ static char *gzip_uncompress(const char *file)
 
   if (inflateInit2(&strm, 16 + MAX_WBITS) != Z_OK) {
     delete data;
-    return NULL;
+    return false;
   }
 
   strm.avail_in = size;
@@ -104,31 +109,32 @@ static char *gzip_uncompress(const char *file)
       case Z_MEM_ERROR:
         inflateEnd(&strm);
         delete data;
-        return NULL;
+        return false;
     }
     output.append(reinterpret_cast<const char *>(out), sizeof(out) - strm.avail_out);
     if (output.size() >= SVG_MAX) {
       inflateEnd(&strm);
       delete data;
-      return NULL;
+      return false;
     }
   } while (strm.avail_out == 0);
 
   delete data;
 
   if (inflateEnd(&strm) != Z_OK) {
-    return NULL;
+    return false;
   }
-  return strdup(output.c_str());
+  return true;
 }
 
 static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 {
+  Fl_RGB_Image *rgb, *rgb_copy;
   NSVGimage *nsvg;
   NSVGrasterizer *r;
-  char *data;
+  std::string data;
+  char *data_copy;
   unsigned char *img;
-  Fl_RGB_Image *rgb, *rgb_copy;
   int w, h;
   float scalex, scaley;
 
@@ -137,13 +143,15 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   }
 
   if (compressed) {
-    if (!(data = gzip_uncompress(file))) {
+    if (!gzip_uncompress(file, data)) {
       return NULL;
     }
-    nsvg = nsvgParse(data, "px", 90.0);
-    free(data);
+    data_copy = strdup(data.c_str());
+    data.clear();
+    nsvg = nsvgParse(data_copy, "px", DEFAULT_DPI);
+    free(data_copy);
   } else {
-    nsvg = nsvgParseFromFile(file, "px", 90.0);
+    nsvg = nsvgParseFromFile(file, "px", DEFAULT_DPI);
   }
 
   if (!nsvg->shapes || nsvg->width < 5.0 || nsvg->height < 5.0) {
@@ -151,82 +159,122 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
     return NULL;
   }
 
-  scalex = 64.0 / nsvg->width;
-  scaley = 64.0 / nsvg->height;
-  w = h = 64;
+  scalex = DEFAULT_WHF / nsvg->width;
+  scaley = DEFAULT_WHF / nsvg->height;
+  w = h = DEFAULT_WH;
 
   img = new unsigned char[w*h*4];
   r = nsvgCreateRasterizer();
   nsvgRasterizeFull(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
-
-  /* need to copy the data */
   rgb_copy = dynamic_cast<Fl_RGB_Image *>(rgb->copy());
 
-  delete rgb;
-  delete img;
   nsvgDeleteRasterizer(r);
   nsvgDelete(nsvg);
+  delete img;
+  delete rgb;
 
+  /* need to return a copy */
   return rgb_copy;
 }
 
-#ifdef WITH_RSVG
-Fl_RGB_Image *rsvg_to_rgb(const char *file)
+static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
 {
-  Fl_RGB_Image *rgb = NULL;
-  int len;
-  const unsigned char *data;
-  void *handle;
+  Fl_RGB_Image *rgb;
+  RsvgHandle *rsvg;
+  RsvgDimensionData dim;
+  GError *gerror;
+  cairo_surface_t *surf;
+  cairo_t *cr;
+  std::string data;
+  void *handle, *handle_cairo, *handle_rsvg;
   char *error;
 
-#ifdef USE_SYSTEM_PLUGINS
-# define DELETE(x) /**/
-  const char *plugin = FLTK_DIALOG_MODULE_PATH "/rsvg_convert.so";
-#else
-# define DELETE(x)  unlink(x); free(x)
-  char *plugin = save_to_temp(rsvg_convert_so, rsvg_convert_so_len);
-  if (!plugin) {
+  if (!file) {
     return NULL;
   }
-#endif
 
-  /* dlopen() library */
-
-  handle = dlopen(plugin, RTLD_LAZY);
+  handle_cairo = dlopen("libcairo.so.2", RTLD_LAZY|RTLD_GLOBAL);
   error = dlerror();
-
-  if (!handle) {
+  if (!handle_cairo) {
     std::cerr << error << std::endl;
-    DELETE(plugin);
+    return NULL;
+  }
+
+  handle_rsvg = dlopen("librsvg-2.so.2", RTLD_LAZY);
+  error = dlerror();
+  if (!handle_rsvg) {
+    std::cerr << error << std::endl;
+    dlclose(handle_cairo);
     return NULL;
   }
 
   dlerror();
 
+  /* load symbols */
+
 # define LOAD_SYMBOL(type,func,param) \
   GETPROCADDRESS(handle,type,func,param) \
   if ((error = dlerror()) != NULL) { \
     std::cerr << error << std::endl; \
-    dlclose(handle); \
-    DELETE(plugin); \
+    dlclose(handle_rsvg); \
+    dlclose(handle_cairo); \
     return NULL; \
   }
 
-  LOAD_SYMBOL(int, rsvg_to_png_convert, (const char *))
-  LOAD_SYMBOL(const unsigned char *, rsvg_to_png_get_data, (void))
-  LOAD_SYMBOL(void, rsvg_to_png_clear, (void))
+  handle = handle_cairo;
+  LOAD_SYMBOL( cairo_surface_t *, cairo_image_surface_create,        (cairo_format_t, int, int) )
+  LOAD_SYMBOL( cairo_t *,         cairo_create,                      (cairo_surface_t *) )
+  LOAD_SYMBOL( cairo_status_t,    cairo_surface_write_to_png_stream, (cairo_surface_t *, cairo_write_func_t, void *) )
+  LOAD_SYMBOL( void,              cairo_surface_destroy,             (cairo_surface_t *) )
+  LOAD_SYMBOL( void,              cairo_destroy,                     (cairo_t *) )
 
-  len = rsvg_to_png_convert(file);
-  data = rsvg_to_png_get_data();
+  handle = handle_rsvg;
+  LOAD_SYMBOL( void,         rsvg_set_default_dpi,          (double) )
+  LOAD_SYMBOL( RsvgHandle *, rsvg_handle_new_from_data,     (const guint8 *, gsize, GError **) )
+  LOAD_SYMBOL( RsvgHandle *, rsvg_handle_new_from_file,     (const gchar *, GError **) )
+  LOAD_SYMBOL( void,         rsvg_handle_set_size_callback, (RsvgHandle *, RsvgSizeFunc, gpointer, GDestroyNotify) )
+  LOAD_SYMBOL( gboolean,     rsvg_handle_render_cairo,      (RsvgHandle *, cairo_t *) )
+  LOAD_SYMBOL( void,         rsvg_cleanup,                  (void) )
 
-  if (data && len > 0) {
-    rgb = new Fl_PNG_Image(NULL, data, len);
+  rsvg_set_default_dpi(DEFAULT_DPI);
+
+  if (compressed) {
+    if (!gzip_uncompress(file, data)) {
+      dlclose(handle_rsvg);
+      dlclose(handle_cairo);
+      return NULL;
+    }
+    rsvg = rsvg_handle_new_from_data(reinterpret_cast<const guint8 *>(data.c_str()), data.size(), &gerror);
+    data.clear();
+  } else {
+    rsvg = rsvg_handle_new_from_file(file, &gerror);
   }
 
-  rsvg_to_png_clear();
-  dlclose(handle);
-  DELETE(plugin);
+  if (gerror) {
+    dlclose(handle_rsvg);
+    dlclose(handle_cairo);
+    return NULL;
+  }
+
+  rsvg_handle_set_size_callback(rsvg, callback, &dim, NULL);
+  dim.width = dim.height = DEFAULT_WH;
+  surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim.width, dim.height);
+  cr = cairo_create(surf);
+
+  rsvg_handle_render_cairo(rsvg, cr);
+  cairo_surface_write_to_png_stream(surf, write_func, NULL);
+
+  //g_object_unref(rsvg);  /* needed? */
+  cairo_destroy(cr);
+  cairo_surface_destroy(surf);
+  rsvg_cleanup();
+
+  dlclose(handle_rsvg);
+  dlclose(handle_cairo);
+
+  rgb = new Fl_PNG_Image(NULL, reinterpret_cast<const unsigned char *>(png_data.c_str()), png_data.size());
+  png_data.clear();
 
   return rgb;
 }
@@ -236,7 +284,7 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_na
   Fl_RGB_Image *rgb = NULL;
 
   if (!force_nanosvg) {
-    rgb = rsvg_to_rgb(file);
+    rgb = rsvg_to_rgb(file, compressed);
   }
 
   if (!rgb) {
@@ -247,9 +295,8 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_na
   }
   return rgb;
 }
-#endif /* WITH_RSVG */
 
-Fl_RGB_Image *img_to_rgb(const char *file, bool FORCE_NANOSVG)
+Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
 {
   FILE *fp;
   size_t len;
@@ -263,14 +310,14 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool FORCE_NANOSVG)
   /* get filetype from extension */
   if (HASEXT(file, ".svg")) {
     if (st.st_size < SVG_MAX) {
-      return SVG_TO_RGB(file, false, FORCE_NANOSVG);
+      return svg_to_rgb(file, false, force_nanosvg);
     }
     return NULL;
   }
 
   if (HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) {
     if (st.st_size < SVGZ_MAX) {
-      return SVG_TO_RGB(file, true, FORCE_NANOSVG);
+      return svg_to_rgb(file, true, force_nanosvg);
     }
     return NULL;
   }
