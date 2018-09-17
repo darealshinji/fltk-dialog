@@ -192,7 +192,7 @@ distclean: mostlyclean
 	test ! -f fltk/patches_applied_stamp || (cd fltk && patch -p1 -R < ../fltk_patches.diff && rm patches_applied_stamp)
 
 mostlyclean:
-	-rm -f $(BIN) *.so *_so.h *_png.h *_qrc.h *.o src/*.o src/Flek/*.o src/misc/*.o
+	-rm -f $(BIN) *.so *_so.h *_png.h *_qrc.h *.o src/*.o
 
 maintainer-clean: distclean
 	-rm -f configure
