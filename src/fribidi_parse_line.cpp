@@ -29,10 +29,10 @@
 
 #define IS_NEWLINE(x)  (x == '\n' || x == '\r' || x == '\f' || x == '\v')
 
-#define FREE(x)  if (x) { delete x; }
+#define DEL(x)  if (x) { delete x; }
 
 /**
- * Returns pointer to allocated string (delete[] it later) or NULL on error.
+ * Returns pointer to new[] string (delete[] it later) or NULL on error.
  */
 char *fribidi_parse_line(const char *input)
 {
@@ -108,10 +108,10 @@ char *fribidi_parse_line(const char *input)
   fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, unicodestr, len, output);
 
 out:
-  FREE(unicodestr)
-  FREE(bidi_types)
-  FREE(embedding_levels)
-  FREE(ar_props)
+  DEL(unicodestr)
+  DEL(bidi_types)
+  DEL(embedding_levels)
+  DEL(ar_props)
 
   return output;
 }
