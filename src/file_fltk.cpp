@@ -97,7 +97,7 @@ PNG(icon_link_dir, file_symlink_directory)
  * homedir-relative path, or XDG_xxx_DIR="/yyy", where /yyy is an
  * absolute path. No other format is supported.
  */
-static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
+static bool xdg_user_dir_lookup_real(std::vector<std::string> &vec)
 {
   std::ifstream ifs;
   std::string line;
@@ -169,6 +169,19 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
   ifs.close();
 
   return vec.size() > 0;
+}
+
+static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
+{
+  if (xdg_user_dir_lookup_real(vec)) {
+    return true;
+  }
+
+  /* run xdg-user-dirs-update and try it again */
+  int rv = system("/usr/bin/xdg-user-dirs-update 2>/dev/null >/dev/null");
+  (void)rv;
+
+  return xdg_user_dir_lookup_real(vec);
 }
 
 static std::string getfsize(double size)
@@ -320,8 +333,13 @@ static void close_cb(Fl_Widget *, long l)
   int line = br->value();
 
   if (line > 0 && l == 0) {
-    //selected_file = strdup(reinterpret_cast<const char *>(br->data(line)));
     selected_file = reinterpret_cast<char *>(br->data(line));
+    if (list_files && fl_filename_isdir(selected_file)) {
+      current_dir = std::string(selected_file);
+      selected_file = NULL;
+      br_change_dir();
+      return;
+    }
     br->data(line, NULL);
   } else {
     selected_file = NULL;
