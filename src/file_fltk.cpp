@@ -330,19 +330,26 @@ static void selection_timeout(void) {
 
 static void close_cb(Fl_Widget *, long l)
 {
-  int line = br->value();
+  if (l == 0) {  /* OK button pressed */
+    int line = br->value();
 
-  if (line > 0 && l == 0) {
-    selected_file = reinterpret_cast<char *>(br->data(line));
-    if (list_files && fl_filename_isdir(selected_file)) {
-      current_dir = std::string(selected_file);
-      selected_file = NULL;
-      br_change_dir();
-      return;
+    if (line > 0) {
+      selected_file = reinterpret_cast<char *>(br->data(line));
+
+      if (list_files && fl_filename_isdir(selected_file)) {
+        /* don't return path but change directory */
+        current_dir = std::string(selected_file);
+        selected_file = NULL;
+        br_change_dir();
+        return;
+      }
+      br->data(line, NULL);
+    } else {  /* nothing selected */
+      if (list_files) {
+        return;
+      }
+      selected_file = strdup(current_dir.c_str());
     }
-    br->data(line, NULL);
-  } else {
-    selected_file = NULL;
   }
 
   for (int i = 0; i <= br->size(); ++i) {
@@ -362,18 +369,11 @@ static void close_cb(Fl_Widget *, long l)
 
 static void br_callback(Fl_Widget *)
 {
-  //Fl_Timeout_Handler th = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
   const char *fname = reinterpret_cast<const char *>(br->data(br->value()));
 
   /* some workaround to change directories on double-click */
   if (selection == 0) {
     selection = br->value();
-    /*
-    if (fl_filename_isdir(fname)) {
-      bt_ok->deactivate();
-    } else {
-      bt_ok->activate();
-    }*/
     Fl::add_timeout(1.0, th);
   } else {
     Fl::remove_timeout(th);
