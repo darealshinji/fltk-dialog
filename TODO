@@ -2,4 +2,5 @@
  * write --forms dialog
  * --text-info: autoclose? disable close button until it's finished?
  * non-dynamic librsvg?
+ * KDE indicator support
 

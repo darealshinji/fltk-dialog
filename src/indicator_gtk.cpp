@@ -25,14 +25,14 @@
 #include <iostream>
 #include <fstream>
 #include <dlfcn.h>
+#include <setjmp.h>
 #include <string.h>
 #include <unistd.h>
+#include <png.h>
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 #include "indicator_gtk.h"
-
-extern "C" int rgb_to_png(const char *file, const unsigned char *rgba, int w, int h);
 
 PROTO( void,             gtk_init,                            (int*, char***) )
 PROTO( GtkWidget*,       gtk_window_new,                      (GtkWindowType) )
@@ -54,6 +54,10 @@ static std::string out;
 static const char *command = NULL;
 static void *libgtk_handle, *libappindicator_handle;
 static char *error;
+
+static FILE *fp = NULL;
+static png_struct *png = NULL;
+static png_info *info = NULL;
 
 static void callback(void) {
   if (command && strlen(command) > 0) {
@@ -84,6 +88,69 @@ static void handle_dlopen_error(void)
   if (libgtk_handle) {
     dlclose(libgtk_handle);
   }
+}
+
+static void cleanup_png(void)
+{
+  if (fp) {
+    fclose(fp);
+  }
+
+  if (png && info) {
+    png_free_data(png, info, PNG_FREE_ALL, -1);
+  }
+
+  if (png) {
+    png_destroy_write_struct(&png, NULL);
+  }
+}
+
+static int rgb_to_png(const char *file, const unsigned char *rgba, int w, int h)
+{
+  png_byte *px;
+  int x, y, i;
+
+  if ((fp = fopen(file, "wb")) == NULL) {
+    return 1;
+  }
+
+  if ((png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL)) == NULL ||
+      (info = png_create_info_struct(png)) == NULL ||
+      setjmp(png_jmpbuf(png)) != 0)
+  {
+    cleanup_png();
+    return 1;
+  }
+
+  png_init_io(png, fp);
+  png_set_compression_level(png, 0);
+
+  png_set_IHDR(png, info, w, h, 8,
+               PNG_COLOR_TYPE_RGB_ALPHA,
+               PNG_INTERLACE_NONE,
+               PNG_COMPRESSION_TYPE_DEFAULT,
+               PNG_FILTER_TYPE_DEFAULT);
+
+  png_write_info(png, info);
+
+  png_byte row[4 * w * sizeof(png_byte)];
+
+  for (y = 0; y < h; ++y) {
+    for (x = 0; x < w; ++x) {
+      px = &row[x * 4];
+      i = (y*w + x) * 4;
+      px[0] = rgba[i];
+      px[1] = rgba[i + 1];
+      px[2] = rgba[i + 2];
+      px[3] = rgba[i + 3];
+    }
+    png_write_row(png, row);
+  }
+  png_write_end(png, NULL);
+
+  cleanup_png();
+
+  return 0;
 }
 
 static bool convert_icon(const char *in, bool force_nanosvg)

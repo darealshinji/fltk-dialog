@@ -40,7 +40,6 @@ OBJS = \
 	src/progress.o \
 	src/radiolist.o \
 	src/radiolist_browser.o \
-	src/rgb_to_png.o \
 	src/textinfo.o \
 	src/version.o \
 	$(NULL)
@@ -133,7 +132,7 @@ ifneq ($(SYSTEM_PNG),no)
 main_LIBS += -lpng
 else
 fltk_cmake_config += -DOPTION_USE_SYSTEM_LIBPNG="OFF"
-main_CFLAGS += -Ifltk/png
+main_CXXFLAGS += -Ifltk/png
 main_LIBS += fltk/build/lib/libfltk_png.a
 endif
 
@@ -220,7 +219,7 @@ fltk/build/Makefile: fltk/patches_applied_stamp
 	mkdir -p fltk/build
 	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) -DCMAKE_VERBOSE_MAKEFILE="OFF"
 
-$(libfltk): $(libpng_a) fltk/build/Makefile
+$(libfltk): fltk/build/Makefile
 	$(MAKE) -C fltk/build $(cmake_verbose)
 
 src/about.cpp: fltk_png.h
