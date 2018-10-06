@@ -64,7 +64,7 @@ static int dialog_native_file_chooser_gtk(int mode)
   }
 
   fc = new Fl_Native_File_Chooser(type);
-  fc->title();
+  fc->title(title);
 
   if (fc->show() == 0) {
     std::cout << quote << fc->filename() << quote << std::endl;
