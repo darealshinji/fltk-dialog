@@ -156,7 +156,6 @@ static int rgb_to_png(const char *file, const unsigned char *rgba, int w, int h)
 static bool convert_icon(const char *in, bool force_nanosvg)
 {
   Fl_Image *rgb_, *img;
-  char *path;
   const unsigned char *rgba;
   int img_w, img_h, limit;
   int x, y, w, work_h;
@@ -196,17 +195,14 @@ static bool convert_icon(const char *in, bool force_nanosvg)
   }
 
   /* create 0 byte file */
-  path = save_to_temp(NULL, 0);
-  if (!path) {
+  if (!save_to_temp(NULL, 0, out)) {
     delete rgb_;
     return false;
   }
-  out = std::string(path);
 
   rgba = reinterpret_cast<const unsigned char *>(*rgb_->data());
   rv = (rgb_to_png(out.c_str(), rgba, img_w, img_h) == 0);
 
-  free(path);
   delete rgb_;
   return rv;
 }
@@ -341,7 +337,6 @@ bool start_indicator_gtk(const char *command_, const char *icon, bool force_nano
 {
   std::string default_icon;
   bool ret = false;
-  char *path;
 
   command = command_;
 
@@ -353,13 +348,9 @@ bool start_indicator_gtk(const char *command_, const char *icon, bool force_nano
   }
 
   /* save default icon */
-  path = save_to_temp(src_icon_png, src_icon_png_len);
-  if (!path) {
+  if (!save_to_temp(src_icon_png, src_icon_png_len, default_icon)) {
     return create_tray_entry_gtk("");
   }
-
-  default_icon = std::string(path);
-  free(path);
 
   /* convert default icon */
   if (convert_icon(default_icon.c_str(), false)) {

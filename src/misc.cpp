@@ -270,31 +270,29 @@ size_t strlastcasecmp(const char *s1, const char *s2)
   return n;
 }
 
-char *save_to_temp(const unsigned char *data, const unsigned int data_len)
+bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path)
 {
   const char *abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  char path[] = "/tmp/temp-....................XXXXXX";
 
-  for (int i=10; i < 30; ++i) {
-    path[i] = abc[effolkronium::random_static::get(0, 61 /* strlen(abc)-1 */)];
-  }
+  path = "/tmp/temp-";
 
-  if (mkstemp(path) == -1) {
-    std::cerr << "error: cannot create temporary file: " << path << std::endl;
-    return NULL;
+  for (int i=0; i < 26; ++i) {
+    /* strlen(abc) - 1 == 61 */
+    path.push_back(abc[effolkronium::random_static::get(0, 61)]);
   }
 
   std::ofstream out(path, std::ios::out|std::ios::binary);
   if (!out) {
-    std::cerr << "error: cannot open file: " << path << std::endl;
-    return NULL;
+    std::cerr << "error: cannot create temporary file: " << path << std::endl;
+    return false;
   }
+
   if (data && data_len > 0) {
     out.write(reinterpret_cast<const char *>(data), data_len);
   }
   out.close();
 
-  return strdup(path);
+  return true;
 }
 
 /* returns 1 if y is a leap year and 0 if not

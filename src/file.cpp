@@ -76,29 +76,33 @@ static int dialog_native_file_chooser_gtk(int mode)
 #ifdef HAVE_QT
 static int dlopen_getfilenameqt(int qt_major, int mode)
 {
+  std::string plugin;
+
 #ifdef USE_SYSTEM_PLUGINS
 # define DELETE(x)
-  char plugin[] = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
+  plugin = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
+
   if (qt_major == 4) {
-    plugin[strlen(plugin) - 7] = '4';
+    plugin[plugin.size() - 7] = '4';
   }
 #else
-# define DELETE(x)  unlink(x); free(x)
-  char *plugin = save_to_temp((qt_major == 4) ? qt4gui_so : qt5gui_so,
-                              (qt_major == 4) ? qt4gui_so_len : qt5gui_so_len);
-  if (!plugin) {
+# define DELETE(x)  unlink(x);
+  const unsigned char *data = (qt_major == 4) ? qt4gui_so : qt5gui_so;
+  const unsigned int data_len = (qt_major == 4) ? qt4gui_so_len : qt5gui_so_len;
+
+  if (!save_to_temp(data, data_len, plugin)) {
     return -1;
   }
 #endif  /* USE_SYSTEM_PLUGINS */
 
   /* dlopen() library */
 
-  void *handle = dlopen(plugin, RTLD_LAZY);
+  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
   char *error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
-    DELETE(plugin);
+    DELETE(plugin.c_str());
     return -1;
   }
 
@@ -111,7 +115,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
   if (error) {
     std::cerr << "error: " << error << std::endl;
     dlclose(handle);
-    DELETE(plugin);
+    DELETE(plugin.c_str());
     return -1;
   }
 
@@ -121,7 +125,7 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 
   int rv = getfilenameqt(mode, quote, title);
   dlclose(handle);
-  DELETE(plugin);
+  DELETE(plugin.c_str());
 
   return rv;
 }

@@ -204,7 +204,7 @@ std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 char *format_date(std::string format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
-char *save_to_temp(const unsigned char *data, const unsigned int data_len);
+bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path);
 int leap_year(int y);
 
 #ifdef WITH_FRIBIDI
