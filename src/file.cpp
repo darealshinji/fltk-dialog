@@ -38,7 +38,7 @@
 
 #include "fltk-dialog.hpp"
 
-static int dialog_file_chooser_fltk(int mode)
+static int file_chooser_fltk(int mode)
 {
   char *file = file_chooser(mode);
 
@@ -50,20 +50,24 @@ static int dialog_file_chooser_fltk(int mode)
   return 1;
 }
 
-static int dialog_native_file_chooser_gtk(int mode)
+static int native_file_chooser_gtk(int mode)
 {
-  Fl_Native_File_Chooser *fc;
+  Fl_GTK_File_Chooser *fc;
   int type = Fl_Native_File_Chooser::BROWSE_FILE;
-
-  if (!title) {
-    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
-  }
 
   if (mode == DIR_CHOOSER) {
     type = Fl_Native_File_Chooser::BROWSE_DIRECTORY;
   }
 
-  fc = new Fl_Native_File_Chooser(type);
+  if (Fl_GTK_File_Chooser::did_find_GTK_libs == 0) {
+    Fl_GTK_File_Chooser::probe_for_GTK_libs();
+  }
+
+  if (Fl_GTK_File_Chooser::did_find_GTK_libs == 0) {
+    return -1;
+  }
+
+  fc = new Fl_GTK_File_Chooser(type);
   fc->title(title);
 
   if (fc->show() == 0) {
@@ -119,10 +123,6 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
     return -1;
   }
 
-  if (!title) {
-    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select one or more files";
-  }
-
   int rv = getfilenameqt(mode, quote, title);
   dlclose(handle);
   DELETE(plugin.c_str());
@@ -135,11 +135,11 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
  * If it fails (i.e. because Qt5 libraries are missing) try the same with the Qt4 module.
  * If that fails too, fall back to Fl_Native_File_Chooser();
  */
-static int dialog_native_file_chooser(int mode)
+static int native_file_chooser(int mode)
 {
-#ifdef HAVE_QT
   int rv = -1;
 
+#ifdef HAVE_QT
   if (getenv("KDE_FULL_SESSION")) {
     rv = dlopen_getfilenameqt(QTDEF, mode);
 
@@ -154,49 +154,56 @@ static int dialog_native_file_chooser(int mode)
       std::cerr << "warning: falling back to gtk" << std::endl;
     }
   }
+#endif  /* HAVE_QT */
 
   if (rv == -1) {
-    rv = dialog_native_file_chooser_gtk(mode);
+    rv = native_file_chooser_gtk(mode);
+  }
+
+  if (rv == -1) {
+    std::cerr << "warning: falling back to fltk" << std::endl;
+    rv = file_chooser_fltk(mode);
   }
 
   return rv;
-#else  /* HAVE_QT */
-  return dialog_native_file_chooser_gtk(mode);
-#endif  /* HAVE_QT */
 }
 
 #ifdef HAVE_QT
 /* the Qt equivalent to Fl_Native_File_Chooser() */
-static int dialog_native_file_chooser_qt(int qt_major, int mode)
+static int native_file_chooser_qt(int qt_major, int mode)
 {
   int rv = dlopen_getfilenameqt(qt_major, mode);
 
   if (rv == -1) {
     std::cerr << "warning: falling back to fltk" << std::endl;
-    rv = dialog_file_chooser_fltk(mode);
+    rv = file_chooser_fltk(mode);
   }
   return rv;
 }
 #endif  /* HAVE_QT */
 
-int dialog_file_chooser(int file_mode, int native_mode)
+int dialog_file_chooser(int mode, int native)
 {
-  switch (native_mode) {
+  if (!title) {
+    title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
+  }
+
+  switch (native) {
     case NATIVE_ANY:
-      return dialog_native_file_chooser(file_mode);
+      return native_file_chooser(mode);
     case NATIVE_GTK:
-      return dialog_native_file_chooser_gtk(file_mode);
+      return native_file_chooser_gtk(mode);
 #ifdef HAVE_QT
 #  ifdef HAVE_QT4
     case NATIVE_QT4:
-      return dialog_native_file_chooser_qt(4, file_mode);
+      return native_file_chooser_qt(4, mode);
 #  endif
 #  ifdef HAVE_QT5
     case NATIVE_QT5:
-      return dialog_native_file_chooser_qt(5, file_mode);
+      return native_file_chooser_qt(5, mode);
 #  endif
 #endif  /* HAVE_QT */
   }
-  return dialog_file_chooser_fltk(file_mode);
+  return file_chooser_fltk(mode);
 }
 

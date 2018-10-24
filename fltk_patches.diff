@@ -28,6 +28,16 @@
  };
  #endif
  
+--- a/FL/Fl_Native_File_Chooser.H
++++ b/FL/Fl_Native_File_Chooser.H
+@@ -322,6 +322,7 @@ private:
+   char *gtkw_title; // the title to be applied to the dialog
+   const char *previous_filter;
+   
++public:
+   int fl_gtk_chooser_wrapper(); // method that wraps the GTK widget
+   Fl_GTK_File_Chooser(int val);
+   virtual ~Fl_GTK_File_Chooser();
 --- a/FL/fl_ask.H
 +++ b/FL/fl_ask.H
 @@ -26,6 +26,7 @@

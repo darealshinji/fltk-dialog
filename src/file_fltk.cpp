@@ -577,10 +577,6 @@ char *file_chooser(int mode)
 # undef DLSYM
 #endif  /* DYNAMIC_MAGIC */
 
-  if (!title) {
-    title = list_files ? "Select a file" : "Select a directory";
-  }
-
   win = new Fl_Double_Window(w, h, title);
   {
     g = new Fl_Group(0, 0, w, h);
