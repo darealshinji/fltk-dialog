@@ -109,6 +109,9 @@
 # define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 #endif
 
+#define FLTK_VERSION_STRING \
+  XSTRINGIFY(FL_MAJOR_VERSION) "." XSTRINGIFY(FL_MINOR_VERSION) "." XSTRINGIFY(FL_PATCH_VERSION)
+
 enum {
   DIALOG_ABOUT,
   DIALOG_CALENDAR,
@@ -202,7 +205,7 @@ void split(const std::string &s, char const c, std::vector<std::string> &v);
 void repstr(const std::string &from, const std::string &to, std::string &s);
 std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
-char *format_date(std::string format, int y, int m, int d);
+char *format_date(const char *format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path);
 int leap_year(int y);
@@ -220,10 +223,10 @@ int dialog_message(int type = MESSAGE_TYPE_WARNING
 ,                  double scale_init = 0);
 
 void about(void);
-int dialog_calendar(std::string format);
+int dialog_calendar(const char *format);
 int dialog_checklist(std::string checklist_options, bool return_value, bool check_all, char separator);
 int dialog_color(void);
-int dialog_date(std::string format);
+int dialog_date(const char *format);
 int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
 int dialog_file_chooser(int mode, int native);
@@ -238,7 +241,6 @@ int dialog_radiolist(std::string radiolist_options, bool return_number, char sep
 char *file_chooser(int mode);
 Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
 void l10n(void);
-std::string get_fltk_version(void);
 
 #endif  /* !FLTK_DIALOG_HPP */
 

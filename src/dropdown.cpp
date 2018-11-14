@@ -53,7 +53,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
   Fl_Return_Button *but_ok;
   Fl_Button        *but_cancel;
 
-  struct Fl_Menu_Item *menu_items;
+  Fl_Menu_Item *menu_items;
   int range;
 
   std::vector<std::string> vec;

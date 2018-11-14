@@ -23,7 +23,6 @@
  */
 
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <stdio.h>
 #include <time.h>
@@ -51,23 +50,21 @@ static void prev_month_cb(Fl_Widget *, long n);
 static void next_month_cb(Fl_Widget *, long n);
 static void set_calendar(bool get_current_day=true, int y=0, int m=0, int d=0);
 
-static const char *int_to_str(unsigned int n, std::string &s)
+static char *itostr(int n, char *buf, size_t buf_size)
 {
-  std::stringstream ss;
-
   if (selected_language == LANG_AR) {
-    s.clear();
+    std::string s;
     while (n != 0) {
       s.insert(0, "\xD9\xA0");
       s[1] += n % 10;
       n /= 10;
     }
-    return s.c_str();
+    strncpy(buf, s.c_str(), buf_size - 1);
+  } else {
+    snprintf(buf, buf_size - 1, "%d", n);
   }
 
-  ss << n;
-  s = ss.str();
-  return s.c_str();
+  return buf;
 }
 
 static int get_weekday(int y, int m, int d) {
@@ -85,7 +82,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   int wd, wn, prev_m, next_m, prev_m_year, next_m_year;
   int days_of_m, days_of_prev_m, first_days_of_next_m;
   int i, j, ly, first_day;
-  std::string tmp;
+  char buf[32] = {0};
 
   if (get_current_day) {
     t = time(NULL);
@@ -187,7 +184,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   if (wn > 51) {
     /* initial week in January is the last
      * week of the previous year */
-    box_weekn[1]->copy_label(int_to_str(wn, tmp));
+    box_weekn[1]->copy_label(itostr(wn, buf, sizeof(buf)));
     wn = 1;
     i = 2;
   } else {
@@ -199,12 +196,12 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
     if ((wn == 53 && leap_year(y) == 0) || wn > 53) {
       wn = 1;
     }
-    box_weekn[i]->copy_label(int_to_str(wn, tmp));
+    box_weekn[i]->copy_label(itostr(wn, buf, sizeof(buf)));
   }
 
   /* last days of previous month */
   for (i = first_day, j = 0; i <= days_of_prev_m; ++i, ++j) {
-    but[j]->copy_label(int_to_str(i, tmp));
+    but[j]->copy_label(itostr(i, buf, sizeof(buf)));
     but[j]->labelcolor(cfont_inactive);
     but[j]->color(clight);
     but[j]->callback(prev_month_cb, prev_m);
@@ -212,7 +209,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
 
   /* days of current month */
   for (i = 1; i <= days_of_m; ++i, ++j) {
-    but[j]->copy_label(int_to_str(i, tmp));
+    but[j]->copy_label(itostr(i, buf, sizeof(buf)));
     but[j]->labelcolor(cfont_active);
     but[j]->color((i == d) ? cdark : clight);
     but[j]->callback(callback, j);
@@ -220,7 +217,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
 
   /* first days of next month */
   for (i = 1; i <= first_days_of_next_m; ++i, ++j) {
-    but[j]->copy_label(int_to_str(i, tmp));
+    but[j]->copy_label(itostr(i, buf, sizeof(buf)));
     but[j]->labelcolor(cfont_inactive);
     but[j]->color(clight);
     but[j]->callback(next_month_cb, next_m);
@@ -270,7 +267,7 @@ static void close_cb(Fl_Widget *, long p) {
   ret = p;
 }
 
-int dialog_calendar(std::string format)
+int dialog_calendar(const char *format)
 {
   Fl_Group         *g1, *g2, *g3;
   Fl_Box           *dummy1, *dummy2;

@@ -195,7 +195,7 @@ static void parse_line(const char *ch)
         running = multi > 1;
         iteration++;
       }
-      snprintf(buf, sizeof(buf), "%d%%", percent);
+      snprintf(buf, sizeof(buf) - 1, "%d%%", percent);
       bar->value(percent);
       bar->copy_label(buf);
 
@@ -210,7 +210,7 @@ static void parse_line(const char *ch)
           multi_percent = multi * 100;
           running = false;
         }
-        snprintf(buf, sizeof(buf), "%d%%", (multi_percent / multi));
+        snprintf(buf, sizeof(buf) - 1, "%d%%", multi_percent / multi);
         bar_main->value(multi_percent);
         bar_main->copy_label(buf);
       }

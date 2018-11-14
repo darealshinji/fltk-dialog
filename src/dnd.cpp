@@ -23,7 +23,6 @@
  */
 
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <string.h>
 
@@ -31,8 +30,7 @@
 
 static Fl_Double_Window *win;
 static Fl_Box *count;
-static int val = 0;
-static void dnd_callback(const char *items);
+static unsigned int val = 0;
 
 class dnd_box : public Fl_Box
 {
@@ -47,7 +45,7 @@ public:
       case FL_DND_RELEASE:
         return 1;
       case FL_PASTE:
-        dnd_callback(Fl::event_text());
+        do_callback();
         return 1;
     }
     return Fl_Box::handle(event);
@@ -58,12 +56,14 @@ static void close_cb(Fl_Widget *) {
   win->hide();
 }
 
-static void dnd_callback(const char *items)
+static void callback(Fl_Widget *)
 {
-  std::stringstream ss;
+  char buf[16];
+  const char *items = Fl::event_text();
+
   val++;
-  ss << val;
-  count->copy_label(ss.str().c_str());
+  snprintf(buf, sizeof(buf) - 1, "%d", val);
+  count->copy_label(buf);
   win->redraw();
 
   if (strncmp(items, "file:///", 8) == 0) {
@@ -120,6 +120,7 @@ int dialog_dnd()
   {
     box = new dnd_box(10, 10, 380, 244, msg);
     box->box(FL_ENGRAVED_FRAME);
+    box->callback(callback);
 
     g = new Fl_Group(0, 244, 400, 56);
     {

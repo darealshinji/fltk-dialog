@@ -117,10 +117,9 @@ static void init_menu(void)
     m2->callback(close_cb, 0);
 
     if (command) {
-      const int limit = 36;
-      if (strlen(command) > limit) {
+      if (strlen(command) > 36) {
         std::string s = command;
-        s.erase(limit - 5);
+        s.erase(31);
         s += "[...]";
         m1->copy_tooltip(s.c_str());
       } else {

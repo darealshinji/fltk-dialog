@@ -231,17 +231,17 @@ std::string text_wrap(const char *text, int linewidth, Fl_Font font, int font_si
   return oss.str();
 }
 
-char *format_date(std::string format, int y, int m, int d)
+char *format_date(const char *format, int y, int m, int d)
 {
   struct tm time;
 
-  if (format.empty() || format == "" || format.find('%') == std::string::npos) {
+  if (!format || strlen(format) < 2 || strchr(format, '%') == NULL) {
     format = "%Y-%m-%d";
   }
-  snprintf(date, sizeof(date), "%d-%d-%d", y, m, d);
+  snprintf(date, sizeof(date) - 1, "%d-%d-%d", y, m, d);
   memset(&time, 0, sizeof(struct tm));
   strptime(date, "%Y-%m-%d", &time);
-  strftime(date, sizeof(date), format.c_str(), &time);
+  strftime(date, sizeof(date) - 1, format, &time);
 
   return date;
 }

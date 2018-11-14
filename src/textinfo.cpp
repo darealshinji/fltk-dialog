@@ -109,6 +109,7 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
   Fl_Group *g;
   Fl_Box *dummy;
   Fl_Button *but;
+  char buf[512];
   int browser_h = checkbox ? 418 : 444;
   int but_y = browser_h + 20;
   int but_w, range;
@@ -135,7 +136,6 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
         win->callback(close_cb, 1);
         but_y = browser_h + 10;
 
-        std::string s = " ";
         checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26);
         checkbutton->callback(callback);
 #ifdef WITH_FRIBIDI
@@ -144,14 +144,14 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
           tmp = fribidi_parse_line(checkbox);
         }
         if (tmp) {
-          s.append(tmp);
+          snprintf(buf, sizeof(buf) - 1, " %s", tmp);
           delete tmp;
         } else
 #endif
         {
-          s.append(checkbox);
+          snprintf(buf, sizeof(buf) - 1, " %s", checkbox);
         }
-        checkbutton->copy_label(s.c_str());
+        checkbutton->copy_label(buf);
         checkbutton->deactivate();
         checkbutton_set = false;
 

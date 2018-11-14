@@ -47,7 +47,7 @@ static void close_cb(Fl_Widget *, long p) {
   ret = p;
 }
 
-int dialog_date(std::string format)
+int dialog_date(const char *format)
 {
   Fl_Group         *g1, *g2;
   Fl_Box           *dummy1, *dummy2;

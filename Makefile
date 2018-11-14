@@ -41,7 +41,6 @@ OBJS = \
 	src/radiolist.o \
 	src/radiolist_browser.o \
 	src/textinfo.o \
-	src/version.o \
 	$(NULL)
 
 libfltk   = fltk/build/lib/libfltk.a

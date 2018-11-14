@@ -218,10 +218,9 @@ static bool create_tray_entry_gtk(const char *icon)
   void *handle;
 
   if (command) {
-    const int limit = 36;
-    if (strlen(command) > limit) {
+    if (strlen(command) > 36) {
       s = command;
-      s.erase(limit - 5);
+      s.erase(31);
       s += "[...]";
       tooltip = s.c_str();
     } else {

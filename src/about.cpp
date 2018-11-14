@@ -33,31 +33,31 @@ static Fl_Text_Buffer *buffer;
 static bool license_displayed = false;
 static const char *label_license = "Licenses";
 
-static std::string text = "\n"
-    "FLTK dialog: run dialog boxes from shell scripts\n"
-    "\n"
-    "Using FLTK version " + get_fltk_version() + "\n"
-    "http://www.fltk.org\n"
-    "\n"
-    /* http://www.utf8-chartable.de/ */
-    "Copyright \xc2\xa9 2016-2018 djcj <djcj@gmx.de>\n"
-    MY_URL "\n"
-    "\n"
-    "The FLTK library and the font widget are\n"
-    "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
-    "\n"
-#ifdef WITH_FRIBIDI
-    "The FriBidi parsing code is copyright \xc2\xa9 2003-2011\n"
-    "by the FFmpeg developers and contributors.\n"
-    "\n"
-#endif
-    "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
+static const char *text = "\n"
+  "FLTK dialog: run dialog boxes from shell scripts\n"
+  "\n"
+  "Using FLTK version " FLTK_VERSION_STRING "\n"
+  "http://www.fltk.org\n"
+  "\n"
+  /* http://www.utf8-chartable.de/ */
+  "Copyright \xc2\xa9 2016-2018 djcj <djcj@gmx.de>\n"
+  MY_URL "\n"
+  "\n"
+  "The FLTK library and the font widget are\n"
+  "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
+  "\n"
+  #ifdef WITH_FRIBIDI
+  "The FriBidi parsing code is copyright \xc2\xa9 2003-2011\n"
+  "by the FFmpeg developers and contributors.\n"
+  "\n"
+  #endif
+  "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
 
 static void callback(Fl_Widget *o)
 {
   if (license_displayed) {
     o->label(label_license);
-    buffer->text(text.c_str());
+    buffer->text(text);
     license_displayed = false;
   } else {
     o->label("About");
@@ -107,7 +107,7 @@ void about()
       buffer = new Fl_Text_Buffer();
       display = new Fl_Text_Display(10, logo_h + 40, w - 20, h - logo_h - 90);
       display->buffer(buffer);
-      buffer->text(text.c_str());
+      buffer->text(text);
     }
     g1->end();
 

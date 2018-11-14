@@ -35,7 +35,7 @@
  * https://en.wikipedia.org/wiki/Arabic_Presentation_Forms-B
  */
 
-#include <string>
+#include <string.h>
 #include <stdlib.h>
 
 #include "fltk-dialog.hpp"
@@ -308,44 +308,40 @@ const char *month_names[LANG_COUNT][13] =
 
 void l10n(void)
 {
-  std::string region, lang;
   char *env;
 
   if (!(env = getenv("LANG")) && !(env = getenv("LANGUAGE"))) {
     return;
   }
 
-  region = std::string(env);
-  if (region.size() > 5) {
-    region.erase(5);
-  }
-  lang = region.substr(0,2);
-
-  if (lang == "en" || lang == "" || lang == "C") {
+  if (strncmp("en", env, 2) == 0 || strcmp("C", env) == 0) {
     return;
-  } else if (lang == "ar") {
+  } else if (strncmp(env, "ar", 2) == 0) {
     selected_language = LANG_AR;
-  } else if (lang == "de") {
+  } else if (strncmp(env, "de", 2) == 0) {
     selected_language = LANG_DE;
-    if (region == "de_CH") {
+    if (strncmp(env, "de_CH", 5) == 0) {
       buttons[LANG_DE][4] = "Schliessen";
-    } else if (region == "de_AT") {
-      month_names[LANG_DE][1] = "J" "\xC3\xA4" "nner";  /* Jänner */
+    } else if (strncmp(env, "de_AT", 5) == 0) {
+      month_names[LANG_DE][1] = "J" "\xC3\xA4" "nner";  // Jänner
     }
-  } else if (lang == "es") {
+  } else if (strncmp(env, "es", 2) == 0) {
     selected_language = LANG_ES;
-  } else if (lang == "fr") {
+  } else if (strncmp(env, "fr", 2) == 0) {
     selected_language = LANG_FR;
-  } else if (lang == "it") {
+  } else if (strncmp(env, "it", 2) == 0) {
     selected_language = LANG_IT;
-  } else if (lang == "ja") {
+  } else if (strncmp(env, "ja", 2) == 0) {
     selected_language = LANG_JA;
-  } else if (lang == "pt") {
+  } else if (strncmp(env, "pt", 2) == 0) {
     selected_language = LANG_PT;
-  } else if (lang == "ru") {
+  } else if (strncmp(env, "ru", 2) == 0) {
     selected_language = LANG_RU;
-  } else if (lang == "zh") {
-    selected_language = (region == "zh_TW") ? LANG_ZH_TW : LANG_ZH;
+  } else if (strncmp(env, "zh", 2) == 0) {
+    selected_language = (strncmp(env, "zh_TW", 5) == 0) ? LANG_ZH_TW : LANG_ZH;
+  } else {
+    /* unsupported language */
+    return;
   }
 
   fl_ok = buttons[selected_language][0];

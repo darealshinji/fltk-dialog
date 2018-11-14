@@ -188,7 +188,7 @@ static std::string getfsize(double size)
 {
   std::string str;
   const char *unit;
-  char ch[16] = {0};
+  char ch[32] = {0};
   const int KiBYTES = 1024;
   const int MiBYTES = 1024 * KiBYTES;
   const int GiBYTES = 1024 * MiBYTES;
@@ -203,12 +203,12 @@ static std::string getfsize(double size)
     size /= KiBYTES;
     unit = " kiB";
   } else {
-    snprintf(ch, sizeof(ch), "%d", static_cast<int>(size));
+    snprintf(ch, sizeof(ch) - 1, "%d", static_cast<int>(size));
     str = std::string(ch) + " Bytes";
     return str;
   }
 
-  snprintf(ch, sizeof(ch), "%.1f", size);
+  snprintf(ch, sizeof(ch) - 1, "%.1f", size);
   ch[strlen(ch) - 2] = '.';  /* replace comma with dot */
   str = std::string(ch) + unit;
   return str;
@@ -421,10 +421,7 @@ static void br_change_dir(void)
   struct dirent **list;
   std::vector<std::string> vec, vec2;
 
-  const std::string bg[] = {
-    "@B255@.", /* white */
-    "@B17@."   /* light yellow */
-  };
+  const char *white = "@B255@. ", *yellow = "@B17@. ";
 
   int n = fl_filename_list(current_dir.c_str(), &list);
 
@@ -470,7 +467,8 @@ static void br_change_dir(void)
         path += s;
 
         if (fl_filename_isdir(path.c_str())) {
-          std::string entry = bg[br->size() % 2] + " " + s;
+          std::string entry = (br->size() % 2 == 0) ? white : yellow;
+          entry += s;
           br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
 
           struct stat st;
@@ -500,7 +498,8 @@ static void br_change_dir(void)
           path += s;
 
           if (!fl_filename_isdir(path.c_str())) {
-            std::string entry = bg[br->size() % 2] + " " + s;
+            std::string entry = (br->size() % 2 == 0) ? white : yellow;
+            entry += s;
             br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
 
             struct stat st;
@@ -542,7 +541,7 @@ char *file_chooser(int mode)
   const int w = 800, h = 600;
   char *env;
 
-  const std::string xdg_types[] = {
+  const char *xdg_types[] = {
     "XDG_DESKTOP_DIR",
     "XDG_DOCUMENTS_DIR",
     "XDG_DOWNLOAD_DIR",
@@ -631,11 +630,12 @@ char *file_chooser(int mode)
                * of the same XDG type we pick the last one added to the config file */
               for (auto it = vec.end() - 1; it >= vec.begin(); --it) {
                 std::string &s = *it;
-                if (s.substr(0, type.size()) == type) {
-                  std::string dir = s.substr(type.size());
+                size_t len = strlen(type);
+                if (s.substr(0, len) == type) {
+                  std::string dir = s.substr(len);
 
                   if (!fl_filename_isdir(dir.c_str())) {
-                    if (type == "XDG_DESKTOP_DIR") {
+                    if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
                       /* fallback to "$HOME/Desktop" */
                       dir = home_dir + "/Desktop";
                       if (fl_filename_isdir(dir.c_str())) {
@@ -672,7 +672,6 @@ char *file_chooser(int mode)
         g_main_left->end();
 
         br = new Fl_Hold_Browser(120, 40, w - 130, h - g_top->h() - 76);
-        //br->selection_color(fl_rgb_color(155, 255, 140));
         br->selection_color(fl_lighter(FL_DARK_BLUE));
         br->callback(br_callback);
 

@@ -43,7 +43,6 @@ static void close_cb(Fl_Widget *, long p) {
 
 static void callback(Fl_Widget *o, void *p)
 {
-  std::stringstream ss;
   Fl_Valuator *v = dynamic_cast<Fl_Valuator *>(o);
   Fl_Box *b = reinterpret_cast<Fl_Box *>(p);
   double rounded_val = static_cast<int>(scale_step);
@@ -52,16 +51,18 @@ static void callback(Fl_Widget *o, void *p)
 
   if (scale_step == rounded_val) {
     /* integer value */
-    ss << static_cast<int>(value);
+    char buf[32];
+    snprintf(buf, sizeof(buf) - 1, "%d", static_cast<int>(value));
+    b->copy_label(buf);
   } else {
     /* floating point value;
      * convert into string with fixed positions after decimal point */
-    std::stringstream tmp;
-    tmp << (scale_step - rounded_val);
-    ss << std::fixed << std::setprecision(tmp.str().size() - 2) << value;
+    std::stringstream ss1, ss2;
+    ss1 << scale_step - rounded_val;
+    ss2 << std::fixed << std::setprecision(ss1.str().size() - 2) << value;
+    b->copy_label(ss2.str().c_str());
   }
 
-  b->copy_label(ss.str().c_str());
   Fl::redraw();
 }
 

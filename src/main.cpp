@@ -248,7 +248,7 @@ int main(int argc, char **argv)
                           "(this may not work on most DEs)", {"force-legacy"});
   ARG_T  arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system", {"skip-legacy"});
 
-  std::string appendix = "  using FLTK version " + get_fltk_version() + " - http://www.fltk.org\n\n"
+  const char *appendix = "  using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org\n\n"
     "  https://github.com/darealshinji/fltk-dialog\n";
 
   /* ignore any errors and always print help if --help or -h was among the arguments */
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
   }
 
   if (arg_version) {
-    std::cout << "using FLTK version " << get_fltk_version() << " - http://www.fltk.org" << std::endl;
+    std::cout << "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org" << std::endl;
     return 0;
   }
 
@@ -527,8 +527,8 @@ int main(int argc, char **argv)
   }
 
   /* calendar / date */
-  std::string format = "";
-  GETVAL(format, arg_format);
+  const char *format = NULL;
+  GETCSTR(format, arg_format);
   if (arg_calendar) {
     dialog = DIALOG_CALENDAR;
     dialog_count++;
@@ -618,7 +618,7 @@ int main(int argc, char **argv)
     return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
   }
 
-  if (format != "" && (dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE)) {
+  if (format && (dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE)) {
     return use_only_with(argv[0], "--format", "--calendar or --date");
   }
 
