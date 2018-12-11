@@ -30,6 +30,17 @@
 static Fl_Double_Window *win;
 static int ret = 1;
 
+class color_chooser : public Fl_Color_Chooser
+{
+public:
+  color_chooser(int X, int Y, int W, int H, const char *L=NULL)
+   : Fl_Color_Chooser(X,Y,W,H,L)
+  {
+    choice.textfont(FL_HELVETICA);
+    choice.textsize(12);
+  }
+};
+
 class ColorChip : public Fl_Widget
 {
   void draw();
@@ -44,7 +55,7 @@ public:
 
 static void callback(Fl_Widget *o, void *vv)
 {
-  Fl_Color_Chooser *c = dynamic_cast<Fl_Color_Chooser *>(o);
+  color_chooser *c = dynamic_cast<color_chooser *>(o);
   ColorChip *v = reinterpret_cast<ColorChip *>(vv);
   v->r = static_cast<uchar>(255 * c->r() + 0.5);
   v->g = static_cast<uchar>(255 * c->g() + 0.5);
@@ -59,7 +70,7 @@ static void close_cb(Fl_Widget *, long p) {
 
 int dialog_color()
 {
-  Fl_Color_Chooser *chooser;
+  color_chooser    *chooser;
   ColorChip        *color;
   Fl_Box           *dummy;
   Fl_Group         *buttongroup;
@@ -75,9 +86,9 @@ int dialog_color()
   win = new Fl_Double_Window(195 + 20, 200, title);
   win->callback(close_cb, 1);
   {
-    chooser = new Fl_Color_Chooser(10, 10, 195, 115);
+    chooser = new color_chooser(10, 10, 195, 115);
     color = new ColorChip(10, 130, 195, 25);
-    color->r = color->g = color->b = uchar(255);
+    color->r = color->g = color->b = static_cast<uchar>(255);
 
     buttongroup = new Fl_Group(10, 165, 195, 25);
     {

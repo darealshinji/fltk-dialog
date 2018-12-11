@@ -1,13 +1,28 @@
+--- a/FL/Fl_Color_Chooser.H
++++ b/FL/Fl_Color_Chooser.H
+@@ -107,7 +107,9 @@ public:
+ class FL_EXPORT Fl_Color_Chooser : public Fl_Group {
+   Flcc_HueBox huebox;
+   Flcc_ValueBox valuebox;
++protected:
+   Fl_Choice choice;
++private:
+   Flcc_Value_Input rvalue;
+   Flcc_Value_Input gvalue;
+   Flcc_Value_Input bvalue;
 --- a/FL/Fl_Help_Dialog.H
 +++ b/FL/Fl_Help_Dialog.H
-@@ -28,6 +28,7 @@
- #ifndef Fl_Help_Dialog_H
- #define Fl_Help_Dialog_H
- #include <FL/Fl.H>
-+#include <FL/fl_ask.H>
- #include <FL/Fl_Double_Window.H>
- #include <FL/Fl_Group.H>
- #include <FL/Fl_Button.H>
+@@ -43,8 +43,9 @@ class FL_EXPORT Fl_Help_Dialog {
+   int find_pos_; 
+ public:
+   Fl_Help_Dialog();
+-private:
++protected:
+   Fl_Double_Window *window_;
++private:
+   Fl_Button *back_;
+   inline void cb_back__i(Fl_Button*, void*);
+   static void cb_back_(Fl_Button*, void*);
 @@ -63,6 +64,8 @@ private:
    Fl_Help_View *view_;
    inline void cb_view__i(Fl_Help_View*, void*);
@@ -17,17 +32,6 @@
  public:
    ~Fl_Help_Dialog();
    int h();
-@@ -82,6 +85,10 @@ public:
-   int w();
-   int x();
-   int y();
-+  void border(int b) { window_->border(b); }
-+  void always_on_top() { fl_always_on_top(window_); }
-+  void size_range(int w, int h, int xw, int xh) { window_->size_range(w, h, xw, xh); }
-+  void resizable(Fl_Widget *o) { window_->resizable(o); }
- };
- #endif
- 
 --- a/FL/Fl_Native_File_Chooser.H
 +++ b/FL/Fl_Native_File_Chooser.H
 @@ -322,6 +322,7 @@ private:
@@ -38,25 +42,6 @@
    int fl_gtk_chooser_wrapper(); // method that wraps the GTK widget
    Fl_GTK_File_Chooser(int val);
    virtual ~Fl_GTK_File_Chooser();
---- a/FL/fl_ask.H
-+++ b/FL/fl_ask.H
-@@ -26,6 +26,7 @@
- #  include "Enumerations.H"
- 
- class Fl_Widget;
-+class Fl_Window;
- 
- /** Different system beeps available. 
-  \sa fl_beep(int) */
-@@ -69,6 +70,8 @@ FL_EXPORT int fl_message_hotspot(void);
- FL_EXPORT void fl_message_title(const char *title);
- FL_EXPORT void fl_message_title_default(const char *title);
- 
-+FL_EXPORT void fl_always_on_top(Fl_Window *o);
-+
- // pointers you can use to change FLTK to a foreign language:
- extern FL_EXPORT const char* fl_no;
- extern FL_EXPORT const char* fl_yes;
 --- a/src/Fl_Choice.cxx
 +++ b/src/Fl_Choice.cxx
 @@ -186,13 +186,13 @@ int Fl_Choice::handle(int e) {
@@ -75,25 +60,6 @@
        color(c);
      }
      if (!v || v->submenu()) return 1;
---- a/src/Fl_Color_Chooser.cxx
-+++ b/src/Fl_Color_Chooser.cxx
-@@ -92,11 +92,11 @@ enum {
-   M_HSV		/**< mode() of Fl_Color_Chooser showing HSV values */
- };
- static const Fl_Menu_Item mode_menu[] = {
--  {"rgb"},
--  {"byte"},
--  {"hex"},
--  {"hsv"},
--  {0}
-+  { "rgb",  0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
-+  { "byte", 0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
-+  { "hex",  0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
-+  { "hsv",  0,0,0,0, FL_NORMAL_LABEL, 0, 12, 0 },
-+  { 0,0,0,0,0,0,0,0,0 }
- };
- 
- #ifndef FL_DOXYGEN
 --- a/src/Fl_Help_Dialog.cxx
 +++ b/src/Fl_Help_Dialog.cxx
 @@ -144,6 +144,10 @@ void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
@@ -133,30 +99,3 @@
        { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
          Fl_Group::current()->resizable(o);
        } // Fl_Box* o
---- a/src/fl_ask.cxx
-+++ b/src/fl_ask.cxx
-@@ -613,6 +613,24 @@ void fl_message_title_default(const char *title) {
-     message_title_default = strdup(title);
- }
- 
-+void fl_always_on_top(Fl_Window *o) {
-+#if !defined(__APPLE__) && !defined(WIN32)
-+  XEvent e;
-+  e.xclient.type = ClientMessage;
-+  e.xclient.window = fl_xid(o);
-+  e.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
-+  e.xclient.format = 32;
-+  e.xclient.data.l[0] = 1;
-+  e.xclient.data.l[1] = (long) XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False);
-+  e.xclient.data.l[2] = 0;
-+  e.xclient.data.l[3] = 0;
-+  e.xclient.data.l[4] = 0;
-+  XSendEvent(fl_display, RootWindow(fl_display, fl_screen), False,
-+             SubstructureRedirectMask|SubstructureNotifyMask, &e);
-+  XFlush(fl_display);
-+#endif
-+}
-+
- /** @} */
- 
- //

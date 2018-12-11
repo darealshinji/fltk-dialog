@@ -108,9 +108,22 @@ void set_undecorated(Fl_Double_Window *o) {
   o->border(window_decoration ? 1 : 0);
 }
 
-void set_always_on_top(Fl_Double_Window *o) {
+void set_always_on_top(Fl_Double_Window *o)
+{
   if (always_on_top) {
-    fl_always_on_top(o);
+    XEvent e;
+    e.xclient.type = ClientMessage;
+    e.xclient.window = fl_xid(o);
+    e.xclient.message_type = XInternAtom(fl_display, "_NET_WM_STATE", False);
+    e.xclient.format = 32;
+    e.xclient.data.l[0] = 1;
+    e.xclient.data.l[1] = static_cast<long>(XInternAtom(fl_display, "_NET_WM_STATE_ABOVE", False));
+    e.xclient.data.l[2] = 0;
+    e.xclient.data.l[3] = 0;
+    e.xclient.data.l[4] = 0;
+    XSendEvent(fl_display, RootWindow(fl_display, fl_screen), False,
+               SubstructureRedirectMask|SubstructureNotifyMask, &e);
+    XFlush(fl_display);
   }
 }
 

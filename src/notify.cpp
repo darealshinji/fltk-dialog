@@ -189,7 +189,7 @@ static void notification_box(double time_s, Fl_RGB_Image *rgb)
   }
   win->border(0);
   win->show();
-  fl_always_on_top(win);
+  set_always_on_top(win);
 
   if (time_s > 0) {
     Fl::add_timeout(time_s, callback);

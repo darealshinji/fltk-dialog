@@ -24,9 +24,18 @@
 
 #include "fltk-dialog.hpp"
 
+class help_dialog : public Fl_Help_Dialog
+{
+public:
+  help_dialog() : Fl_Help_Dialog() {}
+  void border(int b) { window_->border(b); }
+  void always_on_top() { set_always_on_top(window_); }
+  void size_range(int w, int h, int xw, int xh) { window_->size_range(w, h, xw, xh); }
+};
+
 void dialog_html_viewer(const char *file)
 {
-  Fl_Help_Dialog *o = new Fl_Help_Dialog();
+  help_dialog *o = new help_dialog();
   o->load(file);
 
   if (!window_taskbar) {
@@ -71,7 +80,6 @@ void dialog_html_viewer(const char *file)
   if (resizable) {
     o->size_range(340, 100, max_w, max_h);
   } else {
-    /* Hack! »Fl_Help_Dialog::window_->resizable(0)« doesn't work correctly. */
     o->size_range(o->w(), o->h(), o->w(), o->h());
   }
 
