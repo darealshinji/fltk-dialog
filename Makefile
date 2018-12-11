@@ -219,7 +219,7 @@ fltk/build/Makefile: fltk/patches_applied_stamp
 	cd fltk/build && $(CMAKE) .. $(fltk_cmake_config) -DCMAKE_VERBOSE_MAKEFILE="OFF"
 
 $(libfltk): fltk/build/Makefile
-	$(MAKE) -C fltk/build $(cmake_verbose)
+	$(MAKE) -C fltk/build fltk_images $(cmake_verbose)
 
 src/about.cpp: fltk_png.h
 src/indicator.cpp src/main.cpp: icon_png.h
