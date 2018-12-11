@@ -165,7 +165,7 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 
   img = new unsigned char[w*h*4];
   r = nsvgCreateRasterizer();
-  nsvgRasterizeFull(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
+  nsvgRasterizeXY(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
   rgb = new Fl_RGB_Image(img, w, h, 4, 0);
   rgb_copy = dynamic_cast<Fl_RGB_Image *>(rgb->copy());
 
