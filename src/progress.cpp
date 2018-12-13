@@ -44,23 +44,52 @@
 
 #include "fltk-dialog.hpp"
 
+#define DEFAULT_SLIDER_SIZE 0.2
+
 class loop_bar : public Fl_Widget
 {
   /* values between 0.0 and 1.0 */
   double slider_size_, value_;
 
-protected:
   void draw();
 
 public:
   loop_bar(int X, int Y, int W, int H);
 
   double slider_size() const { return slider_size_; }
-  void slider_size(double v) { slider_size_ = (v > 0.0 && v < 1.0) ? v : 0.2; }
+  void slider_size(double v) {
+    slider_size_ = (v > 0.0 && v < 1.0) ? v : DEFAULT_SLIDER_SIZE;
+  }
 
   double value() const { return value_; }
   void value(double v) { value_ = v; }
 };
+
+static loop_bar         *lp = NULL;
+static Fl_Double_Window *win = NULL;
+static Fl_Box           *box = NULL;
+static Fl_Return_Button *but_ok = NULL;
+static Fl_Button        *but_cancel = NULL;
+static Fl_Progress      *bar = NULL, *bar_main = NULL;
+static int ret = 1;
+static pthread_t t1, t2;
+
+#ifdef WITH_FRIBIDI
+static bool msg_alloc = false;
+#endif
+
+static
+unsigned int percent = 0
+,            multi = 1
+,            multi_percent = 0
+,            iteration = 0;
+
+static bool running = true
+,           pulsate = false
+,           autoclose = false
+,           hide_cancel = false;
+
+static long pid = -1;
 
 void loop_bar::draw()
 {
@@ -100,34 +129,8 @@ loop_bar::loop_bar(int X, int Y, int W, int H)
   color(fl_darker(color()));
   selection_color(fl_lighter(FL_BLUE));
   value(0.0);
-  slider_size(0.2);
+  slider_size(DEFAULT_SLIDER_SIZE);
 }
-
-static loop_bar         *lp = NULL;
-static Fl_Double_Window *win = NULL;
-static Fl_Box           *box = NULL;
-static Fl_Return_Button *but_ok = NULL;
-static Fl_Button        *but_cancel = NULL;
-static Fl_Progress      *bar = NULL, *bar_main = NULL;
-static int ret = 1;
-static pthread_t t1, t2;
-
-#ifdef WITH_FRIBIDI
-static bool msg_alloc = false;
-#endif
-
-static
-unsigned int percent = 0
-,            multi = 1
-,            multi_percent = 0
-,            iteration = 0;
-
-static bool running = true
-,           pulsate = false
-,           autoclose = false
-,           hide_cancel = false;
-
-static long pid = -1;
 
 static void close_cb(Fl_Widget *, long p)
 {

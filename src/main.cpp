@@ -79,8 +79,8 @@ static void measure_cb(const Fl_Label *o, int &w, int &h) {
   fl_measure(o->value, w, h, 0);
 }
 
-static int esc_handler(int /*event*/) {
-  if (Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape) {
+static int esc_handler(int event) {
+  if (event == FL_SHORTCUT && Fl::event_key() == FL_Escape) {
     return 1; /* ignore Escape key */
   }
   return 0;
@@ -133,8 +133,10 @@ int main(int argc, char **argv)
   ,      arg_ok_label(ap, "TEXT", "Set the OK button text", {"ok-label"})
   ,      arg_cancel_label(ap, "TEXT", "Set the CANCEL button text", {"cancel-label"})
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
-  ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)", {"separator"})
-  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif jpg png svg svgz xbm xpm", {"icon"});
+  ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)",
+                       {"separator"})
+  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif jpg png "
+                  "svg svgz xbm xpm", {"icon"});
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"})
   ,      arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
@@ -146,7 +148,8 @@ int main(int argc, char **argv)
   ,      arg_center(ap, "center", "Place window at center of screen", {"center"})
   ,      arg_always_on_top(ap, "always-on-top", "Keep window always visible on top", {"always-on-top"})
   ,      arg_no_escape(ap, "no-escape", "Don't close window when hitting ESC button", {"no-escape"});
-  ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: default, gtk+, gleam, plastic or simple; default is gtk+", {"scheme"});
+  ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: default, gtk+, gleam, plastic or simple; "
+                    "default is gtk+", {"scheme"});
   ARG_T  arg_no_system_colors(ap, "no-system-colors", "Use FLTK's default gray color scheme", {"no-system-colors"})
   ,      arg_undecorated(ap, "undecorated", "Set window undecorated", {"undecorated"})
   ,      arg_skip_taskbar(ap, "skip-taskbar", "Don't show window in taskbar", {"skip-taskbar"})
@@ -164,7 +167,8 @@ int main(int argc, char **argv)
   ,      arg_progress(ap, "progress", "Display progress indication dialog", {"progress"})
   ,      arg_calendar(ap, "calendar", "Display calendar dialog; returns date as Y-M-D", {"calendar"})
   ,      arg_date(ap, "date", "Display date selection dialog; returns date as Y-M-D", {"date"})
-  ,      arg_color(ap, "color", "Display color selection dialog; returns color as \"RGB [0.000-1.000]|RGB [0-255]|HTML hex|HSV\"", {"color"})
+  ,      arg_color(ap, "color", "Display color selection dialog; returns color as \"RGB [0.000-1.000]|RGB "
+                   "[0-255]|HTML hex|HSV\"", {"color"})
   ,      arg_scale(ap, "scale", "Display scale dialog", {"scale"});
   ARGS_T arg_checklist(ap, "OPT1|OPT2[|..]", "Display a check button list", {"checklist"})
   ,      arg_radiolist(ap, "OPT1|OPT2[|..]", "Display a radio button list", {"radiolist"})
@@ -172,7 +176,8 @@ int main(int argc, char **argv)
   ,      arg_html(ap, "FILE", "Display HTML viewer", {"html"});
   ARG_T  arg_text_info(ap, "text-info", "Display text information dialog", {"text-info"})
   ,      arg_notification(ap, "notification", "Display a notification pop-up", {"notification"});
-  ARGS_T arg_indicator(ap, "COMMAND", "create an indicator/tray entry as a launcher for a given command; use --text to set a tooltip message", {"indicator"});
+  ARGS_T arg_indicator(ap, "COMMAND", "create an indicator/tray entry as a launcher for a given command; "
+                       "use --text to set a tooltip message", {"indicator"});
   ARG_T  arg_font(ap, "font", "Display font selection dialog", {"font"});
 
   args::Group g_mwq_options(ap_main, "Message/warning/question options:");
@@ -181,11 +186,13 @@ int main(int argc, char **argv)
   args::Group g_question_options(ap_main, "Question options:");
   ARGS_T arg_yes_label(g_question_options, "TEXT", "Sets the label of the Yes button", {"yes-label"})
   ,      arg_no_label(g_question_options, "TEXT", "Sets the label of the No button", {"no-label"})
-  ,      arg_alt_label(g_question_options, "TEXT", "Adds a third button and sets its label; exit code is 2", {"alt-label"});
+  ,      arg_alt_label(g_question_options, "TEXT", "Adds a third button and sets its label; exit code is 2",
+                       {"alt-label"});
 
   args::Group g_file_dir_options(ap_main, "File/directory selection options:");
-  ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, otherwise fall back to FLTK's own version; "
-                   "some options may only work on FLTK's file chooser", {"native"});
+  ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, "
+                   "otherwise fall back to FLTK's own version; some options may only work on FLTK's file chooser",
+                   {"native"});
 #ifdef HAVE_QT
   ARG_T arg_native_gtk(g_file_dir_options, "native-gtk", "Display the Gtk+ native file chooser", {"native-gtk"});
 #  ifdef HAVE_QT4
@@ -199,18 +206,23 @@ int main(int argc, char **argv)
 
   args::Group g_progress_options(ap_main, "Progress options:");
   ARG_T  arg_pulsate(g_progress_options, "pulsate", "Pulsating progress bar", {"pulsate"});
-  ARGI_T arg_multi(g_progress_options, "NUMBER", "Use 2 progress bars; the main bar, showing the overall progress, will reach 100% if the other bar has "
-                   "reached 100% after NUMBER iterations", {"multi"});
+  ARGI_T arg_multi(g_progress_options, "NUMBER", "Use 2 progress bars; the main bar, showing the overall progress, "
+                   "will reach 100% if the other bar has reached 100% after NUMBER iterations", {"multi"});
   ARGL_T arg_watch_pid(g_progress_options, "PID", "Process ID to watch", {"watch-pid"});
-  ARG_T  arg_auto_close(g_progress_options, "auto-close", "Dismiss the dialog when 100% has been reached", {"auto-close"})
-  ,      arg_no_cancel(g_progress_options, "no-cancel", "Hide cancel button", {"no-cancel"});
+
+  args::Group g_progress_text_info_options(ap_main, "Progress/text information options:");
+  ARG_T  arg_auto_close(g_progress_text_info_options, "auto-close", "Automatically close the dialog window",
+                        {"auto-close"})
+  ,      arg_no_cancel(g_progress_text_info_options, "no-cancel", "Hide cancel button", {"no-cancel"});
 
   args::Group g_checklist_options(ap_main, "Checklist options:");
   ARG_T  arg_check_all(g_checklist_options, "check-all", "Start with all items selected", {"check-all"})
-  ,      arg_return_value(g_checklist_options, "return-value", "Return list of selected items instead of a \"TRUE|FALSE\" list", {"return-value"});
+  ,      arg_return_value(g_checklist_options, "return-value", "Return list of selected items instead of a "
+                          "\"TRUE|FALSE\" list", {"return-value"});
 
   args::Group g_radiolist_dropdown_options(ap_main, "Radiolist/dropdown options:");
-  ARG_T  arg_return_number(g_radiolist_dropdown_options, "return-number", "Return selected entry number instead of label text", {"return-number"});
+  ARG_T  arg_return_number(g_radiolist_dropdown_options, "return-number", "Return selected entry number instead of "
+                           "label text", {"return-number"});
 
   args::Group g_calendar_options(ap_main, "Calendar/date options:");
   ARGS_T arg_format(g_calendar_options, "FORMAT",
@@ -236,17 +248,20 @@ int main(int argc, char **argv)
 
   args::Group g_text_info_options(ap_main, "Text information options:");
   ARGS_T arg_checkbox(g_text_info_options, "TEXT", "Enable an \"I read and agree\" checkbox", {"checkbox"});
-  ARG_T  arg_auto_scroll(g_text_info_options, "auto-scroll", "Always scroll to the bottom of the text", {"auto-scroll"});
+  ARG_T  arg_auto_scroll(g_text_info_options, "auto-scroll", "Always scroll to the bottom of the text",
+                         {"auto-scroll"});
 
   args::Group g_notification_options(ap_main, "Notification options:");
-  ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds", {"timeout"});
-  ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout value may be "
-                       "ignored by some desktop environments)", {"libnotify"});
+  ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds",
+                     {"timeout"});
+  ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout "
+                       "value may be ignored by some desktop environments)", {"libnotify"});
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
-  ARG_T  arg_force_legacy(g_indicator_options, "force-legacy", "Use the old X11 indicator system instead of libappindicator "
-                          "(this may not work on most DEs)", {"force-legacy"});
-  ARG_T  arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system", {"skip-legacy"});
+  ARG_T  arg_force_legacy(g_indicator_options, "force-legacy", "Use the old X11 indicator system instead of "
+                          "libappindicator (this may not work on most DEs)", {"force-legacy"});
+  ARG_T  arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system",
+                         {"skip-legacy"});
 
   const char *appendix = "  using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org\n\n"
     "  https://github.com/darealshinji/fltk-dialog\n";
@@ -577,6 +592,16 @@ int main(int argc, char **argv)
     }
   }
 
+  if (dialog != DIALOG_PROGRESS && dialog != DIALOG_TEXTINFO) {
+    if (arg_auto_close) {
+      return use_only_with(argv[0], "--auto-close", "--progress or --text-info");
+    }
+
+    if (arg_no_cancel) {
+      return use_only_with(argv[0], "--no-cancel", "--progress or --text-info");
+    }
+  }
+
   if (dialog != DIALOG_PROGRESS) {
     if (arg_pulsate) {
       return use_only_with(argv[0], "--pulsate", "--progress");
@@ -588,14 +613,6 @@ int main(int argc, char **argv)
 
     if (arg_watch_pid) {
       return use_only_with(argv[0], "--watch-pid", "--progress");
-    }
-
-    if (arg_auto_close) {
-      return use_only_with(argv[0], "--auto-close", "--progress");
-    }
-
-    if (arg_no_cancel) {
-      return use_only_with(argv[0], "--no-cancel", "--progress");
     }
   } else if (dialog == DIALOG_PROGRESS && arg_pulsate && arg_multi) {
     return use_only_with(argv[0], "--multi", "--progress, but not with --pulsate");
@@ -624,6 +641,11 @@ int main(int argc, char **argv)
 
   if ((arg_auto_scroll || checkbox) && dialog != DIALOG_TEXTINFO) {
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
+  }
+
+  if (checkbox && arg_auto_close) {
+    std::cerr << argv[0] << ": cannot use `--checkbox' and `--auto-close' together" << std::endl;
+    return 1;
   }
 
   if (arg_force_legacy && arg_skip_legacy) {
@@ -701,7 +723,7 @@ int main(int argc, char **argv)
     case DIALOG_PROGRESS:
       return dialog_progress(arg_pulsate, multi, kill_pid, arg_auto_close, arg_no_cancel);
     case DIALOG_TEXTINFO:
-      return dialog_textinfo(arg_auto_scroll, checkbox);
+      return dialog_textinfo(arg_auto_scroll, checkbox, arg_auto_close, arg_no_cancel);
     case DIALOG_CHECKLIST:
       return dialog_checklist(checklist_options, arg_return_value, arg_check_all, separator);
     case DIALOG_RADIOLIST:

@@ -40,10 +40,19 @@
 
 #include "fltk-dialog.hpp"
 
+enum {
+  BT_OK,
+  BT_CANCEL,
+  BT_YES,
+  BT_NO,
+  BT_CLOSE,
+  BT_COUNT
+};
+
 int selected_language = LANG_EN;
 Fl_Menu_Item item_month[13];
 
-static const char *buttons[LANG_COUNT][5] =
+static const char *buttons[LANG_COUNT][BT_COUNT] =
 {
   /* LANG_EN */
   { "OK", "Cancel", "Yes", "No", "Close" },
@@ -321,7 +330,7 @@ void l10n(void)
   } else if (strncmp(env, "de", 2) == 0) {
     selected_language = LANG_DE;
     if (strncmp(env, "de_CH", 5) == 0) {
-      buttons[LANG_DE][4] = "Schliessen";
+      buttons[LANG_DE][BT_CLOSE] = "Schliessen";
     } else if (strncmp(env, "de_AT", 5) == 0) {
       month_names[LANG_DE][1] = "J" "\xC3\xA4" "nner";  // Jänner
     }
@@ -344,11 +353,11 @@ void l10n(void)
     return;
   }
 
-  fl_ok = buttons[selected_language][0];
-  fl_cancel = buttons[selected_language][1];
-  fl_yes = buttons[selected_language][2];
-  fl_no = buttons[selected_language][3];
-  fl_close = buttons[selected_language][4];
+  fl_ok = buttons[selected_language][BT_OK];
+  fl_cancel = buttons[selected_language][BT_CANCEL];
+  fl_yes = buttons[selected_language][BT_YES];
+  fl_no = buttons[selected_language][BT_NO];
+  fl_close = buttons[selected_language][BT_CLOSE];
 
 #define ITEM(x)  item_month[x] = { month_names[selected_language][x+1], 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 }
   ITEM(0); ITEM(1); ITEM(2); ITEM(3); ITEM(4); ITEM(5);

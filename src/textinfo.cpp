@@ -44,9 +44,13 @@
 static Fl_Double_Window *win;
 static Fl_Multi_Browser *browser;
 static Fl_Check_Button *checkbutton = NULL;
-static Fl_Return_Button *but_ret;
-static bool checkbutton_set, autoscroll;
+static Fl_Return_Button *but_ok;
 static int ret = 1;
+
+static bool checkbutton_set = false
+,           autoscroll = false
+,           autoclose = false
+,           hide_cancel = false;
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
@@ -57,65 +61,78 @@ static void callback(Fl_Widget *)
 {
   if (checkbutton_set) {
     checkbutton_set = false;
-    but_ret->deactivate();
+    but_ok->deactivate();
   } else {
     checkbutton_set = true;
-    but_ret->activate();
+    but_ok->activate();
+  }
+}
+
+static void add_line(const char *line, int line_num)
+{
+#ifdef WITH_FRIBIDI
+  char *tmp = NULL;
+  if (use_fribidi) {
+    tmp = fribidi_parse_line(line);
+  }
+  if (tmp) {
+    browser->add(tmp);
+    delete tmp;
+  } else
+#endif
+  {
+    browser->add(line);
+  }
+
+  if (autoscroll) {
+    browser->bottomline(line_num);
   }
 }
 
 extern "C" void *ti_getline(void *)
 {
   std::string line;
+  int i = 0;
 
-  for (int i = 0; std::getline(std::cin, line); ) {
+  while (std::getline(std::cin, line)) {
     Fl::lock();
-
-#ifdef WITH_FRIBIDI
-    char *tmp = NULL;
-    if (use_fribidi) {
-      tmp = fribidi_parse_line(line.c_str());
-    }
-    if (tmp) {
-      browser->add(tmp);
-      delete tmp;
-    } else
-#endif
-    {
-      browser->add(line.c_str());
-    }
-
-    if (autoscroll) {
-      i++;
-      browser->bottomline(i);
-    }
-
+    i++;
+    add_line(line.c_str(), i);
     Fl::unlock();
     Fl::awake(win);
   }
 
-  if (checkbutton) {
-    Fl::lock();
-    checkbutton->activate();
-    Fl::unlock();
+  Fl::lock();
+
+  if (autoclose) {
+    close_cb(NULL, 0);
   }
+
+  if (checkbutton) {
+    checkbutton->activate();
+  } else {
+    but_ok->activate();
+  }
+
+  Fl::unlock();
   Fl::awake(win);
 
   return nullptr;
 }
 
-int dialog_textinfo(bool autoscroll_, const char *checkbox)
+int dialog_textinfo(bool autoscroll_, const char *checkbox, bool autoclose_, bool hide_cancel_)
 {
   Fl_Group *g;
   Fl_Box *dummy;
-  Fl_Button *but;
+  Fl_Button *but_cancel;
   char buf[512];
-  int browser_h = checkbox ? 418 : 444;
-  int but_y = browser_h + 20;
-  int but_w, range;
+  int browser_h = checkbox ? 422 : 444;
+  int but_w = 90, win_ret = 0;
   pthread_t t;
 
   autoscroll = autoscroll_;
+  autoclose = autoclose_;
+  hide_cancel = hide_cancel_;
 
   if (!title) {
     title = "FLTK text info window";
@@ -125,56 +142,62 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox)
   {
     browser = new Fl_Multi_Browser(10, 10, 380, browser_h);
 
-    g = new Fl_Group(0, browser_h, 400, 500);
-    {
-      if (!checkbox) {
-        win->callback(close_cb, 0);
-        range = but_w = measure_button_width(fl_close, 40);
-        but_ret = new Fl_Return_Button(win->w() - 10 - but_w, but_y, but_w, 26, fl_close);
-        but_ret->callback(close_cb, 0);
-      } else {
-        win->callback(close_cb, 1);
-        but_y = browser_h + 10;
+    if (checkbox || !autoclose || !hide_cancel) {
+      win_ret = 1;
 
-        checkbutton = new Fl_Check_Button(10, but_y + 2, 380, 26);
-        checkbutton->callback(callback);
+      g = new Fl_Group(0, browser_h, 400, 500);
+      {
+        int but_x = win->w();
+
+        if (checkbox) {
+          checkbutton = new Fl_Check_Button(10, browser_h + 12, 380, 26);
+          checkbutton->callback(callback);
 #ifdef WITH_FRIBIDI
-        char *tmp = NULL;
-        if (use_fribidi) {
-          tmp = fribidi_parse_line(checkbox);
-        }
-        if (tmp) {
-          snprintf(buf, sizeof(buf) - 1, " %s", tmp);
-          delete tmp;
-        } else
+          char *tmp = NULL;
+          if (use_fribidi) {
+            tmp = fribidi_parse_line(checkbox);
+          }
+          if (tmp) {
+            snprintf(buf, sizeof(buf) - 1, " %s", tmp);
+            delete tmp;
+          } else
 #endif
-        {
-          snprintf(buf, sizeof(buf) - 1, " %s", checkbox);
+          {
+            snprintf(buf, sizeof(buf) - 1, " %s", checkbox);
+          }
+          checkbutton->copy_label(buf);
+          checkbutton->deactivate();
+          checkbutton_set = false;
         }
-        checkbutton->copy_label(buf);
-        checkbutton->deactivate();
-        checkbutton_set = false;
 
-        but_w = measure_button_width(fl_cancel, 20);
-        range = but_w + 40;
-        but = new Fl_Button(win->w() - 10 - but_w, but_y + 36, but_w, 26, fl_cancel);
-        but->callback(close_cb, 1);
+        if (!hide_cancel) {
+          but_w = measure_button_width(fl_cancel, 20);
+          but_cancel = new Fl_Button(win->w() - 10 - but_w, win->h() - 36, but_w, 26, fl_cancel);
+          but_cancel->callback(close_cb, 1);
+          but_x = but_cancel->x() - 1;
+        }
 
-        but_w = measure_button_width(fl_ok, 40);
-        but_ret = new Fl_Return_Button(but->x() - 10 - but_w, but_y + 36, but_w, 26, fl_ok);
-        but_ret->callback(close_cb, 0);
-        but_ret->deactivate();
+        if (!autoclose) {
+          const char *l = (!checkbox && hide_cancel) ? fl_close : fl_ok;
+          but_w = measure_button_width(l, 40);
+          but_ok = new Fl_Return_Button(but_x - 10 - but_w, win->h() - 36, but_w, 26, l);
+          but_ok->callback(close_cb, 0);
+          but_ok->deactivate();
+          but_x = but_ok->x() - 1;
+        }
+
+        dummy = new Fl_Box(but_x, browser_h + 10, 1, 1);
+        dummy->box(FL_NO_BOX);
       }
-      dummy = new Fl_Box(but_ret->x() - 1, but_y - 1, 1, 1);
-      dummy->box(FL_NO_BOX);
+      g->resizable(dummy);
+      g->end();
     }
-    g->resizable(dummy);
-    g->end();
   }
   set_size(win, browser);
-  set_size_range(win, range, checkbox ? 120 : 90);
+  set_size_range(win, but_w + 40, checkbox ? 120 : 90);
   set_position(win);
   win->end();
+  win->callback(close_cb, win_ret);
 
   Fl::lock();
 
