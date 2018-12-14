@@ -35,7 +35,7 @@ public:
   }
 };
 
-void dialog_html_viewer(const char *file)
+int dialog_html_viewer(const char *file)
 {
   help_dialog *o = new help_dialog();
   o->load(file);
@@ -86,5 +86,7 @@ void dialog_html_viewer(const char *file)
   }
 
   Fl::run();
+
+  return 0;
 }
 

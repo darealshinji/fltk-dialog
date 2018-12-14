@@ -100,9 +100,14 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
   return 0;
 }
 
-static int use_only_with(const char *self, std::string a, std::string b)
-{
+static int use_only_with(const char *self, std::string a, std::string b) {
   std::cerr << self << ": " << a << " can only be used with " << b << "\n"
+    "See `" << self << " --help' for more information" << std::endl;
+  return 1;
+}
+
+static int use_not_together(const char *self, std::string a, std::string b) {
+  std::cerr << self << ": cannot use `" << a << "' and `" << b << "' together\n"
     "See `" << self << " --help' for more information" << std::endl;
   return 1;
 }
@@ -117,8 +122,7 @@ int main(int argc, char **argv)
     Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len));
     l10n();
     position_center = true;
-    about();
-    return 0;
+    return about();
   }
 
   args::ArgumentParser ap_main("FLTK dialog - run dialog boxes from shell scripts", "");
@@ -277,18 +281,9 @@ int main(int argc, char **argv)
   try {
     ap_main.ParseCLI(argc, argv);
   }
-  catch (args::Help) {
-    std::cout << ap_main << appendix << std::endl;
-    return 0;
-  }
-  catch (args::ParseError e) {
-    std::cerr << e.what() << std::endl;
-    std::cerr << "See `" << argv[0] << " --help' for more information" << std::endl;
-    return 1;
-  }
-  catch (args::ValidationError e) {
-    std::cerr << e.what() << std::endl;
-    std::cerr << "See `" << argv[0] << " --help' for more information" << std::endl;
+  catch (args::Error e) {
+    std::cerr << e.what() << "\n"
+      << "See `" << argv[0] << " --help' for more information" << std::endl;
     return 1;
   }
 
@@ -568,97 +563,89 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  if (!with_icon_box && (dialog != DIALOG_MESSAGE && dialog != DIALOG_WARNING &&
-      dialog != DIALOG_QUESTION)) {
-    return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
-  }
-
-  if (native_mode != NATIVE_NONE && dialog != DIALOG_FILE_CHOOSER && dialog != DIALOG_DIR_CHOOSER) {
-    return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5", "--file or --directory");
-  }
-
   if (native_count >= 2) {
     std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
     return 1;
   }
 
-  if (dialog != DIALOG_NOTIFY) {
-    if (arg_timeout) {
-      return use_only_with(argv[0], "--timeout", "--notification");
-    }
-
-    if (arg_libnotify) {
-      return use_only_with(argv[0], "--libnotify", "--notification");
-    }
+  if (arg_no_symbol && !(arg_message || arg_warning || arg_question)) {
+    return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
   }
 
-  if (dialog != DIALOG_PROGRESS && dialog != DIALOG_TEXTINFO) {
-    if (arg_auto_close) {
-      return use_only_with(argv[0], "--auto-close", "--progress or --text-info");
-    }
-
-    if (arg_no_cancel) {
-      return use_only_with(argv[0], "--no-cancel", "--progress or --text-info");
-    }
+  if (native_mode != NATIVE_NONE && !(arg_file || arg_directory)) {
+    return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5", "--file or --directory");
   }
 
-  if (dialog != DIALOG_PROGRESS) {
-    if (arg_pulsate) {
-      return use_only_with(argv[0], "--pulsate", "--progress");
-    }
-
-    if (arg_multi) {
-      return use_only_with(argv[0], "--multi", "--progress");
-    }
-
-    if (arg_watch_pid) {
-      return use_only_with(argv[0], "--watch-pid", "--progress");
-    }
-  } else if (dialog == DIALOG_PROGRESS && arg_pulsate && arg_multi) {
-    return use_only_with(argv[0], "--multi", "--progress, but not with --pulsate");
+  if (arg_timeout && !arg_notification) {
+    return use_only_with(argv[0], "--timeout", "--notification");
   }
 
-  if ((arg_value || arg_min_value || arg_max_value || arg_step) &&
-      dialog != DIALOG_SCALE) {
+  if (arg_libnotify && !arg_notification) {
+    return use_only_with(argv[0], "--libnotify", "--notification");
+  }
+
+  if (arg_auto_close && !(arg_progress || arg_text_info)) {
+    return use_only_with(argv[0], "--auto-close", "--progress or --text-info");
+  }
+
+  if (arg_no_cancel && !(arg_progress || arg_text_info)) {
+    return use_only_with(argv[0], "--no-cancel", "--progress or --text-info");
+  }
+
+  if (arg_pulsate && !arg_progress) {
+    return use_only_with(argv[0], "--pulsate", "--progress");
+  }
+
+  if (arg_multi && !arg_progress) {
+    return use_only_with(argv[0], "--multi", "--progress");
+  }
+
+  if (arg_watch_pid && !arg_progress) {
+    return use_only_with(argv[0], "--watch-pid", "--progress");
+  }
+
+  if (arg_pulsate && arg_multi) {
+    return use_not_together(argv[0], "--multi", "--pulsate");
+  }
+
+  if ((arg_value || arg_min_value || arg_max_value || arg_step) && !arg_scale) {
     return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
   }
 
-  if (arg_return_value && dialog != DIALOG_CHECKLIST) {
+  if (arg_return_value && !arg_checklist) {
     return use_only_with(argv[0], "--return-value", "--checklist");
   }
 
-  if (arg_check_all && dialog != DIALOG_CHECKLIST) {
+  if (arg_check_all && !arg_checklist) {
     return use_only_with(argv[0], "--check-all", "--checklist");
   }
 
-  if (arg_return_number && (dialog != DIALOG_RADIOLIST && dialog != DIALOG_DROPDOWN)) {
+  if (arg_return_number && !(arg_radiolist || arg_dropdown)) {
     return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
   }
 
-  if (format && (dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE)) {
+  if (arg_format && !(arg_calendar || arg_date)) {
     return use_only_with(argv[0], "--format", "--calendar or --date");
   }
 
-  if ((arg_auto_scroll || checkbox) && dialog != DIALOG_TEXTINFO) {
+  if ((arg_auto_scroll || checkbox) && !arg_text_info) {
     return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
   }
 
-  if (checkbox && arg_auto_close) {
-    std::cerr << argv[0] << ": cannot use `--checkbox' and `--auto-close' together" << std::endl;
-    return 1;
+  if (arg_checkbox && arg_auto_close) {
+    return use_not_together(argv[0], "--checkbox", "--auto-close");
   }
 
   if (arg_force_legacy && arg_skip_legacy) {
-    std::cerr << argv[0] << ": cannot use `--force-legacy' and `--skip-legacy' together" << std::endl;
-    return 1;
+    return use_not_together(argv[0], "--force-legacy", "--skip-legacy");
   }
 
-  if ((arg_force_legacy || arg_skip_legacy) && dialog != DIALOG_INDICATOR) {
+  if ((arg_force_legacy || arg_skip_legacy) && !arg_indicator) {
     return use_only_with(argv[0], "--force-legacy/--skip-legacy", "--indicator");
   }
 
   /* keep fltk's '@' symbols enabled for HTML, date and calendar dialogs */
-  if (dialog != DIALOG_HTML && dialog != DIALOG_CALENDAR && dialog != DIALOG_DATE) {
+  if (!(arg_html || arg_calendar || arg_date)) {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
 
@@ -676,13 +663,11 @@ int main(int argc, char **argv)
   }
 
   /* set window icon and system colors */
-  Fl_RGB_Image *rgb = NULL;
   const char *icon = NULL;
-
   GETCSTR(icon, arg_icon);
 
-  if (dialog != DIALOG_NOTIFY && dialog != DIALOG_INDICATOR) {
-    rgb = img_to_rgb(icon, arg_force_nanosvg);
+  if (!arg_notification && !arg_indicator) {
+    Fl_RGB_Image *rgb = img_to_rgb(icon, arg_force_nanosvg);
 
     if (!rgb) {
       rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
@@ -700,8 +685,7 @@ int main(int argc, char **argv)
 
   switch (dialog) {
     case DIALOG_ABOUT:
-      about();
-      return 0;
+      return about();
     case DIALOG_MESSAGE:
       return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
     case DIALOG_WARNING:
@@ -737,8 +721,7 @@ int main(int argc, char **argv)
     case DIALOG_DND:
       return dialog_dnd();
     case DIALOG_HTML:
-      dialog_html_viewer(html);
-      return 0;
+      return dialog_html_viewer(html);
     case DIALOG_COLOR:
       return dialog_color();
     case DIALOG_FONT:

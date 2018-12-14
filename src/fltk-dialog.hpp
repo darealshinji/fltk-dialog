@@ -222,7 +222,7 @@ int dialog_message(int type = MESSAGE_TYPE_WARNING
 ,                  double scale_step = 1
 ,                  double scale_init = 0);
 
-void about(void);
+int about(void);
 int dialog_calendar(const char *format);
 int dialog_checklist(std::string checklist_options, bool return_value, bool check_all, char separator);
 int dialog_color(void);
@@ -231,7 +231,7 @@ int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
 int dialog_file_chooser(int mode, int native);
 int dialog_font(void);
-void dialog_html_viewer(const char *file);
+int dialog_html_viewer(const char *file);
 int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool force_nanosvg);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);

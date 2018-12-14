@@ -82,7 +82,7 @@ static void close_cb(Fl_Widget *) {
   win->hide();
 }
 
-void about()
+int about()
 {
   Fl_Group *g1, *g2;
   Fl_Box *box, *dummy;
@@ -136,5 +136,7 @@ void about()
     g2->end();
   }
   run_window(win, g1, range_w, logo_h + 130);
+
+  return 0;
 }
 
