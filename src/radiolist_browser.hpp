@@ -26,12 +26,17 @@
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wshadow"
 # pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
+
 #include <FL/Fl.H>
 #include <FL/Fl_Check_Browser.H>
+#include <FL/fl_draw.H>
+
 #ifdef __GNUC__
 # pragma GCC diagnostic pop
 #endif
+
 
 class radiolist_browser : public Fl_Check_Browser
 {

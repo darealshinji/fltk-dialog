@@ -281,7 +281,7 @@ int main(int argc, char **argv)
   try {
     ap_main.ParseCLI(argc, argv);
   }
-  catch (args::Error e) {
+  catch (args::Error &e) {
     std::cerr << e.what() << "\n"
       << "See `" << argv[0] << " --help' for more information" << std::endl;
     return 1;

@@ -77,17 +77,6 @@
  *  USA.
  */
 
-#ifdef __GNUC__
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wshadow"
-# pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-#ifdef __GNUC__
-# pragma GCC diagnostic pop
-#endif
-
 #include "radiolist_browser.hpp"
 
 /* modified/simplified version of Fl_Check_Browser::item_draw() */
