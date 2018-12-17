@@ -181,13 +181,13 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
 static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
 {
   Fl_RGB_Image *rgb;
-  RsvgHandle *rsvg;
+  RsvgHandle *rsvg = NULL;
   RsvgDimensionData dim;
   GError *gerror = NULL;
   cairo_surface_t *surf;
   cairo_t *cr;
   std::string data;
-  void *handle, *libcairo, *librsvg;
+  void *handle, *libcairo, *libgtk, *librsvg;
   char *error;
 
   if (!file) {
@@ -201,10 +201,19 @@ static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
     return NULL;
   }
 
+  libgtk = dlopen("libgtk-x11-2.0.so.0", RTLD_LAZY|RTLD_GLOBAL);
+  error = dlerror();
+  if (!libgtk) {
+    std::cerr << error << std::endl;
+    dlclose(libcairo);
+    return NULL;
+  }
+
   librsvg = dlopen("librsvg-2.so.2", RTLD_LAZY);
   error = dlerror();
   if (!librsvg) {
     std::cerr << error << std::endl;
+    dlclose(libgtk);
     dlclose(libcairo);
     return NULL;
   }
@@ -218,6 +227,7 @@ static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
   if ((error = dlerror()) != NULL) { \
     std::cerr << error << std::endl; \
     dlclose(librsvg); \
+    dlclose(libgtk); \
     dlclose(libcairo); \
     return NULL; \
   }
@@ -228,6 +238,9 @@ static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
   LOAD_SYMBOL( cairo_status_t,    cairo_surface_write_to_png_stream, (cairo_surface_t *, cairo_write_func_t, void *) )
   LOAD_SYMBOL( void,              cairo_surface_destroy,             (cairo_surface_t *) )
   LOAD_SYMBOL( void,              cairo_destroy,                     (cairo_t *) )
+
+  handle = libgtk;
+  LOAD_SYMBOL( void, g_object_unref, (gpointer) )
 
   handle = librsvg;
   LOAD_SYMBOL( void,         rsvg_set_default_dpi,          (double) )
@@ -242,6 +255,7 @@ static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
   if (compressed) {
     if (!gzip_uncompress(file, data)) {
       dlclose(librsvg);
+      dlclose(libgtk);
       dlclose(libcairo);
       return NULL;
     }
@@ -253,6 +267,7 @@ static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
 
   if (gerror) {
     dlclose(librsvg);
+    dlclose(libgtk);
     dlclose(libcairo);
     return NULL;
   }
@@ -265,21 +280,26 @@ static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
   rsvg_handle_render_cairo(rsvg, cr);
   cairo_surface_write_to_png_stream(surf, write_func, NULL);
 
+  /*
   handle = dlopen("libgtk-x11-2.0.so.0", RTLD_LAZY);
   if (handle) {
     GETPROCADDRESS(handle, void, g_object_unref, (gpointer))
     error = dlerror();
     if (!error) {
       g_object_unref(rsvg);
+      rsvg = NULL;
     }
     dlclose(handle);
   }
+  */
+  g_object_unref(rsvg);
 
   cairo_destroy(cr);
   cairo_surface_destroy(surf);
   rsvg_cleanup();
 
   dlclose(librsvg);
+  dlclose(libgtk);
   dlclose(libcairo);
 
   rgb = new Fl_PNG_Image(NULL, reinterpret_cast<const unsigned char *>(png_data.c_str()), png_data.size());

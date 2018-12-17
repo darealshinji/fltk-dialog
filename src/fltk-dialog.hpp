@@ -29,7 +29,9 @@
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wshadow"
 # pragma GCC diagnostic ignored "-Wunused-parameter"
-# pragma GCC diagnostic ignored "-Wcast-function-type"
+# if __GNUC__ > 7
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
 #endif
 
 #include <FL/Fl.H>
@@ -106,6 +108,8 @@
 # endif
 #endif
 
+#define PROJECT_URL "https://github.com/darealshinji/fltk-dialog"
+
 #ifndef FLTK_DIALOG_MODULE_PATH
 # define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 #endif
@@ -153,11 +157,11 @@ enum {
 };
 
 enum {
-  NATIVE_NONE,
-  NATIVE_ANY,
-  NATIVE_GTK,
-  NATIVE_QT4,
-  NATIVE_QT5
+  NATIVE_NONE = 0,
+  NATIVE_ANY = 1,
+  NATIVE_GTK = 2,
+  NATIVE_QT4 = 4,
+  NATIVE_QT5 = 5
 };
 
 enum {
@@ -233,7 +237,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 int dialog_file_chooser(int mode, int native);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
-int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool force_nanosvg);
+int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool force_nanosvg, bool listen);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox, bool autoclose, bool hide_cancel);

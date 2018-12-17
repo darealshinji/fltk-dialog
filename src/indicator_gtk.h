@@ -41,5 +41,5 @@ typedef enum {
 } AppIndicatorStatus;
 
 
-bool start_indicator_gtk(const char *command, const char *icon, bool force_nanosvg);
+bool start_indicator_gtk(const char *command, const char *icon, bool force_nanosvg, bool listen);
 

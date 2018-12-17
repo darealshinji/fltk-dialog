@@ -26,8 +26,6 @@
 #include "about_license.hpp"
 #include "fltk_png.h"
 
-#define MY_URL "https://github.com/darealshinji/fltk-dialog"
-
 static Fl_Double_Window *win;
 static Fl_Text_Buffer *buffer;
 static bool license_displayed = false;
@@ -41,7 +39,7 @@ static const char *text = "\n"
   "\n"
   /* http://www.utf8-chartable.de/ */
   "Copyright \xc2\xa9 2016-2018 djcj <djcj@gmx.de>\n"
-  MY_URL "\n"
+  PROJECT_URL "\n"
   "\n"
   "The FLTK library and the font widget are\n"
   "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
@@ -70,7 +68,7 @@ static void url_cb(Fl_Widget *)
 {
   char errmsg[512] = {0};
   std::string warnmsg;
-  if (!fl_open_uri(MY_URL, errmsg, sizeof(errmsg))) {
+  if (!fl_open_uri(PROJECT_URL, errmsg, sizeof(errmsg))) {
     title = "Error";
     warnmsg = "Error: " + std::string(errmsg);
     msg = warnmsg.c_str();

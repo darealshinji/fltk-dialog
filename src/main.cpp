@@ -54,11 +54,9 @@ const char *quote = "";
 bool use_fribidi = true;
 #endif
 
-/* get dimensions of the main screen work area */
-int max_w = Fl::w();
-int max_h = Fl::h();
-
-int override_x = -1
+int max_w = -1
+,   max_h = -1
+,   override_x = -1
 ,   override_y = -1
 ,   override_w = -1
 ,   override_h = -1;
@@ -100,22 +98,9 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
   return 0;
 }
 
-static int use_only_with(const char *self, std::string a, std::string b) {
-  std::cerr << self << ": " << a << " can only be used with " << b << "\n"
-    "See `" << self << " --help' for more information" << std::endl;
-  return 1;
-}
-
-static int use_not_together(const char *self, std::string a, std::string b) {
-  std::cerr << self << ": cannot use `" << a << "' and `" << b << "' together\n"
-    "See `" << self << " --help' for more information" << std::endl;
-  return 1;
-}
-
 int main(int argc, char **argv)
 {
   if (argc < 2) {
-    Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
     Fl::get_system_colors();
     Fl::scheme("gtk+");
     Fl::visual(FL_DOUBLE|FL_INDEX);
@@ -263,17 +248,17 @@ int main(int argc, char **argv)
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
   ARG_T  arg_force_legacy(g_indicator_options, "force-legacy", "Use the old X11 indicator system instead of "
-                          "libappindicator (this may not work on most DEs)", {"force-legacy"});
-  ARG_T  arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system",
-                         {"skip-legacy"});
+                          "libappindicator (this may not work on most DEs)", {"force-legacy"})
+  ,      arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system",
+                         {"skip-legacy"})
+  ,      arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"});
 
-  const char *appendix = "  using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org\n\n"
-    "  https://github.com/darealshinji/fltk-dialog\n";
+  const char *fltk_using = "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org";
 
   /* ignore any errors and always print help if --help or -h was among the arguments */
   for (int i = argc - 1; i > 0; --i) {
     if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-      std::cout << ap_main << appendix << std::endl;
+      std::cout << ap_main << "  " << fltk_using << "\n\n  " PROJECT_URL "\n" << std::endl;
       return 0;
     }
   }
@@ -282,31 +267,59 @@ int main(int argc, char **argv)
     ap_main.ParseCLI(argc, argv);
   }
   catch (args::Error &e) {
-    std::cerr << e.what() << "\n"
-      << "See `" << argv[0] << " --help' for more information" << std::endl;
+    std::cerr << e.what() << "\nSee `" << argv[0] << " --help' for more information" << std::endl;
     return 1;
   }
 
   if (arg_version) {
-    std::cout << "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org" << std::endl;
+    std::cout << fltk_using << std::endl;
     return 0;
   }
+
+  if (arg_message +
+      arg_warning +
+      arg_question +
+      arg_dnd +
+      arg_file +
+      arg_directory +
+      arg_entry +
+      arg_password +
+      arg_progress +
+      arg_calendar +
+      arg_date +
+      arg_color +
+      arg_scale +
+      arg_checklist +
+      arg_radiolist +
+      arg_dropdown +
+      arg_html +
+      arg_text_info +
+      arg_notification +
+      arg_indicator +
+      arg_font > 1)
+  {
+    std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
+    return 1;
+  }
+
+#ifdef HAVE_QT
+  if (arg_native + arg_native_gtk +
+#  ifdef HAVE_QT4
+      arg_native_qt4 +
+#  endif
+#  ifdef HAVE_QT5
+      arg_native_qt5 +
+#  endif
+      arg_native_qt > 1)
+  {
+    std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
+    return 1;
+  }
+#endif
 
   /* do the localization BEFORE we set
    * the user-specified button labels */
   l10n();
-
-  int dialog_count = 0;  /* check if two or more dialog options were specified */
-  int dialog = DIALOG_MESSAGE;  /* default message type */
-
-  if (arg_about) {
-    dialog = DIALOG_ABOUT;
-    dialog_count++;
-  }
-
-  if (arg_no_escape) {
-    Fl::add_handler(esc_handler);
-  }
 
   window_decoration = arg_undecorated ? false : true;
   window_taskbar = arg_skip_taskbar ? false : true;
@@ -314,10 +327,11 @@ int main(int argc, char **argv)
   resizable = arg_fixed ? false : true;
   position_center = arg_center;
   always_on_top = arg_always_on_top;
-  quote = arg_quoted_output ? "\"" : "";
 #ifdef WITH_FRIBIDI
   use_fribidi = arg_disable_fribidi ? false : true;
 #endif
+
+  quote = arg_quoted_output ? "\"" : "";
 
   GETCSTR(msg, arg_text);
   GETCSTR(title, arg_title);
@@ -327,16 +341,8 @@ int main(int argc, char **argv)
   GETCSTR(fl_yes, arg_yes_label);
   GETCSTR(fl_no, arg_no_label);
 
-  std::string scheme = "gtk+";
-  GETVAL(scheme, arg_scheme);
-
   const char *but_alt = NULL;
   GETCSTR(but_alt, arg_alt_label);
-
-  GETVAL(override_w, arg_width);
-  GETVAL(override_h, arg_height);
-  GETVAL(override_x, arg_posx);
-  GETVAL(override_y, arg_posy);
 
   char separator = '|';
   if (arg_separator) {
@@ -356,6 +362,12 @@ int main(int argc, char **argv)
       separator = s[0];
     }
   }
+
+  /* geometry */
+  GETVAL(override_w, arg_width);
+  GETVAL(override_h, arg_height);
+  GETVAL(override_x, arg_posx);
+  GETVAL(override_y, arg_posy);
 
   if (arg_geometry) {
     std::vector<std::string> v, v_wh;
@@ -379,110 +391,98 @@ int main(int argc, char **argv)
     STRINGTOINT(v_wh[1], override_h, "--geometry=WxH+X+Y -> H");
   }
 
-  const char *html = NULL;
-  if (arg_html) {
-    dialog = DIALOG_HTML;
-    html = args::get(arg_html).c_str();
-    dialog_count++;
-  }
+  int dialog = DIALOG_MESSAGE;  /* default message type */
 
+  if (arg_about) {
+    dialog = DIALOG_ABOUT;
+  }
   if (arg_dnd) {
     dialog = DIALOG_DND;
-    dialog_count++;
   }
   if (arg_message) {
     dialog = DIALOG_MESSAGE;
-    dialog_count++;
   }
   if (arg_warning) {
     dialog = DIALOG_WARNING;
-    dialog_count++;
   }
   if (arg_question) {
     dialog = DIALOG_QUESTION;
-    dialog_count++;
   }
   if (arg_entry) {
     dialog = DIALOG_INPUT;
-    dialog_count++;
   }
   if (arg_password) {
     dialog = DIALOG_PASSWORD;
-    dialog_count++;
   }
   if (arg_color) {
     dialog = DIALOG_COLOR;
-    dialog_count++;
   }
   if (arg_font) {
     dialog = DIALOG_FONT;
-    dialog_count++;
+  }
+
+  const char *html = NULL;
+  GETCSTR(html, arg_html);
+  if (html) {
+    dialog = DIALOG_HTML;
   }
 
   /* file / directory */
   if (arg_file) {
     dialog = DIALOG_FILE_CHOOSER;
-    dialog_count++;
   }
   if (arg_directory) {
     dialog = DIALOG_DIR_CHOOSER;
-    dialog_count++;
   }
 
   int native_mode = NATIVE_NONE;
-  int native_count = 0;
   if (arg_native) {
     native_mode = NATIVE_ANY;
-    native_count++;
   }
 
 #ifdef HAVE_QT
   if (arg_native_gtk) {
     native_mode = NATIVE_GTK;
-    native_count++;
+  }
+  if (arg_native_qt) {
+    native_mode = QTDEF;
   }
 # ifdef HAVE_QT4
   if (arg_native_qt4) {
     native_mode = NATIVE_QT4;
-    native_count++;
   }
 # endif
 # ifdef HAVE_QT5
   if (arg_native_qt5) {
     native_mode = NATIVE_QT5;
-    native_count++;
   }
 # endif
-  if (arg_native_qt) {
-# if QTDEF == 5
-    native_mode = NATIVE_QT5;
-# else
-    native_mode = NATIVE_QT4;
-# endif
-    native_count++;
-  }
 #endif  /* HAVE_QT */
 
   /* notification */
   int timeout = 5;
   if (arg_notification) {
     dialog = DIALOG_NOTIFY;
-    dialog_count++;
+    GETVAL(timeout, arg_timeout);
   }
-  GETVAL(timeout, arg_timeout);
 
   /* indicator */
   const char *indicator_command = NULL;
   int indicator_flags = INDICATOR_X11|INDICATOR_GTK;
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
-    indicator_command = args::get(arg_indicator).c_str();
+    GETCSTR(indicator_command, arg_indicator);
+
+    if (arg_force_legacy && arg_skip_legacy) {
+      std::cerr << argv[0] << ": cannot use `--force-legacy' and `--skip-legacy' together" << std::endl;
+      return 1;
+    }
+
     if (arg_force_legacy) {
       indicator_flags = INDICATOR_X11;
     } else if (arg_skip_legacy) {
       indicator_flags = INDICATOR_GTK;
     }
-    dialog_count++;
   }
 
   /* progress */
@@ -490,50 +490,53 @@ int main(int argc, char **argv)
   long kill_pid = -1;
   if (arg_progress) {
     dialog = DIALOG_PROGRESS;
-    dialog_count++;
+
+    if (arg_pulsate && arg_multi) {
+      std::cerr << argv[0] << ": cannot use `--multi' and `--pulsate' together" << std::endl;
+      return 1;
+    }
+
+    GETVAL(kill_pid, arg_watch_pid);
+    GETVAL(multi, arg_multi);
+    multi = (multi > 1) ? multi : 1;
   }
-  GETVAL(kill_pid, arg_watch_pid);
-  GETVAL(multi, arg_multi);
-  multi = (multi > 1) ? multi : 1;
 
   /* scale */
+  double scale_min = 0, scale_max = 100, scale_init = 0, scale_step = 1;
   if (arg_scale) {
     dialog = DIALOG_SCALE;
-    dialog_count++;
-  }
-  double scale_min = 0, scale_max = 100, scale_step = 1, scale_init;
-  GETVAL(scale_min, arg_min_value);
-  scale_init = scale_min;
-  GETVAL(scale_max, arg_max_value);
-  GETVAL(scale_init, arg_value);
-  GETVAL(scale_step, arg_step);
-  if (scale_step <= 0) {
-    std::cerr << argv[0] << ": error `--step': value cannot be negative or zero" << std::endl;
-    return 1;
+
+    GETVAL(scale_min, arg_min_value);
+    scale_init = scale_min;
+    GETVAL(scale_max, arg_max_value);
+    GETVAL(scale_init, arg_value);
+    GETVAL(scale_step, arg_step);
+
+    if (scale_step < 1) {
+      std::cerr << argv[0] << ": error `--step': value cannot be negative or zero" << std::endl;
+      return 1;
+    }
   }
 
   /* checklist */
   std::string checklist_options = "";
-  GETVAL(checklist_options, arg_checklist);
   if (arg_checklist) {
     dialog = DIALOG_CHECKLIST;
-    dialog_count++;
+    GETVAL(checklist_options, arg_checklist);
   }
 
   /* radiolist */
   std::string radiolist_options = "";
-  GETVAL(radiolist_options, arg_radiolist);
   if (arg_radiolist) {
     dialog = DIALOG_RADIOLIST;
-    dialog_count++;
+    GETVAL(radiolist_options, arg_radiolist);
   }
 
   /* dropdown */
   std::string dropdown_options = "";
-  GETVAL(dropdown_options, arg_dropdown);
   if (arg_dropdown) {
     dialog = DIALOG_DROPDOWN;
-    dialog_count++;
+    GETVAL(dropdown_options, arg_dropdown);
   }
 
   /* calendar / date */
@@ -541,115 +544,32 @@ int main(int argc, char **argv)
   GETCSTR(format, arg_format);
   if (arg_calendar) {
     dialog = DIALOG_CALENDAR;
-    dialog_count++;
   }
   if (arg_date) {
     dialog = DIALOG_DATE;
-    dialog_count++;
   }
 
   /* text-info */
   const char *checkbox = NULL;
-  GETCSTR(checkbox, arg_checkbox);
   if (arg_text_info) {
     dialog = DIALOG_TEXTINFO;
-    dialog_count++;
-  }
+    GETCSTR(checkbox, arg_checkbox);
 
-  /* check for excluding options */
-
-  if (dialog_count >= 2) {
-    std::cerr << argv[0] << ": two or more dialog options specified" << std::endl;
-    return 1;
-  }
-
-  if (native_count >= 2) {
-    std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
-    return 1;
-  }
-
-  if (arg_no_symbol && !(arg_message || arg_warning || arg_question)) {
-    return use_only_with(argv[0], "--no-symbol", "--message, --warning or --question");
-  }
-
-  if (native_mode != NATIVE_NONE && !(arg_file || arg_directory)) {
-    return use_only_with(argv[0], "--native/--native-gtk/--native-qt4/--native-qt5", "--file or --directory");
-  }
-
-  if (arg_timeout && !arg_notification) {
-    return use_only_with(argv[0], "--timeout", "--notification");
-  }
-
-  if (arg_libnotify && !arg_notification) {
-    return use_only_with(argv[0], "--libnotify", "--notification");
-  }
-
-  if (arg_auto_close && !(arg_progress || arg_text_info)) {
-    return use_only_with(argv[0], "--auto-close", "--progress or --text-info");
-  }
-
-  if (arg_no_cancel && !(arg_progress || arg_text_info)) {
-    return use_only_with(argv[0], "--no-cancel", "--progress or --text-info");
-  }
-
-  if (arg_pulsate && !arg_progress) {
-    return use_only_with(argv[0], "--pulsate", "--progress");
-  }
-
-  if (arg_multi && !arg_progress) {
-    return use_only_with(argv[0], "--multi", "--progress");
-  }
-
-  if (arg_watch_pid && !arg_progress) {
-    return use_only_with(argv[0], "--watch-pid", "--progress");
-  }
-
-  if (arg_pulsate && arg_multi) {
-    return use_not_together(argv[0], "--multi", "--pulsate");
-  }
-
-  if ((arg_value || arg_min_value || arg_max_value || arg_step) && !arg_scale) {
-    return use_only_with(argv[0], "--value/--min-value/--max-value/--step", "--scale");
-  }
-
-  if (arg_return_value && !arg_checklist) {
-    return use_only_with(argv[0], "--return-value", "--checklist");
-  }
-
-  if (arg_check_all && !arg_checklist) {
-    return use_only_with(argv[0], "--check-all", "--checklist");
-  }
-
-  if (arg_return_number && !(arg_radiolist || arg_dropdown)) {
-    return use_only_with(argv[0], "--return-number", "--radiolist or --dropdown");
-  }
-
-  if (arg_format && !(arg_calendar || arg_date)) {
-    return use_only_with(argv[0], "--format", "--calendar or --date");
-  }
-
-  if ((arg_auto_scroll || checkbox) && !arg_text_info) {
-    return use_only_with(argv[0], "--auto-scroll/--checkbox", "--text-info");
-  }
-
-  if (arg_checkbox && arg_auto_close) {
-    return use_not_together(argv[0], "--checkbox", "--auto-close");
-  }
-
-  if (arg_force_legacy && arg_skip_legacy) {
-    return use_not_together(argv[0], "--force-legacy", "--skip-legacy");
-  }
-
-  if ((arg_force_legacy || arg_skip_legacy) && !arg_indicator) {
-    return use_only_with(argv[0], "--force-legacy/--skip-legacy", "--indicator");
+    if (arg_checkbox && arg_auto_close) {
+      std::cerr << argv[0] << ": cannot use `--checkbox' and `--auto-close' together" << std::endl;
+      return 1;
+    }
   }
 
   /* keep fltk's '@' symbols enabled for HTML, date and calendar dialogs */
-  if (!(arg_html || arg_calendar || arg_date)) {
+  if (arg_html + arg_calendar + arg_date == 0) {
     Fl::set_labeltype(FL_NORMAL_LABEL, draw_cb, measure_cb);
   }
 
   /* set scheme */
+  std::string scheme = "gtk+";
+  GETVAL(scheme, arg_scheme);
+
   if (scheme == "gtk+" || scheme == "gtk" || scheme == "default") {
     Fl::scheme("gtk+");
   } else if (scheme == "none" || scheme == "simple") {
@@ -682,6 +602,14 @@ int main(int argc, char **argv)
 
   /* recommended in Fl_Double_Window.H */
   Fl::visual(FL_DOUBLE|FL_INDEX);
+
+  if (arg_no_escape) {
+    Fl::add_handler(esc_handler);
+  }
+
+  /* get dimensions of the main screen work area */
+  max_w = Fl::w();
+  max_h = Fl::h();
 
   switch (dialog) {
     case DIALOG_ABOUT:
@@ -727,7 +655,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, icon, indicator_flags, arg_force_nanosvg);
+      return dialog_indicator(indicator_command, icon, indicator_flags, arg_force_nanosvg, arg_listen);
     default:
       break;
   }

@@ -22,14 +22,29 @@
  * SOFTWARE.
  */
 
+// pipe=$(mktemp -u)
+// mkfifo $pipe
+// exec 3<> $pipe
+// echo "ICON:newIcon" >&3
+
 #include <iostream>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 #include "indicator_gtk.h"
+
+/* From the Tango icon theme, released into the Public Domain.
+ * https://commons.wikimedia.org/wiki/File:Image-missing.svg
+ */
+#include "image_missing_png.h"
+
+#define ICON_SCALE  0.72
+#define ICON_MIN    4
 
 class simple_button : public Fl_Box
 {
@@ -101,6 +116,8 @@ static menu_window *menu = NULL;
 
 static const char *command = NULL;
 static int it = 0;
+static bool force_nanosvg, listen;
+static pthread_t t1;
 
 static void popup_cb(Fl_Widget *);
 static void popdown_cb(Fl_Widget *);
@@ -168,14 +185,25 @@ static void callback(void) {
   }
 }
 
-static void close_cb(Fl_Widget *, long exec_command)
+static void close_windows(void)
 {
-  menu->hide();
+  if (menu) {
+    menu->hide();
+  }
   win->hide();
 
   if (rgb) {
     delete rgb;
   }
+}
+
+static void close_cb(Fl_Widget *, long exec_command)
+{
+  if (listen) {
+    pthread_cancel(t1);
+  }
+
+  close_windows();
 
   if (exec_command) {
     callback();
@@ -203,7 +231,7 @@ static void set_size(void *)
 
   if (rgb) {
     /* make icon a bit smaller than the area */
-    if ((n *= 0.72) > 4) {
+    if ((n *= ICON_SCALE) > ICON_MIN) {
       but->image(rgb->copy(n, n));
     }
 
@@ -212,7 +240,88 @@ static void set_size(void *)
   }
 }
 
-static bool create_tray_entry_xlib(const char *icon, bool force_nanosvg)
+static void check_icons(const char *icon)
+{
+  const std::string sizes[] = {
+    "scalable",
+    "512x512", "256x256", "128x128", "64x64",
+    "48x48", "32x32", "24x24", "22x22", "16x16"
+  };
+  const std::string ext[] = {
+    "", ".svg", ".svgz", ".png",  /* hicolor */
+    "", ".svg", ".png", ".xpm"    /* pixmaps */
+  };
+  std::string path, path2;
+
+  if ((rgb = img_to_rgb(icon, force_nanosvg)) != NULL) {
+    return;
+  }
+
+  for (size_t i = 0; i < sizeof(sizes)/sizeof(*sizes); ++i) {
+    path = "/usr/share/icons/hicolor/" + sizes[i] + "/apps/";
+    path.append(icon);
+
+    for (int j = 0; j < 4; ++j) {
+      path2 = path + ext[j];
+      if ((rgb = img_to_rgb(path2.c_str(), force_nanosvg)) != NULL) {
+        return;
+      }
+    }
+  }
+
+  path = "/usr/share/pixmaps/";
+  path.append(icon);
+
+  for (int i = 4; i < 8; ++i) {
+    path2 = path + ext[i];
+    if ((rgb = img_to_rgb(path2.c_str(), force_nanosvg)) != NULL) {
+      return;
+    }
+  }
+
+  if (!rgb) {
+    rgb = new Fl_PNG_Image(NULL, src_image_missing_png, src_image_missing_png_len);
+  }
+}
+
+extern "C" void *getline_xlib(void *)
+{
+  std::string line;
+
+  while (true) {
+    if (std::getline(std::cin, line)) {
+      if (strcasecmp(line.c_str(), "quit") == 0) {
+        close_windows();
+        Fl::awake();
+        return nullptr;
+      } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
+        std::string icon = line.substr(5).c_str();
+
+        Fl::lock();
+
+        check_icons(icon.c_str());
+
+        /* make icon a bit smaller than the area */
+        int n = but->w();
+        if ((n *= ICON_SCALE) > ICON_MIN) {
+          but->image(rgb->copy(n, n));
+        }
+
+        win->redraw();
+
+        Fl::unlock();
+        Fl::awake(win);
+
+        delete rgb;
+        rgb = NULL;
+      }
+      usleep(300000);  /* 300ms */
+    }
+  }
+  return nullptr;
+}
+
+static bool create_tray_entry_xlib(const char *icon)
 {
   Fl_Color flcol = 0;
   Window dock;
@@ -221,7 +330,7 @@ static bool create_tray_entry_xlib(const char *icon, bool force_nanosvg)
   XImage *image;
   char atom_tray_name[128];
 
-  snprintf(atom_tray_name, sizeof(atom_tray_name), "_NET_SYSTEM_TRAY_S%i", fl_screen);
+  snprintf(atom_tray_name, sizeof(atom_tray_name) - 1, "_NET_SYSTEM_TRAY_S%i", fl_screen);
   dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
   if (!dock) {
     return false;
@@ -270,7 +379,7 @@ static bool create_tray_entry_xlib(const char *icon, bool force_nanosvg)
   win->color(flcol);
 
   if (icon && strlen(icon) > 0) {
-    rgb = img_to_rgb(icon, force_nanosvg);
+    check_icons(icon);
   }
 
   if (!rgb) {
@@ -279,17 +388,30 @@ static bool create_tray_entry_xlib(const char *icon, bool force_nanosvg)
 
   Fl::add_timeout(0.005, set_size);  /* 5 ms */
 
+  if (listen) {
+    Fl::lock();
+    pthread_create(&t1, 0, &getline_xlib, nullptr);
+  }
+
   Fl::run();
 
   return true;
 }
 
-int dialog_indicator(const char *command_, const char *icon, int flags, bool force_nanosvg)
+int dialog_indicator(const char *command_, const char *icon, int flags, bool force_nanosvg_, bool listen_)
 {
   command = command_;
+  force_nanosvg = force_nanosvg_;
+  listen = listen_;
+
+  /* there's a bug with librsvg:
+   * (process:----): GLib-GObject-WARNING **: --:--:--.---: cannot register existing type 'RsvgHandle'
+   * (process:----): GLib-CRITICAL **: --:--:--.---: g_once_init_leave: assertion 'result != 0' failed
+   */
+  force_nanosvg = true;
 
   if (flags & INDICATOR_GTK) {
-    if (start_indicator_gtk(command, icon, force_nanosvg)) {
+    if (start_indicator_gtk(command, icon, force_nanosvg, listen)) {
       return 0;
     }
     if (flags & INDICATOR_X11) {
@@ -297,7 +419,7 @@ int dialog_indicator(const char *command_, const char *icon, int flags, bool for
     }
   }
 
-  if ((flags & INDICATOR_X11) && create_tray_entry_xlib(icon, force_nanosvg)) {
+  if ((flags & INDICATOR_X11) && create_tray_entry_xlib(icon)) {
     return 0;
   }
 

@@ -222,8 +222,9 @@ $(libfltk): fltk/build/Makefile
 	$(MAKE) -C fltk/build fltk_images $(cmake_verbose)
 
 src/about.cpp: fltk_png.h
-src/indicator.cpp src/main.cpp: icon_png.h
 src/file_fltk.cpp: octicons_png.h
+src/indicator.cpp: icon_png.h image_missing_png.h
+src/main.cpp: icon_png.h
 
 OCTICONS = src/octicons/arrow-up-gray.png \
 	src/octicons/arrow-up.png \
@@ -235,17 +236,21 @@ OCTICONS = src/octicons/arrow-up-gray.png \
 
 fltk_png.h: src/fltk.png
 	$(msg_GENH)
-	$(Q)xxd -i $< > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
+	$(Q)xxd -i $< > $@
 
 icon_png.h: src/icon.png
 	$(msg_GENH)
 	$(Q)xxd -i $< > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
+image_missing_png.h: src/image-missing.png
+	$(msg_GENH)
+	$(Q)xxd -i $< > $@
+
 octicons_png.h: $(OCTICONS)
 	$(msg_GENH)
 	$(Q)rm -f $@ $@_
 	$(Q)$(foreach ICON,$^,xxd -i $(ICON) >> $@_; )
-	$(Q)sed -i 's|^unsigned |static const unsigned |g' $@_ && mv $@_ $@
+	$(Q)mv $@_ $@
 
 ifneq ($(WITH_FRIBIDI),no)
 ifeq ($(SYSTEM_FRIBIDI),no)

@@ -26,7 +26,9 @@
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wshadow"
 # pragma GCC diagnostic ignored "-Wunused-parameter"
-# pragma GCC diagnostic ignored "-Wcast-function-type"
+# if __GNUC__ > 7
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
 #endif
 
 #include <FL/Fl.H>

@@ -22,11 +22,21 @@
  * SOFTWARE.
  */
 
+// pipe=$(mktemp -u)
+// mkfifo $pipe
+// exec 3<> $pipe
+// echo "ICON:newIcon" >&3
+
 #include <iostream>
 #include <fstream>
 #include <dlfcn.h>
+#include <limits.h>
+#include <pthread.h>
 #include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <png.h>
 
@@ -49,17 +59,21 @@ PROTO( AppIndicator*,    app_indicator_new,                   (const gchar*, con
 PROTO( void,             app_indicator_set_status,            (AppIndicator*, AppIndicatorStatus) )
 PROTO( void,             app_indicator_set_attention_icon,    (AppIndicator*, const gchar*) )
 PROTO( void,             app_indicator_set_menu,              (AppIndicator*, GtkMenu*) )
+PROTO( void,             app_indicator_set_icon,              (AppIndicator*, const gchar*) )
 
 static std::string out;
 static const char *command = NULL;
+static bool force_nanosvg, listen;
 static void *libgtk_handle, *libappindicator_handle;
 static char *error;
+static pthread_t t1;
 
 static FILE *fp = NULL;
 static png_struct *png = NULL;
 static png_info *info = NULL;
 
-static void callback(void) {
+static void callback(void)
+{
   if (command && strlen(command) > 0) {
     if (!out.empty()) {
       unlink(out.c_str());
@@ -69,7 +83,11 @@ static void callback(void) {
   }
 }
 
-static void close_cb_gtk(void) {
+static void close_cb(void)
+{
+  if (listen) {
+    pthread_cancel(t1);
+  }
   gtk_main_quit();
   dlclose(libappindicator_handle);
   dlclose(libgtk_handle);
@@ -153,7 +171,7 @@ static int rgb_to_png(const char *file, const unsigned char *rgba, int w, int h)
   return 0;
 }
 
-static bool convert_icon(const char *in, bool force_nanosvg)
+static bool convert_icon(const char *in)
 {
   Fl_Image *rgb_, *img;
   const unsigned char *rgba;
@@ -207,6 +225,49 @@ static bool convert_icon(const char *in, bool force_nanosvg)
   return rv;
 }
 
+extern "C" void *getline_gtk(void *v)
+{
+  std::string line;
+  AppIndicator *indicator = reinterpret_cast<AppIndicator *>(v);
+
+  while (true) {
+    if (std::getline(std::cin, line)) {
+      if (strcasecmp(line.c_str(), "quit") == 0) {
+        gtk_main_quit();
+        dlclose(libappindicator_handle);
+        dlclose(libgtk_handle);
+        return nullptr;
+      } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
+        std::string in = line.substr(5).c_str();
+        std::string old_icon = out;
+
+        char *resolved_path = realpath(in.c_str(), NULL);
+        if (resolved_path) {
+          in = resolved_path;
+          free(resolved_path);
+        }
+
+        Fl::lock();
+        bool converted = convert_icon(in.c_str());
+        Fl::unlock();
+        Fl::awake();
+
+        if (converted) {
+          std::string new_icon = out + ".png";
+          rename(out.c_str(), new_icon.c_str());
+          app_indicator_set_icon (indicator, new_icon.c_str());
+          out = new_icon;
+        } else {
+          app_indicator_set_icon (indicator, in.c_str());
+        }
+        unlink(old_icon.c_str());
+      }
+      usleep(300000);  /* 300ms */
+    }
+  }
+  return nullptr;
+}
+
 static bool create_tray_entry_gtk(const char *icon)
 {
   GtkWidget *window, *indicator_menu;
@@ -230,7 +291,7 @@ static bool create_tray_entry_gtk(const char *icon)
 
   GtkActionEntry entries[] = {
     { "Run command", NULL, "_Run command", NULL, tooltip, callback     },
-    { "Quit",        NULL, "_Quit",        NULL, NULL,    close_cb_gtk },
+    { "Quit",        NULL, "_Quit",        NULL, NULL,    close_cb },
   };
   const guint n_entries = 2;
 
@@ -298,6 +359,7 @@ static bool create_tray_entry_gtk(const char *icon)
   LOAD_SYMBOL(app_indicator_set_status)
   LOAD_SYMBOL(app_indicator_set_attention_icon)
   LOAD_SYMBOL(app_indicator_set_menu)
+  LOAD_SYMBOL(app_indicator_set_icon)
 
 # undef LOAD_SYMBOL
 
@@ -327,19 +389,25 @@ static bool create_tray_entry_gtk(const char *icon)
   app_indicator_set_attention_icon (indicator, "indicator-messages-new");
   app_indicator_set_menu (indicator, reinterpret_cast<GtkMenu *>(indicator_menu));
 
+  if (listen) {
+    pthread_create(&t1, 0, &getline_gtk, indicator);
+  }
+
   gtk_main();
 
   return true;
 }
 
-bool start_indicator_gtk(const char *command_, const char *icon, bool force_nanosvg)
+bool start_indicator_gtk(const char *command_, const char *icon, bool force_nanosvg_, bool listen_)
 {
   std::string default_icon;
   bool ret = false;
 
   command = command_;
+  force_nanosvg = force_nanosvg_;
+  listen = listen_;
 
-  if (convert_icon(icon, force_nanosvg)) {
+  if (convert_icon(icon)) {
     /* provided icon is okay */
     ret = create_tray_entry_gtk(out.c_str());
     unlink(out.c_str());
@@ -352,7 +420,7 @@ bool start_indicator_gtk(const char *command_, const char *icon, bool force_nano
   }
 
   /* convert default icon */
-  if (convert_icon(default_icon.c_str(), false)) {
+  if (convert_icon(default_icon.c_str())) {
     unlink(default_icon.c_str());
     default_icon.clear();
     ret = create_tray_entry_gtk(out.c_str());
