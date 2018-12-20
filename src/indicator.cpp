@@ -116,7 +116,7 @@ static menu_window *menu = NULL;
 
 static const char *command = NULL;
 static int it = 0;
-static bool force_nanosvg, listen;
+static bool listen;
 static pthread_t t1;
 
 static void popup_cb(Fl_Widget *);
@@ -253,7 +253,7 @@ static void check_icons(const char *icon)
   };
   std::string path, path2;
 
-  if ((rgb = img_to_rgb(icon, force_nanosvg)) != NULL) {
+  if ((rgb = img_to_rgb(icon)) != NULL) {
     return;
   }
 
@@ -263,7 +263,7 @@ static void check_icons(const char *icon)
 
     for (int j = 0; j < 4; ++j) {
       path2 = path + ext[j];
-      if ((rgb = img_to_rgb(path2.c_str(), force_nanosvg)) != NULL) {
+      if ((rgb = img_to_rgb(path2.c_str())) != NULL) {
         return;
       }
     }
@@ -274,7 +274,7 @@ static void check_icons(const char *icon)
 
   for (int i = 4; i < 8; ++i) {
     path2 = path + ext[i];
-    if ((rgb = img_to_rgb(path2.c_str(), force_nanosvg)) != NULL) {
+    if ((rgb = img_to_rgb(path2.c_str())) != NULL) {
       return;
     }
   }
@@ -398,20 +398,13 @@ static bool create_tray_entry_xlib(const char *icon)
   return true;
 }
 
-int dialog_indicator(const char *command_, const char *icon, int flags, bool force_nanosvg_, bool listen_)
+int dialog_indicator(const char *command_, const char *icon, int flags, bool listen_)
 {
   command = command_;
-  force_nanosvg = force_nanosvg_;
   listen = listen_;
 
-  /* there's a bug with librsvg:
-   * (process:----): GLib-GObject-WARNING **: --:--:--.---: cannot register existing type 'RsvgHandle'
-   * (process:----): GLib-CRITICAL **: --:--:--.---: g_once_init_leave: assertion 'result != 0' failed
-   */
-  force_nanosvg = true;
-
   if (flags & INDICATOR_GTK) {
-    if (start_indicator_gtk(command, icon, force_nanosvg, listen)) {
+    if (start_indicator_gtk(command, icon, listen)) {
       return 0;
     }
     if (flags & INDICATOR_X11) {

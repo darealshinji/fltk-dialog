@@ -126,8 +126,7 @@ int main(int argc, char **argv)
                        {"separator"})
   ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif jpg png "
                   "svg svgz xbm xpm", {"icon"});
-  ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"})
-  ,      arg_force_nanosvg(ap, "force-nanosvg", "Force using NanoSVG for SVG rendering", {"force-nanosvg"});
+  ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
   ,      arg_posx(ap, "NUMBER", "Set the X position of a window", {"posx"})
@@ -587,7 +586,7 @@ int main(int argc, char **argv)
   GETCSTR(icon, arg_icon);
 
   if (!arg_notification && !arg_indicator) {
-    Fl_RGB_Image *rgb = img_to_rgb(icon, arg_force_nanosvg);
+    Fl_RGB_Image *rgb = img_to_rgb(icon);
 
     if (!rgb) {
       rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
@@ -631,7 +630,7 @@ int main(int argc, char **argv)
     case DIALOG_DIR_CHOOSER:
       return dialog_file_chooser(DIR_CHOOSER, native_mode);
     case DIALOG_NOTIFY:
-      return dialog_notify(argv[0], timeout, icon, arg_libnotify, arg_force_nanosvg);
+      return dialog_notify(argv[0], timeout, icon, arg_libnotify);
     case DIALOG_PROGRESS:
       return dialog_progress(arg_pulsate, multi, kill_pid, arg_auto_close, arg_no_cancel);
     case DIALOG_TEXTINFO:
@@ -655,7 +654,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, icon, indicator_flags, arg_force_nanosvg, arg_listen);
+      return dialog_indicator(indicator_command, icon, indicator_flags, arg_listen);
     default:
       break;
   }

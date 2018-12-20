@@ -277,7 +277,7 @@ static bool run_libnotify(const char *appname, int timeout, const char *notify_i
   return rv;
 }
 
-int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg)
+int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify)
 {
   if (timeout < 1) {
     std::cerr << "error: timeout shorter than 1 second: " << timeout << std::endl;
@@ -301,7 +301,7 @@ int dialog_notify(const char *appname, int timeout, const char *notify_icon, boo
     return 0;
   }
 
-  notification_box(timeout, img_to_rgb(notify_icon, force_nanosvg));
+  notification_box(timeout, img_to_rgb(notify_icon));
 
   return 0;
 }

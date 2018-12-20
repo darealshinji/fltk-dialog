@@ -237,14 +237,14 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 int dialog_file_chooser(int mode, int native);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
-int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool force_nanosvg, bool listen);
-int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify, bool force_nanosvg);
+int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool listen);
+int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox, bool autoclose, bool hide_cancel);
 int dialog_radiolist(std::string radiolist_options, bool return_number, char separator);
 
 char *file_chooser(int mode);
-Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg);
+Fl_RGB_Image *img_to_rgb(const char *file);
 void l10n(void);
 
 #endif  /* !FLTK_DIALOG_HPP */

@@ -63,7 +63,7 @@ PROTO( void,             app_indicator_set_icon,              (AppIndicator*, co
 
 static std::string out;
 static const char *command = NULL;
-static bool force_nanosvg, listen;
+static bool listen;
 static void *libgtk_handle, *libappindicator_handle;
 static char *error;
 static pthread_t t1;
@@ -180,7 +180,7 @@ static bool convert_icon(const char *in)
   bool rv;
 
   if (!in || access(in, R_OK) != 0 || fl_filename_isdir(in) ||
-      !(img = img_to_rgb(in, force_nanosvg)))
+      !(img = img_to_rgb(in)))
   {
     return false;
   }
@@ -398,13 +398,12 @@ static bool create_tray_entry_gtk(const char *icon)
   return true;
 }
 
-bool start_indicator_gtk(const char *command_, const char *icon, bool force_nanosvg_, bool listen_)
+bool start_indicator_gtk(const char *command_, const char *icon, bool listen_)
 {
   std::string default_icon;
   bool ret = false;
 
   command = command_;
-  force_nanosvg = force_nanosvg_;
   listen = listen_;
 
   if (convert_icon(icon)) {

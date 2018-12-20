@@ -36,7 +36,6 @@
 #include <zlib.h>
 
 #include "fltk-dialog.hpp"
-#include "img_to_rgb.h"
 #include "nanosvg.h"
 #include "nanosvgrast.h"
 
@@ -51,17 +50,6 @@
 #define DEFAULT_WHF  64.0
 
 static std::string png_data;
-
-static void callback(int *w, int *h, gpointer data) {
-  RsvgDimensionData *d = static_cast<RsvgDimensionData *>(data);
-  *w = d->width;
-  *h = d->height;
-}
-
-static cairo_status_t write_func(void *, const unsigned char *data, unsigned int length) {
-  png_data.append(reinterpret_cast<const char *>(data), length);
-  return CAIRO_STATUS_SUCCESS;
-}
 
 static bool gzip_uncompress(const char *file, std::string &output)
 {
@@ -127,7 +115,7 @@ static bool gzip_uncompress(const char *file, std::string &output)
   return true;
 }
 
-static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
+static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
 {
   Fl_RGB_Image *rgb, *rgb_copy;
   NSVGimage *nsvg;
@@ -178,154 +166,7 @@ static Fl_RGB_Image *nsvg_to_rgb(const char *file, bool compressed)
   return rgb_copy;
 }
 
-static Fl_RGB_Image *rsvg_to_rgb(const char *file, bool compressed)
-{
-  Fl_RGB_Image *rgb;
-  RsvgHandle *rsvg = NULL;
-  RsvgDimensionData dim;
-  GError *gerror = NULL;
-  cairo_surface_t *surf;
-  cairo_t *cr;
-  std::string data;
-  void *handle, *libcairo, *libgtk, *librsvg;
-  char *error;
-
-  if (!file) {
-    return NULL;
-  }
-
-  libcairo = dlopen("libcairo.so.2", RTLD_LAZY|RTLD_GLOBAL);
-  error = dlerror();
-  if (!libcairo) {
-    std::cerr << error << std::endl;
-    return NULL;
-  }
-
-  libgtk = dlopen("libgtk-x11-2.0.so.0", RTLD_LAZY|RTLD_GLOBAL);
-  error = dlerror();
-  if (!libgtk) {
-    std::cerr << error << std::endl;
-    dlclose(libcairo);
-    return NULL;
-  }
-
-  librsvg = dlopen("librsvg-2.so.2", RTLD_LAZY);
-  error = dlerror();
-  if (!librsvg) {
-    std::cerr << error << std::endl;
-    dlclose(libgtk);
-    dlclose(libcairo);
-    return NULL;
-  }
-
-  dlerror();
-
-  /* load symbols */
-
-# define LOAD_SYMBOL(type,func,param) \
-  GETPROCADDRESS(handle,type,func,param) \
-  if ((error = dlerror()) != NULL) { \
-    std::cerr << error << std::endl; \
-    dlclose(librsvg); \
-    dlclose(libgtk); \
-    dlclose(libcairo); \
-    return NULL; \
-  }
-
-  handle = libcairo;
-  LOAD_SYMBOL( cairo_surface_t *, cairo_image_surface_create,        (cairo_format_t, int, int) )
-  LOAD_SYMBOL( cairo_t *,         cairo_create,                      (cairo_surface_t *) )
-  LOAD_SYMBOL( cairo_status_t,    cairo_surface_write_to_png_stream, (cairo_surface_t *, cairo_write_func_t, void *) )
-  LOAD_SYMBOL( void,              cairo_surface_destroy,             (cairo_surface_t *) )
-  LOAD_SYMBOL( void,              cairo_destroy,                     (cairo_t *) )
-
-  handle = libgtk;
-  LOAD_SYMBOL( void, g_object_unref, (gpointer) )
-
-  handle = librsvg;
-  LOAD_SYMBOL( void,         rsvg_set_default_dpi,          (double) )
-  LOAD_SYMBOL( RsvgHandle *, rsvg_handle_new_from_data,     (const guint8 *, gsize, GError **) )
-  LOAD_SYMBOL( RsvgHandle *, rsvg_handle_new_from_file,     (const gchar *, GError **) )
-  LOAD_SYMBOL( void,         rsvg_handle_set_size_callback, (RsvgHandle *, RsvgSizeFunc, gpointer, GDestroyNotify) )
-  LOAD_SYMBOL( gboolean,     rsvg_handle_render_cairo,      (RsvgHandle *, cairo_t *) )
-  LOAD_SYMBOL( void,         rsvg_cleanup,                  (void) )
-
-  rsvg_set_default_dpi(DEFAULT_DPI);
-
-  if (compressed) {
-    if (!gzip_uncompress(file, data)) {
-      dlclose(librsvg);
-      dlclose(libgtk);
-      dlclose(libcairo);
-      return NULL;
-    }
-    rsvg = rsvg_handle_new_from_data(reinterpret_cast<const guint8 *>(data.c_str()), data.size(), &gerror);
-    data.clear();
-  } else {
-    rsvg = rsvg_handle_new_from_file(file, &gerror);
-  }
-
-  if (gerror) {
-    dlclose(librsvg);
-    dlclose(libgtk);
-    dlclose(libcairo);
-    return NULL;
-  }
-
-  rsvg_handle_set_size_callback(rsvg, callback, &dim, NULL);
-  dim.width = dim.height = DEFAULT_WH;
-  surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim.width, dim.height);
-  cr = cairo_create(surf);
-
-  rsvg_handle_render_cairo(rsvg, cr);
-  cairo_surface_write_to_png_stream(surf, write_func, NULL);
-
-  /*
-  handle = dlopen("libgtk-x11-2.0.so.0", RTLD_LAZY);
-  if (handle) {
-    GETPROCADDRESS(handle, void, g_object_unref, (gpointer))
-    error = dlerror();
-    if (!error) {
-      g_object_unref(rsvg);
-      rsvg = NULL;
-    }
-    dlclose(handle);
-  }
-  */
-  g_object_unref(rsvg);
-
-  cairo_destroy(cr);
-  cairo_surface_destroy(surf);
-  rsvg_cleanup();
-
-  dlclose(librsvg);
-  dlclose(libgtk);
-  dlclose(libcairo);
-
-  rgb = new Fl_PNG_Image(NULL, reinterpret_cast<const unsigned char *>(png_data.c_str()), png_data.size());
-  png_data.clear();
-
-  return rgb;
-}
-
-static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed, bool force_nanosvg)
-{
-  Fl_RGB_Image *rgb = NULL;
-
-  if (!force_nanosvg) {
-    rgb = rsvg_to_rgb(file, compressed);
-  }
-
-  if (!rgb) {
-    if (!force_nanosvg) {
-      std::cerr << "Warning: falling back to NanoSVG" << std::endl;
-    }
-    rgb = nsvg_to_rgb(file, compressed);
-  }
-  return rgb;
-}
-
-Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
+Fl_RGB_Image *img_to_rgb(const char *file)
 {
   FILE *fp;
   size_t len;
@@ -339,14 +180,14 @@ Fl_RGB_Image *img_to_rgb(const char *file, bool force_nanosvg)
   /* get filetype from extension */
   if (HASEXT(file, ".svg")) {
     if (st.st_size < SVG_MAX) {
-      return svg_to_rgb(file, false, force_nanosvg);
+      return svg_to_rgb(file, false);
     }
     return NULL;
   }
 
   if (HASEXT(file, ".svgz") || HASEXT(file, ".svg.gz")) {
     if (st.st_size < SVGZ_MAX) {
-      return svg_to_rgb(file, true, force_nanosvg);
+      return svg_to_rgb(file, true);
     }
     return NULL;
   }

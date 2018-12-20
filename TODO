@@ -1,5 +1,3 @@
  * finish documentation + HTML documentation (--html-doc)
  * write --forms dialog
  * KDE/Qt indicator support
- * fix librsvg bug (or drop librsvg support entirely; see commentary in indicator.cpp)
-
