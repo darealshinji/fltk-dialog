@@ -63,7 +63,7 @@ PROTO( void,             app_indicator_set_icon,              (AppIndicator*, co
 
 static std::string out;
 static const char *command = NULL;
-static bool listen;
+static bool listen, auto_close;
 static void *libgtk_handle, *libappindicator_handle;
 static char *error;
 static pthread_t t1;
@@ -71,17 +71,6 @@ static pthread_t t1;
 static FILE *fp = NULL;
 static png_struct *png = NULL;
 static png_info *info = NULL;
-
-static void callback(void)
-{
-  if (command && strlen(command) > 0) {
-    if (!out.empty()) {
-      unlink(out.c_str());
-    }
-    execl("/bin/sh", "sh", "-c", command, NULL);
-    _exit(127);
-  }
-}
 
 static void close_cb(void)
 {
@@ -91,6 +80,23 @@ static void close_cb(void)
   gtk_main_quit();
   dlclose(libappindicator_handle);
   dlclose(libgtk_handle);
+}
+
+static void callback(void)
+{
+  if (command && strlen(command) > 0) {
+    if (auto_close) {
+      if (!out.empty()) {
+        unlink(out.c_str());
+      }
+      close_cb();
+      execl("/bin/sh", "sh", "-c", command, NULL);
+      _exit(127);
+    } else {
+      int i = system(command);
+      static_cast<void>(i);
+    }
+  }
 }
 
 static void handle_dlopen_error(void)
@@ -290,7 +296,7 @@ static bool create_tray_entry_gtk(const char *icon)
   }
 
   GtkActionEntry entries[] = {
-    { "Run command", NULL, "_Run command", NULL, tooltip, callback     },
+    { "Run command", NULL, "_Run command", NULL, tooltip, callback },
     { "Quit",        NULL, "_Quit",        NULL, NULL,    close_cb },
   };
   const guint n_entries = 2;
@@ -398,13 +404,14 @@ static bool create_tray_entry_gtk(const char *icon)
   return true;
 }
 
-bool start_indicator_gtk(const char *command_, const char *icon, bool listen_)
+bool start_indicator_gtk(const char *command_, const char *icon, bool listen_, bool auto_close_)
 {
   std::string default_icon;
   bool ret = false;
 
   command = command_;
   listen = listen_;
+  auto_close = auto_close_;
 
   if (convert_icon(icon)) {
     /* provided icon is okay */

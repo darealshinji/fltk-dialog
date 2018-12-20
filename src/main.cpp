@@ -251,6 +251,7 @@ int main(int argc, char **argv)
   ,      arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system",
                          {"skip-legacy"})
   ,      arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"});
+  ARG_T(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run", {"auto-close"});
 
   const char *fltk_using = "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org";
 
@@ -654,7 +655,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, icon, indicator_flags, arg_listen);
+      return dialog_indicator(indicator_command, icon, indicator_flags, arg_listen, arg_auto_close);
     default:
       break;
   }

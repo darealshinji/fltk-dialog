@@ -90,6 +90,7 @@ public:
         parent()->redraw();
         break;
       case FL_LEAVE:
+      case FL_PUSH:
         color(FL_BACKGROUND_COLOR);
         labelcolor(FL_BLACK);
         parent()->redraw();
@@ -116,9 +117,10 @@ static menu_window *menu = NULL;
 
 static const char *command = NULL;
 static int it = 0;
-static bool listen;
+static bool listen, auto_close;
 static pthread_t t1;
 
+static void callback(Fl_Widget *);
 static void popup_cb(Fl_Widget *);
 static void popdown_cb(Fl_Widget *);
 static void menu_cb(Fl_Widget *);
@@ -130,7 +132,12 @@ static void init_menu(void)
   {
     menu_entry *m1 = new menu_entry(0,  0, 140, 26, "  Run command");
     menu_entry *m2 = new menu_entry(0, 26, 140, 26, "  Quit");
-    m1->callback(close_cb, 1);
+
+    if (auto_close) {
+      m1->callback(close_cb, 1);
+    } else {
+      m1->callback(callback);
+    }
     m2->callback(close_cb, 0);
 
     if (command) {
@@ -178,10 +185,11 @@ static void popdown_cb(Fl_Widget *) {
   win->redraw();
 }
 
-static void callback(void) {
+static void callback(Fl_Widget *) {
   if (command && strlen(command) > 0) {
-    execl("/bin/sh", "sh", "-c", command, NULL);
-    _exit(127);
+    popdown_cb(NULL);
+    int i = system(command);
+    static_cast<void>(i);
   }
 }
 
@@ -205,8 +213,9 @@ static void close_cb(Fl_Widget *, long exec_command)
 
   close_windows();
 
-  if (exec_command) {
-    callback();
+  if (exec_command && command && strlen(command) > 0) {
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    _exit(127);
   }
 }
 
@@ -398,13 +407,14 @@ static bool create_tray_entry_xlib(const char *icon)
   return true;
 }
 
-int dialog_indicator(const char *command_, const char *icon, int flags, bool listen_)
+int dialog_indicator(const char *command_, const char *icon, int flags, bool listen_, bool auto_close_)
 {
   command = command_;
   listen = listen_;
+  auto_close = auto_close_;
 
   if (flags & INDICATOR_GTK) {
-    if (start_indicator_gtk(command, icon, listen)) {
+    if (start_indicator_gtk(command, icon, listen, auto_close)) {
       return 0;
     }
     if (flags & INDICATOR_X11) {
