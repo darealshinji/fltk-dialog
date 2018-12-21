@@ -250,8 +250,9 @@ int main(int argc, char **argv)
                           "libappindicator (this may not work on most DEs)", {"force-legacy"})
   ,      arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system",
                          {"skip-legacy"})
-  ,      arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"});
-  ARG_T(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run", {"auto-close"});
+  ,      arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
+  ,      unused_arg1(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
+                     {"auto-close"});
 
   const char *fltk_using = "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org";
 
