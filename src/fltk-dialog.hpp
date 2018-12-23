@@ -212,6 +212,7 @@ std::string translate(const char *text);
 std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 char *format_date(const char *format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
+std::string get_random(void);
 bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path);
 int leap_year(int y);
 

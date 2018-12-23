@@ -184,7 +184,7 @@ void repstr(const std::string &from, const std::string &to, std::string &s)
 }
 
 std::string translate(const char *text) {
-  std::string s(text);
+  std::string s = text;
   repstr("\\n", "\n", s);
   repstr("\\t", "\t", s);
   return s;
@@ -283,16 +283,22 @@ size_t strlastcasecmp(const char *s1, const char *s2)
   return n;
 }
 
-bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path)
+std::string get_random(void)
 {
   const char *abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  path = "/tmp/temp-";
+  std::string s;
 
   for (int i=0; i < 26; ++i) {
     /* strlen(abc) - 1 == 61 */
-    path.push_back(abc[effolkronium::random_static::get(0, 61)]);
+    s.push_back(abc[effolkronium::random_static::get(0, 61)]);
   }
+
+  return s;
+}
+
+bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path)
+{
+  path = "/tmp/temp-" + get_random();
 
   std::ofstream out(path, std::ios::out|std::ios::binary);
   if (!out) {
