@@ -6,7 +6,7 @@ Minimum build dependencies are: `libx11-dev libxcursor-dev libxext-dev libxfixes
 
 You also need to install `xxd` or `vim-common` if the xxd tool isn't available in its own package.
 
-To enable native Qt file choosers you must install `libqt4-dev` and/or `qtbase5-dev`.
+To enable the native Qt5 file chooser you must install `qtbase5-dev`.
 
 If you don't want dynamic notification support, install `libnotify-dev` and run configure with `--disable-dynamic-notify`.
 

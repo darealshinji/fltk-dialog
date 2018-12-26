@@ -296,9 +296,13 @@ std::string get_random(void)
   return s;
 }
 
-bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path)
+bool save_to_temp(const unsigned char *data, const unsigned int data_len, const char *postfix, std::string &path)
 {
   path = "/tmp/temp-" + get_random();
+
+  if (postfix) {
+    path.append(postfix);
+  }
 
   std::ofstream out(path, std::ios::out|std::ios::binary);
   if (!out) {

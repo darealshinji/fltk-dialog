@@ -6,8 +6,6 @@ SYSTEM_JPEG      ?= no
 SYSTEM_PNG       ?= no
 SYSTEM_ZLIB      ?= yes
 HAVE_QT          ?= no
-HAVE_QT4         ?= no
-HAVE_QT5         ?= no
 WITH_FRIBIDI     ?= no
 SYSTEM_FRIBIDI   ?= no
 DYNAMIC_NOTIFY   ?= yes
@@ -63,13 +61,7 @@ fltk_CXXFLAGS := -Wall $(CXXFLAGS) $(CPPFLAGS)
 
 ifneq ($(HAVE_QT),no)
 main_CXXFLAGS += -DHAVE_QT
-ifneq ($(HAVE_QT4),no)
-main_CXXFLAGS += -DHAVE_QT4
 endif
-ifneq ($(HAVE_QT5),no)
-main_CXXFLAGS += -DHAVE_QT5
-endif
-endif # HAVE_QT
 ifneq ($(EMBEDDED_PLUGINS),yes)
 main_CXXFLAGS += -DUSE_SYSTEM_PLUGINS
 main_CXXFLAGS += -DFLTK_DIALOG_MODULE_PATH=\"${libdir}/fltk-dialog\"
@@ -190,7 +182,7 @@ distclean: mostlyclean
 	test ! -f fltk/patches_applied_stamp || (cd fltk && patch -p1 -R < ../fltk_patches.diff && rm patches_applied_stamp)
 
 mostlyclean:
-	-rm -f $(BIN) *.so *_so.h *_png.h *_qrc.h *.o src/*.o
+	-rm -f $(BIN) *.so *_so.h *_png.h *.o src/*.o
 
 maintainer-clean: distclean
 	-rm -f configure

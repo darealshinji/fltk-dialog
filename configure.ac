@@ -45,14 +45,8 @@ AC_ARG_ENABLE([strip],
   [AS_HELP_STRING([--enable-strip], [strip binary])],
   [LDFLAGS="$LDFLAGS -s"], [])
 AC_ARG_ENABLE([qt],
-  [AS_HELP_STRING([--disable-qt], [disable Qt file chooser dialogs (implies --disable-qt4 and --disable-qt5)])],
+  [AS_HELP_STRING([--disable-qt], [disable Qt5 file chooser dialog])],
   [use_qt="no"], [use_qt="yes"])
-AC_ARG_ENABLE([qt4],
-  [AS_HELP_STRING([--disable-qt4], [disable Qt4 file chooser dialog])],
-  [use_qt4="no"], [use_qt4="yes"])
-AC_ARG_ENABLE([qt5],
-  [AS_HELP_STRING([--disable-qt5], [disable Qt5 file chooser dialog])],
-  [use_qt5="no"], [use_qt5="yes"])
 AC_ARG_ENABLE([dynamic-notify],
   [AS_HELP_STRING([--disable-dynamic-notify], [disable dynamically loading libnotify (link directly against shared or static library)])],
   [dynamic_notify="no"], [dynamic_notify="yes"])
@@ -197,23 +191,12 @@ AS_IF([test "x$use_fribidi" = "xyes" -a "x$use_system_fribidi" = "xyes"], [
 
 ## Qt checks
 have_qt="no"
-have_qt4="no"
-have_qt5="no"
 AS_IF([test "x$use_qt" = "xyes"], [
-  AS_IF([test "x$use_qt4" = "xyes"], [
-    AX_PKG_CHECK_MODULES_SIMPLE([QtCore (Qt4)], [QtCore])
-    AX_PKG_CHECK_MODULES_SIMPLE([QtGui (Qt4)], [QtGui])
-    AS_IF([test "x$ax_cv_pkg_check_modules_simple_QtCore" = "xyes" \
-             -o "x$ax_cv_pkg_check_modules_simple_QtGui" = "xyes"],
-          [have_qt="yes" have_qt4="yes"])
-  ])
-  AS_IF([test "x$use_qt5" = "xyes"], [
-    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core], [Qt5Core])
-    AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets], [Qt5Widgets])
-    AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
-             -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
-          [have_qt="yes" have_qt5="yes"])
-  ])
+  AX_PKG_CHECK_MODULES_SIMPLE([Qt5Core], [Qt5Core])
+  AX_PKG_CHECK_MODULES_SIMPLE([Qt5Widgets], [Qt5Widgets])
+  AS_IF([test "x$ax_cv_pkg_check_modules_simple_Qt5Core" = "xyes" \
+           -o "x$ax_cv_pkg_check_modules_simple_Qt5Widgets" = "xyes"],
+        [have_qt="yes"])
 ])
 
 
@@ -246,8 +229,6 @@ AC_SUBST([SYSTEM_JPEG], [$use_system_jpeg])
 AC_SUBST([SYSTEM_PNG], [$use_system_png])
 AC_SUBST([SYSTEM_ZLIB], [$use_system_zlib])
 AC_SUBST([HAVE_QT], [$have_qt])
-AC_SUBST([HAVE_QT4], [$have_qt4])
-AC_SUBST([HAVE_QT5], [$have_qt5])
 AC_SUBST([DYNAMIC_NOTIFY], [$dynamic_notify])
 AC_SUBST([DYNAMIC_MAGIC], [$dynamic_magic])
 AC_SUBST([EMBEDDED_PLUGINS], [$use_embedded_plugins])

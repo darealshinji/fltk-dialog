@@ -37,6 +37,7 @@
 #endif  /* HAVE_QT */
 
 #include "fltk-dialog.hpp"
+#include "icon_png.h"
 
 static int file_chooser_fltk(int mode)
 {
@@ -78,23 +79,16 @@ static int native_file_chooser_gtk(int mode)
 }
 
 #ifdef HAVE_QT
-static int dlopen_getfilenameqt(int qt_major, int mode)
+static int dlopen_getfilenameqt(int mode)
 {
   std::string plugin;
 
 #ifdef USE_SYSTEM_PLUGINS
 # define DELETE(x)
   plugin = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
-
-  if (qt_major == 4) {
-    plugin[plugin.size() - 7] = '4';
-  }
 #else
 # define DELETE(x)  unlink(x);
-  const unsigned char *data = (qt_major == 4) ? qt4gui_so : qt5gui_so;
-  const unsigned int data_len = (qt_major == 4) ? qt4gui_so_len : qt5gui_so_len;
-
-  if (!save_to_temp(data, data_len, plugin)) {
+  if (!save_to_temp(qtgui_so, qtgui_so_len, ".so", plugin)) {
     return -1;
   }
 #endif  /* USE_SYSTEM_PLUGINS */
@@ -131,28 +125,13 @@ static int dlopen_getfilenameqt(int qt_major, int mode)
 }
 #endif  /* HAVE_QT */
 
-/* Save the attached Qt5 GUI module to disk and try to dlopen() it.
- * If it fails (i.e. because Qt5 libraries are missing) try the same with the Qt4 module.
- * If that fails too, fall back to Fl_Native_File_Chooser();
- */
 static int native_file_chooser(int mode)
 {
   int rv = -1;
 
 #ifdef HAVE_QT
-  if (getenv("KDE_FULL_SESSION")) {
-    rv = dlopen_getfilenameqt(QTDEF, mode);
-
-# if (QTDEF == 5) && defined(HAVE_QT4)
-    if (rv == -1) {
-      std::cerr << "warning: falling back to Qt4" << std::endl;
-      rv = dlopen_getfilenameqt(4, mode);
-    }
-# endif
-
-    if (rv == -1) {
-      std::cerr << "warning: falling back to gtk" << std::endl;
-    }
+  if (getenv("KDE_FULL_SESSION") && (rv = dlopen_getfilenameqt(mode)) == -1) {
+    std::cerr << "warning: falling back to gtk" << std::endl;
   }
 #endif  /* HAVE_QT */
 
@@ -170,9 +149,9 @@ static int native_file_chooser(int mode)
 
 #ifdef HAVE_QT
 /* the Qt equivalent to Fl_Native_File_Chooser() */
-static int native_file_chooser_qt(int qt_major, int mode)
+static int native_file_chooser_qt(int mode)
 {
-  int rv = dlopen_getfilenameqt(qt_major, mode);
+  int rv = dlopen_getfilenameqt(mode);
 
   if (rv == -1) {
     std::cerr << "warning: falling back to fltk" << std::endl;
@@ -188,20 +167,16 @@ int dialog_file_chooser(int mode, int native)
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
   }
 
+  /* Note: setting an icon doesn't work on the Qt file chooser */
+
   switch (native) {
     case NATIVE_ANY:
       return native_file_chooser(mode);
     case NATIVE_GTK:
       return native_file_chooser_gtk(mode);
 #ifdef HAVE_QT
-#  ifdef HAVE_QT4
-    case NATIVE_QT4:
-      return native_file_chooser_qt(4, mode);
-#  endif
-#  ifdef HAVE_QT5
-    case NATIVE_QT5:
-      return native_file_chooser_qt(5, mode);
-#  endif
+    case NATIVE_QT:
+      return native_file_chooser_qt(mode);
 #endif  /* HAVE_QT */
   }
   return file_chooser_fltk(mode);

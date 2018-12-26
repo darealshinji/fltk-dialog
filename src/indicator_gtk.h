@@ -41,5 +41,5 @@ typedef enum {
 } AppIndicatorStatus;
 
 
-bool start_indicator_gtk(const char *command, const char *icon, bool listen, bool auto_close);
+int start_indicator_gtk(const char *command, const char *icon, bool listen, bool auto_close);
 

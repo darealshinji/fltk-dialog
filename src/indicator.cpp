@@ -34,6 +34,14 @@
 #include <strings.h>
 #include <unistd.h>
 
+#ifdef HAVE_QT
+# include <fstream>
+# include <dlfcn.h>
+# ifndef USE_SYSTEM_PLUGINS
+#  include "qtindicator_so.h"
+# endif  /* !USE_SYSTEM_PLUGINS */
+#endif  /* HAVE_QT */
+
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 #include "indicator_gtk.h"
@@ -330,7 +338,7 @@ extern "C" void *getline_xlib(void *)
   return nullptr;
 }
 
-static bool create_tray_entry_xlib(const char *icon)
+static int create_tray_entry_xlib(const char *icon)
 {
   Fl_Color flcol = 0;
   Window dock;
@@ -342,7 +350,7 @@ static bool create_tray_entry_xlib(const char *icon)
   snprintf(atom_tray_name, sizeof(atom_tray_name) - 1, "_NET_SYSTEM_TRAY_S%i", fl_screen);
   dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
   if (!dock) {
-    return false;
+    return 1;
   }
 
   win = new Fl_Single_Window(0, 0);
@@ -359,7 +367,7 @@ static bool create_tray_entry_xlib(const char *icon)
   win->border(0);
   win->show();
   if (!win->shown()) {
-    return false;
+    return 1;
   }
 
   /* dock window */
@@ -404,29 +412,85 @@ static bool create_tray_entry_xlib(const char *icon)
 
   Fl::run();
 
-  return true;
+  return 0;
 }
 
-int dialog_indicator(const char *command_, const char *icon, int flags, bool listen_, bool auto_close_)
+#ifdef HAVE_QT
+static int dlopen_start_indicator_qt(const char *icon)
+{
+  std::string plugin, tmp;
+
+#ifdef USE_SYSTEM_PLUGINS
+# define DELETE(x)
+  plugin = FLTK_DIALOG_MODULE_PATH "/qtindicator.so";
+#else
+# define DELETE(x)  unlink(x);
+  if (!save_to_temp(qtindicator_so, qtindicator_so_len, ".so", plugin)) {
+    return -1;
+  }
+#endif  /* USE_SYSTEM_PLUGINS */
+
+  /* dlopen() library */
+
+  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
+  char *error = dlerror();
+
+  if (!handle) {
+    std::cerr << error << std::endl;
+    DELETE(plugin.c_str());
+    return -1;
+  }
+
+  dlerror();
+
+  GETPROCADDRESS(handle, int, start_indicator_qt, (const char*, const char*, bool, bool))
+
+  error = dlerror();
+
+  if (error) {
+    std::cerr << "error: " << error << std::endl;
+    dlclose(handle);
+    DELETE(plugin.c_str());
+    return -1;
+  }
+
+  if ((!icon || strlen(icon) == 0) && save_to_temp(src_icon_png, src_icon_png_len, ".png", tmp)) {
+    icon = tmp.c_str();
+  }
+
+  int rv = start_indicator_qt(command, icon, listen, auto_close);
+  dlclose(handle);
+  DELETE(plugin.c_str());
+
+  if (!tmp.empty()) {
+    unlink(tmp.c_str());
+  }
+
+  return rv;
+}
+#endif  /* HAVE_QT */
+
+int dialog_indicator(const char *command_, const char *icon, int native, bool listen_, bool auto_close_)
 {
   command = command_;
   listen = listen_;
   auto_close = auto_close_;
 
-  if (flags & INDICATOR_GTK) {
-    if (start_indicator_gtk(command, icon, listen, auto_close)) {
-      return 0;
-    }
-    if (flags & INDICATOR_X11) {
-      std::cerr << "warning: falling back to legacy X11 indicator" << std::endl;
-    }
+#ifdef HAVE_QT
+  if (native == NATIVE_ANY && getenv("KDE_FULL_SESSION")) {
+    native = NATIVE_QT;
   }
+#endif
 
-  if ((flags & INDICATOR_X11) && create_tray_entry_xlib(icon)) {
-    return 0;
+  switch (native) {
+    case NATIVE_ANY:
+    case NATIVE_GTK:
+      return start_indicator_gtk(command, icon, listen, auto_close);
+#ifdef HAVE_QT
+    case NATIVE_QT:
+      return dlopen_start_indicator_qt(icon);
+#endif
   }
-
-  std::cerr << "error: cannot create tray/indicator entry" << std::endl;
-  return 1;
+  return create_tray_entry_xlib(icon);
 }
 

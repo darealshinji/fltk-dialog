@@ -183,13 +183,7 @@ int main(int argc, char **argv)
                    {"native"});
 #ifdef HAVE_QT
   ARG_T arg_native_gtk(g_file_dir_options, "native-gtk", "Display the Gtk+ native file chooser", {"native-gtk"});
-#  ifdef HAVE_QT4
-  ARG_T arg_native_qt4(g_file_dir_options, "native-qt4", "Display the Qt4 native file chooser", {"native-qt4"});
-#  endif
-#  ifdef HAVE_QT5
-  ARG_T arg_native_qt5(g_file_dir_options, "native-qt5", "Display the Qt5 native file chooser", {"native-qt5"});
-#  endif
-  ARG_T arg_native_qt(g_file_dir_options, "native-qt", "Alias for --native-qt" XSTRINGIFY(QTDEF), {"native-qt"});
+  ARG_T arg_native_qt(g_file_dir_options, "native-qt", "Display the Qt native file chooser", {"native-qt"});
 #endif
 
   args::Group g_progress_options(ap_main, "Progress options:");
@@ -246,12 +240,13 @@ int main(int argc, char **argv)
                        "value may be ignored by some desktop environments)", {"libnotify"});
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
-  ARG_T  arg_force_legacy(g_indicator_options, "force-legacy", "Use the old X11 indicator system instead of "
-                          "libappindicator (this may not work on most DEs)", {"force-legacy"})
-  ,      arg_skip_legacy(g_indicator_options, "skip-legacy", "Don't fall back to the old X11 indicator system",
-                         {"skip-legacy"})
-  ,      arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
-  ,      unused_arg1(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
+  ARG_T unused_arg1(g_file_dir_options, "native", "Use the operating system's native indicator system", {"native"});
+#ifdef HAVE_QT
+  ARG_T unused_arg2(g_file_dir_options, "native-gtk", "Use the Gtk+ indicator (libappindicator)", {"native-gtk"})
+  ,     unused_arg3(g_file_dir_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
+#endif
+  ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
+  ,      unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
                      {"auto-close"});
 
   const char *fltk_using = "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org";
@@ -304,16 +299,8 @@ int main(int argc, char **argv)
   }
 
 #ifdef HAVE_QT
-  if (arg_native + arg_native_gtk +
-#  ifdef HAVE_QT4
-      arg_native_qt4 +
-#  endif
-#  ifdef HAVE_QT5
-      arg_native_qt5 +
-#  endif
-      arg_native_qt > 1)
-  {
-    std::cerr << argv[0] << ": two or more `--native' options specified" << std::endl;
+  if (arg_native_gtk && arg_native_qt) {
+    std::cerr << argv[0] << ": cannot use `--native-gtk' and `--native-qt' together" << std::endl;
     return 1;
   }
 #endif
@@ -444,21 +431,10 @@ int main(int argc, char **argv)
 #ifdef HAVE_QT
   if (arg_native_gtk) {
     native_mode = NATIVE_GTK;
+  } else if (arg_native_qt) {
+    native_mode = NATIVE_QT;
   }
-  if (arg_native_qt) {
-    native_mode = QTDEF;
-  }
-# ifdef HAVE_QT4
-  if (arg_native_qt4) {
-    native_mode = NATIVE_QT4;
-  }
-# endif
-# ifdef HAVE_QT5
-  if (arg_native_qt5) {
-    native_mode = NATIVE_QT5;
-  }
-# endif
-#endif  /* HAVE_QT */
+#endif
 
   /* notification */
   int timeout = 5;
@@ -469,21 +445,9 @@ int main(int argc, char **argv)
 
   /* indicator */
   const char *indicator_command = NULL;
-  int indicator_flags = INDICATOR_X11|INDICATOR_GTK;
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     GETCSTR(indicator_command, arg_indicator);
-
-    if (arg_force_legacy && arg_skip_legacy) {
-      std::cerr << argv[0] << ": cannot use `--force-legacy' and `--skip-legacy' together" << std::endl;
-      return 1;
-    }
-
-    if (arg_force_legacy) {
-      indicator_flags = INDICATOR_X11;
-    } else if (arg_skip_legacy) {
-      indicator_flags = INDICATOR_GTK;
-    }
   }
 
   /* progress */
@@ -656,7 +620,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, icon, indicator_flags, arg_listen, arg_auto_close);
+      return dialog_indicator(indicator_command, icon, native_mode, arg_listen, arg_auto_close);
     default:
       break;
   }

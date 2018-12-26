@@ -22,45 +22,28 @@
  * SOFTWARE.
  */
 
-/* Qt4:
- * CXXFLAGS += -std=c++0x -fPIC $(pkg-config --cflags QtGui QtCore)
- * LDFLAGS += -shared -Wl,--as-needed $(pkg-config --libs QtGui QtCore)
- *
- * Qt5:
- * CXXFLAGS += -std=c++0x -fPIC $(pkg-config --cflags Qt5Widgets Qt5Core)
- * LDFLAGS += -shared -Wl,--as-needed $(pkg-config --libs Qt5Widgets Qt5Core)
- */
-
 #include <iostream>
 #include <QApplication>
 #include <QFileDialog>
-#include <QIcon>
 
-#include <QtGlobal>
-#if QT_VERSION >= 0x050000
-# include "icon_qrc_qt5.hpp"
-#else
-# include "icon_qrc_qt4.hpp"
-#endif
-
-//#include "fltk-dialog.hpp"
 enum {
   FILE_CHOOSER,
   DIR_CHOOSER
 };
 
 extern "C"
-int getfilenameqt(int mode, /* char separator, */ const char *quote, const char *title)
+int getfilenameqt(int mode
+,                 /* char separator
+, */              const char *quote
+,                 const char *title
+)
 {
   char fake_argv0[] = "getfilenameqt()";
   char *fake_argv[] = { fake_argv0 };
   int fake_argc = 1, rv = 1;
 
-  QScopedPointer<QCoreApplication> app(new QApplication(fake_argc, fake_argv));
-  QFileDialog *dialog = new QFileDialog();
-
-  dialog->setWindowIcon(QIcon(":/icon.png"));
-  dialog->setWindowTitle(title);
+  QApplication *app = new QApplication(fake_argc, fake_argv);
+  QFileDialog *dialog = new QFileDialog(nullptr, title);
 
   if (mode == DIR_CHOOSER) {
     dialog->setFileMode(QFileDialog::Directory);

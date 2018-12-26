@@ -109,7 +109,7 @@ static void handle_dlopen_error(void)
   }
 }
 
-void set_icon(const char *icon, AppIndicator *indicator)
+static void set_icon(const char *icon, AppIndicator *indicator)
 {
   char *resolved_path;
 
@@ -155,7 +155,7 @@ extern "C" void *getline_gtk(void *v)
   return nullptr;
 }
 
-static bool create_tray_entry_gtk(const char *icon)
+int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bool auto_close_)
 {
   GtkWidget *window, *indicator_menu;
   GtkActionGroup *action_group;
@@ -164,6 +164,10 @@ static bool create_tray_entry_gtk(const char *icon)
   const char *tooltip = NULL;
   void *handle;
   std::string tt, tmp;
+
+  command = command_;
+  listen = listen_;
+  auto_close = auto_close_;
 
   if (command) {
     if (strlen(command) > 36) {
@@ -196,7 +200,7 @@ static bool create_tray_entry_gtk(const char *icon)
   error = dlerror();
   if (!libgtk_handle) {
     handle_dlopen_error();
-    return false;
+    return 1;
   }
 
   /* RTLD_NODELETE is needed to prevent memory access violation on dlclose() */
@@ -213,7 +217,7 @@ static bool create_tray_entry_gtk(const char *icon)
 
     if (!libappindicator_handle) {
       handle_dlopen_error();
-      return false;
+      return 1;
     }
   }
 
@@ -225,7 +229,7 @@ static bool create_tray_entry_gtk(const char *icon)
   func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func))); \
   if ((error = dlerror()) != NULL) { \
     handle_dlopen_error(); \
-    return false; \
+    return 1; \
   }
 
   handle = libgtk_handle;
@@ -266,7 +270,7 @@ static bool create_tray_entry_gtk(const char *icon)
   if (!gtk_ui_manager_add_ui_from_string (uim, ui_info, -1, NULL)) {
     dlclose(libgtk_handle);
     dlclose(libappindicator_handle);
-    return false;
+    return 1;
   }
 
   /* create indicator */
@@ -278,10 +282,8 @@ static bool create_tray_entry_gtk(const char *icon)
 
   if (icon && strlen(icon) > 0) {
     set_icon(icon, indicator);
-  } else if (save_to_temp(src_icon_png, src_icon_png_len, tmp)) {
-    out = tmp + ".png";
-    rename(tmp.c_str(), out.c_str());
-    app_indicator_set_icon (indicator, tmp.c_str() + 5);
+  } else if (save_to_temp(src_icon_png, src_icon_png_len, ".png", out)) {
+    app_indicator_set_icon (indicator, out.substr(5, out.length() - 9).c_str());
     app_indicator_set_icon_theme_path (indicator, "/tmp");
   }
 
@@ -291,21 +293,10 @@ static bool create_tray_entry_gtk(const char *icon)
 
   gtk_main();
 
-  return true;
-}
-
-bool start_indicator_gtk(const char *command_, const char *icon, bool listen_, bool auto_close_)
-{
-  command = command_;
-  listen = listen_;
-  auto_close = auto_close_;
-
-  bool ret = create_tray_entry_gtk(icon);
-
   if (!out.empty()) {
     unlink(out.c_str());
   }
 
-  return ret;
+  return 0;
 }
 

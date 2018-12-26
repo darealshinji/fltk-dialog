@@ -92,22 +92,6 @@
   PROTO(type,func,param) \
   func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func)));
 
-#ifdef HAVE_QT
-# if defined(HAVE_QT5) && defined(HAVE_QT4)
-#  define QTDEF 5
-# else
-#  if defined(HAVE_QT5) && !defined(HAVE_QT4)
-#   define QTDEF 5
-#   define qt4gui_so     qt5gui_so
-#   define qt4gui_so_len qt5gui_so_len
-#  elif !defined(HAVE_QT5) && defined(HAVE_QT4)
-#   define QTDEF 4
-#   define qt5gui_so     qt4gui_so
-#   define qt5gui_so_len qt4gui_so_len
-#  endif
-# endif
-#endif
-
 #define PROJECT_URL "https://github.com/darealshinji/fltk-dialog"
 
 #ifndef FLTK_DIALOG_MODULE_PATH
@@ -157,11 +141,10 @@ enum {
 };
 
 enum {
-  NATIVE_NONE = 0,
-  NATIVE_ANY = 1,
-  NATIVE_GTK = 2,
-  NATIVE_QT4 = 4,
-  NATIVE_QT5 = 5
+  NATIVE_NONE,
+  NATIVE_ANY,
+  NATIVE_GTK,
+  NATIVE_QT
 };
 
 enum {
@@ -213,7 +196,7 @@ std::string text_wrap(const char *text, int width, Fl_Font font, int font_size);
 char *format_date(const char *format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 std::string get_random(void);
-bool save_to_temp(const unsigned char *data, const unsigned int data_len, std::string &path);
+bool save_to_temp(const unsigned char *data, const unsigned int data_len, const char *postfix, std::string &path);
 int leap_year(int y);
 
 #ifdef WITH_FRIBIDI
@@ -238,7 +221,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 int dialog_file_chooser(int mode, int native);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
-int dialog_indicator(const char *command, const char *indicator_icon, int flags, bool listen, bool auto_close);
+int dialog_indicator(const char *command, const char *indicator_icon, int native, bool listen, bool auto_close);
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify);
 int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autoclose, bool hide_cancel);
 int dialog_textinfo(bool autoscroll, const char *checkbox, bool autoclose, bool hide_cancel);
