@@ -107,7 +107,8 @@ fltk_cmake_config = \
   -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS) $(extra_libdirs)" \
   -DOPTION_USE_GL="OFF" \
   -DOPTION_OPTIM="" \
-  -DOPTION_BUILD_EXAMPLES="OFF"
+  -DOPTION_BUILD_EXAMPLES="OFF" \
+  -DOPTION_ABI_VERSION="10304"
 
 
 main_LIBS += fltk/build/lib/libfltk_images.a

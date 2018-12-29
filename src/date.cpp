@@ -27,9 +27,30 @@
 
 #include "fltk-dialog.hpp"
 
+class MySpinner : public Fl_Spinner
+{
+public:
+
+  MySpinner(int X, int Y, int W, int H, const char *L=NULL)
+   : Fl_Spinner(X, Y, W, H, L)
+  {
+    align(FL_ALIGN_TOP_LEFT);
+    labelsize(14);
+    minimum(1);
+    step(1);
+  }
+
+  /* requires FLTK_ABI_VERSION >= 10301 */
+  void maximum_size(int m) {
+    if (m > 0) {
+      input_.maximum_size(m);
+    }
+  }
+};
+
 static Fl_Double_Window *win;
 static Fl_Choice *month;
-static Fl_Spinner *year, *day;
+static MySpinner *year, *day;
 static int ret = 1;
 
 static void callback(Fl_Widget *)
@@ -76,19 +97,13 @@ int dialog_date(const char *format)
       month->value(current_month);
       month->callback(callback);
 
-      day = new Fl_Spinner(20 + 120, 28, 120, 30, "Day:");
-      day->labelsize(14);
-      day->align(FL_ALIGN_TOP_LEFT);
-      day->minimum(1);
-      day->step(1);
+      day = new MySpinner(20 + 120, 28, 120, 30, "Day:");
+      day->maximum_size(2);
       day->value(current_day);
 
-      year = new Fl_Spinner(30 + 2*120, 28, 120, 30, "Year:");
-      year->labelsize(14);
-      year->align(FL_ALIGN_TOP_LEFT);
-      year->minimum(1);
+      year = new MySpinner(30 + 2*120, 28, 120, 30, "Year:");
+      year->maximum_size(4);
       year->maximum(9999);
-      year->step(1);
       year->value(current_year);
       year->callback(callback);
 
