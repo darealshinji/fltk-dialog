@@ -28,19 +28,12 @@
 // echo "ICON:newIcon" >&3
 
 #include <iostream>
+#include <dlfcn.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
-
-#ifdef HAVE_QT
-# include <fstream>
-# include <dlfcn.h>
-# ifndef USE_SYSTEM_PLUGINS
-#  include "qtindicator_so.h"
-# endif  /* !USE_SYSTEM_PLUGINS */
-#endif  /* HAVE_QT */
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
@@ -419,38 +412,12 @@ static int create_tray_entry_xlib(const char *icon)
 static int dlopen_start_indicator_qt(const char *icon)
 {
   std::string plugin, tmp;
+  void *handle = NULL, *p;
 
-#ifdef USE_SYSTEM_PLUGINS
-# define DELETE(x)
-  plugin = FLTK_DIALOG_MODULE_PATH "/qtindicator.so";
-#else
-# define DELETE(x)  unlink(x);
-  if (!save_to_temp(qtindicator_so, qtindicator_so_len, ".so", plugin)) {
-    return -1;
-  }
-#endif  /* USE_SYSTEM_PLUGINS */
-
-  /* dlopen() library */
-
-  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
-  char *error = dlerror();
+  PROTO(int, start_indicator_qt, (int, const char*, const char*, bool, bool))
+  p = dlopen_qtplugin(plugin, handle, "start_indicator_qt");
 
   if (!handle) {
-    std::cerr << error << std::endl;
-    DELETE(plugin.c_str());
-    return -1;
-  }
-
-  dlerror();
-
-  GETPROCADDRESS(handle, int, start_indicator_qt, (const char*, const char*, bool, bool))
-
-  error = dlerror();
-
-  if (error) {
-    std::cerr << "error: " << error << std::endl;
-    dlclose(handle);
-    DELETE(plugin.c_str());
     return -1;
   }
 
@@ -458,7 +425,8 @@ static int dlopen_start_indicator_qt(const char *icon)
     icon = tmp.c_str();
   }
 
-  int rv = start_indicator_qt(command, icon, listen, auto_close);
+  start_indicator_qt = reinterpret_cast<start_indicator_qt_t>(p);
+  int rv = start_indicator_qt(0, command, icon, listen, auto_close);
   dlclose(handle);
   DELETE(plugin.c_str());
 

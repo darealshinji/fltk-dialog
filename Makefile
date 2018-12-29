@@ -217,7 +217,7 @@ $(libfltk): fltk/build/Makefile
 src/about.cpp: fltk_png.h
 src/file_fltk.cpp: octicons_png.h
 src/indicator.cpp: icon_png.h image_missing_png.h
-src/main.cpp: icon_png.h
+src/main.cpp src/file.cpp: icon_png.h
 
 OCTICONS = src/octicons/arrow-up-gray.png \
 	src/octicons/arrow-up.png \
@@ -259,7 +259,25 @@ endif
 endif
 
 ifneq ($(HAVE_QT),no)
-include qt.mak
+qtplugin_so.h: qtplugin.so
+	$(msg_GENH)
+	$(Q)xxd -i $< > $@
+
+qtplugin.so: src/qtplugin.o
+	$(msg_CXXLDSO)
+	$(Q)$(CXX) -shared -o $@ $^ $(LDFLAGS) -s $(shell pkg-config --libs Qt5Widgets Qt5Core) -lpthread -pthread
+
+src/qtplugin.o: src/qtplugin.cpp
+	$(msg_CXX)
+	$(Q)$(CXX) $(plugin_CXXFLAGS) $(shell pkg-config --cflags Qt5Widgets Qt5Core) -c -o $@ $<
+
+ifneq ($(EMBEDDED_PLUGINS),no)
+src/misc.cpp: qtplugin_so.h
+else
+src/misc.cpp: qtplugin.so
+endif
+
+src/qtplugin.cpp: $(libfltk)
 endif
 
 

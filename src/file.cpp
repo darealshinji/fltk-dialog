@@ -24,17 +24,8 @@
 
 #include <iostream>
 #include <string>
-
-#ifdef HAVE_QT
-# include <fstream>
-# include <dlfcn.h>
-# include <stdlib.h>
-# include <string.h>
-# include <unistd.h>
-# ifndef USE_SYSTEM_PLUGINS
-#  include "qtgui_so.h"
-# endif  /* !USE_SYSTEM_PLUGINS */
-#endif  /* HAVE_QT */
+#include <dlfcn.h>
+#include <unistd.h>
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
@@ -82,42 +73,17 @@ static int native_file_chooser_gtk(int mode)
 static int dlopen_getfilenameqt(int mode)
 {
   std::string plugin;
+  void *handle = NULL, *p;
 
-#ifdef USE_SYSTEM_PLUGINS
-# define DELETE(x)
-  plugin = FLTK_DIALOG_MODULE_PATH "/qt5gui.so";
-#else
-# define DELETE(x)  unlink(x);
-  if (!save_to_temp(qtgui_so, qtgui_so_len, ".so", plugin)) {
-    return -1;
-  }
-#endif  /* USE_SYSTEM_PLUGINS */
-
-  /* dlopen() library */
-
-  void *handle = dlopen(plugin.c_str(), RTLD_LAZY);
-  char *error = dlerror();
+  PROTO(int, getfilenameqt, (int, const char*, const char*, bool, bool))
+  p = dlopen_qtplugin(plugin, handle, "getfilenameqt");
 
   if (!handle) {
-    std::cerr << error << std::endl;
-    DELETE(plugin.c_str());
     return -1;
   }
 
-  dlerror();
-
-  GETPROCADDRESS(handle, int, getfilenameqt, (int, /* char, */ const char*, const char*))
-
-  error = dlerror();
-
-  if (error) {
-    std::cerr << "error: " << error << std::endl;
-    dlclose(handle);
-    DELETE(plugin.c_str());
-    return -1;
-  }
-
-  int rv = getfilenameqt(mode, quote, title);
+  getfilenameqt = reinterpret_cast<getfilenameqt_t>(p);
+  int rv = getfilenameqt(mode, quote, title, false, false);
   dlclose(handle);
   DELETE(plugin.c_str());
 

@@ -34,6 +34,13 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef HAVE_QT
+# include <dlfcn.h>
+# ifndef USE_SYSTEM_PLUGINS
+#  include "qtplugin_so.h"
+# endif  /* !USE_SYSTEM_PLUGINS */
+#endif  /* HAVE_QT */
+
 #include "fltk-dialog.hpp"
 #include "random.hpp"
 
@@ -332,4 +339,40 @@ int leap_year(int y)
   return 0;
 }
 
+#ifdef HAVE_QT
+void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
+{
+#ifdef USE_SYSTEM_PLUGINS
+  plugin = FLTK_DIALOG_MODULE_PATH "/qtplugin.so";
+#else
+  if (!save_to_temp(qtplugin_so, qtplugin_so_len, ".so", plugin)) {
+    return NULL;
+  }
+#endif  /* USE_SYSTEM_PLUGINS */
+
+  handle = dlopen(plugin.c_str(), RTLD_LAZY);
+  char *error = dlerror();
+
+  if (!handle) {
+    std::cerr << error << std::endl;
+    DELETE(plugin.c_str());
+    return NULL;
+  }
+
+  dlerror();
+
+  void *func_ptr = dlsym(handle, func);
+
+  error = dlerror();
+
+  if (error || !func_ptr) {
+    std::cerr << "error: " << error << std::endl;
+    dlclose(handle);
+    DELETE(plugin.c_str());
+    return NULL;
+  }
+
+  return func_ptr;
+}
+#endif  /* HAVE_QT */
 

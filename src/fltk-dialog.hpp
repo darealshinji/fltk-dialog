@@ -92,6 +92,12 @@
   PROTO(type,func,param) \
   func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func)));
 
+#ifdef USE_SYSTEM_PLUGINS
+# define DELETE(x)
+#else
+# define DELETE(x)  unlink(x);
+#endif
+
 #define PROJECT_URL "https://github.com/darealshinji/fltk-dialog"
 
 #ifndef FLTK_DIALOG_MODULE_PATH
@@ -199,6 +205,9 @@ std::string get_random(void);
 bool save_to_temp(const unsigned char *data, const unsigned int data_len, const char *postfix, std::string &path);
 int leap_year(int y);
 
+#ifdef HAVE_QT
+void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func);
+#endif
 #ifdef WITH_FRIBIDI
 char *fribidi_parse_line(const char *input);
 #endif
