@@ -124,7 +124,7 @@ int main(int argc, char **argv)
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)",
                        {"separator"})
-  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif jpg png "
+  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif ico jpg png "
                   "svg svgz xbm xpm", {"icon"});
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
