@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2018-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ static const char *text = "\n"
   "http://www.fltk.org\n"
   "\n"
   /* http://www.utf8-chartable.de/ */
-  "Copyright \xc2\xa9 2016-2018 djcj <djcj@gmx.de>\n"
+  "Copyright \xc2\xa9 2016-2019 djcj <djcj@gmx.de>\n"
   PROJECT_URL "\n"
   "\n"
   "The FLTK library and the font widget are\n"
