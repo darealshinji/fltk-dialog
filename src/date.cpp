@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +40,15 @@ public:
     step(1);
   }
 
-  /* requires FLTK_ABI_VERSION >= 10301 */
+#if FLTK_ABI_VERSION >= 10301
   void maximum_size(int m) {
     if (m > 0) {
       input_.maximum_size(m);
     }
   }
+#else
+  void maximum_size(int) {}
+#endif
 };
 
 static Fl_Double_Window *win;

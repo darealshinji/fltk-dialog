@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@
 #include "fltk-dialog.hpp"
 #include "nanosvg.h"
 #include "nanosvgrast.h"
+#include "ico_to_rgb.hpp"
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
@@ -48,8 +49,6 @@
 #define DEFAULT_DPI  90.0
 #define DEFAULT_WH   64
 #define DEFAULT_WHF  64.0
-
-static std::string png_data;
 
 static bool gzip_uncompress(const char *file, std::string &output)
 {
@@ -197,7 +196,9 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     if (!xpm) {
       return NULL;
     }
-    return new Fl_RGB_Image(xpm, Fl_Color(0));
+    Fl_RGB_Image *rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
+    delete xpm;
+    return rgb;
   }
 
   if (HASEXT(file, ".xbm")) {
@@ -215,7 +216,17 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     fl_rectf(0, 0, in->w(), in->h());
     fl_color(FL_BLACK);
     in->draw(0, 0);
-    return surf->image();
+    Fl_RGB_Image *rgb = surf->image();
+    delete in;
+    delete surf;
+    return rgb;
+  }
+
+  if (HASEXT(file, ".ico")) {
+    if (st.st_size < ICO_MAX) {
+      return ico_to_rgb(file);
+    }
+    return NULL;
   }
 
   /* get filetype from magic bytes */
@@ -231,7 +242,7 @@ Fl_RGB_Image *img_to_rgb(const char *file)
 
   fclose(fp);
 
-  if (memcmp(bytes, "\211PNG", 4) == 0) {
+  if (memcmp(bytes, "\211PNG\r\n\032\n", 8) == 0) {
     return new Fl_PNG_Image(file);
   }
 
@@ -246,7 +257,9 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   if (memcmp(bytes, "GIF87a", 6) == 0 || memcmp(bytes, "GIF89a", 6) == 0) {
     Fl_GIF_Image *gif = new Fl_GIF_Image(file);
     if (gif) {
-      return new Fl_RGB_Image(gif, Fl_Color(0));
+      Fl_RGB_Image *rgb = new Fl_RGB_Image(gif, Fl_Color(0));
+      delete gif;
+      return rgb;
     }
   }
 
