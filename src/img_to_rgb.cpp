@@ -38,7 +38,7 @@
 #include "fltk-dialog.hpp"
 #include "nanosvg.h"
 #include "nanosvgrast.h"
-#include "ico_to_rgb.hpp"
+#include "ico_image.hpp"
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
@@ -196,6 +196,10 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     if (!xpm) {
       return NULL;
     }
+    if (xpm->fail() < 0) {
+      delete xpm;
+      return NULL;
+    }
     Fl_RGB_Image *rgb = new Fl_RGB_Image(xpm, Fl_Color(0));
     delete xpm;
     return rgb;
@@ -204,6 +208,10 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   if (HASEXT(file, ".xbm")) {
     Fl_XBM_Image *in = new Fl_XBM_Image(file);
     if (!in) {
+      return NULL;
+    }
+    if (in->fail() < 0) {
+      delete in;
       return NULL;
     }
     Fl_Image_Surface *surf = new Fl_Image_Surface(in->w(), in->h());
@@ -223,10 +231,15 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   }
 
   if (HASEXT(file, ".ico")) {
-    if (st.st_size < ICO_MAX) {
-      return ico_to_rgb(file);
+    ico_image *ico = new ico_image(file);
+    if (!ico) {
+      return NULL;
     }
-    return NULL;
+    if (ico->fail() < 0) {
+      delete ico;
+      return NULL;
+    }
+    return ico;
   }
 
   /* get filetype from magic bytes */
@@ -243,24 +256,53 @@ Fl_RGB_Image *img_to_rgb(const char *file)
   fclose(fp);
 
   if (memcmp(bytes, "\211PNG\r\n\032\n", 8) == 0) {
-    return new Fl_PNG_Image(file);
+    Fl_PNG_Image *png = new Fl_PNG_Image(file);
+    if (!png) {
+      return NULL;
+    }
+    if (png->fail() < 0) {
+      delete png;
+      return NULL;
+    }
+    return png;
   }
 
   if (memcmp(bytes, "\377\330\377", 3) == 0 && bytes[3] >= 0xc0 && bytes[3] <= 0xef) {
-    return new Fl_JPEG_Image(file);
+    Fl_JPEG_Image *jpeg = new Fl_JPEG_Image(file);
+    if (!jpeg) {
+      return NULL;
+    }
+    if (jpeg->fail() < 0) {
+      delete jpeg;
+      return NULL;
+    }
+    return jpeg;
   }
 
-  if (memcmp(bytes, "BM", 2) == 0) {
-    return new Fl_BMP_Image(file);
+  if (bytes[0] == 'B' && bytes[1] == 'M') {
+    Fl_BMP_Image *bmp = new Fl_BMP_Image(file);
+    if (!bmp) {
+      return NULL;
+    }
+    if (bmp->fail() < 0) {
+      delete bmp;
+      return NULL;
+    }
+    return bmp;
   }
 
   if (memcmp(bytes, "GIF87a", 6) == 0 || memcmp(bytes, "GIF89a", 6) == 0) {
     Fl_GIF_Image *gif = new Fl_GIF_Image(file);
-    if (gif) {
-      Fl_RGB_Image *rgb = new Fl_RGB_Image(gif, Fl_Color(0));
-      delete gif;
-      return rgb;
+    if (!gif) {
+      return NULL;
     }
+    if (gif->fail() < 0) {
+      delete gif;
+      return NULL;
+    }
+    Fl_RGB_Image *rgb = new Fl_RGB_Image(gif, Fl_Color(0));
+    delete gif;
+    return rgb;
   }
 
   return NULL;

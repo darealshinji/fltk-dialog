@@ -26,7 +26,7 @@ OBJS = \
 	src/file_fltk.o \
 	src/font.o \
 	src/html.o \
-	src/ico_to_rgb.o \
+	src/ico_image.o \
 	src/img_to_rgb.o \
 	src/indicator.o \
 	src/indicator_gtk.o \
