@@ -107,7 +107,7 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
   ICONDIRENTRY *dirEntry;
   ICONIMAGE *icon;
   uchar hdr[6];
-  uchar *cursor = NULL, *data, *ptr;
+  uchar *cursor = NULL, *ico_data, *ptr;
   unsigned highestRes, offset, numBytes, iconsCount, biBitCount;
   unsigned shift, shift2;
   int biHeight, x, y;
@@ -145,17 +145,17 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
   /* Check directory entries */
 
   readSize = iconsCount * sizeof(ICONDIRENTRY);
-  data = new uchar[readSize];
-  bytesRead = fread(data, 1, readSize, fp);
+  ico_data = new uchar[readSize];
+  bytesRead = fread(ico_data, 1, readSize, fp);
 
   if (bytesRead != readSize) {
     ld(ERR_FILE_ACCESS);
     fclose(fp);
-    delete data;
+    delete ico_data;
     return;
   }
 
-  dirEntry = reinterpret_cast<ICONDIRENTRY *>(data);
+  dirEntry = reinterpret_cast<ICONDIRENTRY *>(ico_data);
   highestRes = 0;
   offset = 0;
   numBytes = 0;
@@ -183,7 +183,7 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
     dirEntry++;
   }
 
-  delete data;
+  delete ico_data;
 
   /* Seek to offset and read data */
 
@@ -195,26 +195,26 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
     return;
   }
 
-  data = new uchar[numBytes];
-  bytesRead = fread(data, 1, numBytes, fp);
+  ico_data = new uchar[numBytes];
+  bytesRead = fread(ico_data, 1, numBytes, fp);
   fclose(fp);
 
   if (bytesRead != numBytes) {
     w(0); h(0); d(0); ld(ERR_FILE_ACCESS);
-    delete data;
+    delete ico_data;
     return;
   }
 
   /* PNG compressed resource */
-  if (memcmp(data, "\211PNG\r\n\032\n", 8) == 0) {
+  if (memcmp(ico_data, "\211PNG\r\n\032\n", 8) == 0) {
     if (numBytes == 0) {
       w(0); h(0); d(0); ld(ERR_FORMAT);
-      delete data;
+      delete ico_data;
       return;
     }
 
-    Fl_PNG_Image *png = new Fl_PNG_Image(NULL, data, numBytes);
-    delete data;
+    Fl_PNG_Image *png = new Fl_PNG_Image(NULL, ico_data, numBytes);
+    delete ico_data;
 
     int loaded = png ? png->fail() : ERR_FILE_ACCESS;
     if (loaded < 0) {
@@ -241,7 +241,7 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
 
   /* Bitmap resource */
 
-  cursor = data;
+  cursor = ico_data;
   icon = reinterpret_cast<ICONIMAGE *>(cursor);
   biBitCount = icon->icHeader.biBitCount;
   biHeight = icon->icHeader.biHeight;
@@ -346,7 +346,7 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
     if (alloc_array == 1) {
       delete array;
     }
-    delete data;
+    delete ico_data;
     return;
   }
 
@@ -379,6 +379,6 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
     }
   }
 
-  delete data;
+  delete ico_data;
 }
 
