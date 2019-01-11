@@ -118,7 +118,7 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
   array = NULL;
 
   /* Open file */
-  if ((fp = fl_fopen(filename, "rb")) == NULL) {
+  if ((fp = fopen(filename, "r")) == NULL) {
     ld(ERR_FILE_ACCESS);
     return;
   }

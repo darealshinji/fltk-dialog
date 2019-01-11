@@ -39,6 +39,7 @@
 #include "nanosvg.h"
 #include "nanosvgrast.h"
 #include "ico_image.hpp"
+#include "icns_image.hpp"
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
@@ -230,18 +231,6 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     return rgb;
   }
 
-  if (HASEXT(file, ".ico")) {
-    ico_image *ico = new ico_image(file);
-    if (!ico) {
-      return NULL;
-    }
-    if (ico->fail() < 0) {
-      delete ico;
-      return NULL;
-    }
-    return ico;
-  }
-
   /* get filetype from magic bytes */
   if (!(fp = fopen(file, "r"))) {
     return NULL;
@@ -303,6 +292,30 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     Fl_RGB_Image *rgb = new Fl_RGB_Image(gif, Fl_Color(0));
     delete gif;
     return rgb;
+  }
+
+  if (memcmp(bytes, "\0\0\1\0", 4) == 0) {
+    ico_image *ico = new ico_image(file);
+    if (!ico) {
+      return NULL;
+    }
+    if (ico->fail() < 0) {
+      delete ico;
+      return NULL;
+    }
+    return ico;
+  }
+
+  if (memcmp(bytes, "icns", 4) == 0 || memcmp(bytes, "mBIN", 4) == 0) {
+    icns_image *icns = new icns_image(file);
+    if (!icns) {
+      return NULL;
+    }
+    if (icns->fail() < 0) {
+      delete icns;
+      return NULL;
+    }
+    return icns;
   }
 
   return NULL;

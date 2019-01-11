@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,8 +124,8 @@ int main(int argc, char **argv)
   ,      arg_close_label(ap, "TEXT", "Set the CLOSE button text", {"close-label"})
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)",
                        {"separator"})
-  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: bmp gif ico jpg png "
-                  "svg svgz xbm xpm", {"icon"});
+  ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: "
+                  "bmp gif icns ico jpg png svg svgz xbm xpm", {"icon"});
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
