@@ -30,6 +30,37 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
+class My_GTK_File_Chooser
+{
+  Fl_GTK_File_Chooser *_fc;
+public:
+  My_GTK_File_Chooser(int type, const char *label);
+  ~My_GTK_File_Chooser();
+  int show() { return _fc ? _fc->show() : -1; }
+  const char *filename() { return _fc ? _fc->filename() : NULL; }
+};
+
+My_GTK_File_Chooser::My_GTK_File_Chooser(int type, const char *label)
+{
+  _fc = NULL;
+
+  if (Fl_GTK_File_Chooser::did_find_GTK_libs == 0) {
+    Fl_GTK_File_Chooser::probe_for_GTK_libs();
+  }
+
+  if (Fl_GTK_File_Chooser::did_find_GTK_libs != 0) {
+    _fc = new Fl_GTK_File_Chooser(type);
+    _fc->title(label);
+  }
+}
+
+My_GTK_File_Chooser::~My_GTK_File_Chooser()
+{
+  if (_fc) {
+    delete _fc;
+  }
+}
+
 static int file_chooser_fltk(int mode)
 {
   char *file = file_chooser(mode);
@@ -44,23 +75,12 @@ static int file_chooser_fltk(int mode)
 
 static int native_file_chooser_gtk(int mode)
 {
-  Fl_GTK_File_Chooser *fc;
-  int type = Fl_Native_File_Chooser::BROWSE_FILE;
+  My_GTK_File_Chooser *fc;
 
-  if (mode == DIR_CHOOSER) {
-    type = Fl_Native_File_Chooser::BROWSE_DIRECTORY;
-  }
+  int type = (mode == DIR_CHOOSER) ? Fl_Native_File_Chooser::BROWSE_DIRECTORY
+    : Fl_Native_File_Chooser::BROWSE_FILE;
 
-  if (Fl_GTK_File_Chooser::did_find_GTK_libs == 0) {
-    Fl_GTK_File_Chooser::probe_for_GTK_libs();
-  }
-
-  if (Fl_GTK_File_Chooser::did_find_GTK_libs == 0) {
-    return -1;
-  }
-
-  fc = new Fl_GTK_File_Chooser(type);
-  fc->title(title);
+  fc = new My_GTK_File_Chooser(type, title);
 
   if (fc->show() == 0) {
     std::cout << quote << fc->filename() << quote << std::endl;

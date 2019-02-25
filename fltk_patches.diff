@@ -34,14 +34,14 @@
    int h();
 --- a/FL/Fl_Native_File_Chooser.H
 +++ b/FL/Fl_Native_File_Chooser.H
-@@ -322,6 +322,7 @@ private:
-   char *gtkw_title; // the title to be applied to the dialog
-   const char *previous_filter;
-   
-+public:
-   int fl_gtk_chooser_wrapper(); // method that wraps the GTK widget
-   Fl_GTK_File_Chooser(int val);
-   virtual ~Fl_GTK_File_Chooser();
+@@ -301,6 +301,7 @@ protected:
+ 
+ class FL_EXPORT Fl_GTK_File_Chooser : public Fl_FLTK_File_Chooser {
+   friend class Fl_Native_File_Chooser;
++  friend class My_GTK_File_Chooser;
+ private:
+   typedef struct _GtkWidget GtkWidget;
+   typedef struct _GtkFileFilterInfo GtkFileFilterInfo;
 --- a/src/Fl_Choice.cxx
 +++ b/src/Fl_Choice.cxx
 @@ -186,13 +186,13 @@ int Fl_Choice::handle(int e) {
