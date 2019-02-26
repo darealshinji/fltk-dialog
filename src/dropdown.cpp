@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,18 +31,10 @@
 
 static Fl_Double_Window *win;
 static int ret = 1;
-#ifdef WITH_FRIBIDI
-static bool msg_alloc = false;
-#endif
 
 static void close_cb(Fl_Widget *, long p) {
   win->hide();
   ret = p;
-#ifdef WITH_FRIBIDI
-  if (msg_alloc && msg) {
-    delete msg;
-  }
-#endif
 }
 
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator)
@@ -58,12 +50,6 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 
   std::vector<std::string> vec;
   size_t vec_size;
-
-#ifdef WITH_FRIBIDI
-  if (msg && use_fribidi && (msg = fribidi_parse_line(msg)) != NULL) {
-    msg_alloc = true;
-  }
-#endif
 
   if (!msg) {
     msg = "Select an option";
@@ -86,25 +72,7 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
 
   for (size_t i = 0; i < vec_size; ++i) {
     menu_items[i] = { 0,0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 };
-
-#ifdef WITH_FRIBIDI
-    if (use_fribidi) {
-      if (vec.at(i) == "") {
-        menu_items[i].text = strdup("<EMPTY>");
-      } else {
-        char *tmp = fribidi_parse_line(vec.at(i).c_str());
-        if (tmp) {
-          menu_items[i].text = strdup(tmp);
-          delete tmp;
-        } else {
-          menu_items[i].text = strdup(vec.at(i).c_str());
-        }
-      }
-    } else
-#endif
-    {
-      menu_items[i].text = (vec.at(i) == "") ? "<EMPTY>" : vec.at(i).c_str();
-    }
+    menu_items[i].text = (vec.at(i) == "") ? "<EMPTY>" : vec.at(i).c_str();
   }
 
   menu_items[vec_size] = { 0,0,0,0,0,0,0,0,0 };
@@ -146,15 +114,6 @@ int dialog_dropdown(std::string dropdown_list, bool return_number, char separato
     }
   }
 
-#ifdef WITH_FRIBIDI
-  if (use_fribidi) {
-    for (size_t i = 0; i < vec_size; ++i) {
-      if (menu_items[i].text) {
-        free(const_cast<char *>(menu_items[i].text));
-      }
-    }
-  }
-#endif
   delete[] menu_items;
 
   return ret;

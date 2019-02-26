@@ -108,10 +108,9 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
   ICONIMAGE *icon;
   uchar hdr[6];
   uchar *cursor = NULL, *ico_data, *ptr;
-  unsigned highestRes, offset, numBytes, iconsCount, biBitCount;
-  unsigned shift, shift2;
+  unsigned int highestRes, offset, iconsCount, biBitCount, shift, shift2;
   int biHeight, x, y;
-  long readSize, bytesRead;
+  size_t readSize, bytesRead, numBytes;
 
   w(0); h(0); d(0); ld(0);
   alloc_array = 0;

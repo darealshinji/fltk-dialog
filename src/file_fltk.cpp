@@ -66,7 +66,7 @@ static void *handle = NULL;
 
 #endif  /* DYNAMIC_MAGIC */
 
-#include "octicons_png.h"
+#include "octicons.h"
 
 static Fl_Double_Window *win;
 static Fl_Hold_Browser *br;
@@ -77,21 +77,24 @@ static Fl_Input *input;
 
 static std::string current_dir = "/", home_dir = "/home";
 static int selection = 0;
-static bool show_dotfiles = false, list_files = true;
+static bool show_dotfiles = false, list_files = true, sort_reverse = false;
 static char *selected_file = NULL;
 
 static void br_change_dir(void);
 static void selection_timeout(void);
 static Fl_Timeout_Handler th = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
 
-#define PNG(a,b)  static Fl_PNG_Image a(NULL, src_octicons_##b##_png, src_octicons_##b##_png_len);
+#define PNG(a,b)  static Fl_PNG_Image a(NULL, octicons_##b##_png, octicons_##b##_png_len);
 PNG(eye, eye)
+PNG(eye_closed, eye_closed)
 PNG(go_up, arrow_up)
 PNG(go_up_gray, arrow_up_gray)
 PNG(icon_any, file)
 PNG(icon_dir, file_directory)
 PNG(icon_link_any, file_symlink_file)
 PNG(icon_link_dir, file_symlink_directory)
+PNG(sort_order1, list_ordered_1)
+PNG(sort_order2, list_ordered_2)
 
 /* Format is XDG_xxx_DIR="$HOME/yyy", where yyy is a shell-escaped
  * homedir-relative path, or XDG_xxx_DIR="/yyy", where /yyy is an
@@ -319,8 +322,33 @@ static void home_callback(Fl_Widget *) {
   br_change_dir();
 }
 
-static void hidden_callback(Fl_Widget *) {
-  show_dotfiles = show_dotfiles ? false : true;
+static void hidden_callback(Fl_Widget *o)
+{
+  Fl_Button *b = dynamic_cast<Fl_Button *>(o);
+
+  if (show_dotfiles) {
+    show_dotfiles = false;
+    b->image(eye_closed);
+  } else {
+    show_dotfiles = true;
+    b->image(eye);
+  }
+
+  br_change_dir();
+}
+
+static void sort_callback(Fl_Widget *o)
+{
+  Fl_Button *b = dynamic_cast<Fl_Button *>(o);
+
+  if (sort_reverse) {
+    sort_reverse = false;
+    b->image(sort_order1);
+  } else {
+    sort_reverse = true;
+    b->image(sort_order2);
+  }
+
   br_change_dir();
 }
 
@@ -407,12 +435,16 @@ static void br_callback(Fl_Widget *)
 }
 
 /* make sure to call setlocale(LC_ALL, "") at startup */
-static bool ignorecaseSort(std::string s1, std::string s2) {
+static bool ignorecaseSort(std::string s1, std::string s2)
+{
+  if (sort_reverse) {
+    return (strcoll(s1.c_str(), s2.c_str()) > 0);
+  }
   return (strcoll(s1.c_str(), s2.c_str()) < 0);
 }
 
 /* sort by basename */
-static bool ignorecaseSort2(std::string s1, std::string s2) {
+static bool ignorecaseSortXDG(std::string s1, std::string s2) {
   return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
 }
 
@@ -584,25 +616,31 @@ char *file_chooser(int mode)
       {
         const int bt_w = 36;
 
-        addrline = new Fl_Box(10, 7, w - bt_w*2 - 25, 26, " /");
+        addrline = new Fl_Box(10, 7, w - bt_w*3 - 25, 26, " /");
         addrline->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
         addrline->box(FL_FLAT_BOX);
         addrline->color(fl_lighter(addrline->color()));
 
         /* cover up the end of addrline */
-       { Fl_Box *o = new Fl_Box(w - bt_w*2 - 15, 5, bt_w*2 + 15, 30);
+       { Fl_Box *o = new Fl_Box(w - bt_w*3 - 15, 5, bt_w*3 + 15, 30);
         o->box(FL_FLAT_BOX); }
 
-        bt_up = new Fl_Button(w - bt_w*2 - 10, 5, bt_w, 30);
+        bt_up = new Fl_Button(w - bt_w*3 - 10, 5, bt_w, 30);
         bt_up->tooltip("Parent Directory");
         bt_up->image(go_up_gray);
         bt_up->deactivate();
         bt_up->callback(up_callback);
         bt_up->clear_visible_focus();
 
-       { Fl_Toggle_Button *o = new Fl_Toggle_Button(w - bt_w - 10, 5, bt_w, 30);
-        o->tooltip("Show Hidden Files/Directories");
-        o->image(eye);
+       { Fl_Button *o = new Fl_Button(w - bt_w*2 - 10, 5, bt_w, 30);
+        o->tooltip("Sort Order");
+        o->image(sort_order1);
+        o->callback(sort_callback);
+        o->clear_visible_focus(); }
+
+       { Fl_Button *o = new Fl_Button(w - bt_w - 10, 5, bt_w, 30);
+        o->tooltip("Toggle Hidden Files/Directories");
+        o->image(eye_closed);
         o->callback(hidden_callback);
         o->clear_visible_focus(); }
       }
@@ -652,7 +690,7 @@ char *file_chooser(int mode)
               }
             }
             vec.clear();
-            std::sort(vec2.begin(), vec2.end(), ignorecaseSort2);
+            std::sort(vec2.begin(), vec2.end(), ignorecaseSortXDG);
 
             for (auto it = vec2.begin(); it != vec2.end(); ++it) {
               std::string &s = *it;

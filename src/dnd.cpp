@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,21 +90,8 @@ int dialog_dnd()
   int range;
 
   if (msg) {
-#ifdef WITH_FRIBIDI
-    char *tmp = NULL;
-    if (use_fribidi) {
-      tmp = fribidi_parse_line(msg);
-    }
-    if (tmp) {
-      s = translate(tmp);
-      msg = s.c_str();
-      delete tmp;
-    } else
-#endif
-    {
-      s = translate(msg);
-      msg = s.c_str();
-    }
+    s = translate(msg);
+    msg = s.c_str();
   }
 
   if (!msg) {

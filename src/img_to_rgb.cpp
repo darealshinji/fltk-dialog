@@ -36,8 +36,6 @@
 #include <zlib.h>
 
 #include "fltk-dialog.hpp"
-#include "nanosvg.h"
-#include "nanosvgrast.h"
 #include "ico_image.hpp"
 #include "icns_image.hpp"
 
@@ -47,9 +45,6 @@
 #define SVGZ_MAX        (1024*1024)
 #define SVG_MAX       (3*1024*1024)
 
-#define DEFAULT_DPI  90.0
-#define DEFAULT_WH   64
-#define DEFAULT_WHF  64.0
 
 static bool gzip_uncompress(const char *file, std::string &output)
 {
@@ -117,14 +112,8 @@ static bool gzip_uncompress(const char *file, std::string &output)
 
 static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
 {
-  Fl_RGB_Image *rgb, *rgb_copy;
-  NSVGimage *nsvg;
-  NSVGrasterizer *r;
+  Fl_SVG_Image *svg = NULL;
   std::string data;
-  char *data_copy;
-  unsigned char *img;
-  int w, h;
-  float scalex, scaley;
 
   if (!file) {
     return NULL;
@@ -134,36 +123,28 @@ static Fl_RGB_Image *svg_to_rgb(const char *file, bool compressed)
     if (!gzip_uncompress(file, data)) {
       return NULL;
     }
-    data_copy = strdup(data.c_str());
+    svg = new Fl_SVG_Image(NULL, data.c_str());
     data.clear();
-    nsvg = nsvgParse(data_copy, "px", DEFAULT_DPI);
-    free(data_copy);
   } else {
-    nsvg = nsvgParseFromFile(file, "px", DEFAULT_DPI);
+    svg = new Fl_SVG_Image(file, NULL);
   }
 
-  if (!nsvg->shapes || nsvg->width < 5.0 || nsvg->height < 5.0) {
-    nsvgDelete(nsvg);
+  if (!svg) {
     return NULL;
   }
 
-  scalex = DEFAULT_WHF / nsvg->width;
-  scaley = DEFAULT_WHF / nsvg->height;
-  w = h = DEFAULT_WH;
+  if (svg->fail() < 0) {
+    delete svg;
+    return NULL;
+  }
 
-  img = new unsigned char[w*h*4];
-  r = nsvgCreateRasterizer();
-  nsvgRasterizeXY(r, nsvg, 0, 0, scalex, scaley, img, w, h, w*4);
-  rgb = new Fl_RGB_Image(img, w, h, 4, 0);
-  rgb_copy = dynamic_cast<Fl_RGB_Image *>(rgb->copy());
+  if (svg->w() > 64 || svg->h() > 64) {
+    int w = 0, h = 0;
+    aspect_ratio_scale(w, h, 64);
+    svg->resize(w, h);
+  }
 
-  nsvgDeleteRasterizer(r);
-  nsvgDelete(nsvg);
-  delete img;
-  delete rgb;
-
-  /* need to return a copy */
-  return rgb_copy;
+  return svg;
 }
 
 Fl_RGB_Image *img_to_rgb(const char *file)

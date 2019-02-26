@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,21 +68,8 @@ static void callback(Fl_Widget *)
   }
 }
 
-static void add_line(const char *line, int line_num)
-{
-#ifdef WITH_FRIBIDI
-  char *tmp = NULL;
-  if (use_fribidi) {
-    tmp = fribidi_parse_line(line);
-  }
-  if (tmp) {
-    browser->add(tmp);
-    delete tmp;
-  } else
-#endif
-  {
-    browser->add(line);
-  }
+static void add_line(const char *line, int line_num) {
+  browser->add(line);
 
   if (autoscroll) {
     browser->bottomline(line_num);
@@ -125,7 +112,6 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox, bool autoclose_, boo
   Fl_Group *g;
   Fl_Box *dummy;
   Fl_Button *but_cancel;
-  char buf[512];
   int browser_h = checkbox ? 422 : 444;
   int but_w = 90, win_ret = 0;
   pthread_t t;
@@ -150,22 +136,10 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox, bool autoclose_, boo
         int but_x = win->w();
 
         if (checkbox) {
+          std::string s = std::string{" "} + checkbox;
           checkbutton = new Fl_Check_Button(10, browser_h + 12, 380, 26);
           checkbutton->callback(callback);
-#ifdef WITH_FRIBIDI
-          char *tmp = NULL;
-          if (use_fribidi) {
-            tmp = fribidi_parse_line(checkbox);
-          }
-          if (tmp) {
-            snprintf(buf, sizeof(buf) - 1, " %s", tmp);
-            delete tmp;
-          } else
-#endif
-          {
-            snprintf(buf, sizeof(buf) - 1, " %s", checkbox);
-          }
-          checkbutton->copy_label(buf);
+          checkbutton->copy_label(s.c_str());
           checkbutton->deactivate();
           checkbutton_set = false;
         }

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,6 @@ static Fl_Progress      *bar = NULL, *bar_main = NULL;
 static int ret = 1;
 static pthread_t t1, t2;
 
-#ifdef WITH_FRIBIDI
-static bool msg_alloc = false;
-#endif
-
 static
 unsigned int percent = 0
 ,            multi = 1
@@ -132,17 +128,11 @@ loop_bar::loop_bar(int X, int Y, int W, int H)
   slider_size(DEFAULT_SLIDER_SIZE);
 }
 
-static void close_cb(Fl_Widget *, long p)
-{
+static void close_cb(Fl_Widget *, long p) {
   pthread_cancel(t1);
   pthread_cancel(t2);
   win->hide();
   ret = p;
-#ifdef WITH_FRIBIDI
-  if (msg_alloc && msg) {
-    delete msg;
-  }
-#endif
 }
 
 static void cancel_cb(Fl_Widget *o)
@@ -175,19 +165,7 @@ static void parse_line(const char *ch)
   if (running) {
     if (ch[0] == '#' && ch[1] != '\0') {
       /* "#comment" line found, change the label */
-#ifdef WITH_FRIBIDI
-      char *tmp = NULL;
-      if (use_fribidi) {
-        tmp = fribidi_parse_line(ch + 1);
-      }
-      if (tmp) {
-        box->copy_label(tmp);
-        delete tmp;
-      } else
-#endif
-      {
-        box->copy_label(ch + 1);
-      }
+      box->copy_label(ch + 1);
     } else if (!pulsate && ch[0] >= '0' && ch[0] <= '9') {
       char buf[16] = {0};
 
@@ -281,12 +259,6 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclos
   Fl_Group *g;
   Fl_Box *dummy;
   int h = 140, offset = 0, range = 80;
-
-#ifdef WITH_FRIBIDI
-  if (msg && use_fribidi && (msg = fribidi_parse_line(msg)) != NULL) {
-    msg_alloc = true;
-  }
-#endif
 
   if (!msg) {
     msg = "Progress indicator";

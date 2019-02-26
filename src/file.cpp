@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,26 +30,77 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
+
+/* from Fl_Native_File_Chooser_GTK.cxx */
+class Fl_GTK_Native_File_Chooser_Driver : public Fl_Native_File_Chooser_FLTK_Driver
+{
+  friend class Fl_Native_File_Chooser;
+  friend class My_GTK_File_Chooser;
+private:
+  static int have_looked_for_GTK_libs;
+  typedef struct _GtkWidget GtkWidget;
+  typedef struct _GtkFileFilterInfo GtkFileFilterInfo;
+  struct pair {
+    Fl_GTK_Native_File_Chooser_Driver *running;
+    const char *filter;
+    pair(Fl_GTK_Native_File_Chooser_Driver *c, const char *f) {
+      running = c;
+      filter = strdup(f);
+    };
+    ~pair() {
+      free(const_cast<char *>(filter));
+    };
+  };
+  GtkWidget *gtkw_ptr;
+  void *gtkw_slist;
+  unsigned gtkw_count;
+  mutable char *gtkw_filename;
+  char *gtkw_title;
+  const char *previous_filter;
+  int fl_gtk_chooser_wrapper();
+  Fl_GTK_Native_File_Chooser_Driver(int val);
+  virtual ~Fl_GTK_Native_File_Chooser_Driver();
+  static int did_find_GTK_libs;
+  static void probe_for_GTK_libs(void);
+  virtual void type(int);
+  virtual int count() const;
+  virtual const char *filename() const;
+  virtual const char *filename(int i) const;
+  virtual void title(const char *);
+  virtual const char *title() const;
+  virtual int show();
+  void changed_output_type(const char *filter);
+  static int custom_gtk_filter_function(const GtkFileFilterInfo*, Fl_GTK_Native_File_Chooser_Driver::pair*);
+  static void free_pair(pair *p);
+};
+
 class My_GTK_File_Chooser
 {
-  Fl_GTK_File_Chooser *_fc;
+  Fl_GTK_Native_File_Chooser_Driver *_fc;
+
 public:
   My_GTK_File_Chooser(int type, const char *label);
   ~My_GTK_File_Chooser();
-  int show() { return _fc ? _fc->show() : -1; }
-  const char *filename() { return _fc ? _fc->filename() : NULL; }
+
+  int show() {
+    return _fc ? _fc->show() : -1;
+  }
+
+  const char *filename() {
+    return _fc ? _fc->filename() : NULL;
+  }
 };
 
 My_GTK_File_Chooser::My_GTK_File_Chooser(int type, const char *label)
 {
   _fc = NULL;
 
-  if (Fl_GTK_File_Chooser::did_find_GTK_libs == 0) {
-    Fl_GTK_File_Chooser::probe_for_GTK_libs();
+  if (Fl_GTK_Native_File_Chooser_Driver::did_find_GTK_libs == 0) {
+    Fl_GTK_Native_File_Chooser_Driver::probe_for_GTK_libs();
   }
 
-  if (Fl_GTK_File_Chooser::did_find_GTK_libs != 0) {
-    _fc = new Fl_GTK_File_Chooser(type);
+  if (Fl_GTK_Native_File_Chooser_Driver::did_find_GTK_libs != 0) {
+    _fc = new Fl_GTK_Native_File_Chooser_Driver(type);
     _fc->title(label);
   }
 }
@@ -60,6 +111,7 @@ My_GTK_File_Chooser::~My_GTK_File_Chooser()
     delete _fc;
   }
 }
+
 
 static int file_chooser_fltk(int mode)
 {
@@ -75,12 +127,8 @@ static int file_chooser_fltk(int mode)
 
 static int native_file_chooser_gtk(int mode)
 {
-  My_GTK_File_Chooser *fc;
-
-  int type = (mode == DIR_CHOOSER) ? Fl_Native_File_Chooser::BROWSE_DIRECTORY
-    : Fl_Native_File_Chooser::BROWSE_FILE;
-
-  fc = new My_GTK_File_Chooser(type, title);
+  int type = (mode == DIR_CHOOSER) ? Fl_Native_File_Chooser::BROWSE_DIRECTORY : Fl_Native_File_Chooser::BROWSE_FILE;
+  My_GTK_File_Chooser *fc = new My_GTK_File_Chooser(type, title);
 
   if (fc->show() == 0) {
     std::cout << quote << fc->filename() << quote << std::endl;

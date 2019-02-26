@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,31 +109,9 @@ static void notification_box(double time_s, Fl_RGB_Image *rgb)
   Fl_Image *img = NULL;
   std::string title_wrapped, message_wrapped;
 
-#ifdef WITH_FRIBIDI
-  bool title_alloc = false, msg_alloc = false;
-
-  if (use_fribidi) {
-    if (title && (title = fribidi_parse_line(title)) != NULL) {
-      title_alloc = true;
-    }
-    if (msg && (msg = fribidi_parse_line(msg)) != NULL) {
-      msg_alloc = true;
-    }
-  }
-#endif
-
   n = w - limit - 30;
   title_wrapped = text_wrap(title, n, font_t, fs_title);
   message_wrapped = text_wrap(msg, n, font, fs_message);
-
-#ifdef WITH_FRIBIDI
-  if (title_alloc && title) {
-    delete title;
-  }
-  if (msg_alloc && msg) {
-    delete msg;
-  }
-#endif
 
   fl_font(font, fs_title);
   fl_measure(title_wrapped.c_str(), n = 0, title_h);

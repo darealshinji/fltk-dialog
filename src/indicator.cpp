@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2018-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -290,7 +290,7 @@ static void check_icons(const char *icon)
   }
 
   if (!rgb) {
-    rgb = new Fl_PNG_Image(NULL, src_image_missing_png, src_image_missing_png_len);
+    rgb = new Fl_PNG_Image(NULL, image_missing_png, image_missing_png_len);
   }
 }
 
@@ -393,7 +393,7 @@ static int create_tray_entry_xlib(const char *icon)
   }
 
   if (!rgb) {
-    rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
+    rgb = new Fl_PNG_Image(NULL, icon_png, icon_png_len);
   }
 
   Fl::add_timeout(0.005, set_size);  /* 5 ms */
@@ -421,7 +421,7 @@ static int dlopen_start_indicator_qt(const char *icon)
     return -1;
   }
 
-  if ((!icon || strlen(icon) == 0) && save_to_temp(src_icon_png, src_icon_png_len, ".png", tmp)) {
+  if ((!icon || strlen(icon) == 0) && save_to_temp(icon_png, icon_png_len, ".png", tmp)) {
     icon = tmp.c_str();
   }
 

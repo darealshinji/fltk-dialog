@@ -42,13 +42,8 @@ static const char *text = "\n"
   PROJECT_URL "\n"
   "\n"
   "The FLTK library and the font widget are\n"
-  "copyright \xc2\xa9 1998-2016 by Bill Spitzak and others.\n"
+  "copyright \xc2\xa9 1998-2019 by Bill Spitzak and others.\n"
   "\n"
-  #ifdef WITH_FRIBIDI
-  "The FriBidi parsing code is copyright \xc2\xa9 2003-2011\n"
-  "by the FFmpeg developers and contributors.\n"
-  "\n"
-  #endif
   "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
 
 static void callback(Fl_Widget *o)
@@ -90,7 +85,7 @@ int about()
   const int w = 500, h = 500;
   int range_w = 40;
 
-  Fl_PNG_Image *logo = new Fl_PNG_Image(NULL, src_fltk_png, src_fltk_png_len);
+  Fl_PNG_Image *logo = new Fl_PNG_Image(NULL, fltk_png, fltk_png_len);
   int logo_h = logo->h();
 
   win = new Fl_Double_Window(w, h, "FLTK dialog");

@@ -1,6 +1,3 @@
 [submodule "fltk"]
 	path = fltk
-	url = https://github.com/darealshinji/fltk-1.3.4
-[submodule "fribidi"]
-	path = fribidi
-	url = https://github.com/fribidi/fribidi
+	url = https://github.com/fltk/fltk

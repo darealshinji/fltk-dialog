@@ -2,28 +2,28 @@ dist: trusty
 language: cpp
 compiler: gcc
 
+git:
+  depth: 3
+
 addons:
   apt:
     packages:
-      - autoconf
-      - automake
+      - cmake
+      - libpango1.0-dev
       - libx11-dev
       - libxcursor-dev
       - libxext-dev
       - libxfixes-dev
       - libxft-dev
       - libxinerama-dev
-      - cmake
-      - libqt4-dev
       - qtbase5-dev
 
 script:
-  - ./autogen.sh && ./configure --enable-hardening && make -j4 V=1
+  - ./build.sh
 
 after_success:
-  - mkdir out && cp fltk-dialog out/ && strip --strip-all out/fltk-dialog
-  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  - bash ./upload.sh out/*
+  - #mkdir out && cp build/fltk_dialog/fltk-dialog out/
+  - #test $TRAVIS_BRANCH != master || bash ./.upload.sh out/*
 
 branches:
   except:

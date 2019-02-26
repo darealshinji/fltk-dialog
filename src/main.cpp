@@ -50,10 +50,6 @@ const char *title = NULL;
 const char *msg = NULL;
 const char *quote = "";
 
-#ifdef WITH_FRIBIDI
-bool use_fribidi = true;
-#endif
-
 int max_w = -1
 ,   max_h = -1
 ,   override_x = -1
@@ -104,7 +100,7 @@ int main(int argc, char **argv)
     Fl::get_system_colors();
     Fl::scheme("gtk+");
     Fl::visual(FL_DOUBLE|FL_INDEX);
-    Fl_Window::default_icon(new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len));
+    Fl_Window::default_icon(new Fl_PNG_Image(NULL, icon_png, icon_png_len));
     l10n();
     position_center = true;
     return about();
@@ -141,9 +137,6 @@ int main(int argc, char **argv)
   ARG_T  arg_no_system_colors(ap, "no-system-colors", "Use FLTK's default gray color scheme", {"no-system-colors"})
   ,      arg_undecorated(ap, "undecorated", "Set window undecorated", {"undecorated"})
   ,      arg_skip_taskbar(ap, "skip-taskbar", "Don't show window in taskbar", {"skip-taskbar"})
-#ifdef WITH_FRIBIDI
-  ,      arg_disable_fribidi(ap, "disable-fribidi", "Disable fribidi support", {"disable-fribidi"})
-#endif
   ,      arg_message(ap, "message", "Display message dialog", {"message"})
   ,      arg_warning(ap, "warning", "Display warning dialog", {"warning"})
   ,      arg_question(ap, "question", "Display question dialog", {"question"})
@@ -315,9 +308,6 @@ int main(int argc, char **argv)
   resizable = arg_fixed ? false : true;
   position_center = arg_center;
   always_on_top = arg_always_on_top;
-#ifdef WITH_FRIBIDI
-  use_fribidi = arg_disable_fribidi ? false : true;
-#endif
 
   quote = arg_quoted_output ? "\"" : "";
 
@@ -555,7 +545,7 @@ int main(int argc, char **argv)
     Fl_RGB_Image *rgb = img_to_rgb(icon);
 
     if (!rgb) {
-      rgb = new Fl_PNG_Image(NULL, src_icon_png, src_icon_png_len);
+      rgb = new Fl_PNG_Image(NULL, icon_png, icon_png_len);
     }
 
     Fl_Window::default_icon(rgb);

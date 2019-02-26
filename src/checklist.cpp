@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,19 +76,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
         browser->clear_visible_focus();
         for (auto it = vec.begin(); it != vec.end(); ++it) {
           std::string &s = *it;
-#ifdef WITH_FRIBIDI
-          char *tmp = NULL;
-          if (use_fribidi) {
-            tmp = fribidi_parse_line(s.c_str());
-          }
-          if (tmp) {
-            browser->add(tmp);
-            delete tmp;
-          } else
-#endif
-          {
-            browser->add(s.c_str());
-          }
+          browser->add(s.c_str());
         }
         if (check_all) {
           browser->check_all();

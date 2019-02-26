@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2018-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -282,7 +282,7 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
 
   if (icon && strlen(icon) > 0) {
     set_icon(icon, indicator);
-  } else if (save_to_temp(src_icon_png, src_icon_png_len, ".png", out)) {
+  } else if (save_to_temp(icon_png, icon_png_len, ".png", out)) {
     app_indicator_set_icon (indicator, out.substr(5, out.length() - 9).c_str());
     app_indicator_set_icon_theme_path (indicator, "/tmp");
   }

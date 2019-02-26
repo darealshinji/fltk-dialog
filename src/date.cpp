@@ -40,15 +40,11 @@ public:
     step(1);
   }
 
-#if FLTK_ABI_VERSION >= 10301
   void maximum_size(int m) {
     if (m > 0) {
       input_.maximum_size(m);
     }
   }
-#else
-  void maximum_size(int) {}
-#endif
 };
 
 static Fl_Double_Window *win;

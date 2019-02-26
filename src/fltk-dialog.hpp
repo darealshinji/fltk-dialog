@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,7 @@
 #include <FL/Fl_GIF_Image.H>
 #include <FL/Fl_JPEG_Image.H>
 #include <FL/Fl_PNG_Image.H>
+#include <FL/Fl_SVG_Image.H>
 #include <FL/Fl_XBM_Image.H>
 #include <FL/Fl_XPM_Image.H>
 
@@ -104,8 +105,16 @@
 # define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
 #endif
 
+#ifdef FLTK_GIT_HASH
+# define _FLTK_GIT_HASH " git" XSTRINGIFY(FLTK_GIT_HASH)
+#else
+# define _FLTK_GIT_HASH ""
+#endif
 #define FLTK_VERSION_STRING \
-  XSTRINGIFY(FL_MAJOR_VERSION) "." XSTRINGIFY(FL_MINOR_VERSION) "." XSTRINGIFY(FL_PATCH_VERSION)
+  XSTRINGIFY(FL_MAJOR_VERSION) "." \
+  XSTRINGIFY(FL_MINOR_VERSION) "." \
+  XSTRINGIFY(FL_PATCH_VERSION) \
+  _FLTK_GIT_HASH
 
 enum {
   DIALOG_ABOUT,
@@ -207,9 +216,6 @@ int leap_year(int y);
 
 #ifdef HAVE_QT
 void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func);
-#endif
-#ifdef WITH_FRIBIDI
-char *fribidi_parse_line(const char *input);
 #endif
 
 int dialog_message(int type = MESSAGE_TYPE_WARNING
