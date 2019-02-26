@@ -6,7 +6,6 @@ addons:
   apt:
     packages:
       - autoconf
-      - automake
       - libx11-dev
       - libxcursor-dev
       - libxext-dev
@@ -22,8 +21,7 @@ script:
 
 after_success:
   - mkdir out && cp fltk-dialog out/ && strip --strip-all out/fltk-dialog
-  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  - bash ./upload.sh out/*
+  - test $TRAVIS_BRANCH != master || bash ./.upload.sh out/*
 
 branches:
   except:

@@ -13,5 +13,5 @@ fi
 rm -rf autom4te.cache
 
 set -x
-autoreconf -if
+autoconf -f
 
