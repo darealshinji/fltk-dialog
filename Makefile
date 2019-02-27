@@ -224,10 +224,13 @@ src/main.cpp src/file.cpp: icon_png.h
 OCTICONS = src/octicons/arrow-up-gray.png \
 	src/octicons/arrow-up.png \
 	src/octicons/eye.png \
+	src/octicons/eye-closed.png \
 	src/octicons/file-directory.png \
 	src/octicons/file.png \
 	src/octicons/file-symlink-directory.png \
-	src/octicons/file-symlink-file.png
+	src/octicons/file-symlink-file.png \
+	src/octicons/list-ordered-1.png \
+	src/octicons/list-ordered-2.png
 
 fltk_png.h: src/fltk.png
 	$(msg_GENH)

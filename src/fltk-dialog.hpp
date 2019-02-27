@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,6 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Tile.H>
-#include <FL/Fl_Toggle_Button.H>
 #include <FL/Fl_Valuator.H>
 
 #include <FL/Fl_RGB_Image.H>
