@@ -13,7 +13,6 @@ addons:
       - libxft-dev
       - libxinerama-dev
       - cmake
-      - libqt4-dev
       - qtbase5-dev
 
 script:
