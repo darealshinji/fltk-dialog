@@ -87,15 +87,15 @@ void set_size(Fl_Double_Window *o, Fl_Widget *w)
 
 void set_size_range(Fl_Double_Window *o, int min_w, int min_h) {
   if (resizable) {
-    o->size_range(min_w, min_h, max_w, max_h);
+    o->size_range(min_w, min_h, Fl::w(), Fl::h());
   }
 }
 
 void set_position(Fl_Double_Window *o)
 {
   if (position_center) {
-    override_x = (max_w - o->w()) / 2;
-    override_y = (max_h - o->h()) / 2;
+    override_x = (Fl::w() - o->w()) / 2;
+    override_y = (Fl::h() - o->h()) / 2;
   }
   if (override_x >= 0) {
     o->position(override_x, o->y());

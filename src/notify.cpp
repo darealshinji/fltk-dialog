@@ -37,6 +37,7 @@
 #include "fltk-dialog.hpp"
 
 static Fl_Double_Window *win;
+static int win_x, win_y;
 
 class close_box : public Fl_Box
 {
@@ -60,13 +61,18 @@ static void callback(void *)
 {
   const int step = 10; /* pixels */
   const int fadeout_ms = 500;
+  int max_w, bord, usec;
 
-  int bord = Fl::w() - win->x() - win->w();
-  int usec = (fadeout_ms*1000) / ((win->w() + bord)/step);
+  /* Workaround for a bug, see https://www.fltk.org/str.php?L3515+P0+S-2+C0+I0+E0+V1+Q */
+  win->position(win_x, win_y);
+
+  max_w = Fl::w();
+  bord = max_w - win->x() - win->w();
+  usec = (fadeout_ms*1000) / ((win->w() + bord)/step);
 
   /* move to right screen boundary until the remaining
    * space is smaller than "step" */
-  while ((Fl::w() - win->x() - win->w()) > step) {
+  while ((max_w - win->x() - win->w()) > step) {
     win->position(win->x() + step, win->y());
     Fl::flush();
     usleep(usec);
@@ -74,18 +80,18 @@ static void callback(void *)
 
   /* make window "step - [remaining space]" pixels smaller and
    * move to right screen boundary */
-  bord = Fl::w() - win->x() - win->w();
+  bord = max_w - win->x() - win->w();
   if (bord > 0) {
     win->size(win->w() - step + bord, win->h());
-    win->position(win->x() + bord, win->y());
+    win->position(max_w - win->w() + 2, win->y());
     Fl::flush();
     usleep(usec);
   }
 
   /* make window smaller until its width is less than "step" */
-  while (win->w() > step) {
+  while (win->w() > step*2) {
     win->size(win->w() - step, win->h());
-    win->position(win->x() + step, win->y());
+    win->position(max_w - win->w() + 2, win->y());
     Fl::flush();
     usleep(usec);
   }
@@ -123,7 +129,10 @@ static void notification_box(double time_s, Fl_RGB_Image *rgb)
     h = n;
   }
 
-  win = new Fl_Double_Window(Fl::w() - 10 - w, 10, w, h);
+  win_x = Fl::w() - 10 - w;
+  win_y = 10;
+
+  win = new Fl_Double_Window(win_x, win_y, w, h);
   win->color(FL_WHITE);  /* outline color */
   {
     { /* background color */

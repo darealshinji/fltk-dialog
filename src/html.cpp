@@ -61,8 +61,8 @@ int dialog_html_viewer(const char *file)
   }
 
   if (position_center) {
-    new_x = (max_w - new_w) / 2;
-    new_y = (max_h - new_h) / 2;
+    new_x = (Fl::w() - new_w) / 2;
+    new_y = (Fl::h() - new_h) / 2;
   } else {
     if (override_x >= 0) {
       new_x = override_x;
@@ -80,7 +80,7 @@ int dialog_html_viewer(const char *file)
   }
 
   if (resizable) {
-    o->size_range(340, 100, max_w, max_h);
+    o->size_range(340, 100, Fl::w(), Fl::h());
   } else {
     o->size_range(o->w(), o->h(), o->w(), o->h());
   }

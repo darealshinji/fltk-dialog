@@ -50,9 +50,7 @@ const char *title = NULL;
 const char *msg = NULL;
 const char *quote = "";
 
-int max_w = -1
-,   max_h = -1
-,   override_x = -1
+int override_x = -1
 ,   override_y = -1
 ,   override_w = -1
 ,   override_h = -1;
@@ -561,10 +559,6 @@ int main(int argc, char **argv)
   if (arg_no_escape) {
     Fl::add_handler(esc_handler);
   }
-
-  /* get dimensions of the main screen work area */
-  max_w = Fl::w();
-  max_h = Fl::h();
 
   switch (dialog) {
     case DIALOG_ABOUT:
