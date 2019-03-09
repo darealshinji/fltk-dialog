@@ -231,11 +231,12 @@ int main(int argc, char **argv)
                        "value may be ignored by some desktop environments)", {"libnotify"});
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
-  ARG_T unused_arg1(g_file_dir_options, "native", "Use the operating system's native indicator system", {"native"});
+  ARG_T unused_arg1(g_indicator_options, "native", "Use the operating system's native indicator system (default)", {"native"});
 #ifdef HAVE_QT
-  ARG_T unused_arg2(g_file_dir_options, "native-gtk", "Use the Gtk+ indicator (libappindicator)", {"native-gtk"})
-  ,     unused_arg3(g_file_dir_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
+  ARG_T unused_arg2(g_indicator_options, "native-gtk", "Use the Gtk+ indicator (libappindicator)", {"native-gtk"})
+  ,     unused_arg3(g_indicator_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
 #endif
+  ARG_T arg_legacy(g_indicator_options, "legacy", "Use the legacy X11 indicator system", {"legacy"});
   ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
   ,      unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
                      {"auto-close"});
@@ -412,7 +413,7 @@ int main(int argc, char **argv)
   }
 
   int native_mode = NATIVE_NONE;
-  if (arg_native) {
+  if (arg_native || arg_indicator) {
     native_mode = NATIVE_ANY;
   }
 
@@ -436,6 +437,9 @@ int main(int argc, char **argv)
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     GETCSTR(indicator_command, arg_indicator);
+    if (arg_legacy) {
+      native_mode = NATIVE_NONE;
+    }
   }
 
   /* progress */
