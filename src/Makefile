@@ -70,7 +70,7 @@ _SRCS = \
   textinfo.cpp \
   $(NULL)
 
-GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h image_missing_png.h icon_png.h octicons.h)
+GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h image_missing_svg.h icon_png.h octicons.h)
 ifneq ($(HAVE_QT),)
 GENHDRS += $(BUILDDIR)/qtplugin_so.h
 endif
@@ -114,8 +114,11 @@ $(SRCS): $(GENHDRS)
 $(BUILDDIR)/fltk_png.h: $(SOURCEDIR)/fltk.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) fltk.png > $@
 
-$(BUILDDIR)/image_missing_png.h: $(SOURCEDIR)/image-missing.png
-	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) image-missing.png > $@
+$(BUILDDIR)/image_missing_svg.h: $(SOURCEDIR)/image-missing.svg
+	$(msg_GEN)cd $(SOURCEDIR) && \
+  echo 'const char image_missing_svg[] = {' > $@ && \
+  $(XXDCMD) < $< >> $@ && \
+  echo ', 0x00 };' >> $@
 
 $(BUILDDIR)/icon_png.h: $(SOURCEDIR)/icon.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@

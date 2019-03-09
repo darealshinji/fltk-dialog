@@ -42,7 +42,7 @@
 /* From the Tango icon theme, released into the Public Domain.
  * https://commons.wikimedia.org/wiki/File:Image-missing.svg
  */
-#include "image_missing_png.h"
+#include "image_missing_svg.h"
 
 #define ICON_SCALE  0.72
 #define ICON_MIN    4
@@ -113,6 +113,7 @@ menu_entry::menu_entry(int X, int Y, int W, int H, const char *L)
 
 static Fl_Single_Window *win = NULL;
 static Fl_RGB_Image *rgb = NULL;
+static Fl_SVG_Image *svg = NULL;
 static simple_button *but = NULL;
 static menu_window *menu = NULL;
 
@@ -204,6 +205,9 @@ static void close_windows(void)
   if (rgb) {
     delete rgb;
   }
+  if (svg) {
+    delete svg;
+  }
 }
 
 static void close_cb(Fl_Widget *, long exec_command)
@@ -290,7 +294,7 @@ static void check_icons(const char *icon)
   }
 
   if (!rgb) {
-    rgb = new Fl_PNG_Image(NULL, image_missing_png, image_missing_png_len);
+    svg = new Fl_SVG_Image(NULL, image_missing_svg);
   }
 }
 
@@ -314,7 +318,13 @@ extern "C" void *getline_xlib(void *)
         /* make icon a bit smaller than the area */
         int n = but->w();
         if ((n *= ICON_SCALE) > ICON_MIN) {
-          but->image(rgb->copy(n, n));
+          if (rgb) {
+            but->image(rgb->copy(n, n));
+            delete rgb;
+          } else {
+            but->image(svg->copy(n, n));
+            delete svg;
+          }
         }
 
         win->redraw();
@@ -322,8 +332,7 @@ extern "C" void *getline_xlib(void *)
         Fl::unlock();
         Fl::awake(win);
 
-        delete rgb;
-        rgb = NULL;
+        rgb = svg = NULL;
       }
       usleep(300000);  /* 300ms */
     }
@@ -333,10 +342,10 @@ extern "C" void *getline_xlib(void *)
 
 static int create_tray_entry_xlib(const char *icon)
 {
-  Fl_Color flcol = 0;
   Window dock;
   XEvent ev;
-  XColor xcol;
+  Fl_Color flcol = 0;
+  XColor xcol = {0};
   XImage *image;
   char atom_tray_name[128];
 
