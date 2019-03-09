@@ -59,16 +59,16 @@ static void close_cb(Fl_Widget *, void *) {
 
 static void callback(void *)
 {
-  const int step = 10; /* pixels */
-  const int fadeout_ms = 500;
-  int max_w, bord, usec;
-
-  /* Workaround for a bug, see https://www.fltk.org/str.php?L3515+P0+S-2+C0+I0+E0+V1+Q */
+  /* Make sure the XY positions remain the same inside the callback function,
+   * see https://www.fltk.org/str.php?L3515+P0+S-2+C0+I0+E0+V1.3%25+Q
+   */
   win->position(win_x, win_y);
 
-  max_w = Fl::w();
-  bord = max_w - win->x() - win->w();
-  usec = (fadeout_ms*1000) / ((win->w() + bord)/step);
+  const int step = 10; /* pixels */
+  const int fadeout_ms = 500;
+  const int max_w = Fl::w();
+  int bord = max_w - win->x() - win->w();
+  const int usec = (fadeout_ms*1000) / ((win->w() + bord)/step);
 
   /* move to right screen boundary until the remaining
    * space is smaller than "step" */
