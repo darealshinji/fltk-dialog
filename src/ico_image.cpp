@@ -230,7 +230,7 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
 
     /* take over pointer of Fl_PNG_Image's array */
     array = png->array;
-    alloc_array = png->alloc_array;
+    alloc_array = 1;
     png->array = NULL;
     png->alloc_array = 0;
 
@@ -342,10 +342,9 @@ ico_image::ico_image(const char *filename) : Fl_RGB_Image(0,0,0)
   } else {
     /* unsupported color format */
     w(0); h(0); d(0); ld(ERR_FORMAT);
-    if (alloc_array == 1) {
-      delete array;
-    }
     delete ico_data;
+    delete array;
+    alloc_array = 0;
     return;
   }
 
