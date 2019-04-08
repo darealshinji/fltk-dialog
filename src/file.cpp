@@ -80,7 +80,10 @@ class My_GTK_File_Chooser
 
 public:
   My_GTK_File_Chooser(int type, const char *label);
-  ~My_GTK_File_Chooser();
+
+  ~My_GTK_File_Chooser() {
+    if (_fc) { delete _fc; }
+  }
 
   int show() {
     return _fc ? _fc->show() : -1;
@@ -104,14 +107,6 @@ My_GTK_File_Chooser::My_GTK_File_Chooser(int type, const char *label)
     _fc->title(label);
   }
 }
-
-My_GTK_File_Chooser::~My_GTK_File_Chooser()
-{
-  if (_fc) {
-    delete _fc;
-  }
-}
-
 
 static int file_chooser_fltk(int mode)
 {

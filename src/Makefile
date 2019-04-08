@@ -20,6 +20,11 @@ CXXFLAGS ?= -Wall -O2
 LDFLAGS ?= -lfltk -lfltk_images
 #LDFLAGS ?= $(shell fltk-config --use-images --ldlags)
 
+ifneq ($(USE_EXTERNAL_PLUGINS),)
+DEFINES += -DUSE_EXTERNAL_PLUGINS
+LDFLAGS += -Wl,-rpath,'$$ORIGIN/../lib/fltk-dialog:$$ORIGIN'
+endif
+
 BIN_CXXFLAGS = $(DEFINES) $(INCLUDES) $(CXXFLAGS) $(CPPFLAGS)
 BIN_LDFLAGS  = $(LDFLAGS)
 
@@ -72,7 +77,9 @@ _SRCS = \
 
 GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h image_missing_svg.h icon_png.h octicons.h)
 ifneq ($(HAVE_QT),)
+#ifneq ($(USE_EXTERNAL_PLUGINS),)
 GENHDRS += $(BUILDDIR)/qtplugin_so.h
+#endif
 endif
 
 SRCS = $(addprefix $(SOURCEDIR)/,$(_SRCS))

@@ -93,17 +93,13 @@
   PROTO(type,func,param) \
   func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func)));
 
-#ifdef USE_SYSTEM_PLUGINS
-# define DELETE(x)
+#ifdef USE_EXTERNAL_PLUGINS
+# define DELETE(x)  /**/
 #else
 # define DELETE(x)  unlink(x);
 #endif
 
 #define PROJECT_URL "https://github.com/darealshinji/fltk-dialog"
-
-#ifndef FLTK_DIALOG_MODULE_PATH
-# define FLTK_DIALOG_MODULE_PATH "/usr/local/lib/fltk-dialog"
-#endif
 
 #ifdef FLTK_GIT_HASH
 # define _FLTK_GIT_HASH " git" XSTRINGIFY(FLTK_GIT_HASH)

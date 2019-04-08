@@ -7,6 +7,10 @@ DEF_CFLAGS="-Wall -O3 -ffunction-sections -fdata-sections"
 DEF_CXXFLAGS="$DEF_CFLAGS -std=c++11"
 DEF_LDFLAGS="-Wl,-O1 -Wl,--gc-sections -Wl,-z,defs -Wl,--as-needed"
 
+external_plugins=""
+if [ "x$1" = "x--external-plugins" ]; then
+  external_plugins="yes"
+fi
 
 mkdir -p build
 
@@ -59,6 +63,8 @@ if [ -f fltk/fltk_git_hash ]; then
   define_git_hash="-DFLTK_GIT_HASH=$(cat fltk/fltk_git_hash)"
 fi
 
+V=1 \
+USE_EXTERNAL_PLUGINS="$external_plugins" \
 CXXFLAGS="$DEF_CXXFLAGS -I$PWD/fltk -I$PWD/../fltk $(./fltk/bin/fltk-config --use-images --cxxflags) $define_git_hash" \
 LDFLAGS="$DEF_LDFLAGS -L$PWD/fltk/lib $(./fltk/bin/fltk-config --use-images --ldflags)" \
 QT_CXXFLAGS="$DEF_CXXFLAGS $(pkg-config --cflags Qt5Widgets Qt5Core)" \
@@ -68,6 +74,9 @@ SOURCEDIR="$PWD/../src" \
   make -j$JOBS -f ../src/Makefile
 
 cp -f fltk_dialog/fltk-dialog ..
+if [ "x$external_plugins" != "x" ]; then
+  cp -f fltk_dialog/qtplugin.so ..
+fi
 
 cd -
 strip --strip-all fltk-dialog

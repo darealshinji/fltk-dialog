@@ -36,9 +36,9 @@
 
 #ifdef HAVE_QT
 # include <dlfcn.h>
-# ifndef USE_SYSTEM_PLUGINS
+# ifndef USE_EXTERNAL_PLUGINS
 #  include "qtplugin_so.h"
-# endif  /* !USE_SYSTEM_PLUGINS */
+# endif  /* !USE_EXTERNAL_PLUGINS */
 #endif  /* HAVE_QT */
 
 #include "fltk-dialog.hpp"
@@ -342,13 +342,13 @@ int leap_year(int y)
 #ifdef HAVE_QT
 void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
 {
-#ifdef USE_SYSTEM_PLUGINS
-  plugin = FLTK_DIALOG_MODULE_PATH "/qtplugin.so";
+#ifdef USE_EXTERNAL_PLUGINS
+  plugin = "qtplugin.so";
 #else
   if (!save_to_temp(qtplugin_so, qtplugin_so_len, ".so", plugin)) {
     return NULL;
   }
-#endif  /* USE_SYSTEM_PLUGINS */
+#endif  /* USE_EXTERNAL_PLUGINS */
 
   handle = dlopen(plugin.c_str(), RTLD_LAZY);
   char *error = dlerror();
