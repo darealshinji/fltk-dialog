@@ -93,12 +93,6 @@
   PROTO(type,func,param) \
   func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func)));
 
-#ifdef USE_EXTERNAL_PLUGINS
-# define DELETE(x)  /**/
-#else
-# define DELETE(x)  unlink(x);
-#endif
-
 #define PROJECT_URL "https://github.com/darealshinji/fltk-dialog"
 
 #ifdef FLTK_GIT_HASH

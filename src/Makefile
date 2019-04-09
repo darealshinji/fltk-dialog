@@ -11,26 +11,27 @@ DEFINES += -DDYNAMIC_NOTIFY
 DEFINES += -DDYNAMIC_MAGIC
 ifneq ($(HAVE_QT),)
 DEFINES += -DHAVE_QT
+ifneq ($(USE_EXTERNAL_PLUGINS),)
+DEFINES += -DUSE_EXTERNAL_PLUGINS
+endif
 endif
 
 INCLUDES += -I$(BUILDDIR) -I$(SOURCEDIR)
 
+CFLAGS ?= -Wall -O2
 CXXFLAGS ?= -Wall -O2
 #CXXFLAGS ?= $(shell fltk-config --use-images --cflags)
 LDFLAGS ?= -lfltk -lfltk_images
 #LDFLAGS ?= $(shell fltk-config --use-images --ldlags)
 
-ifneq ($(USE_EXTERNAL_PLUGINS),)
-DEFINES += -DUSE_EXTERNAL_PLUGINS
-LDFLAGS += -Wl,-rpath,'$$ORIGIN/../lib/fltk-dialog:$$ORIGIN'
-endif
-
+BIN_CFLAGS = $(INCLUDES) $(CFLAGS) $(CPPFLAGS)
 BIN_CXXFLAGS = $(DEFINES) $(INCLUDES) $(CXXFLAGS) $(CPPFLAGS)
 BIN_LDFLAGS  = $(LDFLAGS)
 
 #QT_CXXFLAGS ?= -Wall -O2 $(shell pkg-config --cflags Qt5Widgets Qt5Core)
 #QT_LDFLAGS ?= $(shell pkg-config --libs Qt5Widgets Qt5Core)
 
+CC ?= gcc
 CXX ?= g++
 XXDCMD ?= xxd -i
 
@@ -75,6 +76,10 @@ _SRCS = \
   textinfo.cpp \
   $(NULL)
 
+ifneq ($(USE_EXTERNAL_PLUGINS),)
+_SRCS += whereami.c
+endif
+
 GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h image_missing_svg.h icon_png.h octicons.h)
 ifneq ($(HAVE_QT),)
 #ifneq ($(USE_EXTERNAL_PLUGINS),)
@@ -89,6 +94,7 @@ BIN  = $(BUILDDIR)/fltk-dialog
 ifneq ($(V),1)
 silent    = @
 msg_GEN   = @echo " Generate     $(notdir $@)";
+msg_C     = @echo " C   compile  $(notdir $@)";
 msg_CXX   = @echo " CXX compile  $(notdir $@)";
 msg_LDCXX = @echo " CXX link     $(notdir $@)";
 endif
@@ -115,8 +121,11 @@ $(BIN): $(OBJS)
 $(OBJS): $(SRCS)
 $(SRCS): $(GENHDRS)
 
-%.o:
+%.cpp.o:
 	$(msg_CXX)$(CXX) $(BIN_CXXFLAGS) -c $(addprefix $(SOURCEDIR)/,$(basename $(notdir $@))) -o $@
+
+%.c.o:
+	$(msg_C)$(CC) $(BIN_CFLAGS) -c $(addprefix $(SOURCEDIR)/,$(basename $(notdir $@))) -o $@
 
 $(BUILDDIR)/fltk_png.h: $(SOURCEDIR)/fltk.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) fltk.png > $@

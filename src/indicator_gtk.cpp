@@ -253,8 +253,6 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
   LOAD_SYMBOL(app_indicator_set_icon)
   LOAD_SYMBOL(app_indicator_set_icon_theme_path)
 
-# undef LOAD_SYMBOL
-
   /* create Gtk menu */
 
   gtk_init(NULL, NULL);

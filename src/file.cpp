@@ -148,7 +148,9 @@ static int dlopen_getfilenameqt(int mode)
   getfilenameqt = reinterpret_cast<getfilenameqt_t>(p);
   int rv = getfilenameqt(mode, quote, title, false, false);
   dlclose(handle);
-  DELETE(plugin.c_str());
+#ifndef USE_EXTERNAL_PLUGINS
+  unlink(plugin.c_str());
+#endif
 
   return rv;
 }

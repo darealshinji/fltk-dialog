@@ -437,7 +437,9 @@ static int dlopen_start_indicator_qt(const char *icon)
   start_indicator_qt = reinterpret_cast<start_indicator_qt_t>(p);
   int rv = start_indicator_qt(0, command, icon, listen, auto_close);
   dlclose(handle);
-  DELETE(plugin.c_str());
+#ifndef USE_EXTERNAL_PLUGINS
+  unlink(plugin.c_str());
+#endif
 
   if (!tmp.empty()) {
     unlink(tmp.c_str());

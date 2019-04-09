@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <ctype.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,8 @@
 # include <dlfcn.h>
 # ifndef USE_EXTERNAL_PLUGINS
 #  include "qtplugin_so.h"
+# else
+#  include "whereami.h"
 # endif  /* !USE_EXTERNAL_PLUGINS */
 #endif  /* HAVE_QT */
 
@@ -343,19 +346,45 @@ int leap_year(int y)
 void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
 {
 #ifdef USE_EXTERNAL_PLUGINS
-  plugin = "qtplugin.so";
+
+  int len = wai_getExecutablePath(NULL, 0, NULL);
+  char *path = new char[len + 1];
+  wai_getExecutablePath(path, len, NULL);
+  path[len] = '\0';
+
+  char *dir = dirname(path);
+  if (!dir) {
+    delete path;
+    return NULL;
+  }
+
+  plugin = std::string(dir) + "/qtplugin.so";
+  handle = dlopen(plugin.c_str(), RTLD_LAZY);
+
+  if (!handle) {
+    plugin = std::string(dir) + "/../lib/fltk-dialog/qtplugin.so";
+    handle = dlopen(plugin.c_str(), RTLD_LAZY);
+  }
+
+  dir = NULL;
+  delete path;
+
 #else
+
   if (!save_to_temp(qtplugin_so, qtplugin_so_len, ".so", plugin)) {
     return NULL;
   }
+  handle = dlopen(plugin.c_str(), RTLD_LAZY);
+
 #endif  /* USE_EXTERNAL_PLUGINS */
 
-  handle = dlopen(plugin.c_str(), RTLD_LAZY);
   char *error = dlerror();
 
   if (!handle) {
     std::cerr << error << std::endl;
-    DELETE(plugin.c_str());
+#ifndef USE_EXTERNAL_PLUGINS
+    unlink(plugin.c_str());
+#endif
     return NULL;
   }
 
@@ -368,7 +397,9 @@ void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
   if (error || !func_ptr) {
     std::cerr << "error: " << error << std::endl;
     dlclose(handle);
-    DELETE(plugin.c_str());
+#ifndef USE_EXTERNAL_PLUGINS
+    unlink(plugin.c_str());
+#endif
     return NULL;
   }
 

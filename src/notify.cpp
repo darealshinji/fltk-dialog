@@ -26,15 +26,10 @@
 #include <string>
 #include <stdlib.h>
 #include <unistd.h>
-
-#ifdef DYNAMIC_NOTIFY
-# include <dlfcn.h>
-# include "notify.h"
-#else
-# include <libnotify/notify.h>
-#endif
+#include <dlfcn.h>
 
 #include "fltk-dialog.hpp"
+#include "notify.h"
 
 static Fl_Double_Window *win;
 static int win_x, win_y;
@@ -191,7 +186,6 @@ static void notification_box(double time_s, Fl_RGB_Image *rgb)
 
 static bool run_libnotify(const char *appname, int timeout, const char *notify_icon)
 {
-#ifdef DYNAMIC_NOTIFY
   /* dlopen() libnotify */
 
   void *handle = dlopen("libnotify.so.4", RTLD_LAZY);
@@ -220,14 +214,6 @@ static bool run_libnotify(const char *appname, int timeout, const char *notify_i
   LOAD_SYMBOL( gboolean,             notify_notification_show,         (NotifyNotification*, GError**) )
   LOAD_SYMBOL( void,                 notify_uninit,                    (void) )
 
-# define DLCLOSE_NOTIFY dlclose(handle)
-
-#endif  /* DYNAMIC_NOTIFY */
-
-#ifndef DLCLOSE_NOTIFY
-# define DLCLOSE_NOTIFY
-#endif
-
   char *resolved_path = NULL;
   NotifyNotification *n;
   bool rv = true;
@@ -236,7 +222,7 @@ static bool run_libnotify(const char *appname, int timeout, const char *notify_i
 
   if (!notify_is_initted()) {
     std::cerr << "error: notify_init()" << std::endl;
-    DLCLOSE_NOTIFY;
+    dlclose(handle);
     return false;
   }
 
@@ -256,7 +242,7 @@ static bool run_libnotify(const char *appname, int timeout, const char *notify_i
   }
 
   notify_uninit();
-  DLCLOSE_NOTIFY;
+  dlclose(handle);
 
   if (resolved_path) {
     free(resolved_path);
