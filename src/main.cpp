@@ -119,7 +119,11 @@ int main(int argc, char **argv)
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)",
                        {"separator"})
   ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: "
+#ifdef USE_DLOPEN
                   "bmp gif icns ico jpg png svg svgz xbm xpm", {"icon"});
+#else
+                  "bmp gif ico jpg png svg svgz xbm xpm", {"icon"});
+#endif
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
@@ -168,6 +172,7 @@ int main(int argc, char **argv)
   ,      arg_alt_label(g_question_options, "TEXT", "Adds a third button and sets its label; exit code is 2",
                        {"alt-label"});
 
+#ifdef USE_DLOPEN
   args::Group g_file_dir_options(ap_main, "File/directory selection options:");
   ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, "
                    "otherwise fall back to FLTK's own version; some options may only work on FLTK's file chooser",
@@ -176,6 +181,7 @@ int main(int argc, char **argv)
   ARG_T arg_native_gtk(g_file_dir_options, "native-gtk", "Display the Gtk+ native file chooser", {"native-gtk"});
   ARG_T arg_native_qt(g_file_dir_options, "native-qt", "Display the Qt native file chooser", {"native-qt"});
 #endif
+#endif  /* USE_DLOPEN */
 
   args::Group g_progress_options(ap_main, "Progress options:");
   ARG_T  arg_pulsate(g_progress_options, "pulsate", "Pulsating progress bar", {"pulsate"});
@@ -231,12 +237,14 @@ int main(int argc, char **argv)
                        "value may be ignored by some desktop environments)", {"libnotify"});
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
+#ifdef USE_DLOPEN
   ARG_T unused_arg1(g_indicator_options, "native", "Use the operating system's native indicator system (default)", {"native"});
 #ifdef HAVE_QT
   ARG_T unused_arg2(g_indicator_options, "native-gtk", "Use the Gtk+ indicator (libappindicator)", {"native-gtk"})
   ,     unused_arg3(g_indicator_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
 #endif
   ARG_T arg_legacy(g_indicator_options, "legacy", "Use the legacy X11 indicator system", {"legacy"});
+#endif  /* USE_DLOPEN */
   ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
   ,      unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
                      {"auto-close"});
@@ -290,7 +298,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-#ifdef HAVE_QT
+#if defined(HAVE_QT) && defined(USE_DLOPEN)
   if (arg_native_gtk && arg_native_qt) {
     std::cerr << argv[0] << ": cannot use `--native-gtk' and `--native-qt' together" << std::endl;
     return 1;
@@ -413,6 +421,8 @@ int main(int argc, char **argv)
   }
 
   int native_mode = NATIVE_NONE;
+
+#ifdef USE_DLOPEN
   if (arg_native || arg_indicator) {
     native_mode = NATIVE_ANY;
   }
@@ -424,6 +434,7 @@ int main(int argc, char **argv)
     native_mode = NATIVE_QT;
   }
 #endif
+#endif  /* USE_DLOPEN */
 
   /* notification */
   int timeout = 5;
@@ -437,9 +448,11 @@ int main(int argc, char **argv)
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     GETCSTR(indicator_command, arg_indicator);
+#ifdef USE_DLOPEN
     if (arg_legacy) {
       native_mode = NATIVE_NONE;
     }
+#endif  /* USE_DLOPEN */
   }
 
   /* progress */

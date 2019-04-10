@@ -26,7 +26,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +35,9 @@
 
 #include "fltk-dialog.hpp"
 #include "ico_image.hpp"
-#include "icns_image.hpp"
+#ifdef USE_DLOPEN
+# include "icns_image.hpp"
+#endif
 
 #define HASEXT(str,ext)  (strlastcasecmp(str,ext) == strlen(ext))
 
@@ -150,11 +151,13 @@ Fl_RGB_Image *img_to_rgb(const char *file)
     return ico;
   }
 
+#ifdef USE_DLOPEN
   if (memcmp(bytes, "icns", 4) == 0 || memcmp(bytes, "mBIN", 4) == 0) {
     icns_image *icns = new icns_image(file);
     CHECK_IF_LOADED(icns)
     return icns;
   }
+#endif
 
   return NULL;
 }

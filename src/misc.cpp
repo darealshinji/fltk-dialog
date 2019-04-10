@@ -35,14 +35,14 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifdef HAVE_QT
+#if defined(HAVE_QT) && defined(USE_DLOPEN)
 # include <dlfcn.h>
 # ifndef USE_EXTERNAL_PLUGINS
 #  include "qtplugin_so.h"
 # else
 #  include "whereami.h"
-# endif  /* !USE_EXTERNAL_PLUGINS */
-#endif  /* HAVE_QT */
+# endif
+#endif
 
 #include "fltk-dialog.hpp"
 #include "random.hpp"
@@ -342,7 +342,7 @@ int leap_year(int y)
   return 0;
 }
 
-#ifdef HAVE_QT
+#if defined(HAVE_QT) && defined(USE_DLOPEN)
 void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
 {
 #ifdef USE_EXTERNAL_PLUGINS
@@ -405,5 +405,5 @@ void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
 
   return func_ptr;
 }
-#endif  /* HAVE_QT */
+#endif  /* HAVE_QT && USE_DLOPEN */
 

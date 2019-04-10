@@ -417,7 +417,7 @@ static int create_tray_entry_xlib(const char *icon)
   return 0;
 }
 
-#ifdef HAVE_QT
+#if defined(HAVE_QT) && defined(USE_DLOPEN)
 static int dlopen_start_indicator_qt(const char *icon)
 {
   std::string plugin, tmp;
@@ -447,7 +447,7 @@ static int dlopen_start_indicator_qt(const char *icon)
 
   return rv;
 }
-#endif  /* HAVE_QT */
+#endif  /* HAVE_QT && USE_DLOPEN */
 
 int dialog_indicator(const char *command_, const char *icon, int native, bool listen_, bool auto_close_)
 {
@@ -455,6 +455,7 @@ int dialog_indicator(const char *command_, const char *icon, int native, bool li
   listen = listen_;
   auto_close = auto_close_;
 
+#ifdef USE_DLOPEN
 #ifdef HAVE_QT
   if (native == NATIVE_ANY && getenv("KDE_FULL_SESSION")) {
     native = NATIVE_QT;
@@ -470,6 +471,8 @@ int dialog_indicator(const char *command_, const char *icon, int native, bool li
       return dlopen_start_indicator_qt(icon);
 #endif
   }
+#endif  /* USE_DLOPEN */
+
   return create_tray_entry_xlib(icon);
 }
 

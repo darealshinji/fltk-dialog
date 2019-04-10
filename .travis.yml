@@ -9,6 +9,7 @@ addons:
   apt:
     packages:
       - cmake
+      - libmagic-dev
       - libpango1.0-dev
       - libx11-dev
       - libxcursor-dev
@@ -17,13 +18,16 @@ addons:
       - libxft-dev
       - libxinerama-dev
       - qtbase5-dev
+      - wget
 
 script:
+  - # regular test build
   - ./build.sh
+  - # build AppImage to upload
+  - ./build.sh --disable-dlopen
 
 after_success:
-  - #mkdir out && cp build/fltk_dialog/fltk-dialog out/
-  - #test $TRAVIS_BRANCH != master || bash ./.upload.sh out/*
+  - test $TRAVIS_BRANCH != master || bash ./.upload.sh build/fltk-dialog-*.AppImage
 
 branches:
   except:

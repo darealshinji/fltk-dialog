@@ -24,12 +24,18 @@
 
 #include <iostream>
 #include <string>
-#include <dlfcn.h>
 #include <unistd.h>
+#ifdef USE_DLOPEN
+# include <dlfcn.h>
+#endif
 
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
+static int file_chooser_fltk(int mode);
+
+
+#ifdef USE_DLOPEN
 
 /* from Fl_Native_File_Chooser_GTK.cxx */
 class Fl_GTK_Native_File_Chooser_Driver : public Fl_Native_File_Chooser_FLTK_Driver
@@ -108,18 +114,6 @@ My_GTK_File_Chooser::My_GTK_File_Chooser(int type, const char *label)
   }
 }
 
-static int file_chooser_fltk(int mode)
-{
-  char *file = file_chooser(mode);
-
-  if (file) {
-    std::cout << quote << file << quote << std::endl;
-    free(file);
-    return 0;
-  }
-  return 1;
-}
-
 static int native_file_chooser_gtk(int mode)
 {
   int type = (mode == DIR_CHOOSER) ? Fl_Native_File_Chooser::BROWSE_DIRECTORY : Fl_Native_File_Chooser::BROWSE_FILE;
@@ -191,6 +185,19 @@ static int native_file_chooser_qt(int mode)
   return rv;
 }
 #endif  /* HAVE_QT */
+#endif  /* USE_DLOPEN */
+
+static int file_chooser_fltk(int mode)
+{
+  char *file = file_chooser(mode);
+
+  if (file) {
+    std::cout << quote << file << quote << std::endl;
+    free(file);
+    return 0;
+  }
+  return 1;
+}
 
 int dialog_file_chooser(int mode, int native)
 {
@@ -198,8 +205,8 @@ int dialog_file_chooser(int mode, int native)
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
   }
 
+#ifdef USE_DLOPEN
   /* Note: setting an icon doesn't work on the Qt file chooser */
-
   switch (native) {
     case NATIVE_ANY:
       return native_file_chooser(mode);
@@ -210,6 +217,10 @@ int dialog_file_chooser(int mode, int native)
       return native_file_chooser_qt(mode);
 #endif  /* HAVE_QT */
   }
+#else
+  (void)native;
+#endif  /* USE_DLOPEN */
+
   return file_chooser_fltk(mode);
 }
 

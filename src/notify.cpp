@@ -29,7 +29,9 @@
 #include <dlfcn.h>
 
 #include "fltk-dialog.hpp"
-#include "notify.h"
+#ifdef USE_DLOPEN
+# include "notify.h"
+#endif
 
 static Fl_Double_Window *win;
 static int win_x, win_y;
@@ -184,6 +186,7 @@ static void notification_box(double time_s, Fl_RGB_Image *rgb)
   }
 }
 
+#ifdef USE_DLOPEN
 static bool run_libnotify(const char *appname, int timeout, const char *notify_icon)
 {
   /* dlopen() libnotify */
@@ -249,6 +252,7 @@ static bool run_libnotify(const char *appname, int timeout, const char *notify_i
   }
   return rv;
 }
+#endif  /* USE_DLOPEN */
 
 int dialog_notify(const char *appname, int timeout, const char *notify_icon, bool libnotify)
 {
@@ -270,9 +274,13 @@ int dialog_notify(const char *appname, int timeout, const char *notify_icon, boo
     title = "No title";
   }
 
+#ifdef USE_DLOPEN
   if (libnotify && run_libnotify(appname, timeout, notify_icon)) {
     return 0;
   }
+#else
+  (void)libnotify;
+#endif
 
   notification_box(timeout, img_to_rgb(notify_icon));
 

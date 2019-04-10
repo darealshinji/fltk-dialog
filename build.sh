@@ -8,8 +8,11 @@ DEF_CXXFLAGS="$DEF_CFLAGS -std=c++11"
 DEF_LDFLAGS="-Wl,-O1 -Wl,--gc-sections -Wl,-z,defs -Wl,--as-needed"
 
 external_plugins=""
+use_dlopen="yes"
 if [ "x$1" = "x--external-plugins" ]; then
   external_plugins="yes"
+elif [ "x$1" = "x--disable-dlopen" ]; then
+  use_dlopen=""
 fi
 
 mkdir -p build
@@ -56,7 +59,7 @@ fi
 ### build fltk-dialog ###
 
 cd build
-rm -rf fltk_dialog
+rm -rf fltk_dialog AppDir
 mkdir -p fltk_dialog
 
 if [ -f fltk/fltk_git_hash ]; then
@@ -65,26 +68,36 @@ fi
 
 V=1 \
 USE_EXTERNAL_PLUGINS="$external_plugins" \
+USE_DLOPEN="$use_dlopen" \
 CXXFLAGS="$DEF_CXXFLAGS -I$PWD/fltk -I$PWD/../fltk $(./fltk/bin/fltk-config --use-images --cxxflags) $define_git_hash" \
-LDFLAGS="$DEF_LDFLAGS -L$PWD/fltk/lib $(./fltk/bin/fltk-config --use-images --ldflags)" \
+LDFLAGS="$DEF_LDFLAGS -L$PWD/fltk/lib $(./fltk/bin/fltk-config --use-images --ldflags) -lmagic" \
 QT_CXXFLAGS="$DEF_CXXFLAGS $(pkg-config --cflags Qt5Widgets Qt5Core)" \
 QT_LDFLAGS="$DEF_LDFLAGS $(pkg-config --libs Qt5Widgets Qt5Core)" \
 BUILDDIR="$PWD/fltk_dialog" \
 SOURCEDIR="$PWD/../src" \
   make -j$JOBS -f ../src/Makefile
 
-cp -f fltk_dialog/fltk-dialog ..
-if [ "x$external_plugins" != "x" ]; then
-  cp -f fltk_dialog/qtplugin.so ..
-fi
-
+strip --strip-all fltk_dialog/fltk-dialog
+readelf -d fltk_dialog/fltk-dialog | grep '(NEEDED)'
 cd -
-strip --strip-all fltk-dialog
-readelf -d fltk-dialog | grep '(NEEDED)'
 
 
 ### undo patching ###
 cd fltk
 patch -p1 -R < ../fltk_patches.diff
 rm patches_applied_stamp
+
+
+### bundling ###
+if [ "x$1" = "x--disable-dlopen" ]; then
+  cd ../build
+
+  cp -f ../src/icon.png fltk-dialog.png
+  mkdir -p AppDir/usr/share/file
+  cp -f /usr/share/file/magic.mgc AppDir/usr/share/file
+
+  wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+  chmod a+x *.AppImage
+  ./linuxdeploy-x86_64.AppImage -oappimage --appdir=AppDir --create-desktop-file -ifltk-dialog.png -efltk_dialog/fltk-dialog
+fi
 

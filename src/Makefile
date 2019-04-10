@@ -1,14 +1,16 @@
 BUILDDIR  ?= $(CURDIR)
 SOURCEDIR ?= $(BUILDDIR)
 
+ifneq ($(USE_DLOPEN),)
+
+DEFINES += -DUSE_DLOPEN
+
 ifneq ($(QT_CXXFLAGS),)
 ifneq ($(QT_LDFLAGS),)
 HAVE_QT = yes
 endif
 endif
 
-DEFINES += -DDYNAMIC_NOTIFY
-DEFINES += -DDYNAMIC_MAGIC
 ifneq ($(HAVE_QT),)
 DEFINES += -DHAVE_QT
 ifneq ($(USE_EXTERNAL_PLUGINS),)
@@ -16,12 +18,14 @@ DEFINES += -DUSE_EXTERNAL_PLUGINS
 endif
 endif
 
+endif  # USE_DLOPEN
+
 INCLUDES += -I$(BUILDDIR) -I$(SOURCEDIR)
 
-CFLAGS ?= -Wall -O2
+CFLAGS ?= -Wall -O2 -std=c99
 CXXFLAGS ?= -Wall -O2
 #CXXFLAGS ?= $(shell fltk-config --use-images --cflags)
-LDFLAGS ?= -lfltk -lfltk_images
+LDFLAGS ?= -lfltk -lfltk_images -lmagic
 #LDFLAGS ?= $(shell fltk-config --use-images --ldlags)
 
 BIN_CFLAGS = $(INCLUDES) $(CFLAGS) $(CPPFLAGS)
@@ -60,11 +64,9 @@ _SRCS = \
   file_fltk.cpp \
   font.cpp \
   html.cpp \
-  icns_image.cpp \
   ico_image.cpp \
   img_to_rgb.cpp \
   indicator.cpp \
-  indicator_gtk.cpp \
   l10n.cpp \
   main.cpp \
   message.cpp \
@@ -74,10 +76,11 @@ _SRCS = \
   radiolist.cpp \
   radiolist_browser.cpp \
   textinfo.cpp \
+  whereami.c \
   $(NULL)
 
-ifneq ($(USE_EXTERNAL_PLUGINS),)
-_SRCS += whereami.c
+ifneq ($(USE_DLOPEN),)
+_SRCS += icns_image.cpp indicator_gtk.cpp
 endif
 
 GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h image_missing_svg.h icon_png.h octicons.h)

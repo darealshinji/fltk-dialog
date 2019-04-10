@@ -29,7 +29,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <libgen.h>
 #include <limits.h>
+#include <magic.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,34 +40,7 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-
-
-#ifdef DYNAMIC_MAGIC
-
-# include <dlfcn.h>
-
-# define MAGIC_PRESERVE_ATIME     0x0000080
-# define MAGIC_ERROR              0x0000200
-# define MAGIC_NO_CHECK_APPTYPE   0x0008000
-# define MAGIC_NO_CHECK_COMPRESS  0x0001000
-# define MAGIC_NO_CHECK_ELF       0x0010000
-# define MAGIC_NO_CHECK_TAR       0x0002000
-
-typedef struct magic_set *magic_t;
-
-PROTO( magic_t, magic_open, (int) )
-PROTO( int, magic_load, (magic_t, const char *) )
-PROTO( const char *, magic_file, (magic_t, const char *) )
-PROTO( void, magic_close, (magic_t) )
-
-static void *handle = NULL;
-
-#else
-
-# include <magic.h>
-
-#endif  /* DYNAMIC_MAGIC */
-
+#include "whereami.h"
 #include "octicons.h"
 
 static Fl_Double_Window *win;
@@ -75,7 +50,7 @@ static Fl_Button *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
-static std::string current_dir = "/", home_dir = "/home";
+static std::string current_dir = "/", home_dir = "/home", magicdb = "";
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
 static char *selected_file = NULL;
@@ -220,7 +195,7 @@ static std::string getfsize(double size)
 static std::string get_filetype(const char *file)
 {
   magic_t mcookie;
-  const char *desc;
+  const char *desc, *db;
   std::string str = "";
   std::size_t pos;
 
@@ -231,17 +206,13 @@ static std::string get_filetype(const char *file)
     | MAGIC_NO_CHECK_ELF
     | MAGIC_NO_CHECK_TAR;
 
-#ifdef DYNAMIC_MAGIC
-  if (!handle) {
-    return "";
-  }
-#endif
-
   if ((mcookie = magic_open(flags)) == NULL) {
     return "";
   }
 
-  if (magic_load(mcookie, NULL) != 0) {
+  db = magicdb == "" ? NULL : magicdb.c_str();
+
+  if (magic_load(mcookie, db) != 0) {
     magic_close(mcookie);
     return "";
   }
@@ -259,11 +230,6 @@ static std::string get_filetype(const char *file)
 
 static void fileInfo(const char *file)
 {
-#ifdef DYNAMIC_MAGIC
-  if (!handle) {
-    return;
-  } else
-#endif
   if (!file || strlen(file) == 0) {
     infobox->label(NULL);
     return;
@@ -387,12 +353,6 @@ static void close_cb(Fl_Widget *, long l)
   }
 
   win->hide();
-
-#ifdef DYNAMIC_MAGIC
-  if (handle) {
-    dlclose(handle);
-  }
-#endif
 }
 
 static void br_callback(Fl_Widget *)
@@ -430,7 +390,9 @@ static void br_callback(Fl_Widget *)
     infobox->label(NULL);
   } else {
     fileInfo(fname);
-    input->value(basename(fname));
+    char *copy = strdup(fname);
+    input->value(basename(copy));
+    free(copy);
   }
 }
 
@@ -591,22 +553,24 @@ char *file_chooser(int mode)
   /* needed for sorting */
   setlocale(LC_ALL, "");
 
-#ifdef DYNAMIC_MAGIC
-  handle = dlopen("libmagic.so.1", RTLD_LAZY);
+  /* path to magic DB */
+  int len = wai_getExecutablePath(NULL, 0, NULL);
+  char *path = new char[len + 1];
+  wai_getExecutablePath(path, len, NULL);
+  path[len] = '\0';
 
-# define DLSYM(func) \
-  if (handle) { \
-    func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func))); \
-    if (dlerror()) { dlclose(handle); handle = NULL; } \
+  char *dir = dirname(path);
+  if (dir) {
+    magicdb = std::string(dir) + "/../share/file/magic.mgc";
+    std::ifstream ifs(magicdb);
+    if (!ifs.is_open()) {
+      magicdb = "";
+    }
+    ifs.close();
   }
 
-  DLSYM(magic_open)
-  DLSYM(magic_load)
-  DLSYM(magic_file)
-  DLSYM(magic_close)
-
-# undef DLSYM
-#endif  /* DYNAMIC_MAGIC */
+  dir = NULL;
+  delete path;
 
   win = new Fl_Double_Window(w, h, title);
   {
@@ -730,11 +694,7 @@ char *file_chooser(int mode)
           {
             input = new Fl_Input(10, br->y() + br->h() + 10, bt_ok->x() - 20, bt_h);
             infobox = new Fl_Box(10, input->y() + input->h() + 5, input->w(), bt_h);
-#ifdef DYNAMIC_MAGIC
-            infobox->box(handle ? FL_THIN_DOWN_BOX : FL_NO_BOX);
-#else
             infobox->box(FL_THIN_DOWN_BOX);
-#endif
             infobox->labelsize(12);
             infobox->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
           }
