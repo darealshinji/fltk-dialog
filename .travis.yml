@@ -23,11 +23,11 @@ addons:
 script:
   - # regular test build
   - ./build.sh
-  - # build AppImage to upload
+  - # build minimal version to upload
   - ./build.sh --disable-dlopen
 
 after_success:
-  - test $TRAVIS_BRANCH != master || bash ./.upload.sh build/fltk-dialog-*.AppImage
+  - test $TRAVIS_BRANCH != master || bash ./.upload.sh build/fltk_dialog/fltk-dialog
 
 branches:
   except:

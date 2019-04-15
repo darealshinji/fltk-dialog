@@ -9,10 +9,12 @@ DEF_LDFLAGS="-Wl,-O1 -Wl,--gc-sections -Wl,-z,defs -Wl,--as-needed"
 
 external_plugins=""
 use_dlopen="yes"
+syslibs="ON"
 if [ "x$1" = "x--external-plugins" ]; then
   external_plugins="yes"
 elif [ "x$1" = "x--disable-dlopen" ]; then
   use_dlopen=""
+  syslibs="OFF"
 fi
 
 mkdir -p build
@@ -48,8 +50,8 @@ if [ ! -e build/fltk/lib/libfltk_images.a ]; then
     -DOPTION_USE_NANOSVG="ON" \
     -DOPTION_USE_PANGO="ON" \
     -DOPTION_CAIRO="OFF" \
-    -DOPTION_USE_SYSTEM_LIBJPEG="ON" \
-    -DOPTION_USE_SYSTEM_LIBPNG="ON" \
+    -DOPTION_USE_SYSTEM_LIBJPEG="$syslibs" \
+    -DOPTION_USE_SYSTEM_LIBPNG="$syslibs" \
     -DOPTION_USE_SYSTEM_ZLIB="ON"
   make -j$JOBS
   cd -
@@ -89,6 +91,7 @@ rm patches_applied_stamp
 
 
 ### bundling ###
+exit 0
 if [ "x$1" = "x--disable-dlopen" ]; then
   cd ../build
 
