@@ -233,8 +233,12 @@ int main(int argc, char **argv)
   args::Group g_notification_options(ap_main, "Notification options:");
   ARGI_T arg_timeout(g_notification_options, "SECONDS", "Set the timeout value for the notification in seconds",
                      {"timeout"});
+#ifdef USE_DLOPEN
   ARG_T  arg_libnotify(g_notification_options, "libnotify", "Use libnotify to display the notification (timeout "
                        "value may be ignored by some desktop environments)", {"libnotify"});
+#else
+  const bool arg_libnotify = false;
+#endif
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
 #ifdef USE_DLOPEN
