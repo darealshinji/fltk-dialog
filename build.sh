@@ -53,7 +53,7 @@ if [ ! -e build/fltk/lib/libfltk_images.a ]; then
     -DOPTION_USE_SYSTEM_LIBJPEG="$syslibs" \
     -DOPTION_USE_SYSTEM_LIBPNG="$syslibs" \
     -DOPTION_USE_SYSTEM_ZLIB="ON"
-  make -j$JOBS
+  make -j$JOBS fltk_images
   cd -
 fi
 

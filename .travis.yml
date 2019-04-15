@@ -24,7 +24,7 @@ script:
   - # regular test build
   - ./build.sh
   - # build minimal version to upload
-  - ./build.sh --disable-dlopen
+  - rm -rf build && ./build.sh --disable-dlopen
 
 after_success:
   - test $TRAVIS_BRANCH != master || bash ./.upload.sh build/fltk_dialog/fltk-dialog
