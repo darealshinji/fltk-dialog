@@ -49,7 +49,16 @@ enum {
   BT_COUNT
 };
 
+#if 1
+/* 
+   Must init {selected_language} later, else {-1} error  
+   value persists.
+ */
+int selected_language = -1 ; 
+#else
 int selected_language = LANG_EN;
+#endif
+
 Fl_Menu_Item item_month[13];
 
 static const char *buttons[LANG_COUNT][BT_COUNT] =
@@ -324,7 +333,21 @@ void l10n(void)
   }
 
   if (strncmp("en", env, 2) == 0 || strcmp("C", env) == 0) {
+#if 1
+   // <<<new code>>>
+    
+   // Specifiy ENglish language.
+   selected_language = LANG_EN ;   
+    
+   /*
+     Now we move onto init of 
+     {fl_{ok, cancel, yes, no, close}, item_month}
+     below.
+   */       
+#else   
+    // <<<old code>>>
     return;
+#endif    
   } else if (strncmp(env, "ar", 2) == 0) {
     selected_language = LANG_AR;
   } else if (strncmp(env, "de", 2) == 0) {
