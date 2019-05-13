@@ -317,41 +317,44 @@ const char *month_names[LANG_COUNT][13] =
 
 void l10n(void)
 {
-  char *env;
+  const char *env;
+
+  /* default language */
+  selected_language = LANG_EN;
 
   if (!(env = getenv("LANG")) && !(env = getenv("LANGUAGE"))) {
-    return;
+    /* fall back to English */
+    env = "en";
   }
 
-  if (strncmp("en", env, 2) == 0 || strcmp("C", env) == 0) {
-    return;
-  } else if (strncmp(env, "ar", 2) == 0) {
-    selected_language = LANG_AR;
-  } else if (strncmp(env, "de", 2) == 0) {
-    selected_language = LANG_DE;
-    if (strncmp(env, "de_CH", 5) == 0) {
-      buttons[LANG_DE][BT_CLOSE] = "Schliessen";
-    } else if (strncmp(env, "de_AT", 5) == 0) {
-      month_names[LANG_DE][1] = "J" "\xC3\xA4" "nner";  // Jänner
+  if (strncmp("en", env, 2) != 0 && strcmp("C", env) != 0) {
+    if (strncmp(env, "ar", 2) == 0) {
+      selected_language = LANG_AR;
+    } else if (strncmp(env, "de", 2) == 0) {
+      selected_language = LANG_DE;
+      if (strncmp(env, "de_CH", 5) == 0) {
+        buttons[LANG_DE][BT_CLOSE] = "Schliessen";
+      } else if (strncmp(env, "de_AT", 5) == 0) {
+        month_names[LANG_DE][1] = "J" "\xC3\xA4" "nner";  // Jänner
+      }
+    } else if (strncmp(env, "es", 2) == 0) {
+      selected_language = LANG_ES;
+    } else if (strncmp(env, "fr", 2) == 0) {
+      selected_language = LANG_FR;
+    } else if (strncmp(env, "it", 2) == 0) {
+      selected_language = LANG_IT;
+    } else if (strncmp(env, "ja", 2) == 0) {
+      selected_language = LANG_JA;
+    } else if (strncmp(env, "pt", 2) == 0) {
+      selected_language = LANG_PT;
+    } else if (strncmp(env, "ru", 2) == 0) {
+      selected_language = LANG_RU;
+    } else if (strncmp(env, "zh", 2) == 0) {
+      selected_language = (strncmp(env, "zh_TW", 5) == 0) ? LANG_ZH_TW : LANG_ZH;
     }
-  } else if (strncmp(env, "es", 2) == 0) {
-    selected_language = LANG_ES;
-  } else if (strncmp(env, "fr", 2) == 0) {
-    selected_language = LANG_FR;
-  } else if (strncmp(env, "it", 2) == 0) {
-    selected_language = LANG_IT;
-  } else if (strncmp(env, "ja", 2) == 0) {
-    selected_language = LANG_JA;
-  } else if (strncmp(env, "pt", 2) == 0) {
-    selected_language = LANG_PT;
-  } else if (strncmp(env, "ru", 2) == 0) {
-    selected_language = LANG_RU;
-  } else if (strncmp(env, "zh", 2) == 0) {
-    selected_language = (strncmp(env, "zh_TW", 5) == 0) ? LANG_ZH_TW : LANG_ZH;
-  } else {
-    /* unsupported language */
-    return;
   }
+
+  /* Note: English language needs to be initialized too! */
 
   fl_ok = buttons[selected_language][BT_OK];
   fl_cancel = buttons[selected_language][BT_CANCEL];
