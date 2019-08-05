@@ -140,11 +140,12 @@ int getfilenameqt(int mode
 )
 {
   char fake_argv0[] = "getfilenameqt()";
-  char *fake_argv[] = { fake_argv0 };
+  char *fake_argv[] = { fake_argv0, NULL };
   int fake_argc = 1, rv = 1;
 
   QApplication *app = new QApplication(fake_argc, fake_argv);
   QFileDialog *dialog = new QFileDialog(nullptr, title);
+  dialog->setOption(QFileDialog::DontUseNativeDialog, true);
 
   if (mode == DIR_CHOOSER) {
     dialog->setFileMode(QFileDialog::Directory);
