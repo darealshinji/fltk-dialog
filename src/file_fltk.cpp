@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, djcj <djcj@gmx.de>
+ * Copyright (c) 2018-2019, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -159,6 +159,8 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
   int rv = system("/usr/bin/xdg-user-dirs-update 2>/dev/null >/dev/null");
   (void)rv;
 
+  // sleep?
+
   return xdg_user_dir_lookup_real(vec);
 }
 
@@ -261,7 +263,7 @@ static void fileInfo(const char *file)
 static void up_callback(Fl_Widget *)
 {
   if (current_dir != "/") {
-    current_dir.erase(current_dir.find_last_of("/"));
+    current_dir.erase(current_dir.rfind('/'));
 
     if (current_dir.empty()) {
       current_dir = "/";
@@ -396,7 +398,6 @@ static void br_callback(Fl_Widget *)
   }
 }
 
-/* make sure to call setlocale(LC_ALL, "") at startup */
 static bool ignorecaseSort(std::string s1, std::string s2)
 {
   if (sort_reverse) {
@@ -417,7 +418,31 @@ static void br_change_dir(void)
 
   const char *white = "@B255@. ", *yellow = "@B17@. ";
 
+  /* current_dir was deleted in the meanwhile;
+   * move up until we are in an existing directory */
+  if (!fl_filename_isdir(current_dir.c_str())) {
+    for (size_t i = std::count(current_dir.begin(), current_dir.end(), '/'); i > 0; --i) {
+      size_t pos = current_dir.rfind('/');
+
+      if (pos < 1) {
+        current_dir = "/";
+        break;
+      }
+      current_dir.erase(pos);
+
+      if (fl_filename_isdir(current_dir.c_str())) {
+        break;
+      }
+    }
+  }
+
   int n = fl_filename_list(current_dir.c_str(), &list);
+
+  /* on error switch to home directory */
+  if (n < 0) {
+    current_dir = home_dir;
+    n = fl_filename_list(current_dir.c_str(), &list);
+  }
 
   if (n > 0) {
     for (int i = 0; i < n; ++i) {
@@ -551,7 +576,7 @@ char *file_chooser(int mode)
   }
 
   /* needed for sorting */
-  setlocale(LC_ALL, "");
+  setlocale(LC_COLLATE, "");
 
   /* path to magic DB */
   int len = wai_getExecutablePath(NULL, 0, NULL);
