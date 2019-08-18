@@ -24,7 +24,7 @@
 
 /* include this first
  * source: https://github.com/Taywee/args */
-#include "args.hxx"
+#include "../args/args.hxx"
 
 #include <iostream>
 #include <sstream>

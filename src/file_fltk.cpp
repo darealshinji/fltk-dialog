@@ -40,7 +40,7 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "whereami.h"
+#include "../whereami/src/whereami.h"
 #include "octicons.h"
 
 static Fl_Double_Window *win;

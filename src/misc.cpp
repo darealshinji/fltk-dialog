@@ -40,12 +40,12 @@
 # ifndef USE_EXTERNAL_PLUGINS
 #  include "qtplugin_so.h"
 # else
-#  include "whereami.h"
+#  include "../whereami/src/whereami.h"
 # endif
 #endif
 
 #include "fltk-dialog.hpp"
-#include "random.hpp"
+#include "../random/include/effolkronium/random.hpp"
 
 bool always_on_top = false;
 static char date[512] = {0};
