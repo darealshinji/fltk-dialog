@@ -41,7 +41,7 @@
      }
 --- a/src/Fl_Color_Chooser.cxx
 +++ b/src/Fl_Color_Chooser.cxx
-@@ -496,7 +496,7 @@ Fl_Color_Chooser::Fl_Color_Chooser(int X, int Y, int W, int H, const char* L)
+@@ -571,7 +571,7 @@ Fl_Color_Chooser::Fl_Color_Chooser(int X, int Y, int W, int H, const char* L)
    bvalue.callback(rgb_cb);
    choice.callback(mode_cb);
    choice.box(FL_THIN_UP_BOX);
