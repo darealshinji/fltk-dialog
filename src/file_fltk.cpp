@@ -71,11 +71,11 @@ PNG(icon_link_dir, file_symlink_directory)
 PNG(sort_order1, list_ordered_1)
 PNG(sort_order2, list_ordered_2)
 
-/* Format is XDG_xxx_DIR="$HOME/yyy", where yyy is a shell-escaped
- * homedir-relative path, or XDG_xxx_DIR="/yyy", where /yyy is an
+/* Format is XDG_XXX_DIR="$HOME/yyy", where yyy is a shell-escaped
+ * homedir-relative path, or XDG_XXX_DIR="/yyy", where /yyy is an
  * absolute path. No other format is supported.
  */
-static bool xdg_user_dir_lookup_real(std::vector<std::string> &vec)
+static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
 {
   std::ifstream ifs;
   std::string line;
@@ -147,21 +147,6 @@ static bool xdg_user_dir_lookup_real(std::vector<std::string> &vec)
   ifs.close();
 
   return vec.size() > 0;
-}
-
-static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
-{
-  if (xdg_user_dir_lookup_real(vec)) {
-    return true;
-  }
-
-  /* run xdg-user-dirs-update and try it again */
-  int rv = system("/usr/bin/xdg-user-dirs-update 2>/dev/null >/dev/null");
-  (void)rv;
-
-  // sleep?
-
-  return xdg_user_dir_lookup_real(vec);
 }
 
 static std::string getfsize(double size)
@@ -415,13 +400,12 @@ static void br_change_dir(void)
 {
   struct dirent **list;
   std::vector<std::string> vec, vec2;
-
   const char *white = "@B255@. ", *yellow = "@B17@. ";
 
   /* current_dir was deleted in the meanwhile;
    * move up until we are in an existing directory */
   if (!fl_filename_isdir(current_dir.c_str())) {
-    for (size_t i = std::count(current_dir.begin(), current_dir.end(), '/'); i > 0; --i) {
+    for (auto i = std::count(current_dir.begin(), current_dir.end(), '/'); i > 0; --i) {
       size_t pos = current_dir.rfind('/');
 
       if (pos < 1) {
@@ -486,18 +470,12 @@ static void br_change_dir(void)
         path += s;
 
         if (fl_filename_isdir(path.c_str())) {
+          struct stat st;
           std::string entry = (br->size() % 2 == 0) ? white : yellow;
           entry += s;
-          br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
-
-          struct stat st;
           lstat(path.c_str(), &st);
-
-          if (S_ISLNK(st.st_mode)) {
-            br->icon(br->size(), &icon_link_dir);
-          } else {
-            br->icon(br->size(), &icon_dir);
-          }
+          br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
+          br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_dir : &icon_dir);
         } else if (list_files) {
           vec2.push_back(s);
         }
@@ -517,18 +495,12 @@ static void br_change_dir(void)
           path += s;
 
           if (!fl_filename_isdir(path.c_str())) {
+            struct stat st;
             std::string entry = (br->size() % 2 == 0) ? white : yellow;
             entry += s;
-            br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
-
-            struct stat st;
             lstat(path.c_str(), &st);
-
-            if (S_ISLNK(st.st_mode)) {
-              br->icon(br->size(), &icon_link_any);
-            } else {
-              br->icon(br->size(), &icon_any);
-            }
+            br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
+            br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
           }
         }
       }
@@ -694,6 +666,8 @@ char *file_chooser(int mode)
 
           dummy = new Fl_Box(10, b->y() + 40, 100, g_main_left->h() - b->y() - 76);
           dummy->box(FL_NO_BOX);
+
+          b = NULL;
         }
         g_main_left->resizable(dummy);
         g_main_left->end();
