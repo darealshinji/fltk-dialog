@@ -328,18 +328,13 @@ bool save_to_temp(const unsigned char *data, const unsigned int data_len, const 
   return true;
 }
 
-/* returns 1 if y is a leap year and 0 if not
+/* Optimized algorithm by Kevin P. Rice:
+ * https://stackoverflow.com/a/11595914/5687704
+ *
+ * Returns 1 on a leap year, otherwise 0.
  */
-int leap_year(int y)
-{
-  if (y % 2 == 1) {
-    return 0;
-  } else if (y % 100 == 0) {
-    return (y % 400 == 0) ? 1 : 0;
-  } else if (y % 4 == 0) {
-    return 1;
-  }
-  return 0;
+int leap_year(int year) {
+  return ((year & 3) == 0 && ((year % 25) != 0 || (year & 15) == 0));
 }
 
 #if defined(HAVE_QT) && defined(USE_DLOPEN)

@@ -2,3 +2,6 @@
  * write --forms dialog (maybe...)
  * indicator without menu
  * indicator: create icon as a small window in corner of desktop
+ * file_fltk.cpp: inactive OK button if no selection
+
+

@@ -67,10 +67,18 @@ static char *itostr(int n, char *buf, size_t buf_size)
   return buf;
 }
 
-static int get_weekday(int y, int m, int d) {
-  // https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Implementation-dependent_methods
+static int get_weekday(int y, int m, int d)
+{
+  /* Michael Keith and Tom Craver's algorithm */
   d += (m < 3) ? y-- : y - 2;
   return (23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
+
+  /* Tomohiko Sakamoto's algorithm */
+  //const int t[] = { 0, 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
+  //if (m < 3) {
+  //  y--;
+  //}
+  //return (y + y/4 - y/100 + y/400 + t[m] + d) % 7;
 }
 
 static void set_calendar(bool get_current_day, int y, int m, int d)
@@ -165,9 +173,7 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   box_month->value(m-1);
   box_year->value(y);
 
-  /* calculate initial week number
-   * https://en.wikipedia.org/wiki/ISO_week_date#Calculating_the_week_number_of_a_given_date
-   */
+  /* calculate initial week number */
   first_day = days_of_prev_m - last_days_of_prev_m + 1;
   wd = get_weekday(prev_m_year, prev_m, first_day);
   ly = leap_year(prev_m_year);

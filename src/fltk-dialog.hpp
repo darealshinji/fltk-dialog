@@ -201,7 +201,7 @@ char *format_date(const char *format, int y, int m, int d);
 size_t strlastcasecmp(const char *s1, const char *s2);
 std::string get_random(void);
 bool save_to_temp(const unsigned char *data, const unsigned int data_len, const char *postfix, std::string &path);
-int leap_year(int y);
+int leap_year(int year);
 
 #ifdef HAVE_QT
 void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func);
