@@ -81,15 +81,28 @@ static int get_weekday(int y, int m, int d)
   //return (y + y/4 - y/100 + y/400 + t[m] + d) % 7;
 }
 
+static int get_iso_week_number(int y, int m, int d)
+{
+  struct tm tm;
+  char tmp[16];
+  char wn[8];
+
+  memset(&tm, 0, sizeof(struct tm));
+  sprintf(tmp, "%d %d %d", y, m, d);
+  strptime(tmp, "%Y %m %d", &tm);
+  strftime(wn, sizeof(wn), "%-V", &tm);
+  return atoi(wn);
+}
+
 static void set_calendar(bool get_current_day, int y, int m, int d)
 {
   time_t t;
   struct tm *tm = NULL;
   const Fl_Color cfont_active = FL_BLACK;
   const Fl_Color cfont_inactive = fl_darker(FL_WHITE);
-  int wd, wn, prev_m, next_m, prev_m_year, next_m_year;
+  int wd, prev_m, next_m, prev_m_year, next_m_year;
   int days_of_m, days_of_prev_m, first_days_of_next_m;
-  int i, j, ly, first_day;
+  int i, j, n, wk[4];
   char buf[32] = {0};
 
   if (get_current_day) {
@@ -173,40 +186,10 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   box_month->value(m-1);
   box_year->value(y);
 
-  /* calculate initial week number */
-  first_day = days_of_prev_m - last_days_of_prev_m + 1;
-  wd = get_weekday(prev_m_year, prev_m, first_day);
-  ly = leap_year(prev_m_year);
-
-  if (wd == 0) {
-    wd = 7;
-  }
-  wn = (ordinal_day[ly][prev_m] + first_day - wd + 10) / 7;
-
-  if (wn == 53 && ly == 0) {
-    wn = 1;
-  }
-
-  if (wn > 51) {
-    /* initial week in January is the last
-     * week of the previous year */
-    box_weekn[1]->copy_label(itostr(wn, buf, sizeof(buf)));
-    wn = 1;
-    i = 2;
-  } else {
-    i = 1;
-  }
-
-  /* ISO week numbers */
-  for ( ; i < 7; ++i, ++wn) {
-    if ((wn == 53 && leap_year(y) == 0) || wn > 53) {
-      wn = 1;
-    }
-    box_weekn[i]->copy_label(itostr(wn, buf, sizeof(buf)));
-  }
-
   /* last days of previous month */
-  for (i = first_day, j = 0; i <= days_of_prev_m; ++i, ++j) {
+  i = days_of_prev_m - last_days_of_prev_m + 1;
+  j = 0;
+  for ( ; i <= days_of_prev_m; ++i, ++j) {
     but[j]->copy_label(itostr(i, buf, sizeof(buf)));
     but[j]->labelcolor(cfont_inactive);
     but[j]->color(clight);
@@ -214,7 +197,12 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   }
 
   /* days of current month */
+  n = 0;
   for (i = 1; i <= days_of_m; ++i, ++j) {
+    if (j % 7 == 0) {
+      wk[n] = j;
+      n++;
+    }
     but[j]->copy_label(itostr(i, buf, sizeof(buf)));
     but[j]->labelcolor(cfont_active);
     but[j]->color((i == d) ? cdark : clight);
@@ -228,6 +216,18 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
     but[j]->color(clight);
     but[j]->callback(next_month_cb, next_m);
   }
+
+  /* ISO week numbers */
+  n = get_iso_week_number(prev_m_year, prev_m, days_of_prev_m);
+  box_weekn[1]->copy_label(itostr(n, buf, sizeof(buf)));
+
+  for (i = 0; i < 4; ++i) {
+    n = get_iso_week_number(y, m, wk[i]);
+    box_weekn[i + 2]->copy_label(itostr(n, buf, sizeof(buf)));
+  }
+
+  n = get_iso_week_number(next_m_year, next_m, first_days_of_next_m);
+  box_weekn[6]->copy_label(itostr(n, buf, sizeof(buf)));
 
   win->redraw();
 }
