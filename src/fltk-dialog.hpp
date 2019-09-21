@@ -222,7 +222,7 @@ int dialog_color(void);
 int dialog_date(const char *format);
 int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
-int dialog_file_chooser(int mode, int native);
+int dialog_file_chooser(int mode, int native, bool classic);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
 int dialog_indicator(const char *command, const char *indicator_icon, int native, bool listen, bool auto_close);

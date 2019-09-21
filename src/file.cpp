@@ -32,7 +32,7 @@
 #include "fltk-dialog.hpp"
 #include "icon_png.h"
 
-static int file_chooser_fltk(int mode);
+static int file_chooser_fltk(int mode, bool classic);
 
 
 #ifdef USE_DLOPEN
@@ -91,6 +91,10 @@ public:
     if (_fc) { delete _fc; }
   }
 
+  int did_find_GTK_libs() {
+    return Fl_GTK_Native_File_Chooser_Driver::did_find_GTK_libs;
+  }
+
   int show() {
     return _fc ? _fc->show() : -1;
   }
@@ -119,11 +123,27 @@ static int native_file_chooser_gtk(int mode)
   int type = (mode == DIR_CHOOSER) ? Fl_Native_File_Chooser::BROWSE_DIRECTORY : Fl_Native_File_Chooser::BROWSE_FILE;
   My_GTK_File_Chooser *fc = new My_GTK_File_Chooser(type, title);
 
+  if (!fc || fc->did_find_GTK_libs() == 0) {
+    return -1;
+  }
+
   if (fc->show() == 0) {
     std::cout << quote << fc->filename() << quote << std::endl;
     return 0;
   }
   return 1;
+}
+
+static int native_file_chooser_gtk_with_fallback(int mode, bool classic)
+{
+  int rv = native_file_chooser_gtk(mode);
+
+  if (rv == -1) {
+    std::cerr << "warning: falling back to fltk" << std::endl;
+    rv = file_chooser_fltk(mode, classic);
+  }
+
+  return rv;
 }
 
 #ifdef HAVE_QT
@@ -150,7 +170,7 @@ static int dlopen_getfilenameqt(int mode)
 }
 #endif  /* HAVE_QT */
 
-static int native_file_chooser(int mode)
+static int native_file_chooser(int mode, bool classic)
 {
   int rv = -1;
 
@@ -166,7 +186,7 @@ static int native_file_chooser(int mode)
 
   if (rv == -1) {
     std::cerr << "warning: falling back to fltk" << std::endl;
-    rv = file_chooser_fltk(mode);
+    rv = file_chooser_fltk(mode, classic);
   }
 
   return rv;
@@ -174,22 +194,40 @@ static int native_file_chooser(int mode)
 
 #ifdef HAVE_QT
 /* the Qt equivalent to Fl_Native_File_Chooser() */
-static int native_file_chooser_qt(int mode)
+static int native_file_chooser_qt(int mode, bool classic)
 {
   int rv = dlopen_getfilenameqt(mode);
 
   if (rv == -1) {
     std::cerr << "warning: falling back to fltk" << std::endl;
-    rv = file_chooser_fltk(mode);
+    rv = file_chooser_fltk(mode, classic);
   }
   return rv;
 }
 #endif  /* HAVE_QT */
 #endif  /* USE_DLOPEN */
 
-static int file_chooser_fltk(int mode)
+static int file_chooser_fltk(int mode, bool classic)
 {
-  char *file = file_chooser(mode);
+  Fl_File_Chooser *fc = NULL;
+  char *file = NULL;
+  int type;
+
+  if (classic) {
+    type = (mode == DIR_CHOOSER) ? Fl_File_Chooser::DIRECTORY : Fl_File_Chooser::SINGLE;
+    fl_ok = "OK";
+    fl_cancel = "Cancel";
+
+    fc = new Fl_File_Chooser(NULL, NULL, type, title);
+    fc->show();
+    Fl::run();
+
+    if (fc->value() && strlen(fc->value()) > 0) {
+      file = strdup(fc->value());
+    }
+  } else {
+    file = file_chooser(mode);
+  }
 
   if (file) {
     std::cout << quote << file << quote << std::endl;
@@ -199,7 +237,7 @@ static int file_chooser_fltk(int mode)
   return 1;
 }
 
-int dialog_file_chooser(int mode, int native)
+int dialog_file_chooser(int mode, int native, bool classic)
 {
   if (!title) {
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
@@ -209,18 +247,18 @@ int dialog_file_chooser(int mode, int native)
   /* Note: setting an icon doesn't work on the Qt file chooser */
   switch (native) {
     case NATIVE_ANY:
-      return native_file_chooser(mode);
+      return native_file_chooser(mode, classic);
     case NATIVE_GTK:
-      return native_file_chooser_gtk(mode);
+      return native_file_chooser_gtk_with_fallback(mode, classic);
 #ifdef HAVE_QT
     case NATIVE_QT:
-      return native_file_chooser_qt(mode);
+      return native_file_chooser_qt(mode, classic);
 #endif  /* HAVE_QT */
   }
 #else
   (void)native;
 #endif  /* USE_DLOPEN */
 
-  return file_chooser_fltk(mode);
+  return file_chooser_fltk(mode, classic);
 }
 

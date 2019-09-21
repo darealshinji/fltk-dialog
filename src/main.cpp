@@ -120,7 +120,7 @@ int main(int argc, char **argv)
                        {"separator"})
   ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: "
 #ifdef USE_DLOPEN
-                  "bmp gif icns ico jpg png svg svgz xbm xpm", {"icon"});
+                  "bmp gif icns ico jpg png svg svgz xbm xpm", {"icon"});  /* includes icns format */
 #else
                   "bmp gif ico jpg png svg svgz xbm xpm", {"icon"});
 #endif
@@ -172,8 +172,10 @@ int main(int argc, char **argv)
   ,      arg_alt_label(g_question_options, "TEXT", "Adds a third button and sets its label; exit code is 2",
                        {"alt-label"});
 
-#ifdef USE_DLOPEN
   args::Group g_file_dir_options(ap_main, "File/directory selection options:");
+  ARG_T arg_classic(g_file_dir_options, "classic", "Use the classic FLTK file/directory selection widget (some "
+                    "options may not work)", {"classic"});
+#ifdef USE_DLOPEN
   ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, "
                    "otherwise fall back to FLTK's own version; some options may only work on FLTK's file chooser",
                    {"native"});
@@ -597,9 +599,9 @@ int main(int argc, char **argv)
     case DIALOG_SCALE:
       return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
-      return dialog_file_chooser(FILE_CHOOSER, native_mode);
+      return dialog_file_chooser(FILE_CHOOSER, native_mode, arg_classic);
     case DIALOG_DIR_CHOOSER:
-      return dialog_file_chooser(DIR_CHOOSER, native_mode);
+      return dialog_file_chooser(DIR_CHOOSER, native_mode, arg_classic);
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, icon, arg_libnotify);
     case DIALOG_PROGRESS:
