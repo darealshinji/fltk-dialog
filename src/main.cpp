@@ -141,6 +141,7 @@ int main(int argc, char **argv)
   ,      arg_skip_taskbar(ap, "skip-taskbar", "Don't show window in taskbar", {"skip-taskbar"})
   ,      arg_message(ap, "message", "Display message dialog", {"message"})
   ,      arg_warning(ap, "warning", "Display warning dialog", {"warning"})
+  ,      arg_error(ap, "error", "Display error dialog", {"error"})
   ,      arg_question(ap, "question", "Display question dialog", {"question"})
   ,      arg_dnd(ap, "dnd", "Display drag-n-drop box", {"dnd"})
   ,      arg_file(ap, "file", "Display file selection dialog", {"file"})
@@ -163,7 +164,7 @@ int main(int argc, char **argv)
                        "use --text to set a tooltip message", {"indicator"});
   ARG_T  arg_font(ap, "font", "Display font selection dialog", {"font"});
 
-  args::Group g_mwq_options(ap_main, "Message/warning/question options:");
+  args::Group g_mwq_options(ap_main, "Message/warning/error/question options:");
   ARG_T  arg_no_symbol(g_mwq_options, "no-symbol", "Don't show symbol box", {"no-symbol"});
 
   args::Group g_question_options(ap_main, "Question options:");
@@ -280,6 +281,7 @@ int main(int argc, char **argv)
 
   if (arg_message +
       arg_warning +
+      arg_error +
       arg_question +
       arg_dnd +
       arg_file +
@@ -395,6 +397,9 @@ int main(int argc, char **argv)
   }
   if (arg_warning) {
     dialog = DIALOG_WARNING;
+  }
+  if (arg_error) {
+    dialog = DIALOG_ERROR;
   }
   if (arg_question) {
     dialog = DIALOG_QUESTION;
@@ -590,6 +595,8 @@ int main(int argc, char **argv)
       return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
     case DIALOG_WARNING:
       return dialog_message(MESSAGE_TYPE_WARNING, with_icon_box, but_alt);
+    case DIALOG_ERROR:
+      return dialog_message(MESSAGE_TYPE_ERROR, with_icon_box, but_alt);
     case DIALOG_QUESTION:
       return dialog_message(MESSAGE_TYPE_QUESTION, with_icon_box, but_alt);
     case DIALOG_INPUT:

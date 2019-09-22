@@ -87,6 +87,7 @@ int dialog_message(int type
   int esc_ret = 1;
   bool input_field = false;
   bool scaler_field = false;
+  bool one_button = (type == MESSAGE_TYPE_INFO || type == MESSAGE_TYPE_ERROR);
   const char *label_icon = "!";
   const char *label_but_ret = fl_ok;
   const char *label_but = fl_cancel;
@@ -112,6 +113,11 @@ int dialog_message(int type
       label_but_ret = fl_close;
       label_but_alt = NULL;
       label_icon = "i";
+      esc_ret = 0;
+      break;
+    case MESSAGE_TYPE_ERROR:
+      label_but_ret = fl_ok;
+      label_but_alt = NULL;
       esc_ret = 0;
       break;
     case MESSAGE_TYPE_QUESTION:
@@ -147,7 +153,7 @@ int dialog_message(int type
 
   label_but_ret_w = measure_button_width(label_but_ret, 40);
 
-  if (type != MESSAGE_TYPE_INFO) {
+  if (!one_button) {
     label_but_w = measure_button_width(label_but, 15);
   }
   if (label_but_alt) {
@@ -162,7 +168,7 @@ int dialog_message(int type
 
   if (label_but_alt) {
     min_w += 20;
-  } else if (type != MESSAGE_TYPE_INFO) {
+  } else if (!one_button) {
     min_w += 10;
   }
 
@@ -287,7 +293,7 @@ int dialog_message(int type
     {
       int offset_alt = label_but_alt ? label_but_alt_w + 10 : 0;
       int offset = label_but_ret_w + offset_alt;
-      offset += (type == MESSAGE_TYPE_INFO) ? 10 : label_but_w + 20;
+      offset += one_button ? 10 : label_but_w + 20;
 
       dummy = new Fl_Box(/*x*/ win_w - offset - 1,
                          /*y*/ win_h - 48,
@@ -302,7 +308,7 @@ int dialog_message(int type
                                      /*l*/ label_but_ret);
       but_ret->callback(close_cb, 0);
 
-      if (type != MESSAGE_TYPE_INFO) {
+      if (!one_button) {
         but = new Fl_Button(/*x*/ win_w - label_but_w - 10 - offset_alt,
                             /*y*/ win_h - 38,
                             /*w*/ label_but_w,
