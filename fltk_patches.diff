@@ -90,7 +90,7 @@
        } // Fl_Box* o
 --- a/src/Fl_Native_File_Chooser_GTK.cxx
 +++ b/src/Fl_Native_File_Chooser_GTK.cxx
-@@ -98,6 +98,7 @@ typedef void  (*GClosureNotify)(gpointer data, GClosure	*closure);
+@@ -99,6 +99,7 @@ typedef void  (*GClosureNotify)(gpointer data, GClosure	*closure);
  
  class FL_EXPORT Fl_GTK_Native_File_Chooser_Driver : public Fl_Native_File_Chooser_FLTK_Driver {
    friend class Fl_Native_File_Chooser;
