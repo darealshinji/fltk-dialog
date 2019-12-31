@@ -50,10 +50,9 @@ static Fl_Button *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
-static std::string current_dir = "/", home_dir = "/home", magicdb = "";
+static std::string current_dir = "/", home_dir = "/home", magicdb, selected_file;
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
-static char *selected_file = NULL;
 
 static void br_change_dir(void);
 static void selection_timeout(void);
@@ -197,7 +196,7 @@ static std::string get_filetype(const char *file)
     return "";
   }
 
-  db = magicdb == "" ? NULL : magicdb.c_str();
+  db = magicdb.empty() ? NULL : magicdb.c_str();
 
   if (magic_load(mcookie, db) != 0) {
     magic_close(mcookie);
@@ -309,30 +308,8 @@ static void selection_timeout(void) {
   selection = 0;
 }
 
-static void close_cb(Fl_Widget *, long l)
+static void close_cb(Fl_Widget *)
 {
-  if (l == 0) {  /* OK button pressed */
-    int line = br->value();
-
-    if (line > 0) {
-      selected_file = reinterpret_cast<char *>(br->data(line));
-
-      if (list_files && fl_filename_isdir(selected_file)) {
-        /* don't return path but change directory */
-        current_dir = std::string(selected_file);
-        selected_file = NULL;
-        br_change_dir();
-        return;
-      }
-      br->data(line, NULL);
-    } else {  /* nothing selected */
-      if (list_files) {
-        return;
-      }
-      selected_file = strdup(current_dir.c_str());
-    }
-  }
-
   for (int i = 0; i <= br->size(); ++i) {
     if (br->data(i)) {
       free(br->data(i));
@@ -342,13 +319,39 @@ static void close_cb(Fl_Widget *, long l)
   win->hide();
 }
 
+static void ok_cb(Fl_Widget *)
+{
+  int line = br->value();
+
+  if (line > 0) {
+    selected_file = std::string(reinterpret_cast<const char *>(br->data(line)));
+
+    if (list_files && fl_filename_isdir(selected_file.c_str())) {
+      /* don't return path but change directory */
+      current_dir = selected_file;
+      selected_file.clear();
+      br_change_dir();
+      return;
+    }
+    br->data(line, NULL);
+  } else {  /* nothing selected */
+    if (list_files) {
+      return;
+    }
+    selected_file = current_dir;
+  }
+
+  close_cb(NULL);
+}
+
 static void br_callback(Fl_Widget *)
 {
-  const char *fname = reinterpret_cast<const char *>(br->data(br->value()));
+  char *fname = reinterpret_cast<char *>(br->data(br->value()));
 
   /* some workaround to change directories on double-click */
   if (selection == 0) {
     selection = br->value();
+    bt_ok->activate();
     Fl::add_timeout(1.0, th);
   } else {
     Fl::remove_timeout(th);
@@ -363,7 +366,7 @@ static void br_callback(Fl_Widget *)
         }
       } else {
         /* double-clicked on file */
-        close_cb(NULL, 0);
+        ok_cb(NULL);
         return;
       }
     } else {
@@ -375,11 +378,11 @@ static void br_callback(Fl_Widget *)
   if (br->value() == 0) {
     input->value("");
     infobox->label(NULL);
+    bt_ok->deactivate();
   } else {
+    char *p = strrchr(fname, '/');
     fileInfo(fname);
-    char *copy = strdup(fname);
-    input->value(basename(copy));
-    free(copy);
+    input->value(p ? p + 1 : fname);
   }
 }
 
@@ -455,6 +458,7 @@ static void br_change_dir(void)
   br->clear();
 
   selection = 0;
+  bt_ok->deactivate();
 
   if (vec.size() > 0) {
     std::sort(vec.begin(), vec.end(), ignorecaseSort);
@@ -561,7 +565,7 @@ char *file_chooser(int mode)
     magicdb = std::string(dir) + "/../share/file/magic.mgc";
     std::ifstream ifs(magicdb);
     if (!ifs.is_open()) {
-      magicdb = "";
+      magicdb.clear();
     }
     ifs.close();
   }
@@ -684,10 +688,10 @@ char *file_chooser(int mode)
           int bt_w = (bt_w1 > bt_w2) ? bt_w1 : bt_w2;
 
           bt_ok = new Fl_Return_Button(w - bt_w - 10, br->y() + br->h() + 10, bt_w, bt_h, fl_ok);
-          //bt_ok->deactivate();
-          bt_ok->callback(close_cb, 0);
+          bt_ok->deactivate();
+          bt_ok->callback(ok_cb);
           bt_cancel = new Fl_Button(bt_ok->x(), bt_ok->y() + bt_h + 5, bt_w, bt_h, fl_cancel);
-          bt_cancel->callback(close_cb, 1);
+          bt_cancel->callback(close_cb);
 
           g_bottom_inside = new Fl_Group(10, g_bottom->y(), w - bt_w - 30, g_bottom->h());
           {
@@ -708,11 +712,11 @@ char *file_chooser(int mode)
     g->resizable(g_main);
     g->end();
   }
-  win->callback(close_cb, 1);
+  win->callback(close_cb);
 
   home_callback(NULL);
   run_window(win, g, 320, 360);
 
-  return selected_file;
+  return selected_file.empty() ? NULL : strdup(selected_file.c_str());
 }
 
