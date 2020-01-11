@@ -2,7 +2,7 @@
 static const char *license =
     "The MIT License (MIT)\n"
     "\n"
-    "Copyright (c) 2016-2019  djcj <djcj@gmx.de>\n"
+    "Copyright (c) 2016-2020  djcj <djcj@gmx.de>\n"
     "\n"
     "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
     "of this software and associated documentation files (the \"Software\"), to deal\n"

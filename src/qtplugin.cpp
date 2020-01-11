@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2020, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ static void callback(void)
       _exit(127);
     } else {
       int i = system(command);
-      Q_UNUSED(i);
+      static_cast<void>(i);
     }
   }
 }

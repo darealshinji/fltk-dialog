@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2020, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ static void close_cb(Fl_Widget *, long p) {
 
 int dialog_color()
 {
-  Fl_Color_Chooser    *chooser;
+  Fl_Color_Chooser *chooser;
   ColorChip        *color;
   Fl_Box           *dummy;
   Fl_Group         *buttongroup;

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2019, djcj <djcj@gmx.de>
+ * Copyright (c) 2018-2020, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -261,10 +261,8 @@ static void check_icons(const char *icon)
     "512x512", "256x256", "128x128", "64x64",
     "48x48", "32x32", "24x24", "22x22", "16x16"
   };
-  const std::string ext[] = {
-    "", ".svg", ".svgz", ".png",  /* hicolor */
-    "", ".svg", ".png", ".xpm"    /* pixmaps */
-  };
+  const std::string exthic[] = { "", ".svg", ".svgz", ".png" };  /* hicolor */
+  const std::string extpix[] = { "", ".svg", ".png", ".xpm" };   /* pixmaps */
   std::string path, path2;
 
   if ((rgb = img_to_rgb(icon)) != NULL) {
@@ -276,7 +274,7 @@ static void check_icons(const char *icon)
     path.append(icon);
 
     for (int j = 0; j < 4; ++j) {
-      path2 = path + ext[j];
+      path2 = path + exthic[j];
       if ((rgb = img_to_rgb(path2.c_str())) != NULL) {
         return;
       }
@@ -286,8 +284,8 @@ static void check_icons(const char *icon)
   path = "/usr/share/pixmaps/";
   path.append(icon);
 
-  for (int i = 4; i < 8; ++i) {
-    path2 = path + ext[i];
+  for (int i = 0; i < 4; ++i) {
+    path2 = path + extpix[i];
     if ((rgb = img_to_rgb(path2.c_str())) != NULL) {
       return;
     }
