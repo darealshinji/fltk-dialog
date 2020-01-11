@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2019, djcj <djcj@gmx.de>
+ * Copyright (c) 2018-2020, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -348,6 +348,15 @@ static void br_callback(Fl_Widget *)
 {
   char *fname = reinterpret_cast<char *>(br->data(br->value()));
 
+  if (!list_files && br->icon(br->value()) != &icon_dir && br->icon(br->value()) != &icon_link_dir) {
+    Fl::remove_timeout(th);
+    selection = 0;
+    input->value("");
+    infobox->label(NULL);
+    br->deselect();
+    return;
+  }
+
   /* some workaround to change directories on double-click */
   if (selection == 0) {
     selection = br->value();
@@ -378,7 +387,9 @@ static void br_callback(Fl_Widget *)
   if (br->value() == 0) {
     input->value("");
     infobox->label(NULL);
-    bt_ok->deactivate();
+    if (list_files) {
+      bt_ok->deactivate();
+    }
   } else {
     char *p = strrchr(fname, '/');
     fileInfo(fname);
@@ -457,8 +468,10 @@ static void br_change_dir(void)
   }
   br->clear();
 
+  if (list_files) {
+    bt_ok->deactivate();
+  }
   selection = 0;
-  bt_ok->deactivate();
 
   if (vec.size() > 0) {
     std::sort(vec.begin(), vec.end(), ignorecaseSort);
@@ -480,36 +493,37 @@ static void br_change_dir(void)
           lstat(path.c_str(), &st);
           br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
           br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_dir : &icon_dir);
-        } else if (list_files) {
-          vec2.push_back(s);
         }
+        vec2.push_back(s);
       }
     }
     vec.clear();
 
     /* list files */
-    if (list_files) {
-      for (auto it = vec2.begin(); it != vec2.end(); ++it) {
-        std::string &s = *it;
-        if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
-          std::string path = current_dir;
-          if (path != "/") {
-            path.push_back('/');
-          }
-          path += s;
+    for (auto it = vec2.begin(); it != vec2.end(); ++it) {
+      std::string &s = *it;
+      if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
+        std::string path = current_dir;
+        if (path != "/") {
+          path.push_back('/');
+        }
+        path += s;
 
-          if (!fl_filename_isdir(path.c_str())) {
-            struct stat st;
-            std::string entry = (br->size() % 2 == 0) ? white : yellow;
-            entry += s;
-            lstat(path.c_str(), &st);
-            br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
-            br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
+        if (!fl_filename_isdir(path.c_str())) {
+          struct stat st;
+          std::string entry;
+          if (!list_files) {
+            entry = "@i@C8";
           }
+          entry += (br->size() % 2 == 0) ? white : yellow;
+          entry += s;
+          lstat(path.c_str(), &st);
+          br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
+          br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
         }
       }
-      vec2.clear();
     }
+    vec2.clear();
   }
 
   std::string s = " " + current_dir;
@@ -688,7 +702,9 @@ char *file_chooser(int mode)
           int bt_w = (bt_w1 > bt_w2) ? bt_w1 : bt_w2;
 
           bt_ok = new Fl_Return_Button(w - bt_w - 10, br->y() + br->h() + 10, bt_w, bt_h, fl_ok);
-          bt_ok->deactivate();
+          if (list_files) {
+            bt_ok->deactivate();
+          }
           bt_ok->callback(ok_cb);
           bt_cancel = new Fl_Button(bt_ok->x(), bt_ok->y() + bt_h + 5, bt_w, bt_h, fl_cancel);
           bt_cancel->callback(close_cb);
