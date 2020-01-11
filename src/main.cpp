@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2019, djcj <djcj@gmx.de>
+ * Copyright (c) 2016-2020, djcj <djcj@gmx.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,6 @@ static int _argtoint(const char *arg, int &val, const char *self, std::string cm
 int main(int argc, char **argv)
 {
   if (argc < 2) {
-    Fl::get_system_colors();
     Fl::scheme("gtk+");
     Fl::visual(FL_DOUBLE|FL_INDEX);
     Fl_Window::default_icon(new Fl_PNG_Image(NULL, icon_png, icon_png_len));
@@ -134,9 +133,9 @@ int main(int argc, char **argv)
   ,      arg_center(ap, "center", "Place window at center of screen", {"center"})
   ,      arg_always_on_top(ap, "always-on-top", "Keep window always visible on top", {"always-on-top"})
   ,      arg_no_escape(ap, "no-escape", "Don't close window when hitting ESC button", {"no-escape"});
-  ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: default, gtk+, gleam, plastic or simple; "
+  ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: fltk, gtk+, gleam or plastic; "
                     "default is gtk+", {"scheme"});
-  ARG_T  arg_no_system_colors(ap, "no-system-colors", "Use FLTK's default gray color scheme", {"no-system-colors"})
+  ARG_T  arg_system_colors(ap, "system-colors", "Use the system's color scheme", {"system-colors"})
   ,      arg_undecorated(ap, "undecorated", "Set window undecorated", {"undecorated"})
   ,      arg_skip_taskbar(ap, "skip-taskbar", "Don't show window in taskbar", {"skip-taskbar"})
   ,      arg_message(ap, "message", "Display message dialog", {"message"})
@@ -548,19 +547,19 @@ int main(int argc, char **argv)
   }
 
   /* set scheme */
-  std::string scheme = "gtk+";
-  GETVAL(scheme, arg_scheme);
+  const char *scheme = "gtk+";
+  GETCSTR(scheme, arg_scheme);
 
-  if (scheme == "gtk+" || scheme == "gtk" || scheme == "default") {
-    Fl::scheme("gtk+");
-  } else if (scheme == "none" || scheme == "simple") {
+  if (strcasecmp(scheme, "fltk") == 0 || strcasecmp(scheme, "simple") == 0 ||
+      strcasecmp(scheme, "none") == 0 || strcasecmp(scheme, "x11") == 0)
+  {
     Fl::scheme("none");
-  } else if (scheme == "gleam" || scheme == "plastic") {
-    Fl::scheme(scheme.c_str());
+  } else if (strcasecmp(scheme, "gleam") == 0) {
+    Fl::scheme("gleam");
+  } else if (strcasecmp(scheme, "plastic") == 0) {
+    Fl::scheme("plastic");
   } else {
-    std::cerr << argv[0] << ": \"" << scheme << "\" is not a valid scheme!\n"
-      "Available schemes are: default gtk+ gleam plastic simple" << std::endl;
-    return 1;
+    Fl::scheme("gtk+");
   }
 
   /* set window icon and system colors */
@@ -576,7 +575,7 @@ int main(int argc, char **argv)
 
     Fl_Window::default_icon(rgb);
 
-    if (!arg_no_system_colors) {
+    if (arg_system_colors) {
       Fl::get_system_colors();
     }
   }
@@ -590,7 +589,7 @@ int main(int argc, char **argv)
 
   switch (dialog) {
     case DIALOG_ABOUT:
-      return about();
+      break;
     case DIALOG_MESSAGE:
       return dialog_message(MESSAGE_TYPE_INFO, with_icon_box, but_alt);
     case DIALOG_WARNING:
@@ -639,9 +638,6 @@ int main(int argc, char **argv)
       break;
   }
 
-  /* should never be reached */
-  std::cerr << argv[0] << ": error: unknown or unused dialog\n" << __PRETTY_FUNCTION__
-    << " at " << __FILE__ << ", line " << __LINE__ << std::endl;
-  return 1;
+  return about();
 }
 
