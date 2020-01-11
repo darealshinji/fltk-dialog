@@ -37,12 +37,11 @@ static const char *text = "\n"
   "Using FLTK version " FLTK_VERSION_STRING "\n"
   "http://www.fltk.org\n"
   "\n"
-  /* http://www.utf8-chartable.de/ */
-  "Copyright \xc2\xa9 2016-2019 djcj <djcj@gmx.de>\n"
+  "Copyright \xc2\xa9 2016-2020 djcj <djcj@gmx.de>\n"
   PROJECT_URL "\n"
   "\n"
   "The FLTK library and the font widget are\n"
-  "copyright \xc2\xa9 1998-2019 by Bill Spitzak and others.\n"
+  "copyright \xc2\xa9 1998-2020 by Bill Spitzak and others.\n"
   "\n"
   "The application icon is copyright \xc2\xa9 2016 by Haiku, Inc.";
 
