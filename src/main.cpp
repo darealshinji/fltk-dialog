@@ -97,6 +97,7 @@ int main(int argc, char **argv)
   if (argc < 2) {
     Fl::scheme("gtk+");
     Fl::visual(FL_DOUBLE|FL_INDEX);
+    Fl::set_color(FL_BACKGROUND_COLOR, fl_lighter(FL_BACKGROUND_COLOR));
     Fl_Window::default_icon(new Fl_PNG_Image(NULL, icon_png, icon_png_len));
     l10n();
     position_center = true;
@@ -577,6 +578,8 @@ int main(int argc, char **argv)
 
     if (arg_system_colors) {
       Fl::get_system_colors();
+    } else {
+      Fl::set_color(FL_BACKGROUND_COLOR, fl_lighter(FL_BACKGROUND_COLOR));
     }
   }
 
