@@ -4,9 +4,6 @@
 [submodule "random"]
 	path = random
 	url = https://github.com/effolkronium/random
-[submodule "whereami"]
-	path = whereami
-	url = https://github.com/gpakosz/whereami
 [submodule "args"]
 	path = args
 	url = https://github.com/Taywee/args

@@ -76,7 +76,6 @@ _SRCS = \
   radiolist.cpp \
   radiolist_browser.cpp \
   textinfo.cpp \
-  whereami.c \
   $(NULL)
 
 ifneq ($(USE_DLOPEN),)

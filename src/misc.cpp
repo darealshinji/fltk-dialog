@@ -39,8 +39,6 @@
 # include <dlfcn.h>
 # ifndef USE_EXTERNAL_PLUGINS
 #  include "qtplugin_so.h"
-# else
-#  include "../whereami/src/whereami.h"
 # endif
 #endif
 

@@ -40,7 +40,6 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "../whereami/src/whereami.h"
 #include "octicons.h"
 
 static Fl_Double_Window *win;
@@ -152,7 +151,7 @@ static std::string getfsize(double size)
 {
   std::string str;
   const char *unit;
-  char ch[32] = {0};
+  char ch[64] = {0};
   const int KiBYTES = 1024;
   const int MiBYTES = 1024 * KiBYTES;
   const int GiBYTES = 1024 * MiBYTES;
@@ -173,7 +172,6 @@ static std::string getfsize(double size)
   }
 
   snprintf(ch, sizeof(ch) - 1, "%.1f", size);
-  ch[strlen(ch) - 2] = '.';  /* replace comma with dot */
   str = std::string(ch) + unit;
   return str;
 }
@@ -547,8 +545,9 @@ char *file_chooser(int mode)
   Fl_Group *g, *g_top, *g_main, *g_main_left, *g_bottom, *g_bottom_inside;
   Fl_Box *dummy;
   std::vector<std::string> vec, vec2;
+  char buf[PATH_MAX] = {0};
   const int w = 800, h = 600;
-  char *env;
+  char *env, *resolved, *dir;
 
   const char *xdg_types[] = {
     "XDG_DESKTOP_DIR",
@@ -565,27 +564,24 @@ char *file_chooser(int mode)
     home_dir = std::string(env);
   }
 
+  /* for file sizes */
+  setlocale(LC_NUMERIC, "C");
+
   /* needed for sorting */
   setlocale(LC_COLLATE, "");
 
   /* path to magic DB */
-  int len = wai_getExecutablePath(NULL, 0, NULL);
-  char *path = new char[len + 1];
-  wai_getExecutablePath(path, len, NULL);
-  path[len] = '\0';
-
-  char *dir = dirname(path);
-  if (dir) {
+  if ((resolved = realpath("/proc/self/exe", buf)) != NULL && (dir = dirname(resolved)) != NULL) {
     magicdb = std::string(dir) + "/../share/file/magic.mgc";
     std::ifstream ifs(magicdb);
-    if (!ifs.is_open()) {
+    if (ifs.is_open()) {
+      ifs.close();
+    } else {
       magicdb.clear();
     }
-    ifs.close();
   }
 
   dir = NULL;
-  delete path;
 
   win = new Fl_Double_Window(w, h, title);
   {
