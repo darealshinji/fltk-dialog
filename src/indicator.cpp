@@ -97,16 +97,13 @@ int corner_box::event_y_pos = 1;
 
 static Fl_Double_Window *win = NULL;
 static Fl_RGB_Image *rgb = NULL;
-static corner_box *b = NULL;
+static corner_box *box = NULL;
 
 static const char *command = NULL;
 static bool listen, auto_close;
 static pthread_t t1;
 
-static void callback(Fl_Widget *);
-static void close_cb(Fl_Widget *, long exec_command);
-
-static void callback(Fl_Widget *)
+static void callback(Fl_Widget *, long)
 {
   if (command && strlen(command) > 0) {
     int i = system(command);
@@ -197,8 +194,8 @@ extern "C" void *getline_xlib(void *)
 
         if (rgb) {
           /* make icon a bit smaller than the area */
-          int n = b->w() * ICON_SCALE;
-          b->image(rgb->copy(n, n));
+          int n = box->w() * ICON_SCALE;
+          box->image(rgb->copy(n, n));
           delete rgb;
         }
 
@@ -208,6 +205,8 @@ extern "C" void *getline_xlib(void *)
         Fl::awake(win);
 
         rgb = NULL;
+      } else if (strcasecmp(line.c_str(), "run") == 0) {
+        box->do_callback();
       }
       usleep(300000);  /* 300ms */
     }
@@ -226,8 +225,8 @@ static int create_corner_window(const char *icon)
   win = new Fl_Double_Window(n, n);
   win->callback(close_cb, 0);
 
-  b = new corner_box(0, 0, win->w(), win->h());
-  b->callback(callback);
+  box = new corner_box(0, 0, win->w(), win->h());
+  box->callback(auto_close ? close_cb : callback, 1);
 
   win->label(title);
   win->tooltip(msg);
@@ -253,7 +252,7 @@ static int create_corner_window(const char *icon)
   }
 
   n *= ICON_SCALE;
-  b->image(rgb->copy(n, n));
+  box->image(rgb->copy(n, n));
 
   delete rgb;
   rgb = NULL;

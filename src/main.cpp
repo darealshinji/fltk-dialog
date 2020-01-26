@@ -251,7 +251,8 @@ int main(int argc, char **argv)
   ,     unused_arg3(g_indicator_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
 #endif
 #endif  /* USE_DLOPEN */
-  ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
+  ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN; "
+                    "the following commands are available: run icon:<nameOfIcon> quit", {"listen"})
   ,      unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
                      {"auto-close"});
 

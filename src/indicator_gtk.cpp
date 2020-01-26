@@ -148,6 +148,8 @@ extern "C" void *getline_gtk(void *v)
         return nullptr;
       } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
         set_icon(line.substr(5).c_str(), reinterpret_cast<AppIndicator *>(v));
+      } else if (strcasecmp(line.c_str(), "run") == 0) {
+        callback();
       }
       usleep(300000);  /* 300ms */
     }

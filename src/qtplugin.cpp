@@ -77,7 +77,10 @@ void *getline_qt(void *)
         appTray->quit();
         return nullptr;
       } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
+        /* maybe we should parse /usr/share/icons/ to find the right one */
         trayIcon->setIcon(QIcon(line.substr(5).c_str()));
+      } else if (strcasecmp(line.c_str(), "run") == 0) {
+        callback();
       }
       usleep(300000);  /* 300ms */
     }
