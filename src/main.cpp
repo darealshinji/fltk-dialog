@@ -119,11 +119,11 @@ int main(int argc, char **argv)
   ,      arg_separator(ap, "SEPARATOR", "Set common separator (single character; can be escape sequence \\n or \\t)",
                        {"separator"})
   ,      arg_icon(ap, "FILE", "Set the taskbar/notification/indicator icon; supported formats are: "
+                  "bmp gif "
 #ifdef USE_DLOPEN
-                  "bmp gif icns ico jpg png svg svgz xbm xpm", {"icon"});  /* includes icns format */
-#else
-                  "bmp gif ico jpg png svg svgz xbm xpm", {"icon"});
+                  "icns "
 #endif
+                  "ico jpg png svg svgz xbm xpm", {"icon"});
   ARG_T  arg_quoted_output(ap, "quoted-output", "Quote output", {"quoted-output"});
   ARGI_T arg_width(ap, "WIDTH", "Set the window width", {"width"})
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
@@ -245,12 +245,11 @@ int main(int argc, char **argv)
 
   args::Group g_indicator_options(ap_main, "Indicator options:");
 #ifdef USE_DLOPEN
-  ARG_T unused_arg1(g_indicator_options, "native", "Use the operating system's native indicator system (default)", {"native"});
+  ARG_T unused_arg1(g_indicator_options, "native", "Use the operating system's native indicator system", {"native"});
 #ifdef HAVE_QT
   ARG_T unused_arg2(g_indicator_options, "native-gtk", "Use the Gtk+ indicator (libappindicator)", {"native-gtk"})
   ,     unused_arg3(g_indicator_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
 #endif
-  ARG_T arg_legacy(g_indicator_options, "legacy", "Use the legacy X11 indicator system", {"legacy"});
 #endif  /* USE_DLOPEN */
   ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN", {"listen"})
   ,      unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
@@ -434,7 +433,7 @@ int main(int argc, char **argv)
   int native_mode = NATIVE_NONE;
 
 #ifdef USE_DLOPEN
-  if (arg_native || arg_indicator) {
+  if (arg_native) {
     native_mode = NATIVE_ANY;
   }
 
@@ -459,11 +458,6 @@ int main(int argc, char **argv)
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     GETCSTR(indicator_command, arg_indicator);
-#ifdef USE_DLOPEN
-    if (arg_legacy) {
-      native_mode = NATIVE_NONE;
-    }
-#endif  /* USE_DLOPEN */
   }
 
   /* progress */
@@ -567,7 +561,7 @@ int main(int argc, char **argv)
   const char *icon = NULL;
   GETCSTR(icon, arg_icon);
 
-  if (!arg_notification && !arg_indicator) {
+  if (!arg_notification) {
     Fl_RGB_Image *rgb = img_to_rgb(icon);
 
     if (!rgb) {

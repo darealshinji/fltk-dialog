@@ -155,11 +155,6 @@ enum {
 };
 
 enum {
-  INDICATOR_X11 = 1 << 1,
-  INDICATOR_GTK = 1 << 2
-};
-
-enum {
   LANG_EN,
   LANG_AR,
   LANG_DE,

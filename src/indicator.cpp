@@ -25,6 +25,7 @@
 // pipe=$(mktemp -u)
 // mkfifo $pipe
 // exec 3<> $pipe
+// fltk-dialog --indicator="echo Hello" --listen <&3 &
 // echo "ICON:newIcon" >&3
 
 #include <iostream>
@@ -44,169 +45,72 @@
  */
 #include "image_missing_svg.h"
 
-#define ICON_SCALE  0.72
+#define ICON_SCALE  0.86  //0.72
 #define ICON_MIN    4
 
-class simple_button : public Fl_Box
+
+class corner_box : public Fl_Box
 {
 public:
-  simple_button(int X, int Y, int W, int H, const char *L=NULL)
+  corner_box(int X, int Y, int W, int H, const char *L=NULL)
     : Fl_Box(X, Y, W, H, L)
   { }
 
-  int handle(int event) {
-    if (event == FL_PUSH) {
-      do_callback();
-    }
-    return Fl_Box::handle(event);
-  }
+  static int event_x_pos, event_y_pos;
+
+  int handle(int event);
 };
 
-class menu_window : public Fl_Single_Window
+int corner_box::handle(int ev)
 {
-public:
-  menu_window(int X, int Y, int W, int H, const char *L=NULL)
-    : Fl_Single_Window(X, Y, W, H, L)
-  { }
+  switch (ev) {
+    case FL_PUSH:
+      if (Fl::event_button() == FL_RIGHT_MOUSE) {
+        fl_cursor(FL_CURSOR_MOVE);
+        event_x_pos = Fl::event_x();
+        event_y_pos = Fl::event_y();
+      }
+      break;
+    case FL_DRAG:
+      if (Fl::event_button() == FL_RIGHT_MOUSE) {
+        window()->position(Fl::event_x_root() - event_x_pos, Fl::event_y_root() - event_y_pos);
+      }
+      break;
+    case FL_RELEASE:
+      fl_cursor(FL_CURSOR_DEFAULT);
 
-  int handle(int event) {
-    if (event == FL_UNFOCUS) {
-      hide();
-      do_callback();
-    }
-    return Fl_Single_Window::handle(event);
+      if (Fl::event_inside(this)) {
+        int eb = Fl::event_button();
+        if (eb == FL_LEFT_MOUSE) {
+          do_callback();  /* run command */
+        } else if (eb == FL_MIDDLE_MOUSE) {
+          window()->do_callback();  /* quit */
+        }
+      }
+      break;
   }
-};
-
-class menu_entry : public Fl_Button
-{
-public:
-  menu_entry(int X, int Y, int W, int H, const char *L=NULL);
-
-  int handle(int event) {
-    switch (event) {
-      case FL_ENTER:
-        color(selection_color());
-        labelcolor(FL_WHITE);
-        parent()->redraw();
-        break;
-      case FL_LEAVE:
-      case FL_PUSH:
-        color(FL_BACKGROUND_COLOR);
-        labelcolor(FL_BLACK);
-        parent()->redraw();
-        break;
-    }
-    return Fl_Button::handle(event);
-  }
-};
-
-menu_entry::menu_entry(int X, int Y, int W, int H, const char *L)
- : Fl_Button(X, Y, W, H, L)
-{
-  box(FL_FLAT_BOX);
-  down_box(FL_FLAT_BOX);
-  align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
-  selection_color(FL_BLUE);
-  clear_visible_focus();
+  return ev;
 }
 
-static Fl_Single_Window *win = NULL;
+int corner_box::event_x_pos = 1;
+int corner_box::event_y_pos = 1;
+
+static Fl_Double_Window *win = NULL;
 static Fl_RGB_Image *rgb = NULL;
-static Fl_SVG_Image *svg = NULL;
-static simple_button *but = NULL;
-static menu_window *menu = NULL;
+static corner_box *b = NULL;
 
 static const char *command = NULL;
-static int it = 0;
 static bool listen, auto_close;
 static pthread_t t1;
 
 static void callback(Fl_Widget *);
-static void popup_cb(Fl_Widget *);
-static void popdown_cb(Fl_Widget *);
-static void menu_cb(Fl_Widget *);
 static void close_cb(Fl_Widget *, long exec_command);
 
-static void init_menu(void)
+static void callback(Fl_Widget *)
 {
-  menu = new menu_window(0, 0, 140, 52);
-  {
-    menu_entry *m1 = new menu_entry(0,  0, 140, 26, "  Run command");
-    menu_entry *m2 = new menu_entry(0, 26, 140, 26, "  Quit");
-
-    if (auto_close) {
-      m1->callback(close_cb, 1);
-    } else {
-      m1->callback(callback);
-    }
-    m2->callback(close_cb, 0);
-
-    if (command) {
-      if (strlen(command) > 36) {
-        std::string s = command;
-        s.erase(31);
-        s += "[...]";
-        m1->copy_tooltip(s.c_str());
-      } else {
-        m1->tooltip(command);
-      }
-    }
-  }
-  menu->callback(menu_cb);
-  menu->end();
-  menu->border(0);
-}
-
-static void menu_cb(Fl_Widget *) {
-  but->box(FL_NO_BOX);
-  but->callback(popup_cb);
-  win->redraw();
-}
-
-static void popup_cb(Fl_Widget *)
-{
-  if (win->w() != win->h()) {
-    std::cerr << "error: unexpected uneven button size:"
-      " w=" << win->w() << ", h=" << win->h() << std::endl;
-  }
-  if (!menu) {
-    init_menu();
-  }
-  but->box(FL_FLAT_BOX);
-  but->callback(popdown_cb);
-  win->redraw();
-  menu->position(Fl::event_x_root() - Fl::event_x(), Fl::event_y_root() - Fl::event_y());
-  menu->show();
-}
-
-static void popdown_cb(Fl_Widget *) {
-  menu->hide();
-  but->box(FL_NO_BOX);
-  but->callback(popup_cb);
-  win->redraw();
-}
-
-static void callback(Fl_Widget *) {
   if (command && strlen(command) > 0) {
-    popdown_cb(NULL);
     int i = system(command);
     static_cast<void>(i);
-  }
-}
-
-static void close_windows(void)
-{
-  if (menu) {
-    menu->hide();
-  }
-  win->hide();
-
-  if (rgb) {
-    delete rgb;
-  }
-  if (svg) {
-    delete svg;
   }
 }
 
@@ -216,41 +120,15 @@ static void close_cb(Fl_Widget *, long exec_command)
     pthread_cancel(t1);
   }
 
-  close_windows();
-
-  if (exec_command && command && strlen(command) > 0) {
-    execl("/bin/sh", "sh", "-c", command, NULL);
-    _exit(127);
-  }
-}
-
-static void set_size(void *)
-{
-  int w = win->w();
-  int h = win->h();
-
-  if (w == 0 || h == 0) {
-    it++;
-    /* don't loop forever */
-    if (it < 5000) {
-      Fl::repeat_timeout(0.001, set_size);
-    }
-    return;
-  }
-
-  int n = (w > h) ? w : h;
-
-  win->size(n, n);
-  but->size(n, n);
+  win->hide();
 
   if (rgb) {
-    /* make icon a bit smaller than the area */
-    if ((n *= ICON_SCALE) > ICON_MIN) {
-      but->image(rgb->copy(n, n));
-    }
-
     delete rgb;
-    rgb = NULL;
+  }
+
+  if (exec_command != 0 && command && strlen(command) > 0) {
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    _exit(127);
   }
 }
 
@@ -292,7 +170,7 @@ static void check_icons(const char *icon)
   }
 
   if (!rgb) {
-    svg = new Fl_SVG_Image(NULL, image_missing_svg);
+    rgb = new Fl_SVG_Image(NULL, image_missing_svg);
   }
 }
 
@@ -303,26 +181,25 @@ extern "C" void *getline_xlib(void *)
   while (true) {
     if (std::getline(std::cin, line)) {
       if (strcasecmp(line.c_str(), "quit") == 0) {
-        close_windows();
+        win->hide();
+
+        if (rgb) {
+          delete rgb;
+        }
+
         Fl::awake();
+
         return nullptr;
       } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
-        std::string icon = line.substr(5).c_str();
-
         Fl::lock();
 
-        check_icons(icon.c_str());
+        check_icons(line.substr(5).c_str());
 
-        /* make icon a bit smaller than the area */
-        int n = but->w();
-        if ((n *= ICON_SCALE) > ICON_MIN) {
-          if (rgb) {
-            but->image(rgb->copy(n, n));
-            delete rgb;
-          } else {
-            but->image(svg->copy(n, n));
-            delete svg;
-          }
+        if (rgb) {
+          /* make icon a bit smaller than the area */
+          int n = b->w() * ICON_SCALE;
+          b->image(rgb->copy(n, n));
+          delete rgb;
         }
 
         win->redraw();
@@ -330,7 +207,7 @@ extern "C" void *getline_xlib(void *)
         Fl::unlock();
         Fl::awake(win);
 
-        rgb = svg = NULL;
+        rgb = NULL;
       }
       usleep(300000);  /* 300ms */
     }
@@ -338,62 +215,34 @@ extern "C" void *getline_xlib(void *)
   return nullptr;
 }
 
-static int create_tray_entry_xlib(const char *icon)
+static int create_corner_window(const char *icon)
 {
-  Window dock;
-  XEvent ev;
-  Fl_Color flcol = 0;
-  XColor xcol = {0};
-  XImage *image;
-  char atom_tray_name[128];
+  int n = 40;
 
-  snprintf(atom_tray_name, sizeof(atom_tray_name) - 1, "_NET_SYSTEM_TRAY_S%i", fl_screen);
-  dock = XGetSelectionOwner(fl_display, XInternAtom(fl_display, atom_tray_name, False));
-  if (!dock) {
-    return 1;
+  if (!title) {
+    title = "FLTK indicator";
   }
 
-  win = new Fl_Single_Window(0, 0);
-  {
-    but = new simple_button(0, 0, 0, 0);
-    but->box(FL_NO_BOX);
-    if (msg) {
-      but->tooltip(msg);
-    }
-    but->callback(popup_cb);
-  }
+  win = new Fl_Double_Window(n, n);
+  win->callback(close_cb, 0);
+
+  b = new corner_box(0, 0, win->w(), win->h());
+  b->callback(callback);
+
+  win->label(title);
+  win->tooltip(msg);
   win->when(FL_WHEN_NEVER);
   win->end();
-  win->border(0);
+  set_taskbar(win);
+  win->position(Fl::w() - win->w(), Fl::h() - win->h());
   win->show();
   if (!win->shown()) {
     return 1;
   }
 
-  /* dock window */
-  memset(&ev, 0, sizeof(ev));
-  ev.xclient.type = ClientMessage;
-  ev.xclient.window = dock;
-  ev.xclient.message_type = XInternAtom(fl_display, "_NET_SYSTEM_TRAY_OPCODE", False);
-  ev.xclient.format = 32;
-  ev.xclient.data.l[0] = fl_event_time;
-  ev.xclient.data.l[1] = 0;  // SYSTEM_TRAY_REQUEST_DOCK
-  ev.xclient.data.l[2] = fl_xid(win);
-  ev.xclient.data.l[3] = 0;
-  ev.xclient.data.l[4] = 0;
-  XSendEvent(fl_display, dock, False, NoEventMask, &ev);
-  XSync(fl_display, False);
-
-  /* get tray color and set as background */
-  image = XGetImage(fl_display, RootWindow(fl_display, DefaultScreen(fl_display)),
-                    win->x() + 1, win->y() + 1, 1, 1, AllPlanes, XYPixmap);
-  xcol.pixel = XGetPixel(image, 0, 0);
-  XFree(image);
-  XQueryColor(fl_display, DefaultColormap(fl_display, DefaultScreen(fl_display)), &xcol);
-
-  Fl::set_color(flcol, xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
-  but->color(fl_lighter(flcol));
-  win->color(flcol);
+  window_decoration = false;
+  set_undecorated(win);
+  set_always_on_top(win);
 
   if (icon && strlen(icon) > 0) {
     check_icons(icon);
@@ -403,7 +252,11 @@ static int create_tray_entry_xlib(const char *icon)
     rgb = new Fl_PNG_Image(NULL, icon_png, icon_png_len);
   }
 
-  Fl::add_timeout(0.005, set_size);  /* 5 ms */
+  n *= ICON_SCALE;
+  b->image(rgb->copy(n, n));
+
+  delete rgb;
+  rgb = NULL;
 
   if (listen) {
     Fl::lock();
@@ -454,14 +307,15 @@ int dialog_indicator(const char *command_, const char *icon, int native, bool li
   auto_close = auto_close_;
 
 #ifdef USE_DLOPEN
-#ifdef HAVE_QT
-  if (native == NATIVE_ANY && getenv("KDE_FULL_SESSION")) {
-    native = NATIVE_QT;
-  }
-#endif
-
   switch (native) {
+    case NATIVE_NONE:
+      break;
     case NATIVE_ANY:
+#ifdef HAVE_QT
+      if (getenv("KDE_FULL_SESSION")) {
+        return dlopen_start_indicator_qt(icon);
+      }
+#endif
     case NATIVE_GTK:
       return start_indicator_gtk(command, icon, listen, auto_close);
 #ifdef HAVE_QT
@@ -469,8 +323,10 @@ int dialog_indicator(const char *command_, const char *icon, int native, bool li
       return dlopen_start_indicator_qt(icon);
 #endif
   }
+#else
+  static_cast<void>(native);
 #endif  /* USE_DLOPEN */
 
-  return create_tray_entry_xlib(icon);
+  return create_corner_window(icon);
 }
 
