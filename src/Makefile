@@ -40,6 +40,8 @@ CXX ?= g++
 XXDCMD ?= xxd -i
 
 OCTICONS = \
+  arrow-both-gray.png \
+  arrow-both.png \
   arrow-up-gray.png \
   arrow-up.png \
   eye-closed.png \

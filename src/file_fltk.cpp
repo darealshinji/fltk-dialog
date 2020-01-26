@@ -42,14 +42,16 @@
 #include "fltk-dialog.hpp"
 #include "octicons.h"
 
+#define DOUBLECLICK_TIME 1.0
+
 static Fl_Double_Window *win;
 static Fl_Hold_Browser *br;
 static Fl_Box *addrline, *infobox;
-static Fl_Button *bt_up;
+static Fl_Button *bt_popd, *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
-static std::string current_dir = "/", home_dir = "/home", magicdb, selected_file;
+static std::string current_dir = "/", prev_dir, home_dir = "/home", magicdb, selected_file;
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
 
@@ -62,6 +64,8 @@ PNG(eye, eye)
 PNG(eye_closed, eye_closed)
 PNG(go_up, arrow_up)
 PNG(go_up_gray, arrow_up_gray)
+PNG(go_back, arrow_both)
+PNG(go_back_gray, arrow_both_gray)
 PNG(icon_any, file)
 PNG(icon_dir, file_directory)
 PNG(icon_link_any, file_symlink_file)
@@ -242,9 +246,22 @@ static void fileInfo(const char *file)
   infobox->copy_label(str.c_str());
 }
 
+static void popd_callback(Fl_Widget *)
+{
+  if (prev_dir.empty()) {
+    bt_popd->deactivate();
+  } else {
+    std::string popd = prev_dir;
+    prev_dir = current_dir;
+    current_dir = popd;
+    br_change_dir();
+  }
+}
+
 static void up_callback(Fl_Widget *)
 {
   if (current_dir != "/") {
+    prev_dir = current_dir;
     current_dir.erase(current_dir.rfind('/'));
 
     if (current_dir.empty()) {
@@ -255,19 +272,23 @@ static void up_callback(Fl_Widget *)
   }
 }
 
-static void xdg_callback(Fl_Widget *, void *v) {
+static void xdg_callback(Fl_Widget *, void *v)
+{
   if (v) {
+    prev_dir = current_dir;
     current_dir = reinterpret_cast<const char *>(v);
     br_change_dir();
   }
 }
 
 static void top_callback(Fl_Widget *) {
+  prev_dir = current_dir;
   current_dir = "/";
   br_change_dir();
 }
 
 static void home_callback(Fl_Widget *) {
+  prev_dir = current_dir;
   current_dir = home_dir;
   br_change_dir();
 }
@@ -326,6 +347,7 @@ static void ok_cb(Fl_Widget *)
 
     if (list_files && fl_filename_isdir(selected_file.c_str())) {
       /* don't return path but change directory */
+      prev_dir = current_dir;
       current_dir = selected_file;
       selected_file.clear();
       br_change_dir();
@@ -359,7 +381,7 @@ static void br_callback(Fl_Widget *)
   if (selection == 0) {
     selection = br->value();
     bt_ok->activate();
-    Fl::add_timeout(1.0, th);
+    Fl::add_timeout(DOUBLECLICK_TIME, th);
   } else {
     Fl::remove_timeout(th);
     if (br->value() == selection) {
@@ -368,6 +390,7 @@ static void br_callback(Fl_Widget *)
       if (fl_filename_isdir(fname)) {
         /* double-clicked on directory */
         if (access(fname, R_OK) == 0) {
+          prev_dir = current_dir;
           current_dir = std::string(fname);
           br_change_dir();
         }
@@ -378,7 +401,7 @@ static void br_callback(Fl_Widget *)
       }
     } else {
       selection = br->value();
-      Fl::add_timeout(1.0, th);
+      Fl::add_timeout(DOUBLECLICK_TIME, th);
     }
   }
 
@@ -430,6 +453,10 @@ static void br_change_dir(void)
         break;
       }
     }
+  }
+
+  if (prev_dir.empty() || prev_dir == "" || !fl_filename_isdir(prev_dir.c_str())) {
+    prev_dir.clear();
   }
 
   int n = fl_filename_list(current_dir.c_str(), &list);
@@ -527,12 +554,20 @@ static void br_change_dir(void)
   std::string s = " " + current_dir;
   addrline->copy_label(s.c_str());
 
-  if (current_dir == "/" && bt_up->active()) {
+  if (current_dir == "/") {
     bt_up->deactivate();
     bt_up->image(go_up_gray);
-  } else if (current_dir != "/" && !bt_up->active()) {
+  } else {
     bt_up->activate();
     bt_up->image(go_up);
+  }
+
+  if (prev_dir.empty()) {
+    bt_popd->deactivate();
+    bt_popd->image(go_back_gray);
+  } else {
+    bt_popd->activate();
+    bt_popd->image(go_back);
   }
 
   input->value("");
@@ -591,14 +626,21 @@ char *file_chooser(int mode)
       {
         const int bt_w = 36;
 
-        addrline = new Fl_Box(10, 7, w - bt_w*3 - 25, 26, " /");
+        addrline = new Fl_Box(10, 7, w - bt_w*4 - 25, 26, " /");
         addrline->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
         addrline->box(FL_FLAT_BOX);
         addrline->color(fl_lighter(addrline->color()));
 
         /* cover up the end of addrline */
-       { Fl_Box *o = new Fl_Box(w - bt_w*3 - 15, 5, bt_w*3 + 15, 30);
+       { Fl_Box *o = new Fl_Box(w - bt_w*4 - 15, 5, bt_w*4 + 15, 30);
         o->box(FL_FLAT_BOX); }
+
+        bt_popd = new Fl_Button(w - bt_w*4 - 10, 5, bt_w, 30);
+        bt_popd->tooltip("Previous Directory");
+        bt_popd->image(go_back_gray);
+        bt_popd->deactivate();
+        bt_popd->callback(popd_callback);
+        bt_popd->clear_visible_focus();
 
         bt_up = new Fl_Button(w - bt_w*3 - 10, 5, bt_w, 30);
         bt_up->tooltip("Parent Directory");
@@ -726,6 +768,7 @@ char *file_chooser(int mode)
   }
   win->callback(close_cb);
 
+  current_dir.clear();
   home_callback(NULL);
   run_window(win, g, 320, 360);
 
