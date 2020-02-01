@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
-// pipe=$(mktemp -u)
-// mkfifo $pipe
-// exec 3<> $pipe
-// fltk-dialog --indicator="echo Hello" --listen <&3 &
-// echo "ICON:newIcon" >&3
+/*
+pipe=$(mktemp -u)
+mkfifo $pipe
+exec 3<> $pipe
+fltk-dialog --indicator="echo Hello" --listen <&3 &
+echo "ICON:newIcon" >&3
+*/
 
 #include <iostream>
 #include <dlfcn.h>

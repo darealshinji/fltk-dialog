@@ -1,5 +1,5 @@
  * finish documentation + HTML documentation (--html-doc)
  * write --forms dialog (maybe...)
- * indicator without menu
-
+ * indicator without menu (?)
+ * Fl_Table() in file selection
 

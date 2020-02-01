@@ -352,11 +352,13 @@ void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
   }
 
   plugin = std::string(dir) + "/qtplugin.so";
-  handle = dlopen(plugin.c_str(), RTLD_LAZY);
+
+  /* RTLD_NODELETE is needed to prevent memory access violation on dlclose() */
+  handle = dlopen(plugin.c_str(), RTLD_LAZY|RTLD_NODELETE);
 
   if (!handle) {
     plugin = std::string(dir) + "/../lib/fltk-dialog/qtplugin.so";
-    handle = dlopen(plugin.c_str(), RTLD_LAZY);
+    handle = dlopen(plugin.c_str(), RTLD_LAZY|RTLD_NODELETE);
   }
 
   dir = NULL;
@@ -367,7 +369,7 @@ void *dlopen_qtplugin(std::string &plugin, void * &handle, const char *func)
   if (!save_to_temp(qtplugin_so, qtplugin_so_len, ".so", plugin)) {
     return NULL;
   }
-  handle = dlopen(plugin.c_str(), RTLD_LAZY);
+  handle = dlopen(plugin.c_str(), RTLD_LAZY|RTLD_NODELETE);
 
 #endif  /* USE_EXTERNAL_PLUGINS */
 
