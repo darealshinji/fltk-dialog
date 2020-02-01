@@ -22,9 +22,6 @@
  * SOFTWARE.
  */
 
-#include <FL/Fl.H>
-#include <FL/Fl_RGB_Image.H>
-
 #include <iostream>
 #include <dlfcn.h>
 #include <stdio.h>
