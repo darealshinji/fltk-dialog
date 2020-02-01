@@ -37,15 +37,19 @@ static int file_chooser_fltk(int mode, bool classic);
 
 #ifdef USE_DLOPEN
 
+typedef struct _GtkWidget GtkWidget;
+typedef struct _GtkFileFilterInfo GtkFileFilterInfo;
+typedef int gboolean;
+
 /* from Fl_Native_File_Chooser_GTK.cxx */
 class Fl_GTK_Native_File_Chooser_Driver : public Fl_Native_File_Chooser_FLTK_Driver
 {
   friend class Fl_Native_File_Chooser;
   friend class My_GTK_File_Chooser;
+
 private:
   static int have_looked_for_GTK_libs;
-  typedef struct _GtkWidget GtkWidget;
-  typedef struct _GtkFileFilterInfo GtkFileFilterInfo;
+
   struct pair {
     Fl_GTK_Native_File_Chooser_Driver *running;
     const char *filter;
@@ -57,12 +61,14 @@ private:
       free(const_cast<char *>(filter));
     };
   };
+
   GtkWidget *gtkw_ptr;
   void *gtkw_slist;
   unsigned gtkw_count;
   mutable char *gtkw_filename;
   char *gtkw_title;
   const char *previous_filter;
+
   int fl_gtk_chooser_wrapper();
   Fl_GTK_Native_File_Chooser_Driver(int val);
   virtual ~Fl_GTK_Native_File_Chooser_Driver();
@@ -76,8 +82,13 @@ private:
   virtual const char *title() const;
   virtual int show();
   void changed_output_type(const char *filter);
+
   static int custom_gtk_filter_function(const GtkFileFilterInfo*, Fl_GTK_Native_File_Chooser_Driver::pair*);
   static void free_pair(pair *p);
+  Fl_Preferences gtk_chooser_prefs;
+
+public:
+  static gboolean want_preview;
 };
 
 class My_GTK_File_Chooser
