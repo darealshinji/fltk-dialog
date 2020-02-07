@@ -24,7 +24,7 @@ static const char *license =
     "\n"
     "\n"
     "\n"
-    "Copyright (c) 1998-2019  Bill Spitzak and others.\n"
+    "Copyright (c) 1998-2020  Bill Spitzak and others.\n"
     "\n"
     "The FLTK library and included programs are provided under the terms of the\n"
     "GNU Library General Public License (LGPL) with the following exceptions:\n"
