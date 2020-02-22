@@ -170,8 +170,8 @@ enum {
 };
 
 extern const char *title, *msg, *quote;
-extern bool resizable, position_center, window_taskbar, window_decoration, always_on_top, use_fribidi;
-extern int override_x, override_y, override_w, override_h;
+extern bool resizable, window_taskbar, window_decoration, always_on_top;
+extern int override_x, override_y, override_w, override_h, override_pos;
 
 extern const char *weekdays[LANG_COUNT][7];
 extern const char *month_names[LANG_COUNT][13];

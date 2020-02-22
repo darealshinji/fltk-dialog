@@ -60,9 +60,7 @@ const int ordinal_day[2][13] = {
 
 void run_window(Fl_Double_Window *o, Fl_Widget *w, int min_w, int min_h)
 {
-  if (w) {
-    set_size(o, w);
-  }
+  set_size(o, w);
   set_size_range(o, min_w, min_h);
   set_position(o);
   o->end();
@@ -75,35 +73,73 @@ void run_window(Fl_Double_Window *o, Fl_Widget *w, int min_w, int min_h)
 
 void set_size(Fl_Double_Window *o, Fl_Widget *w)
 {
-  if (resizable) {
+  if (resizable && w) {
     o->resizable(w);
   }
-  if (override_w > 0) {
-    o->size(override_w, o->h());
-  }
-  if (override_h > 0) {
-    o->size(o->w(), override_h);
-  }
+  o->size(override_w > 0 ? override_w : o->w(), override_h > 0 ? override_h : o->h());
 }
 
 void set_size_range(Fl_Double_Window *o, int min_w, int min_h) {
   if (resizable) {
     o->size_range(min_w, min_h, Fl::w(), Fl::h());
+  } else {
+    o->size_range(o->w(), o->h(), o->w(), o->h());
   }
 }
 
+#define LEFT        1
+#define UP          1
+#define RIGHT       (Fl::w() - o->w())
+#define DOWN        (Fl::h() - o->h())
+#define HALF_RIGHT  RIGHT/2
+#define HALF_DOWN   DOWN/2
+
 void set_position(Fl_Double_Window *o)
 {
-  if (position_center) {
-    override_x = (Fl::w() - o->w()) / 2;
-    override_y = (Fl::h() - o->h()) / 2;
+  switch (override_pos) {
+    case 0:  /* not set */
+      break;
+    case 5:  /* center */
+      override_x = HALF_RIGHT;
+      override_y = HALF_DOWN;
+      break;
+    case 1:
+      override_x = LEFT;
+      override_y = DOWN;
+      break;
+    case 2:
+      override_x = HALF_RIGHT;
+      override_y = DOWN;
+      break;
+    case 3:
+      override_x = RIGHT;
+      override_y = DOWN;
+      break;
+    case 4:
+      override_x = LEFT;
+      override_y = HALF_DOWN;
+      break;
+    case 6:
+      override_x = RIGHT;
+      override_y = HALF_DOWN;
+      break;
+    case 7:
+      override_x = LEFT;
+      override_y = UP;
+      break;
+    case 8:
+      override_x = HALF_RIGHT;
+      override_y = UP;
+      break;
+    case 9:
+      override_x = RIGHT;
+      override_y = UP;
+      break;
+    default:
+      break;
   }
-  if (override_x >= 0) {
-    o->position(override_x, o->y());
-  }
-  if (override_y >= 0) {
-    o->position(o->x(), override_y);
-  }
+
+  o->position(override_x > 0 ? override_x : o->x(), override_y > 0 ? override_y : o->y());
 }
 
 void set_taskbar(Fl_Double_Window *o) {

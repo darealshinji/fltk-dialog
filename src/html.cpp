@@ -28,10 +28,9 @@ class help_dialog : public Fl_Help_Dialog
 {
 public:
   help_dialog() : Fl_Help_Dialog() {}
-  void border(int b) { window_->border(b); }
-  void always_on_top() { set_always_on_top(window_); }
-  void size_range(int minw, int minh, int maxw, int maxh) {
-    window_->size_range(minw, minh, maxw, maxh);
+
+  void run(int min_w, int min_h) {
+    run_window(window_, NULL, min_w, min_h);
   }
 };
 
@@ -39,54 +38,7 @@ int dialog_html_viewer(const char *file)
 {
   help_dialog *o = new help_dialog();
   o->load(file);
-
-  if (!window_taskbar) {
-    o->border(0);
-  }
-
-  o->show();
-
-  int new_x = o->x();
-  int new_y = o->y();
-  int new_w = o->w();
-  int new_h = o->h();
-
-  if (resizable) {
-    if (override_w > 0) {
-      new_w = override_w;
-    }
-    if (override_h > 0) {
-      new_h = override_h;
-    }
-  }
-
-  if (position_center) {
-    new_x = (Fl::w() - new_w) / 2;
-    new_y = (Fl::h() - new_h) / 2;
-  } else {
-    if (override_x >= 0) {
-      new_x = override_x;
-    }
-    if (override_y >= 0) {
-      new_y = override_y;
-    }
-  }
-
-  o->resize(new_x, new_y, new_w, new_h);
-  o->border(window_decoration ? 1 : 0);
-
-  if (always_on_top) {
-    o->always_on_top();
-  }
-
-  if (resizable) {
-    o->size_range(340, 100, Fl::w(), Fl::h());
-  } else {
-    o->size_range(o->w(), o->h(), o->w(), o->h());
-  }
-
-  Fl::run();
-
+  o->run(340, 100);
   return 0;
 }
 

@@ -26,10 +26,12 @@
  * source: https://github.com/Taywee/args */
 #include "../args/args.hxx"
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -50,13 +52,13 @@ const char *title = NULL;
 const char *msg = NULL;
 const char *quote = "";
 
-int override_x = -1
-,   override_y = -1
-,   override_w = -1
-,   override_h = -1;
+int override_x = 0
+,   override_y = 0
+,   override_w = 0
+,   override_h = 0
+,   override_pos = 0;
 
 bool resizable = true
-,    position_center = false
 ,    window_taskbar = true
 ,    window_decoration = true;
 
@@ -78,20 +80,6 @@ static int esc_handler(int event) {
   return 0;
 }
 
-#define STRINGTOINT(s, a, b)  if (_argtoint(s.c_str(), a, argv[0], b)) { return 1; }
-static int _argtoint(const char *arg, int &val, const char *self, std::string cmd)
-{
-  char *p;
-  long l = strtol(arg, &p, 10);
-
-  if (*p) {
-    std::cerr << self << ": " << cmd << ": input is not an integer number" << std::endl;
-    return 1;
-  }
-  val = l;
-  return 0;
-}
-
 int main(int argc, char **argv)
 {
   if (argc < 2) {
@@ -100,7 +88,7 @@ int main(int argc, char **argv)
     Fl::set_color(FL_BACKGROUND_COLOR, fl_lighter(FL_BACKGROUND_COLOR));
     Fl_Window::default_icon(new Fl_PNG_Image(NULL, icon_png, icon_png_len));
     l10n();
-    position_center = true;
+    override_pos = 5;
     return about();
   }
 
@@ -129,9 +117,11 @@ int main(int argc, char **argv)
   ,      arg_height(ap, "HEIGHT", "Set the window height", {"height"})
   ,      arg_posx(ap, "NUMBER", "Set the X position of a window", {"posx"})
   ,      arg_posy(ap, "NUMBER", "Set the Y position of a window", {"posy"});
+  ARGI_T arg_position(ap, "1..9", "Set the window position from 1 to 9, analog to the positions "
+                          "of the number keys on the num pad", {"position"});
   ARGS_T arg_geometry(ap, "WxH+X+Y", "Set the window geometry", {"geometry"});
-  ARG_T  arg_fixed(ap, "fixed", "Set window unresizable", {"fixed"})
-  ,      arg_center(ap, "center", "Place window at center of screen", {"center"})
+  ARG_T  arg_center(ap, "center", "Place window at center of screen", {"center"})
+  ,      arg_fixed(ap, "fixed", "Set window unresizable", {"fixed"})
   ,      arg_always_on_top(ap, "always-on-top", "Keep window always visible on top", {"always-on-top"})
   ,      arg_no_escape(ap, "no-escape", "Don't close window when hitting ESC button", {"no-escape"});
   ARGS_T arg_scheme(ap, "NAME", "Set the window scheme to use: fltk, gtk+, gleam or plastic; "
@@ -321,7 +311,7 @@ int main(int argc, char **argv)
   window_taskbar = arg_skip_taskbar ? false : true;
   bool with_icon_box = arg_no_symbol ? false : true;
   resizable = arg_fixed ? false : true;
-  position_center = arg_center;
+  override_pos = arg_center ? 5 : 0;
   always_on_top = arg_always_on_top;
 
   quote = arg_quoted_output ? "\"" : "";
@@ -361,27 +351,14 @@ int main(int argc, char **argv)
   GETVAL(override_h, arg_height);
   GETVAL(override_x, arg_posx);
   GETVAL(override_y, arg_posy);
+  GETVAL(override_pos, arg_position);
 
   if (arg_geometry) {
-    std::vector<std::string> v, v_wh;
     std::string s = args::get(arg_geometry);
-    split(s, '+', v);
-
-    if (v.size() != 3) {
+    if (sscanf(s.c_str(), "%dx%d+%d+%d", &override_w, &override_h, &override_x, &override_y) != 4) {
       std::cerr << argv[0] << ": error `--geometry=WxH+X+Y': wrong format" << std::endl;
       return 1;
     }
-
-    split(v[0], 'x', v_wh);
-    if (v_wh.size() != 2) {
-      std::cerr << argv[0] << ": error `--geometry=WxH+X+Y': wrong format" << std::endl;
-      return 1;
-    }
-
-    STRINGTOINT(v[1], override_x, "--geometry=WxH+X+Y -> X");
-    STRINGTOINT(v[2], override_y, "--geometry=WxH+X+Y -> Y");
-    STRINGTOINT(v_wh[0], override_w, "--geometry=WxH+X+Y -> W");
-    STRINGTOINT(v_wh[1], override_h, "--geometry=WxH+X+Y -> H");
   }
 
   int dialog = DIALOG_MESSAGE;  /* default message type */
