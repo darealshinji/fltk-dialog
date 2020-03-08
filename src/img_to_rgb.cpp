@@ -89,21 +89,25 @@ Fl_RGB_Image *img_to_rgb(const char *file)
 
   if (HASEXT(file, ".xbm")) {
     Fl_XBM_Image *in = new Fl_XBM_Image(file);
-    CHECK_IF_LOADED(in)
-    Fl_Image_Surface *surf = new Fl_Image_Surface(in->w(), in->h());
-    if (!surf) {
-      delete in;
+    if (!in) {
       return NULL;
     }
-    surf->set_current();
-    fl_color(FL_WHITE);
-    fl_rectf(0, 0, in->w(), in->h());
-    fl_color(FL_BLACK);
-    in->draw(0, 0);
-    Fl_RGB_Image *rgb = surf->image();
+
+    int w = in->w();
+    int h = in->h();
+    uchar *out = new uchar[w*h];
+
+    int i = 0;
+    for (int y=0; y < h; ++y) {
+      for (int x=0; x < w; x+=8, ++i) {
+        for (int b=0; b < 8; ++b) {
+          out[y*w + x + b] = (0 != (in->array[i] & (1 << b))) ? 0x00 : 0xff;
+        }
+      }
+    }
+
     delete in;
-    delete surf;
-    return rgb;
+    return new Fl_RGB_Image(out, w, h, 1);
   }
 
   /* get filetype from magic bytes */
