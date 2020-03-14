@@ -23,7 +23,8 @@
  */
 
 #include <iostream>
-#include <string>
+#include <errno.h>
+#include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -37,7 +38,7 @@
  while (test $n -le 5); do \
  sleep 1; echo "Line $n/5"; n=$(($((n))+1)); done \
 ) | \
- ./fltk-dialog --text-info --auto-scroll --checkbox="I confirm" --no-system-colors
+ ./build/fltk_dialog/fltk-dialog --text-info --auto-scroll --checkbox="I confirm"
 
 ***/
 
@@ -68,25 +69,25 @@ static void callback(Fl_Widget *)
   }
 }
 
-static void add_line(const char *line, int line_num) {
-  browser->add(line);
-
-  if (autoscroll) {
-    browser->bottomline(line_num);
-  }
-}
-
 extern "C" void *ti_getline(void *)
 {
-  std::string line;
+  char *line = NULL;
+  size_t len = 0;
   int i = 0;
 
-  while (std::getline(std::cin, line)) {
+  while (getline(&line, &len, stdin) != -1) {
     Fl::lock();
     i++;
-    add_line(line.c_str(), i);
+    browser->add(line);
+    if (autoscroll) {
+      browser->bottomline(i);
+    }
     Fl::unlock();
     Fl::awake(win);
+  }
+
+  if (line) {
+    free(line);
   }
 
   Fl::lock();
@@ -114,7 +115,7 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox, bool autoclose_, boo
   Fl_Button *but_cancel;
   int browser_h = checkbox ? 422 : 444;
   int but_w = 90, win_ret = 0;
-  pthread_t t;
+  pthread_t th;
 
   autoscroll = autoscroll_;
   autoclose = autoclose_;
@@ -175,12 +176,18 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox, bool autoclose_, boo
 
   Fl::lock();
 
+  int errsv = pthread_create(&th, 0, &ti_getline, NULL);
+
+  if (errsv != 0) {
+    errno = errsv;
+    perror("pthread_create()");
+    return 1;
+  }
+
   set_taskbar(win);
   win->show();
   set_undecorated(win);
   set_always_on_top(win);
-
-  pthread_create(&t, 0, &ti_getline, NULL);
 
   Fl::run();
 

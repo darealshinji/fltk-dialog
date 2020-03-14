@@ -23,8 +23,8 @@
  */
 
 // Tests:
-// (echo 40; sleep 1; echo 80; sleep 1; echo 99; sleep 1; echo '#Done' && echo '100') | ./fltk-dialog --progress
-// (echo '#Work in progress... ' && sleep 4 && echo '#Work in progress... done.' && echo 'STOP') | ./fltk-dialog --progress --pulsate
+// (echo 40; sleep 1; echo 80; sleep 1; echo 99; sleep 1; echo '#Done' && echo '100') | ./build/fltk_dialog/fltk-dialog --progress
+// (echo '#Work in progress... ' && sleep 4 && echo '#Work in progress... done.' && echo 'STOP') | ./build/fltk_dialog/fltk-dialog --progress --pulsate
 
 /*
 (echo '#1/3'; echo 40; sleep 1; echo 80; sleep 1; echo 100; sleep 1; \
@@ -35,7 +35,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <string>
+#include <errno.h>
+#include <stdio.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -128,7 +129,20 @@ loop_bar::loop_bar(int X, int Y, int W, int H)
   slider_size(DEFAULT_SLIDER_SIZE);
 }
 
-static void close_cb(Fl_Widget *, long p) {
+static bool progress_pthread_create(pthread_t *thread, void *(*start_routine)(void *))
+{
+  int errsv = pthread_create(thread, 0, start_routine, NULL);
+
+  if (errsv != 0) {
+    errno = errsv;
+    perror("pthread_create()");
+    return false;
+  }
+  return true;
+}
+
+static void close_cb(Fl_Widget *, long p)
+{
   pthread_cancel(t1);
   pthread_cancel(t2);
   win->hide();
@@ -212,12 +226,18 @@ static void parse_line(const char *ch)
 
 extern "C" void *progress_getline(void *)
 {
-  std::string line;
-  while (std::getline(std::cin, line)) {
+  char *line = NULL;
+  size_t len = 0;
+
+  while (getline(&line, &len, stdin) != -1) {
     Fl::lock();
-    parse_line(line.c_str());
+    parse_line(line);
     Fl::unlock();
     Fl::awake(win);
+  }
+
+  if (line) {
+    free(line);
   }
   return nullptr;
 }
@@ -349,16 +369,22 @@ int dialog_progress(bool pulsate_, unsigned int multi_, long pid_, bool autoclos
 
   Fl::lock();
 
+  /* the pulsating bar must run in its own thread */
+  if (pulsate && !progress_pthread_create(&t1, &pulsate_bar_thread)) {
+    return 1;
+  }
+
+  if (!progress_pthread_create(&t2, &progress_getline)) {
+    if (pulsate) {
+      pthread_cancel(t1);
+    }
+    return 1;
+  }
+
   set_taskbar(win);
   win->show();
   set_undecorated(win);
   set_always_on_top(win);
-
-  if (pulsate) {
-    /* the pulsating bar is running in its own thread */
-    pthread_create(&t1, 0, &pulsate_bar_thread, nullptr);
-  }
-  pthread_create(&t2, 0, &progress_getline, nullptr);
 
   Fl::run();
 
