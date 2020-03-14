@@ -24,9 +24,9 @@
 
 #include <iostream>
 #include <string>
+#include <dlfcn.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dlfcn.h>
 
 #include "fltk-dialog.hpp"
 #ifdef USE_DLOPEN
@@ -62,7 +62,7 @@ static void callback(void *)
   win->position(win_x, win_y);
 
   const int step = 10; /* pixels */
-  const int fadeout_ms = 500;
+  const int fadeout_ms = 600;
   const int max_w = Fl::w();
   int bord = max_w - win->x() - win->w();
   const int usec = (fadeout_ms*1000) / ((win->w() + bord)/step);
@@ -129,11 +129,27 @@ static void notification_box(double time_s, Fl_RGB_Image *rgb)
   win_x = Fl::w() - 10 - w;
   win_y = 10;
 
+  /* only positions 9, 6 and 3 are truely supported */
+  switch (override_pos) {
+    case 0:
+      break;
+    case 1:
+    case 2:
+    case 3:
+      win_y = Fl::h() - h - 10;
+      break;
+    case 4:
+    case 5:
+    case 6:
+      win_y = (Fl::h() - h)/2;
+      break;
+  }
+
   win = new Fl_Double_Window(win_x, win_y, w, h);
   win->color(FL_WHITE);  /* outline color */
   {
     { /* background color */
-      Fl_Box *o = new Fl_Box(1, 1, w - 2, h - 2);
+      Fl_Box *o = new Fl_Box(2, 2, w - 3, h - 3);
       o->box(FL_FLAT_BOX);
       o->color(fl_gray_ramp(4)); }
 
