@@ -209,7 +209,7 @@ static void parse_line(const char *ch)
         bar_main->value(multi_percent);
         bar_main->copy_label(buf);
       }
-    } else if (pulsate && strcmp(ch, "STOP") == 0) {
+    } else if (pulsate && strcasecmp(ch, "STOP\n") == 0) {
       /* stop now */
       running = false;
     }
@@ -233,7 +233,7 @@ extern "C" void *progress_getline(void *)
     Fl::lock();
     parse_line(line);
     Fl::unlock();
-    Fl::awake(win);
+    Fl::awake();
   }
 
   if (line) {
@@ -260,7 +260,7 @@ extern "C" void *pulsate_bar_thread(void *)
     }
 
     Fl::unlock();
-    Fl::awake(win);
+    Fl::awake();
 
     /* has an effect on the pulsate speed */
     usleep(1200);

@@ -83,7 +83,7 @@ extern "C" void *ti_getline(void *)
       browser->bottomline(i);
     }
     Fl::unlock();
-    Fl::awake(win);
+    Fl::awake();
   }
 
   if (line) {
@@ -103,7 +103,7 @@ extern "C" void *ti_getline(void *)
   }
 
   Fl::unlock();
-  Fl::awake(win);
+  Fl::awake();
 
   return nullptr;
 }
