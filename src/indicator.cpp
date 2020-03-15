@@ -26,13 +26,14 @@
 pipe=$(mktemp -u)
 mkfifo $pipe
 exec 3<> $pipe
-fltk-dialog --indicator="echo Hello" --listen <&3 &
+./build/fltk_dialog/fltk-dialog --indicator="echo Hello" --listen <&3 &
 echo "ICON:newIcon" >&3
 */
 
 #include <iostream>
 #include <dlfcn.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -103,7 +104,7 @@ static corner_box *box = NULL;
 
 static const char *command = NULL;
 static bool listen, auto_close;
-static pthread_t t1;
+static pthread_t th;
 
 static void callback(Fl_Widget *, long)
 {
@@ -116,7 +117,7 @@ static void callback(Fl_Widget *, long)
 static void close_cb(Fl_Widget *, long exec_command)
 {
   if (listen) {
-    pthread_cancel(t1);
+    pthread_cancel(th);
   }
 
   win->hide();
@@ -175,44 +176,45 @@ static void check_icons(const char *icon)
 
 extern "C" void *getline_xlib(void *)
 {
-  std::string line;
+  char *line = NULL;
+  size_t n = 0;
+  ssize_t len;
 
-  while (true) {
-    if (std::getline(std::cin, line)) {
-      if (strcasecmp(line.c_str(), "quit") == 0) {
-        win->hide();
+  while ((len = getline(&line, &n, stdin)) != -1) {
+    if (strcasecmp(line, "QUIT\n") == 0) {
+      win->hide();
 
-        if (rgb) {
-          delete rgb;
-        }
-
-        Fl::awake();
-
-        return nullptr;
-      } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
-        Fl::lock();
-
-        check_icons(line.substr(5).c_str());
-
-        if (rgb) {
-          /* make icon a bit smaller than the area */
-          int n = box->w() * ICON_SCALE;
-          box->image(rgb->copy(n, n));
-          delete rgb;
-        }
-
-        win->redraw();
-
-        Fl::unlock();
-        Fl::awake(win);
-
-        rgb = NULL;
-      } else if (strcasecmp(line.c_str(), "run") == 0) {
-        box->do_callback();
+      if (rgb) {
+        delete rgb;
       }
-      usleep(300000);  /* 300ms */
+
+      Fl::awake();
+
+      return nullptr;
+    } else if (len > 6 && strncasecmp(line, "ICON:", 5) == 0) {
+      Fl::lock();
+
+      line[len - 1] = '\0';  /* remove trailing newline */
+      check_icons(line + 5);
+
+      if (rgb) {
+        /* make icon a bit smaller than the area */
+        int n = box->w() * ICON_SCALE;
+        box->image(rgb->copy(n, n));
+        delete rgb;
+      }
+
+      win->redraw();
+
+      Fl::unlock();
+      Fl::awake();
+
+      rgb = NULL;
+    } else if (strcasecmp(line, "RUN\n") == 0) {
+      box->do_callback();
     }
   }
+
   return nullptr;
 }
 
@@ -261,7 +263,7 @@ static int create_corner_window(const char *icon)
 
   if (listen) {
     Fl::lock();
-    pthread_create(&t1, 0, &getline_xlib, nullptr);
+    pthread_create(&th, 0, &getline_xlib, NULL);
   }
 
   Fl::run();

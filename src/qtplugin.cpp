@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <pthread.h>
+#include <stdio.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
@@ -47,7 +48,7 @@ static QApplication *appTray;
 static QSystemTrayIcon *trayIcon;
 static const char *command;
 static bool listen, auto_close;
-static pthread_t t1;
+static pthread_t th;
 
 
 /* QIcon::setFallbackSearchPaths() is only available in Qt 5.11 or newer */
@@ -122,7 +123,7 @@ static void set_tray_icon(const char *iconName)
 
 static void close_cb(void) {
   if (listen) {
-    pthread_cancel(t1);
+    pthread_cancel(th);
   }
   appTray->quit();
 }
@@ -144,21 +145,22 @@ static void callback(void)
 extern "C"
 void *getline_qt(void *)
 {
-  std::string line;
+  char *line = NULL;
+  size_t n = 0;
+  ssize_t len;
 
-  while (true) {
-    if (std::getline(std::cin, line)) {
-      if (strcasecmp(line.c_str(), "quit") == 0) {
-        appTray->quit();
-        return nullptr;
-      } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
-        set_tray_icon(line.substr(5).c_str());
-      } else if (strcasecmp(line.c_str(), "run") == 0) {
-        callback();
-      }
-      usleep(300000);  /* 300ms */
+  while ((len = getline(&line, &n, stdin)) != -1) {
+    if (strcasecmp(line, "QUIT\n") == 0) {
+      appTray->quit();
+      return nullptr;
+    } else if (len > 6 && strncasecmp(line, "ICON:", 5) == 0) {
+      line[len - 1] = '\0';  /* remove trailing newline */
+      set_tray_icon(line + 5);
+    } else if (strcasecmp(line, "RUN\n") == 0) {
+      callback();
     }
   }
+
   return nullptr;
 }
 
@@ -201,7 +203,7 @@ int start_indicator_qt(int /**/
   trayIcon->show();
 
   if (listen) {
-    pthread_create(&t1, 0, &getline_qt, NULL);
+    pthread_create(&th, 0, &getline_qt, NULL);
   }
 
   return appTray->exec();

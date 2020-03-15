@@ -64,13 +64,12 @@ static std::string out;
 static const char *command = NULL;
 static bool listen, auto_close;
 static void *libgtk_handle, *libappindicator_handle;
-static char *error;
-static pthread_t t1;
+static pthread_t th;
 
 static void close_cb(void)
 {
   if (listen) {
-    pthread_cancel(t1);
+    pthread_cancel(th);
   }
   gtk_main_quit();
   dlclose(libappindicator_handle);
@@ -94,7 +93,7 @@ static void callback(void)
   }
 }
 
-static void handle_dlopen_error(void)
+static void handle_dlopen_error(char *error)
 {
   if (error) {
     std::cerr << error << std::endl;
@@ -117,19 +116,28 @@ static void set_icon(const char *icon, AppIndicator *indicator)
     return;
   }
 
-  unlink(out.c_str());
+  if (!out.empty()) {
+    unlink(out.c_str());
+  }
 
   if ((resolved_path = realpath(icon, NULL)) != NULL) {
-    std::string in = resolved_path;
-    free(resolved_path);
+    std::string name = "indicator-" + get_random();
+    out = "/tmp/" + name;
 
-    out = "/tmp/indicator-" + get_random() + in.substr(in.rfind('/') + 1);
+    /* append extension */
+    char *p = strrchr(resolved_path, '/');
 
-    if (symlink(in.c_str(), out.c_str()) == 0) {
-      in = out.substr(5, out.rfind('.') - 5);
-      app_indicator_set_icon (indicator, in.c_str());
-      app_indicator_set_icon_theme_path (indicator, "/tmp");
+    if ((p = strrchr(p, '.')) != NULL) {
+      out.append(p);
+    } else {
+      out += ".png";
     }
+
+    if (symlink(resolved_path, out.c_str()) == 0) {
+      app_indicator_set_icon_theme_path (indicator, "/tmp");
+      app_indicator_set_icon (indicator, name.c_str());
+    }
+    free(resolved_path);
   } else {
     app_indicator_set_icon (indicator, icon);
   }
@@ -137,23 +145,24 @@ static void set_icon(const char *icon, AppIndicator *indicator)
 
 extern "C" void *getline_gtk(void *v)
 {
-  std::string line;
+  char *line = NULL;
+  size_t n = 0;
+  ssize_t len;
 
-  while (true) {
-    if (std::getline(std::cin, line)) {
-      if (strcasecmp(line.c_str(), "quit") == 0) {
-        gtk_main_quit();
-        dlclose(libappindicator_handle);
-        dlclose(libgtk_handle);
-        return nullptr;
-      } else if (line.length() > 5 && strcasecmp(line.substr(0,5).c_str(), "icon:") == 0) {
-        set_icon(line.substr(5).c_str(), reinterpret_cast<AppIndicator *>(v));
-      } else if (strcasecmp(line.c_str(), "run") == 0) {
-        callback();
-      }
-      usleep(300000);  /* 300ms */
+  while ((len = getline(&line, &n, stdin)) != -1) {
+    if (strcasecmp(line, "QUIT\n") == 0) {
+      gtk_main_quit();
+      dlclose(libappindicator_handle);
+      dlclose(libgtk_handle);
+      return nullptr;
+    } else if (len > 6 && strncasecmp(line, "ICON:", 5) == 0) {
+      line[len - 1] = '\0';  /* remove trailing newline */
+      set_icon(line + 5, reinterpret_cast<AppIndicator *>(v));
+    } else if (strcasecmp(line, "RUN\n") == 0) {
+      callback();
     }
   }
+
   return nullptr;
 }
 
@@ -164,6 +173,7 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
   GtkUIManager *uim;
   AppIndicator *indicator;
   const char *tooltip = NULL;
+  char *err;
   void *handle;
   std::string tt, tmp;
 
@@ -199,26 +209,26 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
   /* dlopen() libraries */
 
   libgtk_handle = dlopen("libgtk-x11-2.0.so.0", RTLD_LAZY|RTLD_GLOBAL);
-  error = dlerror();
+  err = dlerror();
   if (!libgtk_handle) {
-    handle_dlopen_error();
+    handle_dlopen_error(err);
     return 1;
   }
 
   /* RTLD_NODELETE is needed to prevent memory access violation on dlclose() */
   libappindicator_handle = dlopen("libappindicator3.so.1", RTLD_LAZY|RTLD_NODELETE);
-  error = dlerror();
+  err = dlerror();
 
   if (!libappindicator_handle) {
-    if (error) {
-      std::cerr << error << std::endl;
+    if (err) {
+      std::cerr << err << std::endl;
     }
 
     libappindicator_handle = dlopen("libappindicator.so.1", RTLD_LAZY|RTLD_NODELETE);
-    error = dlerror();
+    err = dlerror();
 
     if (!libappindicator_handle) {
-      handle_dlopen_error();
+      handle_dlopen_error(err);
       return 1;
     }
   }
@@ -229,8 +239,8 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
 
 # define LOAD_SYMBOL(func) \
   func = reinterpret_cast<func##_t>(dlsym(handle, STRINGIFY(func))); \
-  if ((error = dlerror()) != NULL) { \
-    handle_dlopen_error(); \
+  if ((err = dlerror()) != NULL) { \
+    handle_dlopen_error(err); \
     return 1; \
   }
 
@@ -283,12 +293,12 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
   if (icon && strlen(icon) > 0) {
     set_icon(icon, indicator);
   } else if (save_to_temp(icon_png, icon_png_len, ".png", out)) {
-    app_indicator_set_icon (indicator, out.substr(5, out.length() - 9).c_str());
     app_indicator_set_icon_theme_path (indicator, "/tmp");
+    app_indicator_set_icon (indicator, out.substr(5, out.length() - 9).c_str());
   }
 
   if (listen) {
-    pthread_create(&t1, 0, &getline_gtk, indicator);
+    pthread_create(&th, 0, &getline_gtk, indicator);
   }
 
   gtk_main();
