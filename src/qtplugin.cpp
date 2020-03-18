@@ -34,7 +34,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
+/**
+ Note: I'm getting errors like this:
+  $ QObject: Cannot create children for a parent that is in a different thread.
+  (Parent is QDBusTrayIcon(0x5641831b4130), parent's thread is QThread(0x5641830c17d0), current thread is QThread(0x7f9c80002200)
+
+ Should I use QThread instead of pthread?
+*/
 
 /* https://www.qtcentre.org/threads/37629-Detecting-QIcon-failed-load-from-file */
 #define QICON_LOADED(x)  (x.pixmap(QSize(1,1)).isNull() == false)
@@ -44,10 +54,11 @@ enum {
   DIR_CHOOSER
 };
 
-static QApplication *appTray;
-static QSystemTrayIcon *trayIcon;
-static const char *command;
-static bool listen, auto_close;
+static QApplication *appTray = NULL;
+static QSystemTrayIcon *trayIcon = NULL;
+static const char *command = NULL;
+static const char *named_pipe = NULL;
+static bool auto_close;
 static pthread_t th;
 
 
@@ -122,7 +133,7 @@ static void set_tray_icon(const char *iconName)
 }
 
 static void close_cb(void) {
-  if (listen) {
+  if (named_pipe) {
     pthread_cancel(th);
   }
   appTray->quit();
@@ -142,24 +153,60 @@ static void callback(void)
   }
 }
 
+static FILE *open_named_pipe(void)
+{
+  FILE *fp = NULL;
+
+  if (access(named_pipe, F_OK) == -1) {
+    /* path doesn't exist -> make FIFO */
+    if (mkfifo(named_pipe, 0644) == -1) {
+      /* cannot make FIFO */
+      perror("mkfifo()");
+      return NULL;
+    }
+  } else {
+    /* path exists -> check if it's a FIFO */
+    struct stat st;
+    stat(named_pipe, &st);
+
+    if ((st.st_mode & S_IFMT) != S_IFIFO) {
+      std::cerr << "error: file is not a FIFO: " << named_pipe << std::endl;
+      return NULL;
+    }
+  }
+
+  if ((fp = fopen(named_pipe, "r+")) == NULL) {
+    perror("fopen()");
+  }
+
+  return fp;
+}
+
 extern "C"
 void *getline_qt(void *)
 {
+  FILE *fp;
   char *line = NULL;
   size_t n = 0;
   ssize_t len;
 
-  while ((len = getline(&line, &n, stdin)) != -1) {
+  if ((fp = open_named_pipe()) == NULL) {
+    return nullptr;
+  }
+
+  while ((len = getline(&line, &n, fp)) != -1) {
     if (strcasecmp(line, "QUIT\n") == 0) {
       appTray->quit();
       return nullptr;
-    } else if (len > 6 && strncasecmp(line, "ICON:", 5) == 0) {
+    } else if (len > 5 && strncasecmp(line, "ICON:", 5) == 0) {
       line[len - 1] = '\0';  /* remove trailing newline */
       set_tray_icon(line + 5);
     } else if (strcasecmp(line, "RUN\n") == 0) {
       callback();
     }
   }
+
+  fclose(fp);
 
   return nullptr;
 }
@@ -168,7 +215,7 @@ extern "C"
 int start_indicator_qt(int /**/
 ,                      const char *command_
 ,                      const char *iconName
-,                      bool listen_
+,                      const char *named_pipe_
 ,                      bool auto_close_
 )
 {
@@ -177,7 +224,7 @@ int start_indicator_qt(int /**/
   int fake_argc = 1;
 
   command = command_;
-  listen = listen_;
+  named_pipe = named_pipe_;
   auto_close = auto_close_;
 
   appTray = new QApplication(fake_argc, fake_argv);
@@ -202,7 +249,7 @@ int start_indicator_qt(int /**/
 
   trayIcon->show();
 
-  if (listen) {
+  if (named_pipe) {
     pthread_create(&th, 0, &getline_qt, NULL);
   }
 
@@ -214,7 +261,7 @@ int getfilenameqt(int mode
 ,                 /* char separator
 , */              const char *quote
 ,                 const char *title
-,                 bool /**/
+,                 const char* /**/
 ,                 bool /**/
 )
 {

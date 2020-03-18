@@ -84,7 +84,7 @@ ifneq ($(USE_DLOPEN),)
 _SRCS += icns_image.cpp indicator_gtk.cpp
 endif
 
-GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h image_missing_svg.h icon_png.h octicons.h)
+GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h icon_png.h icon_ind_png.h image_missing_png.h octicons.h)
 ifneq ($(HAVE_QT),)
 #ifneq ($(USE_EXTERNAL_PLUGINS),)
 GENHDRS += $(BUILDDIR)/qtplugin_so.h
@@ -134,14 +134,14 @@ $(SRCS): $(GENHDRS)
 $(BUILDDIR)/fltk_png.h: $(SOURCEDIR)/fltk.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) fltk.png > $@
 
-$(BUILDDIR)/image_missing_svg.h: $(SOURCEDIR)/image-missing.svg
-	$(msg_GEN)cd $(SOURCEDIR) && \
-  echo 'const char image_missing_svg[] = {' > $@ && \
-  $(XXDCMD) < $< >> $@ && \
-  echo ', 0x00 };' >> $@
-
 $(BUILDDIR)/icon_png.h: $(SOURCEDIR)/icon.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@
+
+$(BUILDDIR)/icon_ind_png.h: $(SOURCEDIR)/icon_ind.png
+	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon_ind.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@
+
+$(BUILDDIR)/image_missing_png.h: $(SOURCEDIR)/image-missing.png
+	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) image-missing.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@
 
 $(BUILDDIR)/octicons.h: $(addprefix $(SOURCEDIR)/octicons/,$(OCTICONS))
 	$(msg_GEN)rm -f $@_;

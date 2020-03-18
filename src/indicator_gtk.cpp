@@ -61,14 +61,15 @@ PROTO( void,             app_indicator_set_icon,              (AppIndicator*, co
 PROTO( void,             app_indicator_set_icon_theme_path,   (AppIndicator*, const gchar*) )
 
 static std::string out;
-static const char *command = NULL;
-static bool listen, auto_close;
 static void *libgtk_handle, *libappindicator_handle;
+static const char *command = NULL;
+static const char *named_pipe = NULL;
+static bool auto_close;
 static pthread_t th;
 
 static void close_cb(void)
 {
-  if (listen) {
+  if (named_pipe) {
     pthread_cancel(th);
   }
   gtk_main_quit();
@@ -143,19 +144,53 @@ static void set_icon(const char *icon, AppIndicator *indicator)
   }
 }
 
+static FILE *open_named_pipe(void)
+{
+  FILE *fp = NULL;
+
+  if (access(named_pipe, F_OK) == -1) {
+    /* path doesn't exist -> make FIFO */
+    if (mkfifo(named_pipe, 0644) == -1) {
+      /* cannot make FIFO */
+      perror("mkfifo()");
+      return NULL;
+    }
+  } else {
+    /* path exists -> check if it's a FIFO */
+    struct stat st;
+    stat(named_pipe, &st);
+
+    if ((st.st_mode & S_IFMT) != S_IFIFO) {
+      std::cerr << "error: file is not a FIFO: " << named_pipe << std::endl;
+      return NULL;
+    }
+  }
+
+  if ((fp = fopen(named_pipe, "r+")) == NULL) {
+    perror("fopen()");
+  }
+
+  return fp;
+}
+
 extern "C" void *getline_gtk(void *v)
 {
+  FILE *fp;
   char *line = NULL;
   size_t n = 0;
   ssize_t len;
 
-  while ((len = getline(&line, &n, stdin)) != -1) {
+  if ((fp = open_named_pipe()) == NULL) {
+    return nullptr;
+  }
+
+  while ((len = getline(&line, &n, fp)) != -1) {
     if (strcasecmp(line, "QUIT\n") == 0) {
       gtk_main_quit();
       dlclose(libappindicator_handle);
       dlclose(libgtk_handle);
       return nullptr;
-    } else if (len > 6 && strncasecmp(line, "ICON:", 5) == 0) {
+    } else if (len > 5 && strncasecmp(line, "ICON:", 5) == 0) {
       line[len - 1] = '\0';  /* remove trailing newline */
       set_icon(line + 5, reinterpret_cast<AppIndicator *>(v));
     } else if (strcasecmp(line, "RUN\n") == 0) {
@@ -163,10 +198,12 @@ extern "C" void *getline_gtk(void *v)
     }
   }
 
+  fclose(fp);
+
   return nullptr;
 }
 
-int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bool auto_close_)
+int start_indicator_gtk(const char *command_, const char *icon, const char *named_pipe_, bool auto_close_)
 {
   GtkWidget *window, *indicator_menu;
   GtkActionGroup *action_group;
@@ -178,7 +215,7 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
   std::string tt, tmp;
 
   command = command_;
-  listen = listen_;
+  named_pipe = named_pipe_;
   auto_close = auto_close_;
 
   if (command) {
@@ -297,7 +334,7 @@ int start_indicator_gtk(const char *command_, const char *icon, bool listen_, bo
     app_indicator_set_icon (indicator, out.substr(5, out.length() - 9).c_str());
   }
 
-  if (listen) {
+  if (named_pipe_) {
     pthread_create(&th, 0, &getline_gtk, indicator);
   }
 

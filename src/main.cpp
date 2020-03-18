@@ -154,8 +154,8 @@ int main(int argc, char **argv)
                        "use --text to set a tooltip message", {"indicator"});
   ARG_T  arg_font(ap, "font", "Display font selection dialog", {"font"});
 
-  args::Group g_mwq_options(ap_main, "Message/warning/error/question options:");
-  ARG_T  arg_no_symbol(g_mwq_options, "no-symbol", "Don't show symbol box", {"no-symbol"});
+  args::Group g_mweq_options(ap_main, "Message/warning/error/question options:");
+  ARG_T  arg_no_symbol(g_mweq_options, "no-symbol", "Don't show symbol box", {"no-symbol"});
 
   args::Group g_question_options(ap_main, "Question options:");
   ARGS_T arg_yes_label(g_question_options, "TEXT", "Sets the label of the Yes button", {"yes-label"})
@@ -241,9 +241,10 @@ int main(int argc, char **argv)
   ,     unused_arg3(g_indicator_options, "native-qt", "Use the Qt5 indicator", {"native-qt"});
 #endif
 #endif  /* USE_DLOPEN */
-  ARG_T  arg_listen(g_indicator_options, "listen", "Listen for input from STDIN; "
-                    "the following commands are available: run icon:<nameOfIcon> quit", {"listen"})
-  ,      unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
+  ARGS_T arg_listen(g_indicator_options, "PATH", "Listen for input from a named pipe (will be created if needed); "
+                    "the following commands are available: run icon:<nameOfIcon> quit",
+                    {"listen"});
+  ARG_T unused_arg4(g_indicator_options, "auto-close", "Remove the indicator icon when the command was run",
                      {"auto-close"});
 
   const char *fltk_using = "using FLTK version " FLTK_VERSION_STRING " - http://www.fltk.org";
@@ -433,9 +434,19 @@ int main(int argc, char **argv)
 
   /* indicator */
   const char *indicator_command = NULL;
+  const char *named_pipe = NULL;
   if (arg_indicator) {
     dialog = DIALOG_INDICATOR;
     GETCSTR(indicator_command, arg_indicator);
+
+    if (arg_listen) {
+      named_pipe = args::get(arg_listen).c_str();
+
+      if (strlen(named_pipe) == 0) {
+        std::cerr << argv[0] << ": error `--listen': empty string" << std::endl;
+        return 1;
+      }
+    }
   }
 
   /* progress */
@@ -608,7 +619,7 @@ int main(int argc, char **argv)
     case DIALOG_FONT:
       return dialog_font();
     case DIALOG_INDICATOR:
-      return dialog_indicator(indicator_command, icon, native_mode, arg_listen, arg_auto_close);
+      return dialog_indicator(indicator_command, icon, native_mode, named_pipe, arg_auto_close);
     default:
       break;
   }
