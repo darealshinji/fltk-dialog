@@ -51,7 +51,8 @@ static Fl_Button *bt_popd, *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
-static std::string current_dir = "/", prev_dir, home_dir = "/home", magicdb, selected_file;
+static std::string current_dir = "/", prev_dir, home_dir = "/home", selected_file;
+static char *magicdb = NULL;
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
 
@@ -81,13 +82,8 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
 {
   std::ifstream ifs;
   std::string line;
-  char *xdg_conf;
-  const char *valid_chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    //"abcdefghijklmnopqrstuvwxyz_"
-    /**/;
 
-  xdg_conf = getenv("XDG_CONFIG_HOME");
+  char *xdg_conf = getenv("XDG_CONFIG_HOME");
 
   if (xdg_conf && strlen(xdg_conf) > 0) {
     ifs.open(std::string(xdg_conf) + "/user-dirs.dirs", std::ios::in|std::ios::ate);
@@ -123,7 +119,7 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
       continue;
     }
 
-    if (line.substr(4, pos - 4).find_first_not_of(valid_chars) != std::string::npos) {
+    if (line.substr(4, pos - 4).find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") != std::string::npos) {
       /* »type« contains invalid characters */
       continue;
     }
@@ -151,14 +147,15 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
   return vec.size() > 0;
 }
 
-static std::string getfsize(double size)
+static std::string getfsize(long bytes)
 {
-  std::string str;
   const char *unit;
   char ch[64] = {0};
   const int KiBYTES = 1024;
   const int MiBYTES = 1024 * KiBYTES;
   const int GiBYTES = 1024 * MiBYTES;
+
+  double size = bytes;
 
   if (size > GiBYTES) {
     size /= GiBYTES;
@@ -170,25 +167,24 @@ static std::string getfsize(double size)
     size /= KiBYTES;
     unit = " kiB";
   } else {
-    snprintf(ch, sizeof(ch) - 1, "%d", static_cast<int>(size));
-    str = std::string(ch) + " Bytes";
-    return str;
+    snprintf(ch, sizeof(ch) - 1, "%ld", bytes);
+    return std::string(ch) + " Bytes";
   }
 
   snprintf(ch, sizeof(ch) - 1, "%.1f", size);
-  str = std::string(ch) + unit;
-  return str;
+  return std::string(ch) + unit;
 }
 
 static std::string get_filetype(const char *file)
 {
   magic_t mcookie;
-  const char *desc, *db;
+  const char *desc;
   std::string str = "";
   std::size_t pos;
 
   const int flags = MAGIC_PRESERVE_ATIME
     | MAGIC_ERROR
+    | MAGIC_SYMLINK
     | MAGIC_NO_CHECK_APPTYPE
     | MAGIC_NO_CHECK_COMPRESS
     | MAGIC_NO_CHECK_ELF
@@ -198,19 +194,18 @@ static std::string get_filetype(const char *file)
     return "";
   }
 
-  db = magicdb.empty() ? NULL : magicdb.c_str();
-
-  if (magic_load(mcookie, db) != 0) {
+  if (magic_load(mcookie, magicdb) != 0) {
     magic_close(mcookie);
     return "";
   }
 
   if ((desc = magic_file(mcookie, file)) != NULL) {
-    str = std::string(desc);
+    str = desc;
     if ((pos = str.find_first_of(',')) != std::string::npos) {
       str.erase(pos);
     }
   }
+
   magic_close(mcookie);
 
   return str;
@@ -218,31 +213,37 @@ static std::string get_filetype(const char *file)
 
 static void fileInfo(const char *file)
 {
+  std::string str = "";
+  char *resolved = NULL;
+  struct stat st;
+
   if (!file || strlen(file) == 0) {
     infobox->label(NULL);
     return;
-  } else if (br->icon(selection) == &icon_dir) {
+  }
+
+  auto icon = br->icon(selection);
+
+  if (icon == &icon_dir || icon == &icon_link_dir) {
     infobox->label("directory");
     return;
   }
 
-  std::string str = get_filetype(file);
-
-  if (str != "directory" && str != "") {
-    const size_t len = 24;  /* strlen("broken symbolic link to ") */
-
-    if (str.size() > len && str.substr(0, len) == "broken symbolic link to ") {
-      /* get actual link size */
-      str = getfsize(static_cast<double>(str.size() - len)) + ",  broken symbolic link";
-    } else {
-      /* get target filesize */
-      struct stat st;
-      stat(file, &st);
-      if (br->icon(selection) != &icon_link_dir) {
-        str = getfsize(static_cast<double>(st.st_size)) + ",  " + str;
-      }
-    }
+  if (icon == &icon_link_any && (resolved = realpath(file, NULL)) == NULL) {
+    /* get actual link size */
+    lstat(file, &st);
+    str = getfsize(st.st_size);
+    str += (st.st_size == 0) ? ",  empty" : ",  broken symbolic link";
+  } else {
+    /* get target filesize */
+    stat(file, &st);
+    str = getfsize(st.st_size) + ",  " + get_filetype(file);
   }
+
+  if (resolved) {
+    free(resolved);
+  }
+
   infobox->copy_label(str.c_str());
 }
 
@@ -251,9 +252,7 @@ static void popd_callback(Fl_Widget *)
   if (prev_dir.empty()) {
     bt_popd->deactivate();
   } else {
-    std::string popd = prev_dir;
-    prev_dir = current_dir;
-    current_dir = popd;
+    current_dir.swap(prev_dir);
     br_change_dir();
   }
 }
@@ -275,21 +274,31 @@ static void up_callback(Fl_Widget *)
 static void xdg_callback(Fl_Widget *, void *v)
 {
   if (v) {
-    prev_dir = current_dir;
-    current_dir = reinterpret_cast<const char *>(v);
+    const char *new_dir = reinterpret_cast<const char *>(v);
+
+    if (current_dir != new_dir) {
+      prev_dir = current_dir;
+      current_dir = new_dir;
+    }
     br_change_dir();
   }
 }
 
-static void top_callback(Fl_Widget *) {
-  prev_dir = current_dir;
-  current_dir = "/";
+static void top_callback(Fl_Widget *)
+{
+  if (current_dir != "/") {
+    prev_dir = current_dir;
+    current_dir = "/";
+  }
   br_change_dir();
 }
 
-static void home_callback(Fl_Widget *) {
-  prev_dir = current_dir;
-  current_dir = home_dir;
+static void home_callback(Fl_Widget *)
+{
+  if (current_dir != home_dir) {
+    prev_dir = current_dir;
+    current_dir = home_dir;
+  }
   br_change_dir();
 }
 
@@ -343,14 +352,16 @@ static void ok_cb(Fl_Widget *)
   int line = br->value();
 
   if (line > 0) {
-    selected_file = std::string(reinterpret_cast<const char *>(br->data(line)));
+    selected_file = reinterpret_cast<const char *>(br->data(line));
 
     if (list_files && fl_filename_isdir(selected_file.c_str())) {
       /* don't return path but change directory */
-      prev_dir = current_dir;
-      current_dir = selected_file;
+      if (access(selected_file.c_str(), R_OK) == 0) {
+        prev_dir = current_dir;
+        current_dir = selected_file;
+        br_change_dir();
+      }
       selected_file.clear();
-      br_change_dir();
       return;
     }
     br->data(line, NULL);
@@ -366,9 +377,9 @@ static void ok_cb(Fl_Widget *)
 
 static void br_callback(Fl_Widget *)
 {
-  char *fname = reinterpret_cast<char *>(br->data(br->value()));
+  auto icon = br->icon(br->value());
 
-  if (!list_files && br->icon(br->value()) != &icon_dir && br->icon(br->value()) != &icon_link_dir) {
+  if (!list_files && icon != &icon_dir && icon != &icon_link_dir) {
     Fl::remove_timeout(th);
     selection = 0;
     input->value("");
@@ -376,6 +387,8 @@ static void br_callback(Fl_Widget *)
     br->deselect();
     return;
   }
+
+  char *fname = reinterpret_cast<char *>(br->data(br->value()));
 
   /* some workaround to change directories on double-click */
   if (selection == 0) {
@@ -391,7 +404,7 @@ static void br_callback(Fl_Widget *)
         /* double-clicked on directory */
         if (access(fname, R_OK) == 0) {
           prev_dir = current_dir;
-          current_dir = std::string(fname);
+          current_dir = fname;
           br_change_dir();
         }
       } else {
@@ -434,7 +447,7 @@ static bool ignorecaseSortXDG(std::string s1, std::string s2) {
 static void br_change_dir(void)
 {
   struct dirent **list;
-  std::vector<std::string> vec, vec2;
+  std::vector<char *> vec, vec2;
   const char *white = "@B255@. ", *yellow = "@B17@. ";
 
   /* current_dir was deleted in the meanwhile;
@@ -479,7 +492,7 @@ static void br_change_dir(void)
         }
         list[i]->d_name[len-1] = '\0'; /* remove trailing '/' */
       }
-      vec.push_back(std::string(list[i]->d_name));
+      vec.push_back(strdup(list[i]->d_name));
       free(list[i]);
     }
     free(list);
@@ -503,50 +516,54 @@ static void br_change_dir(void)
 
     /* list directories */
     for (auto it = vec.begin(); it != vec.end(); ++it) {
-      std::string &s = *it;
+      char *s = *it;
       if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
         std::string path = current_dir;
         if (path != "/") {
           path.push_back('/');
         }
-        path += s;
+        path.append(s);
 
         if (fl_filename_isdir(path.c_str())) {
           struct stat st;
           std::string entry = (br->size() % 2 == 0) ? white : yellow;
-          entry += s;
+          entry.append(s);
+          free(s);
           lstat(path.c_str(), &st);
           br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
           br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_dir : &icon_dir);
+        } else {
+          vec2.push_back(s);
         }
-        vec2.push_back(s);
+      } else {
+        free(s);
       }
     }
     vec.clear();
 
     /* list files */
     for (auto it = vec2.begin(); it != vec2.end(); ++it) {
-      std::string &s = *it;
+      char *s = *it;
       if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
+        struct stat st;
+        std::string entry;
         std::string path = current_dir;
+
         if (path != "/") {
           path.push_back('/');
         }
-        path += s;
+        path.append(s);
 
-        if (!fl_filename_isdir(path.c_str())) {
-          struct stat st;
-          std::string entry;
-          if (!list_files) {
-            entry = "@i@C8";
-          }
-          entry += (br->size() % 2 == 0) ? white : yellow;
-          entry += s;
-          lstat(path.c_str(), &st);
-          br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
-          br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
+        if (!list_files) {
+          entry = "@i@C8";
         }
+        entry += (br->size() % 2 == 0) ? white : yellow;
+        entry.append(s);
+        lstat(path.c_str(), &st);
+        br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
+        br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
       }
+      free(s);
     }
     vec2.clear();
   }
@@ -607,16 +624,22 @@ char *file_chooser(int mode)
 
   /* path to magic DB */
   if ((resolved = realpath("/proc/self/exe", buf)) != NULL && (dir = dirname(resolved)) != NULL) {
-    magicdb = std::string(dir) + "/../share/file/magic.mgc";
-    std::ifstream ifs(magicdb);
+    std::string s = std::string(dir) + "/../share/file/magic.mgc";
+    std::ifstream ifs(s);
+
     if (ifs.is_open()) {
       ifs.close();
+      magicdb = strdup(s.c_str());
     } else {
-      magicdb.clear();
+      s = std::string(dir) + "/../share/misc/magic.mgc";
+      ifs.open(s);
+
+      if (ifs.is_open()) {
+        ifs.close();
+        magicdb = strdup(s.c_str());
+      }
     }
   }
-
-  dir = NULL;
 
   win = new Fl_Double_Window(w, h, title);
   {
@@ -680,7 +703,7 @@ char *file_chooser(int mode)
           b = o; }
 
           if (xdg_user_dir_lookup(vec)) {
-            for (const auto type : xdg_types) {
+            for (const char *type : xdg_types) {
               /* begin at the last vector entry; if there were multiple entries
                * of the same XDG type we pick the last one added to the config file */
               for (auto it = vec.end() - 1; it >= vec.begin(); --it) {
@@ -771,6 +794,10 @@ char *file_chooser(int mode)
   current_dir.clear();
   home_callback(NULL);
   run_window(win, g, 320, 360);
+
+  if (magicdb) {
+    free(magicdb);
+  }
 
   return selected_file.empty() ? NULL : strdup(selected_file.c_str());
 }

@@ -135,13 +135,13 @@ $(BUILDDIR)/fltk_png.h: $(SOURCEDIR)/fltk.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) fltk.png > $@
 
 $(BUILDDIR)/icon_png.h: $(SOURCEDIR)/icon.png
-	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@
+	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon.png > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
 $(BUILDDIR)/icon_ind_png.h: $(SOURCEDIR)/icon_ind.png
-	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon_ind.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@
+	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) icon_ind.png > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
 $(BUILDDIR)/image_missing_png.h: $(SOURCEDIR)/image-missing.png
-	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) image-missing.png > $@ &&	sed -i 's|^unsigned |static const unsigned |g' $@
+	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) image-missing.png > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
 $(BUILDDIR)/octicons.h: $(addprefix $(SOURCEDIR)/octicons/,$(OCTICONS))
 	$(msg_GEN)rm -f $@_;
