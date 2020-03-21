@@ -134,7 +134,12 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
     line.erase(pos2);
 
     if (line.substr(pos, 6) == "$HOME/") {
-      line.replace(pos, 5, home_dir);
+      std::string s = home_dir;
+
+      if (s.back() == '/') {
+        s.pop_back();
+      }
+      line.replace(pos, 5, s);
     } else if (line[pos] != '/') {
       continue;
     }
@@ -261,12 +266,17 @@ static void up_callback(Fl_Widget *)
 {
   if (current_dir != "/") {
     prev_dir = current_dir;
+
+    if (current_dir.back() == '/') {
+      current_dir.pop_back();
+    }
     current_dir.erase(current_dir.rfind('/'));
 
     if (current_dir.empty()) {
       current_dir = "/";
+    } else {
+      current_dir.push_back('/');
     }
-
     br_change_dir();
   }
 }
@@ -352,7 +362,15 @@ static void ok_cb(Fl_Widget *)
   int line = br->value();
 
   if (line > 0) {
-    selected_file = reinterpret_cast<const char *>(br->data(line));
+    selected_file = current_dir;
+
+    if (selected_file.back() != '/') {
+      selected_file.push_back('/');
+    }
+
+    if (br->data(line)) {
+      selected_file += reinterpret_cast<const char *>(br->data(line));
+    }
 
     if (list_files && fl_filename_isdir(selected_file.c_str())) {
       /* don't return path but change directory */
@@ -388,7 +406,17 @@ static void br_callback(Fl_Widget *)
     return;
   }
 
-  char *fname = reinterpret_cast<char *>(br->data(br->value()));
+  std::string name = "";
+  std::string path = current_dir;
+
+  if (br->data(br->value())) {
+    name = reinterpret_cast<const char *>(br->data(br->value()));
+  }
+
+  if (path.back() != '/') {
+    path.push_back('/');
+  }
+  path += name;
 
   /* some workaround to change directories on double-click */
   if (selection == 0) {
@@ -400,11 +428,11 @@ static void br_callback(Fl_Widget *)
     if (br->value() == selection) {
       selection = 0;
 
-      if (fl_filename_isdir(fname)) {
+      if (name.back() == '/') {
         /* double-clicked on directory */
-        if (access(fname, R_OK) == 0) {
+        if (access(path.c_str(), R_OK) == 0) {
           prev_dir = current_dir;
-          current_dir = fname;
+          current_dir = path.c_str();
           br_change_dir();
         }
       } else {
@@ -425,18 +453,12 @@ static void br_callback(Fl_Widget *)
       bt_ok->deactivate();
     }
   } else {
-    char *p = strrchr(fname, '/');
-    fileInfo(fname);
-    input->value(p ? p + 1 : fname);
+    if (name.back() == '/') {
+      name.pop_back();
+    }
+    fileInfo(path.c_str());
+    input->value(name.c_str());
   }
-}
-
-static bool ignorecaseSort(std::string s1, std::string s2)
-{
-  if (sort_reverse) {
-    return (strcoll(s1.c_str(), s2.c_str()) > 0);
-  }
-  return (strcoll(s1.c_str(), s2.c_str()) < 0);
 }
 
 /* sort by basename */
@@ -447,7 +469,6 @@ static bool ignorecaseSortXDG(std::string s1, std::string s2) {
 static void br_change_dir(void)
 {
   struct dirent **list;
-  std::vector<char *> vec, vec2;
   const char *white = "@B255@. ", *yellow = "@B17@. ";
 
   /* current_dir was deleted in the meanwhile;
@@ -472,30 +493,12 @@ static void br_change_dir(void)
     prev_dir.clear();
   }
 
-  int n = fl_filename_list(current_dir.c_str(), &list);
+  int n = fl_filename_list(current_dir.c_str(), &list, fl_casenumericsort);
 
   /* on error switch to home directory */
   if (n < 0) {
     current_dir = home_dir;
-    n = fl_filename_list(current_dir.c_str(), &list);
-  }
-
-  if (n > 0) {
-    for (int i = 0; i < n; ++i) {
-      size_t len = strlen(list[i]->d_name);
-
-      if (len > 1 && list[i]->d_name[len-1] == '/') {
-        /* remove '.' and '..' entries */
-        if (strcmp(list[i]->d_name, "./") == 0 || strcmp(list[i]->d_name, "../") == 0) {
-          free(list[i]);
-          continue;
-        }
-        list[i]->d_name[len-1] = '\0'; /* remove trailing '/' */
-      }
-      vec.push_back(strdup(list[i]->d_name));
-      free(list[i]);
-    }
-    free(list);
+    n = fl_filename_list(current_dir.c_str(), &list, fl_casenumericsort);
   }
 
   /* clear browser */
@@ -511,70 +514,97 @@ static void br_change_dir(void)
   }
   selection = 0;
 
-  if (vec.size() > 0) {
-    std::sort(vec.begin(), vec.end(), ignorecaseSort);
-
+  if (n > 0) {
     /* list directories */
-    for (auto it = vec.begin(); it != vec.end(); ++it) {
-      char *s = *it;
-      if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
-        std::string path = current_dir;
-        if (path != "/") {
-          path.push_back('/');
-        }
-        path.append(s);
+    for (int i = 0; i < n; ++i) {
+      char *name = sort_reverse ? list[n - 1 - i]->d_name : list[i]->d_name;
+      size_t len = strlen(name);
 
-        if (fl_filename_isdir(path.c_str())) {
-          struct stat st;
-          std::string entry = (br->size() % 2 == 0) ? white : yellow;
-          entry.append(s);
-          free(s);
-          lstat(path.c_str(), &st);
-          br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
-          br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_dir : &icon_dir);
-        } else {
-          vec2.push_back(s);
-        }
-      } else {
-        free(s);
+      if (!show_dotfiles && name[0] == '.') {
+        /* skip hidden entry */
+        continue;
       }
+
+      if (strcmp(name, "./") == 0 || strcmp(name, "../") == 0) {
+        /* skip "." and ".." entries */
+        continue;
+      }
+
+      if (name[len-1] != '/') {
+        /* not a directory */
+        continue;
+      }
+
+      std::string entry = (br->size() % 2 == 0) ? white : yellow;
+      entry.append(name);
+      entry.pop_back();  /* remove trailing '/' */
+
+      std::string path = current_dir;
+
+      if (path.back() != '/') {
+        path.push_back('/');
+      }
+      path.append(name);
+      path.pop_back();  /* remove trailing '/' */
+
+      struct stat st;
+      lstat(path.c_str(), &st);
+
+      br->add(entry.c_str(), reinterpret_cast<void *>(strdup(name)));
+      br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_dir : &icon_dir);
     }
-    vec.clear();
 
     /* list files */
-    for (auto it = vec2.begin(); it != vec2.end(); ++it) {
-      char *s = *it;
-      if (s[0] != '.' || (s[0] == '.' && show_dotfiles)) {
-        struct stat st;
-        std::string entry;
-        std::string path = current_dir;
+    for (int i = 0; i < n; ++i) {
+      std::string entry;
+      char *name = sort_reverse ? list[n - 1 - i]->d_name : list[i]->d_name;
+      size_t len = strlen(name);
 
-        if (path != "/") {
-          path.push_back('/');
-        }
-        path.append(s);
-
-        if (!list_files) {
-          entry = "@i@C8";
-        }
-        entry += (br->size() % 2 == 0) ? white : yellow;
-        entry.append(s);
-        lstat(path.c_str(), &st);
-        br->add(entry.c_str(), reinterpret_cast<void *>(strdup(path.c_str())));
-        br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
+      if (!show_dotfiles && name[0] == '.') {
+        /* skip hidden entry */
+        continue;
       }
-      free(s);
+
+      if (name[len-1] == '/') {
+        /* skip directories */
+        continue;
+      }
+
+      if (!list_files) {
+        entry = "@i@C8";
+      }
+
+      entry += (br->size() % 2 == 0) ? white : yellow;
+      entry.append(name);
+
+      std::string path = current_dir;
+
+      if (path.back() != '/') {
+        path.push_back('/');
+      }
+      path.append(name);
+
+      struct stat st;
+      lstat(path.c_str(), &st);
+
+      br->add(entry.c_str(), reinterpret_cast<void *>(strdup(name)));
+      br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
     }
-    vec2.clear();
+
+    fl_filename_free_list(&list, n);
   }
 
-  std::string s = " " + current_dir;
-  addrline->copy_label(s.c_str());
-
   if (current_dir == "/") {
+    addrline->label(" /");
     bt_up->deactivate();
     bt_up->image(go_up_gray);
   } else {
+    std::string s = " " + current_dir;
+
+    if (s.back() == '/') {
+      s.pop_back();
+    }
+    addrline->copy_label(s.c_str());
     bt_up->activate();
     bt_up->image(go_up);
   }
@@ -614,6 +644,10 @@ char *file_chooser(int mode)
 
   if ((env = getenv("HOME")) && strlen(env) > 0) {
     home_dir = std::string(env);
+
+    if (home_dir.back() != '/') {
+      home_dir.push_back('/');
+    }
   }
 
   /* for file sizes */
@@ -715,7 +749,7 @@ char *file_chooser(int mode)
                   if (!fl_filename_isdir(dir.c_str())) {
                     if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
                       /* fallback to "$HOME/Desktop" */
-                      dir = home_dir + "/Desktop";
+                      dir = home_dir + "Desktop";
                       if (fl_filename_isdir(dir.c_str())) {
                         vec2.push_back(dir);
                         break;
@@ -724,6 +758,9 @@ char *file_chooser(int mode)
                     continue;
                   }
 
+                  if (dir.back() != '/') {
+                    dir.push_back('/');
+                  }
                   vec2.push_back(dir);
                   break;
                 }
@@ -734,8 +771,14 @@ char *file_chooser(int mode)
 
             for (auto it = vec2.begin(); it != vec2.end(); ++it) {
               std::string &s = *it;
+              std::string l = s;
+
+              if (l.back() == '/') {
+                l.pop_back();
+              }
+
               Fl_Button *o = new Fl_Button(10, b->y() + 30, 100, 30);
-              o->label(s.c_str() + s.rfind('/') + 1);
+              o->copy_label(l.c_str() + l.rfind('/') + 1);
               o->callback(xdg_callback, reinterpret_cast<void *>(const_cast<char *>(s.c_str())));
               o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
               o->clear_visible_focus();
