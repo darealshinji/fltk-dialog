@@ -44,14 +44,13 @@
 
 #define DOUBLECLICK_TIME 1.0
 
-static Fl_Double_Window *win;
 static Fl_Hold_Browser *br;
-static Fl_Box *addrline, *infobox;
+static Fl_Box *addrline, *infobox = NULL;
 static Fl_Button *bt_popd, *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
-static std::string current_dir = "/", prev_dir, home_dir = "/home", selected_file;
+static std::string current_dir = "/", prev_dir, home_dir = "/home/", selected_file;
 static char *magicdb = NULL;
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
@@ -134,12 +133,7 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
     line.erase(pos2);
 
     if (line.substr(pos, 6) == "$HOME/") {
-      std::string s = home_dir;
-
-      if (s.back() == '/') {
-        s.pop_back();
-      }
-      line.replace(pos, 5, s);
+      line.replace(pos, 6, home_dir);
     } else if (line[pos] != '/') {
       continue;
     }
@@ -346,33 +340,22 @@ static void selection_timeout(void) {
   selection = 0;
 }
 
-static void close_cb(Fl_Widget *)
-{
-  for (int i = 0; i <= br->size(); ++i) {
-    if (br->data(i)) {
-      free(br->data(i));
-    }
-  }
-
-  win->hide();
+static void cancel_cb(Fl_Widget *o) {
+  o->window()->hide();
 }
 
-static void ok_cb(Fl_Widget *)
+static void ok_cb(Fl_Widget *o)
 {
-  int line = br->value();
-
-  if (line > 0) {
+  if (br->value() > 0) {
     selected_file = current_dir;
 
     if (selected_file.back() != '/') {
       selected_file.push_back('/');
     }
 
-    if (br->data(line)) {
-      selected_file += reinterpret_cast<const char *>(br->data(line));
-    }
+    selected_file += br->text(br->value()) + 8;
 
-    if (list_files && fl_filename_isdir(selected_file.c_str())) {
+    if (list_files && selected_file.back() == '/') {
       /* don't return path but change directory */
       if (access(selected_file.c_str(), R_OK) == 0) {
         prev_dir = current_dir;
@@ -382,7 +365,6 @@ static void ok_cb(Fl_Widget *)
       selected_file.clear();
       return;
     }
-    br->data(line, NULL);
   } else {  /* nothing selected */
     if (list_files) {
       return;
@@ -390,10 +372,10 @@ static void ok_cb(Fl_Widget *)
     selected_file = current_dir;
   }
 
-  close_cb(NULL);
+  o->window()->hide();
 }
 
-static void br_callback(Fl_Widget *)
+static void br_callback(Fl_Widget *o)
 {
   auto icon = br->icon(br->value());
 
@@ -401,17 +383,12 @@ static void br_callback(Fl_Widget *)
     Fl::remove_timeout(th);
     selection = 0;
     input->value("");
-    infobox->label(NULL);
     br->deselect();
     return;
   }
 
-  std::string name = "";
+  std::string name = br->text(br->value()) + 8;
   std::string path = current_dir;
-
-  if (br->data(br->value())) {
-    name = reinterpret_cast<const char *>(br->data(br->value()));
-  }
 
   if (path.back() != '/') {
     path.push_back('/');
@@ -428,7 +405,7 @@ static void br_callback(Fl_Widget *)
     if (br->value() == selection) {
       selection = 0;
 
-      if (name.back() == '/') {
+      if (icon == &icon_dir || icon == &icon_link_dir) {
         /* double-clicked on directory */
         if (access(path.c_str(), R_OK) == 0) {
           prev_dir = current_dir;
@@ -437,7 +414,7 @@ static void br_callback(Fl_Widget *)
         }
       } else {
         /* double-clicked on file */
-        ok_cb(NULL);
+        ok_cb(o);
         return;
       }
     } else {
@@ -448,7 +425,9 @@ static void br_callback(Fl_Widget *)
 
   if (br->value() == 0) {
     input->value("");
-    infobox->label(NULL);
+    if (infobox) {
+      infobox->label(NULL);
+    }
     if (list_files) {
       bt_ok->deactivate();
     }
@@ -456,7 +435,9 @@ static void br_callback(Fl_Widget *)
     if (name.back() == '/') {
       name.pop_back();
     }
-    fileInfo(path.c_str());
+    if (infobox) {
+      fileInfo(path.c_str());
+    }
     input->value(name.c_str());
   }
 }
@@ -469,7 +450,7 @@ static bool ignorecaseSortXDG(std::string s1, std::string s2) {
 static void br_change_dir(void)
 {
   struct dirent **list;
-  const char *white = "@B255@. ", *yellow = "@B17@. ";
+  const char *white = "@B255@. ", *yellow = "@B017@. ";  /* both are 8 chars long */
 
   /* current_dir was deleted in the meanwhile;
    * move up until we are in an existing directory */
@@ -518,26 +499,31 @@ static void br_change_dir(void)
     /* list directories */
     for (int i = 0; i < n; ++i) {
       char *name = sort_reverse ? list[n - 1 - i]->d_name : list[i]->d_name;
-      size_t len = strlen(name);
 
+      /* check for hidden directories AND files first */
       if (!show_dotfiles && name[0] == '.') {
-        /* skip hidden entry */
+        name[0] = 0;
         continue;
       }
 
       if (strcmp(name, "./") == 0 || strcmp(name, "../") == 0) {
         /* skip "." and ".." entries */
+        name[0] = 0;
         continue;
       }
+
+      size_t len = strlen(name);
 
       if (name[len-1] != '/') {
         /* not a directory */
         continue;
       }
 
+      /* remove trailing '/' */
+      name[len-1] = 0;
+
       std::string entry = (br->size() % 2 == 0) ? white : yellow;
       entry.append(name);
-      entry.pop_back();  /* remove trailing '/' */
 
       std::string path = current_dir;
 
@@ -545,28 +531,22 @@ static void br_change_dir(void)
         path.push_back('/');
       }
       path.append(name);
-      path.pop_back();  /* remove trailing '/' */
 
       struct stat st;
       lstat(path.c_str(), &st);
 
-      br->add(entry.c_str(), reinterpret_cast<void *>(strdup(name)));
+      br->add(entry.c_str());
       br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_dir : &icon_dir);
+
+      name[0] = 0;
     }
 
     /* list files */
     for (int i = 0; i < n; ++i) {
       std::string entry;
       char *name = sort_reverse ? list[n - 1 - i]->d_name : list[i]->d_name;
-      size_t len = strlen(name);
 
-      if (!show_dotfiles && name[0] == '.') {
-        /* skip hidden entry */
-        continue;
-      }
-
-      if (name[len-1] == '/') {
-        /* skip directories */
+      if (name[0] == 0) {
         continue;
       }
 
@@ -587,7 +567,7 @@ static void br_change_dir(void)
       struct stat st;
       lstat(path.c_str(), &st);
 
-      br->add(entry.c_str(), reinterpret_cast<void *>(strdup(name)));
+      br->add(entry.c_str());
       br->icon(br->size(), S_ISLNK(st.st_mode) ? &icon_link_any : &icon_any);
     }
 
@@ -617,8 +597,10 @@ static void br_change_dir(void)
     bt_popd->image(go_back);
   }
 
+  if (infobox) {
+    infobox->label(NULL);
+  }
   input->value("");
-  infobox->label(NULL);
 }
 
 char *file_chooser(int mode)
@@ -626,10 +608,11 @@ char *file_chooser(int mode)
   Fl_Button *b = NULL, *bt_cancel;
   Fl_Group *g, *g_top, *g_main, *g_main_left, *g_bottom, *g_bottom_inside;
   Fl_Box *dummy;
-  std::vector<std::string> vec, vec2;
+  std::vector<std::string> xdg_dirs;
   char buf[PATH_MAX] = {0};
-  const int w = 800, h = 600;
   char *env, *resolved, *dir;
+  const int w = 800, h = 600;
+  const Fl_Boxtype btype = FL_THIN_UP_BOX;
 
   const char *xdg_types[] = {
     "XDG_DESKTOP_DIR",
@@ -645,6 +628,7 @@ char *file_chooser(int mode)
   if ((env = getenv("HOME")) && strlen(env) > 0) {
     home_dir = std::string(env);
 
+    /* make sure that it always ends on '/' */
     if (home_dir.back() != '/') {
       home_dir.push_back('/');
     }
@@ -675,7 +659,7 @@ char *file_chooser(int mode)
     }
   }
 
-  win = new Fl_Double_Window(w, h, title);
+  Fl_Double_Window *win = new Fl_Double_Window(w, h, title);
   {
     g = new Fl_Group(0, 0, w, h);
     {
@@ -723,18 +707,22 @@ char *file_chooser(int mode)
 
       g_main = new Fl_Group(0, 40, w, h - g_top->h());
       {
-        g_main_left = new Fl_Group(0, 40, 120, h - g_top->h());
+        g_main_left = new Fl_Group(0, 40, 140, h - g_top->h());
         {
-         { Fl_Button *o = b = new Fl_Button(10, 40, 100, 30, "/");
+         { Fl_Button *o = b = new Fl_Button(10, 40, g_main_left->w() - 20, 30, "/");
+          o->box(btype);
           o->callback(top_callback);
           o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
           o->clear_visible_focus(); }
 
-         { Fl_Button *o = new Fl_Button(10, b->y() + 30, 100, 30, "Home");
+         { Fl_Button *o = new Fl_Button(b->x(), b->y() + b->h(), b->w(), b->h(), "Home");
+          o->box(btype);
           o->callback(home_callback);
           o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
           o->clear_visible_focus();
           b = o; }
+
+          std::vector<std::string> vec;
 
           if (xdg_user_dir_lookup(vec)) {
             for (const char *type : xdg_types) {
@@ -751,50 +739,50 @@ char *file_chooser(int mode)
                       /* fallback to "$HOME/Desktop" */
                       dir = home_dir + "Desktop";
                       if (fl_filename_isdir(dir.c_str())) {
-                        vec2.push_back(dir);
+                        xdg_dirs.push_back(dir);
                         break;
                       }
                     }
                     continue;
                   }
 
-                  if (dir.back() != '/') {
-                    dir.push_back('/');
+                  if (dir.back() == '/') {
+                    dir.pop_back();
                   }
-                  vec2.push_back(dir);
-                  break;
+                  xdg_dirs.push_back(dir);
                 }
               }
             }
             vec.clear();
-            std::sort(vec2.begin(), vec2.end(), ignorecaseSortXDG);
 
-            for (auto it = vec2.begin(); it != vec2.end(); ++it) {
+            std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
+
+            for (auto it = xdg_dirs.begin(); it != xdg_dirs.end(); ++it) {
               std::string &s = *it;
               std::string l = s;
+              s.push_back('/');
 
-              if (l.back() == '/') {
-                l.pop_back();
-              }
-
-              Fl_Button *o = new Fl_Button(10, b->y() + 30, 100, 30);
+              Fl_Button *o = new Fl_Button(b->x(), b->y() + b->h(), b->w(), b->h());
+              o->box(btype);
               o->copy_label(l.c_str() + l.rfind('/') + 1);
               o->callback(xdg_callback, reinterpret_cast<void *>(const_cast<char *>(s.c_str())));
               o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
               o->clear_visible_focus();
               b = o;
             }
+
+            /* cover up if labels are too long */
+           { Fl_Box *o = new Fl_Box(b->x() + b->w(), g_main_left->y(), 10, b->y() + b->h() - g_main_left->y());
+            o->box(FL_FLAT_BOX); }
           }
 
-          dummy = new Fl_Box(10, b->y() + 40, 100, g_main_left->h() - b->y() - 76);
+          dummy = new Fl_Box(0, b->y() + b->h() + 10, g_main_left->w(), g_main_left->h() - b->y() - 76);
           dummy->box(FL_NO_BOX);
-
-          b = NULL;
         }
         g_main_left->resizable(dummy);
         g_main_left->end();
 
-        br = new Fl_Hold_Browser(120, 40, w - 130, h - g_top->h() - 76);
+        br = new Fl_Hold_Browser(g_main_left->w(), 40, w - g_main_left->w() - 10, h - g_top->h() - 76);
         br->selection_color(fl_lighter(FL_DARK_BLUE));
         br->callback(br_callback);
 
@@ -811,15 +799,20 @@ char *file_chooser(int mode)
           }
           bt_ok->callback(ok_cb);
           bt_cancel = new Fl_Button(bt_ok->x(), bt_ok->y() + bt_h + 5, bt_w, bt_h, fl_cancel);
-          bt_cancel->callback(close_cb);
+          bt_cancel->callback(cancel_cb);
 
           g_bottom_inside = new Fl_Group(10, g_bottom->y(), w - bt_w - 30, g_bottom->h());
           {
             input = new Fl_Input(10, br->y() + br->h() + 10, bt_ok->x() - 20, bt_h);
-            infobox = new Fl_Box(10, input->y() + input->h() + 5, input->w(), bt_h);
-            infobox->box(FL_THIN_DOWN_BOX);
-            infobox->labelsize(12);
-            infobox->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+
+            if (list_files) {
+              infobox = new Fl_Box(10, input->y() + input->h() + 5, input->w(), bt_h);
+              infobox->box(FL_THIN_DOWN_BOX);
+              infobox->labelsize(12);
+              infobox->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+            } else {
+              new Fl_Box(FL_THIN_DOWN_BOX, 10, input->y() + input->h() + 5, input->w(), bt_h, NULL);
+            }
           }
           g_bottom_inside->end();
         }
@@ -832,7 +825,6 @@ char *file_chooser(int mode)
     g->resizable(g_main);
     g->end();
   }
-  win->callback(close_cb);
 
   current_dir.clear();
   home_callback(NULL);
