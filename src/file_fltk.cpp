@@ -44,6 +44,20 @@
 
 #define DOUBLECLICK_TIME 1.0
 
+typedef struct {
+  char label[256];
+  char dev[256];
+  char mount[512];
+  bool is_mounted;
+} part_t;
+
+class mover_button : public Fl_Button
+{
+public:
+  mover_button(int X, int Y, int W, int H, const char *L=NULL);
+  int handle(int event);
+};
+
 static Fl_Hold_Browser *br;
 static Fl_Box *addrline, *infobox = NULL;
 static Fl_Button *bt_popd, *bt_up;
@@ -72,6 +86,123 @@ PNG(icon_link_any, file_symlink_file)
 PNG(icon_link_dir, file_symlink_directory)
 PNG(sort_order1, list_ordered_1)
 PNG(sort_order2, list_ordered_2)
+
+mover_button::mover_button(int X, int Y, int W, int H, const char *L)
+ : Fl_Button(X, Y, W, H, L)
+{
+  box(FL_FLAT_BOX);
+  down_box(FL_FLAT_BOX);
+  align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
+  clear_visible_focus();
+}
+
+int mover_button::handle(int event)
+{
+  int ret = Fl_Button::handle(event);
+
+  switch (event) {
+    case FL_ENTER:
+      color(FL_SELECTION_COLOR);
+      labelcolor(fl_contrast(FL_FOREGROUND_COLOR, FL_SELECTION_COLOR));
+      redraw();
+      break;
+    case FL_LEAVE:
+      color(FL_BACKGROUND_COLOR);
+      labelcolor(FL_FOREGROUND_COLOR);
+      redraw();
+      break;
+  }
+
+  return ret;
+}
+
+static int get_partitions(std::vector<part_t> &vec)
+{
+  FILE *fp;
+  char *user, *buf = NULL;
+  size_t n = 0;
+  int count = 0;
+
+  if ((user = getenv("USER")) == NULL) {
+    return 0;
+  }
+
+  if ((fp = popen("gio mount -l -i 2>/dev/null", "r")) == NULL) {
+    return 0;
+  }
+
+  while (getline(&buf, &n, fp) != -1) {
+    char *p;
+    size_t len;
+    part_t part;
+    char tmp[1024] = {0};
+
+    if (n == 0 || !buf) continue;
+
+    /* check if the last found partition is already mounted */
+    if (count > 0 && strncmp("    Mount(", buf, 10) == 0) {
+      if ((p = strchr(buf + 10, ')')) == NULL) continue;
+
+      snprintf(tmp, sizeof(tmp) - 1, "): %s -> file://%s\n",
+               vec.at(count - 1).label, vec.at(count - 1).mount);
+
+      if (strcmp(p, tmp) == 0) {
+        vec.at(count - 1).is_mounted = true;
+      } else {
+        continue;
+      }
+    }
+
+    if (strncmp(buf, "  Volume(", 9) != 0) continue;
+    if ((p = strchr(buf + 9, ' ')) == NULL) continue;
+    p[strlen(p) - 1] = 0;
+    strncpy(part.label, ++p, sizeof(part.label) - 1);
+
+    if (getline(&buf, &n, fp) == -1) break;
+    if (n == 0 || !buf) continue;
+    if (strncmp(buf, "    Type: ", 10) != 0) continue;
+
+    if (getline(&buf, &n, fp) == -1) break;
+    if (n == 0 || !buf) continue;
+    if (strcmp(buf, "    ids:\n") != 0) continue;
+
+    if (getline(&buf, &n, fp) == -1) break;
+    if (n == 0 || !buf) continue;
+    if (strcmp(buf, "     class: 'device'\n") != 0) continue;
+
+    if (getline(&buf, &n, fp) == -1) break;
+    if (n == 0 || !buf) continue;
+    if (strncmp(buf, "     unix-device: ", 18) != 0) continue;
+    buf[strlen(buf) - 1] = 0;
+    strncpy(part.dev, buf + 18, sizeof(part.dev) - 1);
+
+    if (getline(&buf, &n, fp) == -1) break;
+    if (n == 0 || !buf) continue;
+    if (strncmp(buf, "     uuid: ", 11) != 0) continue;
+    p = buf + 11;
+    len = strlen(p);
+    p[len - 1] = 0;
+
+    if (p[0] == '\'' && p[len - 2] == '\'') {
+      p[len - 2] = 0;
+      p++;
+    }
+    snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, p);
+
+    part.is_mounted = false;
+    vec.push_back(part);
+
+    count++;
+  }
+
+  if (buf) {
+    free(buf);
+  }
+
+  pclose(fp);
+
+  return count;
+}
 
 /* Format is XDG_XXX_DIR="$HOME/yyy", where yyy is a shell-escaped
  * homedir-relative path, or XDG_XXX_DIR="/yyy", where /yyy is an
@@ -118,7 +249,7 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
       continue;
     }
 
-    if (line.substr(4, pos - 4).find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_") != std::string::npos) {
+    if (line.substr(4, pos - 4).find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ") != std::string::npos) {
       /* »type« contains invalid characters */
       continue;
     }
@@ -148,8 +279,8 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
 
 static std::string getfsize(long bytes)
 {
+  std::ostringstream out;
   const char *unit;
-  char ch[64] = {0};
   const int KiBYTES = 1024;
   const int MiBYTES = 1024 * KiBYTES;
   const int GiBYTES = 1024 * MiBYTES;
@@ -166,12 +297,13 @@ static std::string getfsize(long bytes)
     size /= KiBYTES;
     unit = " kiB";
   } else {
-    snprintf(ch, sizeof(ch) - 1, "%ld", bytes);
-    return std::string(ch) + " Bytes";
+    return std::to_string(bytes) + " Bytes";
   }
 
-  snprintf(ch, sizeof(ch) - 1, "%.1f", size);
-  return std::string(ch) + unit;
+  out.precision(1);
+  out << std::fixed << size;
+
+  return out.str() + unit;
 }
 
 static std::string get_filetype(const char *file)
@@ -288,6 +420,31 @@ static void xdg_callback(Fl_Widget *, void *v)
   }
 }
 
+static void partition_callback(Fl_Widget *, void *v)
+{
+  if (v) {
+    part_t *p = reinterpret_cast<part_t *>(v);
+    std::string new_dir = p->mount;
+
+    if (current_dir != new_dir) {
+      prev_dir = current_dir;
+      current_dir = new_dir;
+    }
+
+    if (!p->is_mounted) {
+      std::string cmd = "gio mount -d ";
+      cmd += p->dev;
+      cmd += " >/dev/null 2>/dev/null";
+
+      if (system(cmd.c_str()) == 0) {
+        p->is_mounted = true;
+      }
+    }
+
+    br_change_dir();
+  }
+}
+
 static void top_callback(Fl_Widget *)
 {
   if (current_dir != "/") {
@@ -353,9 +510,10 @@ static void ok_cb(Fl_Widget *o)
       selected_file.push_back('/');
     }
 
+    /* skip text-formatting chars */
     selected_file += br->text(br->value()) + 8;
 
-    if (list_files && selected_file.back() == '/') {
+    if (list_files && fl_filename_isdir(selected_file.c_str())) {
       /* don't return path but change directory */
       if (access(selected_file.c_str(), R_OK) == 0) {
         prev_dir = current_dir;
@@ -379,15 +537,25 @@ static void br_callback(Fl_Widget *o)
 {
   auto icon = br->icon(br->value());
 
-  if (!list_files && icon != &icon_dir && icon != &icon_link_dir) {
+  if (br->value() == 0 || (!list_files && icon != &icon_dir && icon != &icon_link_dir)) {
     Fl::remove_timeout(th);
     selection = 0;
     input->value("");
     br->deselect();
+
+    if (infobox) {
+      infobox->label(NULL);
+    }
+
+    if (list_files) {
+      bt_ok->deactivate();
+    }
     return;
   }
 
+  /* skip text-formatting chars */
   std::string name = br->text(br->value()) + 8;
+
   std::string path = current_dir;
 
   if (path.back() != '/') {
@@ -423,21 +591,15 @@ static void br_callback(Fl_Widget *o)
     }
   }
 
-  if (br->value() == 0) {
-    input->value("");
-    if (infobox) {
-      infobox->label(NULL);
-    }
-    if (list_files) {
-      bt_ok->deactivate();
-    }
-  } else {
+  if (selection != 0) {
     if (name.back() == '/') {
       name.pop_back();
     }
+
     if (infobox) {
       fileInfo(path.c_str());
     }
+
     input->value(name.c_str());
   }
 }
@@ -603,16 +765,21 @@ static void br_change_dir(void)
   input->value("");
 }
 
-char *file_chooser(int mode)
+char *file_chooser(int mode, bool check_devices)
 {
-  Fl_Button *b = NULL, *bt_cancel;
+  Fl_Button *bt_cancel;
   Fl_Group *g, *g_top, *g_main, *g_main_left, *g_bottom, *g_bottom_inside;
   Fl_Box *dummy;
   std::vector<std::string> xdg_dirs;
+  std::vector<part_t> part;
   char buf[PATH_MAX] = {0};
   char *env, *resolved, *dir;
   const int w = 800, h = 600;
-  const Fl_Boxtype btype = FL_THIN_UP_BOX;
+  int n = 0, btY = 40, main_left_w = 120;
+
+  /* Maximum number of devices to display individually on the left.
+   * If there are more they will be put in a dropdown menu. */
+  const int devices_max = 5;
 
   const char *xdg_types[] = {
     "XDG_DESKTOP_DIR",
@@ -656,6 +823,14 @@ char *file_chooser(int mode)
         ifs.close();
         magicdb = strdup(s.c_str());
       }
+    }
+  }
+
+  if (check_devices) {
+    n = get_partitions(part);
+
+    if (n > 0 && n <= devices_max) {
+      main_left_w = 180;
     }
   }
 
@@ -707,22 +882,25 @@ char *file_chooser(int mode)
 
       g_main = new Fl_Group(0, 40, w, h - g_top->h());
       {
-        g_main_left = new Fl_Group(0, 40, 140, h - g_top->h());
+        g_main_left = new Fl_Group(0, 40, main_left_w, h - g_top->h());
         {
-         { Fl_Button *o = b = new Fl_Button(10, 40, g_main_left->w() - 20, 30, "/");
-          o->box(btype);
-          o->callback(top_callback);
-          o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
-          o->clear_visible_focus(); }
-
-         { Fl_Button *o = new Fl_Button(b->x(), b->y() + b->h(), b->w(), b->h(), "Home");
-          o->box(btype);
-          o->callback(home_callback);
-          o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
-          o->clear_visible_focus();
-          b = o; }
-
+          const int btX = 10, btW = g_main_left->w() - 20, btH = 30;
           std::vector<std::string> vec;
+
+         { Fl_Box *o = new Fl_Box(btX, btY + 5, btW, 20, "Places");
+          o->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+          o->labelfont(FL_HELVETICA_BOLD);
+          o->labelsize(o->labelsize() - 2);
+          o->box(FL_NO_BOX);
+          btY += 25; }
+
+         { mover_button *o = new mover_button(btX, btY, btW, btH, " /");
+          o->callback(top_callback);
+          btY += btH; }
+
+         { mover_button *o = new mover_button(btX, btY, btW, btH, " Home");
+          o->callback(home_callback);
+          btY += btH; }
 
           if (xdg_user_dir_lookup(vec)) {
             for (const char *type : xdg_types) {
@@ -757,41 +935,87 @@ char *file_chooser(int mode)
 
             std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
 
-            for (auto it = xdg_dirs.begin(); it != xdg_dirs.end(); ++it) {
-              std::string &s = *it;
+            /* XDG directory buttons */
+            for (auto &s : xdg_dirs) {
               std::string l = s;
               s.push_back('/');
+              l.replace(0, l.rfind('/') + 1, " ");
 
-              Fl_Button *o = new Fl_Button(b->x(), b->y() + b->h(), b->w(), b->h());
-              o->box(btype);
-              o->copy_label(l.c_str() + l.rfind('/') + 1);
+              mover_button *o = new mover_button(btX, btY, btW, btH);
+              o->copy_label(l.c_str());
               o->callback(xdg_callback, reinterpret_cast<void *>(const_cast<char *>(s.c_str())));
-              o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
-              o->clear_visible_focus();
-              b = o;
+              btY += btH;
+            }
+
+            /* partitions */
+            if (check_devices && n > 0) {
+              if (n > devices_max) {
+                /* dropdown menu */
+                Fl_Menu_Item menu_items[n + 1];
+                int i = 0;
+
+                for (auto &p : part) {
+                  menu_items[i] = { p.label, 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 };
+                  menu_items[i].callback_ = partition_callback;
+                  menu_items[i].user_data_ = reinterpret_cast<void *>(&p);
+                  i++;
+                }
+                menu_items[n] = { 0 };
+
+               { Fl_Menu_Button *o = new Fl_Menu_Button(btX, btY + 10, btW, btH, " Devices");
+                o->menu(menu_items);
+                o->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+                o->box(FL_THIN_UP_BOX);
+                o->down_box(FL_THIN_DOWN_BOX);
+                o->clear_visible_focus();
+                btY += btH + 10; }
+              } else {
+                /* buttons */
+               { Fl_Box *o = new Fl_Box(btX, btY + 5, btW, 20, "Devices");
+                o->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
+                o->labelfont(FL_HELVETICA_BOLD);
+                o->labelsize(o->labelsize() - 2);
+                o->box(FL_NO_BOX);
+                btY += 25; }
+
+                for (auto &p : part) {
+                  std::string s = " ";
+                  s += p.label;
+
+                  mover_button *o = new mover_button(btX, btY, btW, btH);
+                  o->copy_label(s.c_str());
+                  o->tooltip(p.dev);
+                  o->callback(partition_callback, reinterpret_cast<void *>(&p));
+                  btY += btH;
+                }
+              }
             }
 
             /* cover up if labels are too long */
-           { Fl_Box *o = new Fl_Box(b->x() + b->w(), g_main_left->y(), 10, b->y() + b->h() - g_main_left->y());
+           { Fl_Box *o = new Fl_Box(btX + btW, g_main_left->y(), 10, btY - g_main_left->y());
             o->box(FL_FLAT_BOX); }
           }
 
-          dummy = new Fl_Box(0, b->y() + b->h() + 10, g_main_left->w(), g_main_left->h() - b->y() - 76);
+          dummy = new Fl_Box(0, btY + btH + 10, g_main_left->w(), g_main_left->h() - btY - 76);
           dummy->box(FL_NO_BOX);
         }
         g_main_left->resizable(dummy);
         g_main_left->end();
 
+        /* Browser */
         br = new Fl_Hold_Browser(g_main_left->w(), 40, w - g_main_left->w() - 10, h - g_top->h() - 76);
-        br->selection_color(fl_lighter(FL_DARK_BLUE));
         br->callback(br_callback);
 
         g_bottom = new Fl_Group(0, br->y() + br->h(), w, h - br->y() - br->h());
         {
-          const int bt_h = 26;
-          int bt_w1 = measure_button_width(fl_ok, 40);
-          int bt_w2 = measure_button_width(fl_cancel, 15);
-          int bt_w = (bt_w1 > bt_w2) ? bt_w1 : bt_w2;
+          const int bt_h = 26,
+            bt_w1 = measure_button_width(fl_ok, 40),
+            bt_w2 = measure_button_width(fl_cancel, 15),
+            bt_w = (bt_w1 > bt_w2) ? bt_w1 : bt_w2;
+
+          /* cover up XDG and partitions buttons */
+         //{ Fl_Box *o = new Fl_Box(0, g_bottom->y(), g_bottom->w(), g_bottom->h());
+         // o->box(FL_FLAT_BOX); }
 
           bt_ok = new Fl_Return_Button(w - bt_w - 10, br->y() + br->h() + 10, bt_w, bt_h, fl_ok);
           if (list_files) {
@@ -828,7 +1052,8 @@ char *file_chooser(int mode)
 
   current_dir.clear();
   home_callback(NULL);
-  run_window(win, g, 320, 360);
+  //run_window(win, g, 320, 360);
+  run_window(win, g, 320, btY + g_bottom->h());
 
   if (magicdb) {
     free(magicdb);

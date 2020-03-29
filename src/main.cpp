@@ -165,7 +165,8 @@ int main(int argc, char **argv)
 
   args::Group g_file_dir_options(ap_main, "File/directory selection options:");
   ARG_T arg_classic(g_file_dir_options, "classic", "Use the classic FLTK file/directory selection widget (some "
-                    "options may not work)", {"classic"});
+                    "options may not work)", {"classic"})
+  ,     arg_no_devices(g_file_dir_options, "no-devices", "Don't use look for available devices", {"no-devices"});
 #ifdef USE_DLOPEN
   ARG_T arg_native(g_file_dir_options, "native", "Use the operating system's native file chooser if available, "
                    "otherwise fall back to FLTK's own version; some options may only work on FLTK's file chooser",
@@ -314,6 +315,7 @@ int main(int argc, char **argv)
   resizable = arg_fixed ? false : true;
   override_pos = arg_center ? 5 : 0;
   always_on_top = arg_always_on_top;
+  bool check_devices = arg_no_devices ? false : true;
 
   quote = arg_quoted_output ? "\"" : "";
 
@@ -534,8 +536,11 @@ int main(int argc, char **argv)
   const char *scheme = "gtk+";
   GETCSTR(scheme, arg_scheme);
 
-  if (strcasecmp(scheme, "fltk") == 0 || strcasecmp(scheme, "simple") == 0 ||
-      strcasecmp(scheme, "none") == 0 || strcasecmp(scheme, "x11") == 0)
+  if (strcasecmp(scheme, "fltk") == 0 ||
+      strcasecmp(scheme, "base") == 0 ||
+      strcasecmp(scheme, "simple") == 0 ||
+      strcasecmp(scheme, "none") == 0 ||
+      strcasecmp(scheme, "x11") == 0)
   {
     Fl::scheme("none");
   } else if (strcasecmp(scheme, "gleam") == 0) {
@@ -562,7 +567,9 @@ int main(int argc, char **argv)
     if (arg_system_colors) {
       Fl::get_system_colors();
     } else {
+      /* make default colors a bit lighter */
       Fl::set_color(FL_BACKGROUND_COLOR, fl_lighter(FL_BACKGROUND_COLOR));
+      Fl::set_color(FL_SELECTION_COLOR, fl_lighter(FL_SELECTION_COLOR));
     }
   }
 
@@ -591,9 +598,9 @@ int main(int argc, char **argv)
     case DIALOG_SCALE:
       return dialog_message(MESSAGE_TYPE_SCALE, false, but_alt, scale_min, scale_max, scale_step, scale_init);
     case DIALOG_FILE_CHOOSER:
-      return dialog_file_chooser(FILE_CHOOSER, native_mode, arg_classic);
+      return dialog_file_chooser(FILE_CHOOSER, native_mode, arg_classic, check_devices);
     case DIALOG_DIR_CHOOSER:
-      return dialog_file_chooser(DIR_CHOOSER, native_mode, arg_classic);
+      return dialog_file_chooser(DIR_CHOOSER, native_mode, arg_classic, check_devices);
     case DIALOG_NOTIFY:
       return dialog_notify(argv[0], timeout, icon, arg_libnotify);
     case DIALOG_PROGRESS:

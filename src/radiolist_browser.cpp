@@ -80,6 +80,7 @@
 #include "radiolist_browser.hpp"
 
 /* modified/simplified version of Fl_Check_Browser::item_draw() */
+
 void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
 {
   cb_item *i = reinterpret_cast<cb_item *>(v);
@@ -105,4 +106,5 @@ void radiolist_browser::item_draw(void *v, int X, int Y, int, int) const
   fl_color(col);
   fl_draw(i->text, X + tsize + 6, Y + tsize - 1);
 }
+
 

@@ -52,6 +52,7 @@
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Image_Surface.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Multi_Browser.H>
 #include <FL/Fl_Native_File_Chooser.H>
@@ -219,7 +220,7 @@ int dialog_color(void);
 int dialog_date(const char *format);
 int dialog_dnd(void);
 int dialog_dropdown(std::string dropdown_list, bool return_number, char separator);
-int dialog_file_chooser(int mode, int native, bool classic);
+int dialog_file_chooser(int mode, int native, bool classic, bool check_devices);
 int dialog_font(void);
 int dialog_html_viewer(const char *file);
 int dialog_indicator(const char *command, const char *indicator_icon, int native, const char *named_pipe, bool auto_close);
@@ -228,7 +229,7 @@ int dialog_progress(bool pulsate, unsigned int multi, long kill_pid, bool autocl
 int dialog_textinfo(bool autoscroll, const char *checkbox, bool autoclose, bool hide_cancel);
 int dialog_radiolist(std::string radiolist_options, bool return_number, char separator);
 
-char *file_chooser(int mode);
+char *file_chooser(int mode, bool without_gio);
 Fl_RGB_Image *img_to_rgb(const char *file);
 void l10n(void);
 

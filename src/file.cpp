@@ -33,6 +33,7 @@
 #include "icon_png.h"
 
 static int file_chooser_fltk(int mode, bool classic);
+static bool check_devices = false;
 
 
 #ifdef USE_DLOPEN
@@ -237,7 +238,7 @@ static int file_chooser_fltk(int mode, bool classic)
       file = strdup(fc->value());
     }
   } else {
-    file = file_chooser(mode);
+    file = file_chooser(mode, check_devices);
   }
 
   if (file) {
@@ -248,11 +249,13 @@ static int file_chooser_fltk(int mode, bool classic)
   return 1;
 }
 
-int dialog_file_chooser(int mode, int native, bool classic)
+int dialog_file_chooser(int mode, int native, bool classic, bool _check_devices)
 {
   if (!title) {
     title = (mode == DIR_CHOOSER) ? "Select a directory" : "Select a file";
   }
+
+  check_devices = _check_devices;
 
 #ifdef USE_DLOPEN
   /* Note: setting an icon doesn't work on the Qt file chooser */
