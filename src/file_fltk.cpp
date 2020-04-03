@@ -158,26 +158,25 @@ static int get_partitions(std::vector<part_t> &vec)
     p[strlen(p) - 1] = 0;
     strncpy(part.label, ++p, sizeof(part.label) - 1);
 
-    if (getline(&buf, &n, fp) == -1) break;
-    if (n == 0 || !buf) continue;
+#define NEXTLINE \
+  if (getline(&buf, &n, fp) == -1) break; \
+  if (n == 0 || !buf) continue;
+
+    NEXTLINE;
     if (strncmp(buf, "    Type: ", 10) != 0) continue;
 
-    if (getline(&buf, &n, fp) == -1) break;
-    if (n == 0 || !buf) continue;
+    NEXTLINE;
     if (strcmp(buf, "    ids:\n") != 0) continue;
 
-    if (getline(&buf, &n, fp) == -1) break;
-    if (n == 0 || !buf) continue;
+    NEXTLINE;
     if (strcmp(buf, "     class: 'device'\n") != 0) continue;
 
-    if (getline(&buf, &n, fp) == -1) break;
-    if (n == 0 || !buf) continue;
+    NEXTLINE;
     if (strncmp(buf, "     unix-device: ", 18) != 0) continue;
     buf[strlen(buf) - 1] = 0;
     strncpy(part.dev, buf + 18, sizeof(part.dev) - 1);
 
-    if (getline(&buf, &n, fp) == -1) break;
-    if (n == 0 || !buf) continue;
+    NEXTLINE;
     if (strncmp(buf, "     uuid: ", 11) != 0) continue;
     p = buf + 11;
     len = strlen(p);
@@ -390,59 +389,67 @@ static void popd_callback(Fl_Widget *)
 
 static void up_callback(Fl_Widget *)
 {
-  if (current_dir != "/") {
-    prev_dir = current_dir;
-
-    if (current_dir.back() == '/') {
-      current_dir.pop_back();
-    }
-    current_dir.erase(current_dir.rfind('/'));
-
-    if (current_dir.empty()) {
-      current_dir = "/";
-    } else {
-      current_dir.push_back('/');
-    }
-    br_change_dir();
+  if (current_dir == "/") {
+    return;
   }
+
+  prev_dir = current_dir;
+
+  if (current_dir.back() == '/') {
+    current_dir.pop_back();
+  }
+  current_dir.erase(current_dir.rfind('/'));
+
+  if (current_dir.empty()) {
+    current_dir = "/";
+  } else {
+    current_dir.push_back('/');
+  }
+
+  br_change_dir();
 }
 
 static void xdg_callback(Fl_Widget *, void *v)
 {
-  if (v) {
-    const char *new_dir = reinterpret_cast<const char *>(v);
-
-    if (current_dir != new_dir) {
-      prev_dir = current_dir;
-      current_dir = new_dir;
-    }
-    br_change_dir();
+  if (!v) {
+    return;
   }
+
+  const char *new_dir = reinterpret_cast<const char *>(v);
+
+  if (current_dir != new_dir) {
+    prev_dir = current_dir;
+    current_dir = new_dir;
+  }
+
+  br_change_dir();
 }
 
 static void partition_callback(Fl_Widget *, void *v)
 {
-  if (v) {
-    part_t *p = reinterpret_cast<part_t *>(v);
-    std::string new_dir = p->mount;
-
-    if (current_dir != new_dir) {
-      prev_dir = current_dir;
-      current_dir = new_dir;
-    }
-
-    if (!p->is_mounted) {
-      std::string cmd = "gio mount -d ";
-      cmd += p->dev;
-      cmd += " >/dev/null 2>/dev/null";
-
-      if (system(cmd.c_str()) == 0) {
-        p->is_mounted = true;
-      }
-    }
-
-    br_change_dir();
+  if (!v) {
+    return;
   }
+
+  part_t *p = reinterpret_cast<part_t *>(v);
+  std::string new_dir = p->mount;
+
+  if (current_dir != new_dir) {
+    prev_dir = current_dir;
+    current_dir = new_dir;
+  }
+
+  if (!p->is_mounted) {
+    std::string cmd = "gio mount -d ";
+    cmd += p->dev;
+    cmd += " >/dev/null 2>/dev/null";
+
+    if (system(cmd.c_str()) == 0) {
+      p->is_mounted = true;
+    }
+  }
+
+  br_change_dir();
 }
 
 static void top_callback(Fl_Widget *)
