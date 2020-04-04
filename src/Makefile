@@ -44,12 +44,15 @@ OCTICONS = \
   arrow-both.png \
   arrow-up-gray.png \
   arrow-up.png \
+  database.png \
+  device-desktop.png \
   eye-closed.png \
   eye.png \
   file-directory.png \
   file.png \
   file-symlink-directory.png \
   file-symlink-file.png \
+  home.png \
   list-ordered-1.png \
   list-ordered-2.png \
   $(NULL)

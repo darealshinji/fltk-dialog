@@ -42,7 +42,8 @@
 #include "fltk-dialog.hpp"
 #include "octicons.h"
 
-#define DOUBLECLICK_TIME 1.0
+#define DOUBLECLICK_TIME  1.0
+#define STR2VP(x)         reinterpret_cast<void *>( const_cast<char *>(x) )
 
 typedef struct {
   char label[256];
@@ -50,13 +51,6 @@ typedef struct {
   char mount[512];
   bool is_mounted;
 } part_t;
-
-class mover_button : public Fl_Button
-{
-public:
-  mover_button(int X, int Y, int W, int H, const char *L=NULL);
-  int handle(int event);
-};
 
 static Fl_Hold_Browser *br;
 static Fl_Box *addrline, *infobox = NULL;
@@ -81,40 +75,15 @@ PNG(go_up_gray, arrow_up_gray)
 PNG(go_back, arrow_both)
 PNG(go_back_gray, arrow_both_gray)
 PNG(icon_any, file)
+PNG(icon_hdd, database)
 PNG(icon_dir, file_directory)
+PNG(icon_desktop, device_desktop)
+PNG(icon_home, home)
 PNG(icon_link_any, file_symlink_file)
 PNG(icon_link_dir, file_symlink_directory)
 PNG(sort_order1, list_ordered_1)
 PNG(sort_order2, list_ordered_2)
 
-mover_button::mover_button(int X, int Y, int W, int H, const char *L)
- : Fl_Button(X, Y, W, H, L)
-{
-  box(FL_FLAT_BOX);
-  down_box(FL_FLAT_BOX);
-  align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
-  clear_visible_focus();
-}
-
-int mover_button::handle(int event)
-{
-  int ret = Fl_Button::handle(event);
-
-  switch (event) {
-    case FL_ENTER:
-      color(FL_SELECTION_COLOR);
-      labelcolor(fl_contrast(FL_FOREGROUND_COLOR, FL_SELECTION_COLOR));
-      redraw();
-      break;
-    case FL_LEAVE:
-      color(FL_BACKGROUND_COLOR);
-      labelcolor(FL_FOREGROUND_COLOR);
-      redraw();
-      break;
-  }
-
-  return ret;
-}
 
 static int get_partitions(std::vector<part_t> &vec)
 {
@@ -409,37 +378,32 @@ static void up_callback(Fl_Widget *)
   br_change_dir();
 }
 
-static void xdg_callback(Fl_Widget *, void *v)
+static void dir_callback(Fl_Widget *o)
 {
-  if (!v) {
+  std::string new_dir;
+  part_t *p = NULL;
+  Fl_Hold_Browser *hb = dynamic_cast<Fl_Hold_Browser *>(o);
+
+  if (hb->value() == 0 || hb->data(hb->value()) == NULL) {
+    hb->deselect();
     return;
   }
 
-  const char *new_dir = reinterpret_cast<const char *>(v);
+  const char *str = reinterpret_cast<const char *>(hb->data(hb->value()));
+
+  if (hb->icon(hb->value()) == &icon_hdd && strcmp(str, "/") != 0) {
+    p = reinterpret_cast<part_t *>(hb->data(hb->value()));
+    new_dir = p->mount;
+  } else {
+    new_dir = str;
+  }
 
   if (current_dir != new_dir) {
     prev_dir = current_dir;
     current_dir = new_dir;
   }
 
-  br_change_dir();
-}
-
-static void partition_callback(Fl_Widget *, void *v)
-{
-  if (!v) {
-    return;
-  }
-
-  part_t *p = reinterpret_cast<part_t *>(v);
-  std::string new_dir = p->mount;
-
-  if (current_dir != new_dir) {
-    prev_dir = current_dir;
-    current_dir = new_dir;
-  }
-
-  if (!p->is_mounted) {
+  if (p && !p->is_mounted) {
     std::string cmd = "gio mount -d ";
     cmd += p->dev;
     cmd += " >/dev/null 2>/dev/null";
@@ -450,24 +414,7 @@ static void partition_callback(Fl_Widget *, void *v)
   }
 
   br_change_dir();
-}
-
-static void top_callback(Fl_Widget *)
-{
-  if (current_dir != "/") {
-    prev_dir = current_dir;
-    current_dir = "/";
-  }
-  br_change_dir();
-}
-
-static void home_callback(Fl_Widget *)
-{
-  if (current_dir != home_dir) {
-    prev_dir = current_dir;
-    current_dir = home_dir;
-  }
-  br_change_dir();
+  hb->deselect();
 }
 
 static void hidden_callback(Fl_Widget *o)
@@ -518,7 +465,8 @@ static void ok_cb(Fl_Widget *o)
     }
 
     /* skip text-formatting chars */
-    selected_file += br->text(br->value()) + 8;
+    const char *p = strstr(br->text(br->value()), "@.");
+    selected_file += p ? p + 2 : br->text(br->value());
 
     if (list_files && fl_filename_isdir(selected_file.c_str())) {
       /* don't return path but change directory */
@@ -561,7 +509,9 @@ static void br_callback(Fl_Widget *o)
   }
 
   /* skip text-formatting chars */
-  std::string name = br->text(br->value()) + 8;
+  std::string name;
+  const char *p = strstr(br->text(br->value()), "@.");
+  name = p ? p + 2 : br->text(br->value());
 
   std::string path = current_dir;
 
@@ -619,7 +569,8 @@ static bool ignorecaseSortXDG(std::string s1, std::string s2) {
 static void br_change_dir(void)
 {
   struct dirent **list;
-  const char *white = "@B255@. ", *yellow = "@B017@. ";  /* both are 8 chars long */
+  const char *white = "@.";  // "@B255@."
+  const char *yellow = "@B17@.";
 
   /* current_dir was deleted in the meanwhile;
    * move up until we are in an existing directory */
@@ -775,18 +726,16 @@ static void br_change_dir(void)
 char *file_chooser(int mode, bool check_devices)
 {
   Fl_Button *bt_cancel;
-  Fl_Group *g, *g_top, *g_main, *g_main_left, *g_bottom, *g_bottom_inside;
-  Fl_Box *dummy;
-  std::vector<std::string> xdg_dirs;
+  Fl_Group *g, *g_top, *g_main, *g_bottom, *g_bottom_inside;
+  Fl_Tile *tile;
+  Fl_Hold_Browser *br_left;
+  std::vector<std::string> vec, xdg_dirs;
   std::vector<part_t> part;
+  std::string desktop;
   char buf[PATH_MAX] = {0};
   char *env, *resolved, *dir;
   const int w = 800, h = 600;
-  int n = 0, btY = 40, main_left_w = 120;
-
-  /* Maximum number of devices to display individually on the left.
-   * If there are more they will be put in a dropdown menu. */
-  const int devices_max = 5;
+  int n = 0, main_left_w = 120;
 
   const char *xdg_types[] = {
     "XDG_DESKTOP_DIR",
@@ -833,12 +782,8 @@ char *file_chooser(int mode, bool check_devices)
     }
   }
 
-  if (check_devices) {
-    n = get_partitions(part);
-
-    if (n > 0 && n <= devices_max) {
-      main_left_w = 180;
-    }
+  if (check_devices && (n = get_partitions(part)) > 0) {
+    main_left_w = 180;
   }
 
   Fl_Double_Window *win = new Fl_Double_Window(w, h, title);
@@ -889,26 +834,19 @@ char *file_chooser(int mode, bool check_devices)
 
       g_main = new Fl_Group(0, 40, w, h - g_top->h());
       {
-        g_main_left = new Fl_Group(0, 40, main_left_w, h - g_top->h());
+        tile = new Fl_Tile(10, 40, w - 20, h - g_top->h() - 76);
+        const int d = 60;  /* resize distance */
+        Fl_Box *r = new Fl_Box(tile->x() + d, tile->y() + d, tile->w() - 2*d, tile->h() - 2*d);
         {
-          const int btX = 10, btW = g_main_left->w() - 20, btH = 30;
-          std::vector<std::string> vec;
+          br_left = new Fl_Hold_Browser(10, g_top->h(), main_left_w, h - g_top->h() - 76);
+          br_left->color(17);  /* yellow */
+          br_left->callback(dir_callback);
+          br_left->add("/", STR2VP("/"));
+          br_left->icon(br_left->size(), &icon_hdd);
+          br_left->add("Home", STR2VP(home_dir.c_str()));
+          br_left->icon(br_left->size(), &icon_home);
 
-         { Fl_Box *o = new Fl_Box(btX, btY + 5, btW, 20, "Places");
-          o->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
-          o->labelfont(FL_HELVETICA_BOLD);
-          o->labelsize(o->labelsize() - 2);
-          o->box(FL_NO_BOX);
-          btY += 25; }
-
-         { mover_button *o = new mover_button(btX, btY, btW, btH, " /");
-          o->callback(top_callback);
-          btY += btH; }
-
-         { mover_button *o = new mover_button(btX, btY, btW, btH, " Home");
-          o->callback(home_callback);
-          btY += btH; }
-
+          /* XDG directories */
           if (xdg_user_dir_lookup(vec)) {
             for (const char *type : xdg_types) {
               /* begin at the last vector entry; if there were multiple entries
@@ -919,99 +857,62 @@ char *file_chooser(int mode, bool check_devices)
                 if (s.substr(0, len) == type) {
                   std::string dir = s.substr(len);
 
+                  if (dir.back() == '/') {
+                    dir.pop_back();
+                  }
+
                   if (!fl_filename_isdir(dir.c_str())) {
                     if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
                       /* fallback to "$HOME/Desktop" */
                       dir = home_dir + "Desktop";
                       if (fl_filename_isdir(dir.c_str())) {
-                        xdg_dirs.push_back(dir);
-                        break;
+                        desktop = dir;
                       }
                     }
                     continue;
                   }
 
-                  if (dir.back() == '/') {
-                    dir.pop_back();
+                  if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
+                    desktop = dir;
+                  } else {
+                    xdg_dirs.push_back(dir);
                   }
-                  xdg_dirs.push_back(dir);
                 }
               }
             }
             vec.clear();
 
+            if (!desktop.empty()) {
+              desktop.push_back('/');
+              br_left->add("Desktop", STR2VP(desktop.c_str()));
+              br_left->icon(br_left->size(), &icon_desktop);
+            }
+
             std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
 
-            /* XDG directory buttons */
             for (auto &s : xdg_dirs) {
               std::string l = s;
               s.push_back('/');
-              l.replace(0, l.rfind('/') + 1, " ");
-
-              mover_button *o = new mover_button(btX, btY, btW, btH);
-              o->copy_label(l.c_str());
-              o->callback(xdg_callback, reinterpret_cast<void *>(const_cast<char *>(s.c_str())));
-              btY += btH;
+              br_left->add(l.c_str() + l.rfind('/') + 1, STR2VP(s.c_str()));
+              br_left->icon(br_left->size(), &icon_dir);
             }
-
-            /* partitions */
-            if (check_devices && n > 0) {
-              if (n > devices_max) {
-                /* dropdown menu */
-                Fl_Menu_Item menu_items[n + 1];
-                int i = 0;
-
-                for (auto &p : part) {
-                  menu_items[i] = { p.label, 0,0,0,0, FL_NORMAL_LABEL, 0, 14, 0 };
-                  menu_items[i].callback_ = partition_callback;
-                  menu_items[i].user_data_ = reinterpret_cast<void *>(&p);
-                  i++;
-                }
-                menu_items[n] = { 0 };
-
-               { Fl_Menu_Button *o = new Fl_Menu_Button(btX, btY + 10, btW, btH, " Devices");
-                o->menu(menu_items);
-                o->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
-                o->box(FL_THIN_UP_BOX);
-                o->down_box(FL_THIN_DOWN_BOX);
-                o->clear_visible_focus();
-                btY += btH + 10; }
-              } else {
-                /* buttons */
-               { Fl_Box *o = new Fl_Box(btX, btY + 5, btW, 20, "Devices");
-                o->align(FL_ALIGN_INSIDE|FL_ALIGN_LEFT);
-                o->labelfont(FL_HELVETICA_BOLD);
-                o->labelsize(o->labelsize() - 2);
-                o->box(FL_NO_BOX);
-                btY += 25; }
-
-                for (auto &p : part) {
-                  std::string s = " ";
-                  s += p.label;
-
-                  mover_button *o = new mover_button(btX, btY, btW, btH);
-                  o->copy_label(s.c_str());
-                  o->tooltip(p.dev);
-                  o->callback(partition_callback, reinterpret_cast<void *>(&p));
-                  btY += btH;
-                }
-              }
-            }
-
-            /* cover up if labels are too long */
-           { Fl_Box *o = new Fl_Box(btX + btW, g_main_left->y(), 10, btY - g_main_left->y());
-            o->box(FL_FLAT_BOX); }
           }
 
-          dummy = new Fl_Box(0, btY + btH + 10, g_main_left->w(), g_main_left->h() - btY - 76);
-          dummy->box(FL_NO_BOX);
-        }
-        g_main_left->resizable(dummy);
-        g_main_left->end();
+          /* partitions */
+          if (check_devices && n > 0) {
+            for (auto &p : part) {
+              br_left->add(p.label, reinterpret_cast<void *>(&p));
+              br_left->icon(br_left->size(), &icon_hdd);
+              //tooltip => p.dev ??
+            }
+          }
 
-        /* Browser */
-        br = new Fl_Hold_Browser(g_main_left->w(), 40, w - g_main_left->w() - 10, h - g_top->h() - 76);
-        br->callback(br_callback);
+          /* Browser */
+          br = new Fl_Hold_Browser(10 + main_left_w, g_top->h(), w - main_left_w - 20, h - g_top->h() - 76);
+          br->callback(br_callback);
+        }
+        tile->end();
+        tile->resizable(r);
 
         g_bottom = new Fl_Group(0, br->y() + br->h(), w, h - br->y() - br->h());
         {
@@ -1019,10 +920,6 @@ char *file_chooser(int mode, bool check_devices)
             bt_w1 = measure_button_width(fl_ok, 40),
             bt_w2 = measure_button_width(fl_cancel, 15),
             bt_w = (bt_w1 > bt_w2) ? bt_w1 : bt_w2;
-
-          /* cover up XDG and partitions buttons */
-         //{ Fl_Box *o = new Fl_Box(0, g_bottom->y(), g_bottom->w(), g_bottom->h());
-         // o->box(FL_FLAT_BOX); }
 
           bt_ok = new Fl_Return_Button(w - bt_w - 10, br->y() + br->h() + 10, bt_w, bt_h, fl_ok);
           if (list_files) {
@@ -1050,17 +947,16 @@ char *file_chooser(int mode, bool check_devices)
         g_bottom->resizable(g_bottom_inside);
         g_bottom->end();
       }
-      g_main->resizable(br);
+      g_main->resizable(tile);
       g_main->end();
     }
     g->resizable(g_main);
     g->end();
   }
 
-  current_dir.clear();
-  home_callback(NULL);
-  //run_window(win, g, 320, 360);
-  run_window(win, g, 320, btY + g_bottom->h());
+  current_dir = home_dir;
+  br_change_dir();
+  run_window(win, g, 360, 320);
 
   if (magicdb) {
     free(magicdb);
