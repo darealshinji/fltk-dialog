@@ -47,13 +47,16 @@ static Fl_Multi_Browser *browser;
 static Fl_Check_Button *checkbutton = NULL;
 static Fl_Return_Button *but_ok;
 static int ret = 1;
+static pthread_t th;
 
 static bool checkbutton_set = false
 ,           autoscroll = false
 ,           autoclose = false
 ,           hide_cancel = false;
 
-static void close_cb(Fl_Widget *, long p) {
+static void close_cb(Fl_Widget *, long p)
+{
+  pthread_cancel(th);
   win->hide();
   ret = p;
 }
@@ -115,7 +118,6 @@ int dialog_textinfo(bool autoscroll_, const char *checkbox, bool autoclose_, boo
   Fl_Button *but_cancel;
   int browser_h = checkbox ? 422 : 444;
   int but_w = 90, win_ret = 0;
-  pthread_t th;
 
   autoscroll = autoscroll_;
   autoclose = autoclose_;
