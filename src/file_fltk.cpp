@@ -43,6 +43,7 @@
 #include "octicons.h"
 
 #define DOUBLECLICK_TIME  1.0
+#define SIDEBAR_EXTRA_W   38
 #define STR2VP(x)         reinterpret_cast<void *>( const_cast<char *>(x) )
 
 typedef struct {
@@ -52,12 +53,14 @@ typedef struct {
   bool is_mounted;
 } part_t;
 
-static Fl_Hold_Browser *br;
+static Fl_Hold_Browser *br, *sidebar;
 static Fl_Box *addrline, *infobox = NULL;
 static Fl_Button *bt_popd, *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
+static pthread_t th;
+static std::vector<part_t> part_vec;
 static std::string current_dir = "/", prev_dir, home_dir = "/home/", selected_file;
 static char *magicdb = NULL;
 static int selection = 0;
@@ -65,7 +68,7 @@ static bool show_dotfiles = false, list_files = true, sort_reverse = false;
 
 static void br_change_dir(void);
 static void selection_timeout(void);
-static Fl_Timeout_Handler th = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
+static Fl_Timeout_Handler htimeout = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
 
 #define PNG(a,b)  static Fl_PNG_Image a(NULL, octicons_##b##_png, octicons_##b##_png_len);
 PNG(eye, eye)
@@ -85,24 +88,23 @@ PNG(sort_order1, list_ordered_1)
 PNG(sort_order2, list_ordered_2)
 
 
-static int get_partitions(std::vector<part_t> &vec)
+extern "C" void *get_partitions(void *)
 {
   FILE *fp;
   char *user, *buf = NULL;
   size_t n = 0;
-  int count = 0;
+  unsigned int count = 0;
 
   if ((user = getenv("USER")) == NULL) {
-    return 0;
+    return nullptr;
   }
 
   if ((fp = popen("gio mount -l -i 2>/dev/null", "r")) == NULL) {
-    return 0;
+    return nullptr;
   }
 
   while (getline(&buf, &n, fp) != -1) {
     char *p;
-    size_t len;
     part_t part;
     char tmp[1024] = {0};
 
@@ -113,10 +115,10 @@ static int get_partitions(std::vector<part_t> &vec)
       if ((p = strchr(buf + 10, ')')) == NULL) continue;
 
       snprintf(tmp, sizeof(tmp) - 1, "): %s -> file://%s\n",
-               vec.at(count - 1).label, vec.at(count - 1).mount);
+               part_vec.at(count - 1).label, part_vec.at(count - 1).mount);
 
       if (strcmp(p, tmp) == 0) {
-        vec.at(count - 1).is_mounted = true;
+        part_vec.at(count - 1).is_mounted = true;
       } else {
         continue;
       }
@@ -141,24 +143,25 @@ static int get_partitions(std::vector<part_t> &vec)
     if (strcmp(buf, "     class: 'device'\n") != 0) continue;
 
     NEXTLINE;
-    if (strncmp(buf, "     unix-device: ", 18) != 0) continue;
+    if (strncmp(buf, "     unix-device: '", 19) != 0) continue;
     buf[strlen(buf) - 1] = 0;
     strncpy(part.dev, buf + 18, sizeof(part.dev) - 1);
 
     NEXTLINE;
-    if (strncmp(buf, "     uuid: ", 11) != 0) continue;
-    p = buf + 11;
-    len = strlen(p);
-    p[len - 1] = 0;
-
-    if (p[0] == '\'' && p[len - 2] == '\'') {
-      p[len - 2] = 0;
-      p++;
-    }
+    if (strncmp(buf, "     uuid: '", 12) != 0) continue;
+    p = buf + 12;
+    p[strlen(p) - 2] = 0;
     snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, p);
 
+    NEXTLINE;
+    if (strncmp(buf, "     label: '", 13) == 0) {
+      p = buf + 13;
+      p[strlen(p) - 2] = 0;
+      snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, p);
+    }
+
     part.is_mounted = false;
-    vec.push_back(part);
+    part_vec.push_back(part);
 
     count++;
   }
@@ -169,7 +172,41 @@ static int get_partitions(std::vector<part_t> &vec)
 
   pclose(fp);
 
-  return count;
+  if (count == 0) {
+    return nullptr;
+  }
+
+  /* add entries to sidebar */
+
+  int sbW = sidebar->w();
+  const int max = br->parent()->w() / 3;
+
+  Fl::lock();
+
+  for (auto &p : part_vec) {
+    sidebar->add(p.label, reinterpret_cast<void *>(&p));
+    sidebar->icon(sidebar->size(), &icon_hdd);
+    //tooltip => p.dev ??
+
+    int m = measure_button_width(p.label, SIDEBAR_EXTRA_W);
+
+    if (m > sbW) {
+      sbW = m;
+    }
+  }
+
+  if (sbW > max) {
+    sbW = max;
+  }
+
+  sidebar->resize(sidebar->x(), sidebar->y(), sbW, sidebar->h());
+  br->resize(sidebar->x() + sbW, br->y(), br->parent()->w() - sbW, br->h());
+  br->parent()->redraw();
+
+  Fl::unlock();
+  Fl::awake();
+
+  return nullptr;
 }
 
 /* Format is XDG_XXX_DIR="$HOME/yyy", where yyy is a shell-escaped
@@ -245,7 +282,7 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
   return vec.size() > 0;
 }
 
-static std::string getfsize(long bytes)
+static std::string get_filesize(long bytes)
 {
   std::ostringstream out;
   const char *unit;
@@ -312,7 +349,7 @@ static std::string get_filetype(const char *file)
 
 static void fileInfo(const char *file)
 {
-  std::string str = "";
+  std::string info = "", type = "";
   char *resolved = NULL;
   struct stat st;
 
@@ -331,19 +368,24 @@ static void fileInfo(const char *file)
   if (icon == &icon_link_any && (resolved = realpath(file, NULL)) == NULL) {
     /* get actual link size */
     lstat(file, &st);
-    str = getfsize(st.st_size);
-    str += (st.st_size == 0) ? ",  empty" : ",  broken symbolic link";
+    type = (st.st_size == 0) ? "empty" : "broken symbolic link";
   } else {
     /* get target filesize */
     stat(file, &st);
-    str = getfsize(st.st_size) + ",  " + get_filetype(file);
+    type = get_filetype(file);
+  }
+
+  info = get_filesize(st.st_size);
+
+  if (type != "") {
+    info += ",  " + type;
   }
 
   if (resolved) {
     free(resolved);
   }
 
-  infobox->copy_label(str.c_str());
+  infobox->copy_label(info.c_str());
 }
 
 static void popd_callback(Fl_Widget *)
@@ -378,21 +420,20 @@ static void up_callback(Fl_Widget *)
   br_change_dir();
 }
 
-static void dir_callback(Fl_Widget *o)
+static void sidebar_callback(Fl_Widget *o)
 {
   std::string new_dir;
   part_t *p = NULL;
-  Fl_Hold_Browser *hb = dynamic_cast<Fl_Hold_Browser *>(o);
 
-  if (hb->value() == 0 || hb->data(hb->value()) == NULL) {
-    hb->deselect();
+  if (sidebar->value() == 0 || sidebar->data(sidebar->value()) == NULL) {
+    sidebar->deselect();
     return;
   }
 
-  const char *str = reinterpret_cast<const char *>(hb->data(hb->value()));
+  const char *str = reinterpret_cast<const char *>(sidebar->data(sidebar->value()));
 
-  if (hb->icon(hb->value()) == &icon_hdd && strcmp(str, "/") != 0) {
-    p = reinterpret_cast<part_t *>(hb->data(hb->value()));
+  if (sidebar->icon(sidebar->value()) == &icon_hdd && strcmp(str, "/") != 0) {
+    p = reinterpret_cast<part_t *>(sidebar->data(sidebar->value()));
     new_dir = p->mount;
   } else {
     new_dir = str;
@@ -414,7 +455,7 @@ static void dir_callback(Fl_Widget *o)
   }
 
   br_change_dir();
-  hb->deselect();
+  sidebar->deselect();
 }
 
 static void hidden_callback(Fl_Widget *o)
@@ -452,6 +493,7 @@ static void selection_timeout(void) {
 }
 
 static void cancel_cb(Fl_Widget *o) {
+  pthread_cancel(th);
   o->window()->hide();
 }
 
@@ -485,6 +527,7 @@ static void ok_cb(Fl_Widget *o)
     selected_file = current_dir;
   }
 
+  pthread_cancel(th);
   o->window()->hide();
 }
 
@@ -493,7 +536,7 @@ static void br_callback(Fl_Widget *o)
   auto icon = br->icon(br->value());
 
   if (br->value() == 0 || (!list_files && icon != &icon_dir && icon != &icon_link_dir)) {
-    Fl::remove_timeout(th);
+    Fl::remove_timeout(htimeout);
     selection = 0;
     input->value("");
     br->deselect();
@@ -509,9 +552,8 @@ static void br_callback(Fl_Widget *o)
   }
 
   /* skip text-formatting chars */
-  std::string name;
   const char *p = strstr(br->text(br->value()), "@.");
-  name = p ? p + 2 : br->text(br->value());
+  std::string name = p ? p + 2 : br->text(br->value());
 
   std::string path = current_dir;
 
@@ -524,9 +566,9 @@ static void br_callback(Fl_Widget *o)
   if (selection == 0) {
     selection = br->value();
     bt_ok->activate();
-    Fl::add_timeout(DOUBLECLICK_TIME, th);
+    Fl::add_timeout(DOUBLECLICK_TIME, htimeout);
   } else {
-    Fl::remove_timeout(th);
+    Fl::remove_timeout(htimeout);
     if (br->value() == selection) {
       selection = 0;
 
@@ -544,7 +586,7 @@ static void br_callback(Fl_Widget *o)
       }
     } else {
       selection = br->value();
-      Fl::add_timeout(DOUBLECLICK_TIME, th);
+      Fl::add_timeout(DOUBLECLICK_TIME, htimeout);
     }
   }
 
@@ -728,14 +770,11 @@ char *file_chooser(int mode, bool check_devices)
   Fl_Button *bt_cancel;
   Fl_Group *g, *g_top, *g_main, *g_bottom, *g_bottom_inside;
   Fl_Tile *tile;
-  Fl_Hold_Browser *br_left;
   std::vector<std::string> vec, xdg_dirs;
-  std::vector<part_t> part;
   std::string desktop;
   char buf[PATH_MAX] = {0};
   char *env, *resolved, *dir;
   const int w = 800, h = 600;
-  int n = 0, main_left_w = 120;
 
   const char *xdg_types[] = {
     "XDG_DESKTOP_DIR",
@@ -780,10 +819,6 @@ char *file_chooser(int mode, bool check_devices)
         magicdb = strdup(s.c_str());
       }
     }
-  }
-
-  if (check_devices && (n = get_partitions(part)) > 0) {
-    main_left_w = 180;
   }
 
   Fl_Double_Window *win = new Fl_Double_Window(w, h, title);
@@ -838,13 +873,15 @@ char *file_chooser(int mode, bool check_devices)
         const int d = 60;  /* resize distance */
         Fl_Box *r = new Fl_Box(tile->x() + d, tile->y() + d, tile->w() - 2*d, tile->h() - 2*d);
         {
-          br_left = new Fl_Hold_Browser(10, g_top->h(), main_left_w, h - g_top->h() - 76);
-          br_left->color(17);  /* yellow */
-          br_left->callback(dir_callback);
-          br_left->add("/", STR2VP("/"));
-          br_left->icon(br_left->size(), &icon_hdd);
-          br_left->add("Home", STR2VP(home_dir.c_str()));
-          br_left->icon(br_left->size(), &icon_home);
+          int sbW = 100;
+
+          sidebar = new Fl_Hold_Browser(10, g_top->h(), sbW, h - g_top->h() - 76);
+          sidebar->color(17);  /* yellow */
+          sidebar->callback(sidebar_callback);
+          sidebar->add("/", STR2VP("/"));
+          sidebar->icon(sidebar->size(), &icon_hdd);
+          sidebar->add("Home", STR2VP(home_dir.c_str()));
+          sidebar->icon(sidebar->size(), &icon_home);
 
           /* XDG directories */
           if (xdg_user_dir_lookup(vec)) {
@@ -884,31 +921,37 @@ char *file_chooser(int mode, bool check_devices)
 
             if (!desktop.empty()) {
               desktop.push_back('/');
-              br_left->add("Desktop", STR2VP(desktop.c_str()));
-              br_left->icon(br_left->size(), &icon_desktop);
+              sidebar->add("Desktop", STR2VP(desktop.c_str()));
+              sidebar->icon(sidebar->size(), &icon_desktop);
             }
 
             std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
 
             for (auto &s : xdg_dirs) {
               std::string l = s;
+              const char *p = l.c_str() + l.rfind('/') + 1;
+              int m = measure_button_width(p, SIDEBAR_EXTRA_W);
+
               s.push_back('/');
-              br_left->add(l.c_str() + l.rfind('/') + 1, STR2VP(s.c_str()));
-              br_left->icon(br_left->size(), &icon_dir);
+              sidebar->add(p, STR2VP(s.c_str()));
+              sidebar->icon(sidebar->size(), &icon_dir);
+
+              if (m > sbW) {
+                sbW = m;
+              }
             }
+
+            const int max = tile->w() / 3;
+
+            if (sbW > max) {
+              sbW = max;
+            }
+
+            sidebar->resize(10, sidebar->y(), sbW, sidebar->h());
           }
 
-          /* partitions */
-          if (check_devices && n > 0) {
-            for (auto &p : part) {
-              br_left->add(p.label, reinterpret_cast<void *>(&p));
-              br_left->icon(br_left->size(), &icon_hdd);
-              //tooltip => p.dev ??
-            }
-          }
-
-          /* Browser */
-          br = new Fl_Hold_Browser(10 + main_left_w, g_top->h(), w - main_left_w - 20, h - g_top->h() - 76);
+          /* file browser */
+          br = new Fl_Hold_Browser(10 + sidebar->w(), g_top->h(), tile->w() - sidebar->w(), h - g_top->h() - 76);
           br->callback(br_callback);
         }
         tile->end();
@@ -953,10 +996,31 @@ char *file_chooser(int mode, bool check_devices)
     g->resizable(g_main);
     g->end();
   }
+  set_size(win, g);
+  set_size_range(win, 360, 320);
+  set_position(win);
+  win->end();
+
+  Fl::lock();
 
   current_dir = home_dir;
   br_change_dir();
-  run_window(win, g, 360, 320);
+
+  if (check_devices) {
+    int errsv = pthread_create(&th, 0, &get_partitions, NULL);
+
+    if (errsv != 0) {
+      errno = errsv;
+      perror("pthread_create()");
+    }
+  }
+
+  set_taskbar(win);
+  win->show();
+  set_undecorated(win);
+  set_always_on_top(win);
+
+  Fl::run();
 
   if (magicdb) {
     free(magicdb);
