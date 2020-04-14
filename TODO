@@ -2,4 +2,5 @@
  * write --forms dialog (maybe...)
  * indicator without menu (?)
  * Fl_Table() in file selection
+ * file chooser: refresh button?
 

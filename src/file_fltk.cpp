@@ -42,6 +42,21 @@
 #include "fltk-dialog.hpp"
 #include "octicons.h"
 
+
+class file_chooser_fltk
+{
+private:
+  void create_window(int mode);
+  int lookup_devices();
+
+public:
+  char *get_selection(void);
+
+  file_chooser_fltk(int mode, bool check_devices);
+  ~file_chooser_fltk();
+};
+
+
 #define DOUBLECLICK_TIME  1.0
 #define SIDEBAR_EXTRA_W   38
 #define STR2VP(x)         reinterpret_cast<void *>( const_cast<char *>(x) )
@@ -53,6 +68,8 @@ typedef struct {
   bool is_mounted;
 } part_t;
 
+static Fl_Double_Window *win;
+static Fl_Group *g;
 static Fl_Hold_Browser *br, *sidebar;
 static Fl_Box *addrline, *infobox = NULL;
 static Fl_Button *bt_popd, *bt_up;
@@ -61,7 +78,8 @@ static Fl_Input *input;
 
 static pthread_t th;
 static std::vector<part_t> part_vec;
-static std::string current_dir = "/", prev_dir, home_dir = "/home/", selected_file;
+static std::vector<std::string> xdg_dirs;
+static std::string current_dir = "/", prev_dir, home_dir = "/home/", selected_file, desktop;
 static char *magicdb = NULL;
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
@@ -87,6 +105,24 @@ PNG(icon_link_dir, file_symlink_directory)
 PNG(sort_order1, list_ordered_1)
 PNG(sort_order2, list_ordered_2)
 
+
+/* sort by basename */
+static bool ignorecaseSortXDG(std::string s1, std::string s2) {
+  return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
+}
+
+static void resize_sidebar(int n)
+{
+  const int max = br->parent()->w() / 3;
+
+  if (n > max) {
+    n = max;
+  }
+
+  sidebar->resize(sidebar->x(), sidebar->y(), n, sidebar->h());
+  br->resize(sidebar->x() + n, br->y(), br->parent()->w() - n, br->h());
+  br->parent()->redraw();
+}
 
 extern "C" void *get_partitions(void *)
 {
@@ -178,10 +214,9 @@ extern "C" void *get_partitions(void *)
 
   /* add entries to sidebar */
 
-  int sbW = sidebar->w();
-  const int max = br->parent()->w() / 3;
-
   Fl::lock();
+
+  int sbW = sidebar->w();
 
   for (auto &p : part_vec) {
     sidebar->add(p.label, reinterpret_cast<void *>(&p));
@@ -195,13 +230,7 @@ extern "C" void *get_partitions(void *)
     }
   }
 
-  if (sbW > max) {
-    sbW = max;
-  }
-
-  sidebar->resize(sidebar->x(), sidebar->y(), sbW, sidebar->h());
-  br->resize(sidebar->x() + sbW, br->y(), br->parent()->w() - sbW, br->h());
-  br->parent()->redraw();
+  resize_sidebar(sbW);
 
   Fl::unlock();
   Fl::awake();
@@ -213,10 +242,22 @@ extern "C" void *get_partitions(void *)
  * homedir-relative path, or XDG_XXX_DIR="/yyy", where /yyy is an
  * absolute path. No other format is supported.
  */
-static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
+static void xdg_user_dir_lookup(void)
 {
+  std::vector<std::string> vec;
   std::ifstream ifs;
   std::string line;
+
+  const char *xdg_types[] = {
+    "XDG_DESKTOP_DIR",
+    "XDG_DOCUMENTS_DIR",
+    "XDG_DOWNLOAD_DIR",
+    "XDG_MUSIC_DIR",
+    "XDG_PICTURES_DIR",
+    "XDG_VIDEOS_DIR"
+  };
+
+  /* open "user-dirs.dirs" config file */
 
   char *xdg_conf = getenv("XDG_CONFIG_HOME");
 
@@ -230,15 +271,18 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
   if (!xdg_conf) {
     ifs.open(home_dir + "/.config/user-dirs.dirs", std::ios::in|std::ios::ate);
     if (!ifs.is_open()) {
-      return false;
+      return;
     }
   }
 
   if (ifs.tellg() > 1024*1024) {
     ifs.close();
-    return false;
+    return;
   }
+
   ifs.seekg(0, std::ios::beg);
+
+  /* parse config file */
 
   while (std::getline(ifs, line)) {
     size_t pos, pos2;
@@ -279,7 +323,72 @@ static bool xdg_user_dir_lookup(std::vector<std::string> &vec)
 
   ifs.close();
 
-  return vec.size() > 0;
+  if (vec.size() == 0) {
+    return;
+  }
+
+  /* add XDG directories to sidebar */
+
+  for (const char *type : xdg_types) {
+    /* begin at the last vector entry; if there were multiple entries
+     * of the same XDG type we pick the last one added to the config file */
+    for (auto it = vec.end() - 1; it >= vec.begin(); --it) {
+      std::string &s = *it;
+      size_t len = strlen(type);
+      if (s.substr(0, len) == type) {
+        std::string dir = s.substr(len);
+
+        if (dir.back() == '/') {
+          dir.pop_back();
+        }
+
+        if (!fl_filename_isdir(dir.c_str())) {
+          if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
+            /* fallback to "$HOME/Desktop" */
+            dir = home_dir + "Desktop";
+            if (fl_filename_isdir(dir.c_str())) {
+              desktop = dir;
+            }
+          }
+          continue;
+        }
+
+        if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
+          desktop = dir;
+        } else {
+          xdg_dirs.push_back(dir);
+        }
+      }
+    }
+  }
+
+  vec.clear();
+
+  if (!desktop.empty()) {
+    desktop.push_back('/');
+    sidebar->add("Desktop", STR2VP(desktop.c_str()));
+    sidebar->icon(sidebar->size(), &icon_desktop);
+  }
+
+  std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
+
+  int sbW = sidebar->w();
+
+  for (auto &s : xdg_dirs) {
+    std::string l = s;
+    const char *p = l.c_str() + l.rfind('/') + 1;
+    int m = measure_button_width(p, SIDEBAR_EXTRA_W);
+
+    s.push_back('/');
+    sidebar->add(p, STR2VP(s.c_str()));
+    sidebar->icon(sidebar->size(), &icon_dir);
+
+    if (m > sbW) {
+      sbW = m;
+    }
+  }
+
+  resize_sidebar(sbW);
 }
 
 static std::string get_filesize(long bytes)
@@ -603,11 +712,6 @@ static void br_callback(Fl_Widget *o)
   }
 }
 
-/* sort by basename */
-static bool ignorecaseSortXDG(std::string s1, std::string s2) {
-  return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
-}
-
 static void br_change_dir(void)
 {
   struct dirent **list;
@@ -765,25 +869,14 @@ static void br_change_dir(void)
   input->value("");
 }
 
-char *file_chooser(int mode, bool check_devices)
+void file_chooser_fltk::create_window(int mode)
 {
   Fl_Button *bt_cancel;
-  Fl_Group *g, *g_top, *g_main, *g_bottom, *g_bottom_inside;
+  Fl_Group *g_top, *g_main, *g_bottom, *g_bottom_inside;
   Fl_Tile *tile;
-  std::vector<std::string> vec, xdg_dirs;
-  std::string desktop;
+  const int w = 800, h = 600;
   char buf[PATH_MAX] = {0};
   char *env, *resolved, *dir;
-  const int w = 800, h = 600;
-
-  const char *xdg_types[] = {
-    "XDG_DESKTOP_DIR",
-    "XDG_DOCUMENTS_DIR",
-    "XDG_DOWNLOAD_DIR",
-    "XDG_MUSIC_DIR",
-    "XDG_PICTURES_DIR",
-    "XDG_VIDEOS_DIR"
-  };
 
   list_files = (mode == FILE_CHOOSER);
 
@@ -795,6 +888,8 @@ char *file_chooser(int mode, bool check_devices)
       home_dir.push_back('/');
     }
   }
+
+  current_dir = home_dir;
 
   /* for file sizes */
   setlocale(LC_NUMERIC, "C");
@@ -821,7 +916,7 @@ char *file_chooser(int mode, bool check_devices)
     }
   }
 
-  Fl_Double_Window *win = new Fl_Double_Window(w, h, title);
+  win = new Fl_Double_Window(w, h, title);
   {
     g = new Fl_Group(0, 0, w, h);
     {
@@ -883,73 +978,6 @@ char *file_chooser(int mode, bool check_devices)
           sidebar->add("Home", STR2VP(home_dir.c_str()));
           sidebar->icon(sidebar->size(), &icon_home);
 
-          /* XDG directories */
-          if (xdg_user_dir_lookup(vec)) {
-            for (const char *type : xdg_types) {
-              /* begin at the last vector entry; if there were multiple entries
-               * of the same XDG type we pick the last one added to the config file */
-              for (auto it = vec.end() - 1; it >= vec.begin(); --it) {
-                std::string &s = *it;
-                size_t len = strlen(type);
-                if (s.substr(0, len) == type) {
-                  std::string dir = s.substr(len);
-
-                  if (dir.back() == '/') {
-                    dir.pop_back();
-                  }
-
-                  if (!fl_filename_isdir(dir.c_str())) {
-                    if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
-                      /* fallback to "$HOME/Desktop" */
-                      dir = home_dir + "Desktop";
-                      if (fl_filename_isdir(dir.c_str())) {
-                        desktop = dir;
-                      }
-                    }
-                    continue;
-                  }
-
-                  if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
-                    desktop = dir;
-                  } else {
-                    xdg_dirs.push_back(dir);
-                  }
-                }
-              }
-            }
-            vec.clear();
-
-            if (!desktop.empty()) {
-              desktop.push_back('/');
-              sidebar->add("Desktop", STR2VP(desktop.c_str()));
-              sidebar->icon(sidebar->size(), &icon_desktop);
-            }
-
-            std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
-
-            for (auto &s : xdg_dirs) {
-              std::string l = s;
-              const char *p = l.c_str() + l.rfind('/') + 1;
-              int m = measure_button_width(p, SIDEBAR_EXTRA_W);
-
-              s.push_back('/');
-              sidebar->add(p, STR2VP(s.c_str()));
-              sidebar->icon(sidebar->size(), &icon_dir);
-
-              if (m > sbW) {
-                sbW = m;
-              }
-            }
-
-            const int max = tile->w() / 3;
-
-            if (sbW > max) {
-              sbW = max;
-            }
-
-            sidebar->resize(10, sidebar->y(), sbW, sidebar->h());
-          }
-
           /* file browser */
           br = new Fl_Hold_Browser(10 + sidebar->w(), g_top->h(), tile->w() - sidebar->w(), h - g_top->h() - 76);
           br->callback(br_callback);
@@ -996,18 +1024,32 @@ char *file_chooser(int mode, bool check_devices)
     g->resizable(g_main);
     g->end();
   }
+  win->end();
+}
+
+int file_chooser_fltk::lookup_devices(void) {
+  Fl::lock();
+  return pthread_create(&th, 0, &get_partitions, NULL);
+}
+
+char *file_chooser_fltk::get_selection(void) {
+  return selected_file.empty() ? NULL : strdup(selected_file.c_str());
+}
+
+file_chooser_fltk::file_chooser_fltk(int mode, bool check_devices)
+{
+  create_window(mode);
+
   set_size(win, g);
   set_size_range(win, 360, 320);
   set_position(win);
-  win->end();
+  set_taskbar(win);
 
-  Fl::lock();
-
-  current_dir = home_dir;
   br_change_dir();
+  xdg_user_dir_lookup();
 
   if (check_devices) {
-    int errsv = pthread_create(&th, 0, &get_partitions, NULL);
+    int errsv = lookup_devices();
 
     if (errsv != 0) {
       errno = errsv;
@@ -1015,17 +1057,24 @@ char *file_chooser(int mode, bool check_devices)
     }
   }
 
-  set_taskbar(win);
   win->show();
   set_undecorated(win);
   set_always_on_top(win);
+}
 
-  Fl::run();
-
+file_chooser_fltk::~file_chooser_fltk()
+{
   if (magicdb) {
     free(magicdb);
   }
+}
 
-  return selected_file.empty() ? NULL : strdup(selected_file.c_str());
+char *file_chooser(int mode, bool check_devices)
+{
+  file_chooser_fltk *fc = new file_chooser_fltk(mode, check_devices);
+
+  Fl::run();
+
+  return fc->get_selection();
 }
 
