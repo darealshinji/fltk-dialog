@@ -57,9 +57,15 @@ public:
 };
 
 
+#define CONF_MAX_SIZE     (512*1024)
 #define DOUBLECLICK_TIME  1.0
 #define SIDEBAR_EXTRA_W   38
 #define STR2VP(x)         reinterpret_cast<void *>( const_cast<char *>(x) )
+
+#define SIDEBAR_LABELLINE(x) \
+  sidebar->add("@S8@. "); \
+  sidebar->add("@s@b@.   " x); \
+  sidebar->add("@S3@. ");
 
 typedef struct {
   char label[256];
@@ -78,7 +84,7 @@ static Fl_Input *input;
 
 static pthread_t th;
 static std::vector<part_t> part_vec;
-static std::vector<std::string> xdg_dirs;
+static std::vector<std::string> xdg_dirs, bookmarks;
 static std::string current_dir = "/", prev_dir, home_dir = "/home/", selected_file, desktop;
 static char *magicdb = NULL;
 static int selection = 0;
@@ -107,7 +113,7 @@ PNG(sort_order2, list_ordered_2)
 
 
 /* sort by basename */
-static bool ignorecaseSortXDG(std::string s1, std::string s2) {
+static bool ignorecasesort(std::string s1, std::string s2) {
   return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
 }
 
@@ -216,6 +222,8 @@ extern "C" void *get_partitions(void *)
 
   Fl::lock();
 
+  SIDEBAR_LABELLINE("Devices");
+
   int sbW = sidebar->w();
 
   for (auto &p : part_vec) {
@@ -236,6 +244,116 @@ extern "C" void *get_partitions(void *)
   Fl::awake();
 
   return nullptr;
+}
+
+/* look for gtk3 bookmarks;
+ * run this after xdg_user_dir_lookup() to avoid duplicated entries
+ */
+static void get_gtk3_bookmarks(void)
+{
+  std::ifstream ifs;
+  std::string line;
+
+  /* open bookmarks file */
+
+  char *xdg_conf = getenv("XDG_CONFIG_HOME");
+
+  if (xdg_conf && strlen(xdg_conf) > 0) {
+    ifs.open(std::string(xdg_conf) + "/gtk-3.0/bookmarks", std::ios::in|std::ios::ate);
+    if (!ifs.is_open()) {
+      xdg_conf = NULL;
+    }
+  }
+
+  if (!xdg_conf) {
+    ifs.open(home_dir + "/.config/gtk-3.0/bookmarks", std::ios::in|std::ios::ate);
+    if (!ifs.is_open()) {
+      return;
+    }
+  }
+
+  if (ifs.tellg() > CONF_MAX_SIZE) {
+    ifs.close();
+    return;
+  }
+
+  ifs.seekg(0, std::ios::beg);
+
+  /* parse bookmarks file */
+
+  while (std::getline(ifs, line)) {
+    size_t pos;
+
+    if (line.substr(0,8) != "file:///") {
+      continue;
+    }
+
+    if ((pos = line.find(' ')) != std::string::npos) {
+      line.erase(pos);
+    }
+
+    char *p = strdup(line.c_str() + 7);
+    fl_decode_uri(p);
+
+    if (!fl_filename_isdir(p)) {
+      free(p);
+      continue;
+    }
+
+    line = p;
+    free(p);
+
+    if (line.back() != '/') {
+      line.push_back('/');
+    }
+
+    if (line != "/" && line != home_dir) {
+      bookmarks.push_back(line);
+    }
+  }
+
+  ifs.close();
+
+  if (bookmarks.size() == 0) {
+    return;
+  }
+
+  /* remove directories that are already present in xdg_dirs */
+  for (auto &xdg_entry : xdg_dirs) {
+    for (auto it = bookmarks.begin(); it != bookmarks.end(); ++it) {
+      std::string &s = *it;
+      if (s == xdg_entry) {
+        bookmarks.erase(it);
+      }
+    }
+  }
+
+  if (bookmarks.size() == 0) {
+    return;
+  }
+
+  SIDEBAR_LABELLINE("Bookmarks");
+
+  //std::sort(bookmarks.begin(), bookmarks.end(), ignorecasesort);
+
+  int sbW = sidebar->w();
+
+  for (auto &s : bookmarks) {
+    std::string l = s;
+    l.pop_back();  /* remove trailing "/" */
+
+    const char *p = l.c_str() + l.rfind('/') + 1;
+    int m = measure_button_width(p, SIDEBAR_EXTRA_W);
+
+    sidebar->add(p, STR2VP(s.c_str()));
+    sidebar->icon(sidebar->size(), &icon_dir);
+
+    if (m > sbW) {
+      sbW = m;
+    }
+  }
+
+  resize_sidebar(sbW);
 }
 
 /* Format is XDG_XXX_DIR="$HOME/yyy", where yyy is a shell-escaped
@@ -275,7 +393,7 @@ static void xdg_user_dir_lookup(void)
     }
   }
 
-  if (ifs.tellg() > 1024*1024) {
+  if (ifs.tellg() > CONF_MAX_SIZE) {
     ifs.close();
     return;
   }
@@ -370,7 +488,7 @@ static void xdg_user_dir_lookup(void)
     sidebar->icon(sidebar->size(), &icon_desktop);
   }
 
-  std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecaseSortXDG);
+  std::sort(xdg_dirs.begin(), xdg_dirs.end(), ignorecasesort);
 
   int sbW = sidebar->w();
 
@@ -973,6 +1091,8 @@ void file_chooser_fltk::create_window(int mode)
           sidebar = new Fl_Hold_Browser(10, g_top->h(), sbW, h - g_top->h() - 76);
           sidebar->color(17);  /* yellow */
           sidebar->callback(sidebar_callback);
+
+          SIDEBAR_LABELLINE("Places");
           sidebar->add("/", STR2VP("/"));
           sidebar->icon(sidebar->size(), &icon_hdd);
           sidebar->add("Home", STR2VP(home_dir.c_str()));
@@ -1047,6 +1167,7 @@ file_chooser_fltk::file_chooser_fltk(int mode, bool check_devices)
 
   br_change_dir();
   xdg_user_dir_lookup();
+  get_gtk3_bookmarks();
 
   if (check_devices) {
     int errsv = lookup_devices();
