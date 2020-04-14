@@ -79,7 +79,7 @@
          } // Fl_Input* find_
          o->end();
        } // Fl_Group* o
-+      { close_ = new Fl_Button(495, 10, 25, 25, "X");
++      { close_ = new Fl_Button(495, 10, 25, 25, "\xC3\x97");
 +        close_->tooltip("Close the window.");
 +        close_->labelfont(1);
 +        close_->labelsize(16);
