@@ -94,22 +94,22 @@ static void br_change_dir(void);
 static void selection_timeout(void);
 static Fl_Timeout_Handler htimeout = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
 
-#define PNG(a,b)  static Fl_PNG_Image a(NULL, icons_##b##_png, icons_##b##_png_len);
-PNG(eye, eye)
-PNG(eye_closed, eye_closed)
-PNG(go_up, arrow_up)
-PNG(go_up_gray, arrow_up_gray)
-PNG(go_back, arrow_both)
-PNG(go_back_gray, arrow_both_gray)
-PNG(icon_any, file)
-PNG(icon_hdd, database)
-PNG(icon_dir, file_directory)
-PNG(icon_desktop, device_desktop)
-PNG(icon_home, home)
-PNG(icon_link_any, file_symlink_file)
-PNG(icon_link_dir, file_symlink_directory)
-PNG(sort_order1, list_ordered_1)
-PNG(sort_order2, list_ordered_2)
+#define PNG(x)  static Fl_PNG_Image x(NULL, icons_##x##_png, icons_##x##_png_len);
+PNG(eye)
+PNG(eye_closed)
+PNG(go_up)
+PNG(go_up_gray)
+PNG(go_back)
+PNG(go_back_gray)
+PNG(icon_any)
+PNG(icon_hdd)
+PNG(icon_dir)
+PNG(icon_desktop)
+PNG(icon_home)
+PNG(icon_link_any)
+PNG(icon_link_dir)
+PNG(list_ordered_1)
+PNG(list_ordered_2)
 
 
 /* sort by basename */
@@ -713,10 +713,10 @@ static void sort_callback(Fl_Widget *o)
 
   if (sort_reverse) {
     sort_reverse = false;
-    b->image(sort_order1);
+    b->image(list_ordered_1);
   } else {
     sort_reverse = true;
-    b->image(sort_order2);
+    b->image(list_ordered_2);
   }
 
   br_change_dir();
@@ -1074,7 +1074,7 @@ void file_chooser_fltk::create_window(int mode)
 
        { Fl_Button *o = new Fl_Button(w - bt_w*2 - 10, 5, bt_w, 30);
         o->tooltip("Sort Order");
-        o->image(sort_order1);
+        o->image(list_ordered_1);
         o->callback(sort_callback);
         o->clear_visible_focus(); }
 

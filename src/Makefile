@@ -40,19 +40,19 @@ CXX ?= g++
 XXDCMD ?= xxd -i
 
 ICONS = \
-  arrow-both-gray.png \
-  arrow-both.png \
-  arrow-up-gray.png \
-  arrow-up.png \
-  database.png \
-  device-desktop.png \
   eye-closed.png \
   eye.png \
-  file-directory.png \
-  file.png \
-  file-symlink-directory.png \
-  file-symlink-file.png \
-  home.png \
+  go-back-gray.png \
+  go-back.png \
+  go-up-gray.png \
+  go-up.png \
+  icon-any.png \
+  icon-desktop.png \
+  icon-dir.png \
+  icon-hdd.png \
+  icon-home.png \
+  icon-link-any.png \
+  icon-link-dir.png \
   list-ordered-1.png \
   list-ordered-2.png \
   $(NULL)
