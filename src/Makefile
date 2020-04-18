@@ -39,7 +39,7 @@ CC ?= gcc
 CXX ?= g++
 XXDCMD ?= xxd -i
 
-OCTICONS = \
+ICONS = \
   arrow-both-gray.png \
   arrow-both.png \
   arrow-up-gray.png \
@@ -87,7 +87,7 @@ ifneq ($(USE_DLOPEN),)
 _SRCS += icns_image.cpp indicator_gtk.cpp
 endif
 
-GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h icon_png.h icon_ind_png.h image_missing_png.h octicons.h)
+GENHDRS  = $(addprefix $(BUILDDIR)/,fltk_png.h icon_png.h icon_ind_png.h image_missing_png.h icons.h)
 ifneq ($(HAVE_QT),)
 #ifneq ($(USE_EXTERNAL_PLUGINS),)
 GENHDRS += $(BUILDDIR)/qtplugin_so.h
@@ -120,7 +120,7 @@ clean:
 	-rm -f $(BIN)
 	-rm -f $(OBJS)
 	-rm -f $(GENHDRS)
-	-rm -f $(addprefix $(BUILDDIR)/,qtplugin.o qtplugin.so qtplugin_so.h octicons.h_)
+	-rm -f $(addprefix $(BUILDDIR)/,qtplugin.o qtplugin.so qtplugin_so.h icons.h_)
 
 $(BIN): $(OBJS)
 	$(msg_LDCXX)$(CXX) -o $@ $^ $(BIN_LDFLAGS)
@@ -146,9 +146,9 @@ $(BUILDDIR)/icon_ind_png.h: $(SOURCEDIR)/icon_ind.png
 $(BUILDDIR)/image_missing_png.h: $(SOURCEDIR)/image-missing.png
 	$(msg_GEN)cd $(SOURCEDIR) && $(XXDCMD) image-missing.png > $@ && sed -i 's|^unsigned |static const unsigned |g' $@
 
-$(BUILDDIR)/octicons.h: $(addprefix $(SOURCEDIR)/octicons/,$(OCTICONS))
+$(BUILDDIR)/icons.h: $(addprefix $(SOURCEDIR)/icons/,$(ICONS))
 	$(msg_GEN)rm -f $@_;
-	$(foreach FILE,$(addprefix octicons/,$(OCTICONS)),$(silent)cd $(SOURCEDIR) && $(XXDCMD) $(FILE) >> $@_;${NL})
+	$(foreach FILE,$(addprefix icons/,$(ICONS)),$(silent)cd $(SOURCEDIR) && $(XXDCMD) $(FILE) >> $@_;${NL})
 	$(silent)mv $@_ $@
 
 $(BUILDDIR)/qtplugin_so.h: $(BUILDDIR)/qtplugin.so

@@ -40,7 +40,7 @@
 #include <unistd.h>
 
 #include "fltk-dialog.hpp"
-#include "octicons.h"
+#include "icons.h"
 
 
 class file_chooser_fltk
@@ -94,7 +94,7 @@ static void br_change_dir(void);
 static void selection_timeout(void);
 static Fl_Timeout_Handler htimeout = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
 
-#define PNG(a,b)  static Fl_PNG_Image a(NULL, octicons_##b##_png, octicons_##b##_png_len);
+#define PNG(a,b)  static Fl_PNG_Image a(NULL, icons_##b##_png, icons_##b##_png_len);
 PNG(eye, eye)
 PNG(eye_closed, eye_closed)
 PNG(go_up, arrow_up)
