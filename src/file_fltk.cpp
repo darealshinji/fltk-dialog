@@ -253,6 +253,7 @@ static void get_gtk3_bookmarks(void)
 {
   std::ifstream ifs;
   std::string line;
+  std::vector<std::string> vec;
 
   /* open bookmarks file */
 
@@ -308,23 +309,28 @@ static void get_gtk3_bookmarks(void)
     }
 
     if (line != "/" && line != home_dir) {
-      bookmarks.push_back(line);
+      vec.push_back(line);
     }
   }
 
   ifs.close();
 
-  if (bookmarks.size() == 0) {
+  if (vec.size() == 0) {
     return;
   }
 
-  /* remove directories that are already present in xdg_dirs */
-  for (auto &xdg_entry : xdg_dirs) {
-    for (auto it = bookmarks.begin(); it != bookmarks.end(); ++it) {
-      std::string &s = *it;
+  /* only add directories to bookmarks that aren't in xdg_dirs */
+  for (auto &s : vec) {
+    bool found = false;
+
+    for (auto &xdg_entry : xdg_dirs) {
       if (s == xdg_entry) {
-        bookmarks.erase(it);
+        found = true;
       }
+    }
+
+    if (!found) {
+      bookmarks.push_back(s);
     }
   }
 
@@ -332,9 +338,10 @@ static void get_gtk3_bookmarks(void)
     return;
   }
 
-  SIDEBAR_LABELLINE("Bookmarks");
-
+  vec.clear();
   //std::sort(bookmarks.begin(), bookmarks.end(), ignorecasesort);
+
+  SIDEBAR_LABELLINE("Bookmarks");
 
   int sbW = sidebar->w();
 
