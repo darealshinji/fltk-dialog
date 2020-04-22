@@ -47,7 +47,6 @@ class file_chooser_fltk
 {
 private:
   void create_window(int mode);
-  int lookup_devices();
 
 public:
   char *get_selection(void);
@@ -59,7 +58,7 @@ public:
 
 #define CONF_MAX_SIZE     (512*1024)
 #define DOUBLECLICK_TIME  1.0
-#define SIDEBAR_EXTRA_W   38
+#define SIDEBAR_EXTRA_W   40
 #define STR2VP(x)         reinterpret_cast<void *>( const_cast<char *>(x) )
 
 #define SIDEBAR_LABELLINE(x) \
@@ -71,7 +70,9 @@ typedef struct {
   char label[256];
   char dev[256];
   char mount[512];
-  bool is_mounted;
+  bool mounted;
+  bool rom;
+  bool hotplug;
 } part_t;
 
 static Fl_Double_Window *win;
@@ -82,17 +83,23 @@ static Fl_Button *bt_popd, *bt_up;
 static Fl_Return_Button *bt_ok;
 static Fl_Input *input;
 
-static pthread_t th;
+//static pthread_t th;
 static std::vector<part_t> part_vec;
 static std::vector<std::string> xdg_dirs, bookmarks;
 static std::string current_dir = "/", prev_dir, home_dir = "/home/", selected_file, desktop;
 static char *magicdb = NULL;
 static int selection = 0;
 static bool show_dotfiles = false, list_files = true, sort_reverse = false;
+static int sidebar_first_device = 0;
+static int sidebar_last_device = 0;
 
 static void br_change_dir(void);
 static void selection_timeout(void);
 static Fl_Timeout_Handler htimeout = reinterpret_cast<Fl_Timeout_Handler>(selection_timeout);
+
+static void mount_timeout(void);
+static double mount_timeout_limit = 0;
+static Fl_Timeout_Handler hmount = reinterpret_cast<Fl_Timeout_Handler>(mount_timeout);
 
 #define PNG(x)  static Fl_PNG_Image x(NULL, icons_##x##_png, icons_##x##_png_len);
 PNG(eye)
@@ -103,6 +110,8 @@ PNG(go_back)
 PNG(go_back_gray)
 PNG(icon_any)
 PNG(icon_hdd)
+PNG(icon_rom)
+PNG(icon_plugged)
 PNG(icon_dir)
 PNG(icon_desktop)
 PNG(icon_home)
@@ -130,7 +139,30 @@ static void resize_sidebar(int n)
   br->parent()->redraw();
 }
 
-extern "C" void *get_partitions(void *)
+static std::string getval(std::string val, const char *line)
+{
+  std::string s;
+  size_t pos, pos2;
+
+  if (!line || strlen(line) == 0 || val.empty() || val == "") {
+    return "";
+  }
+  s = line;
+  val += "=\"";
+
+  if ((pos = s.find(val)) == std::string::npos) {
+    return "";
+  }
+  pos += val.size();
+
+  if ((pos2 = s.find('"', pos)) == std::string::npos) {
+    return "";
+  }
+
+  return s.substr(pos, pos2 - pos);
+}
+
+static void get_partitions(void)
 {
   FILE *fp;
   char *user, *buf = NULL;
@@ -138,73 +170,70 @@ extern "C" void *get_partitions(void *)
   unsigned int count = 0;
 
   if ((user = getenv("USER")) == NULL) {
-    return nullptr;
+    return;
   }
 
-  if ((fp = popen("gio mount -l -i 2>/dev/null", "r")) == NULL) {
-    return nullptr;
+  if ((fp = popen("lsblk -p -P -o mountpoint,type,name,label,uuid,size,hotplug 2>/dev/null", "r")) == NULL) {
+    return;
   }
 
   while (getline(&buf, &n, fp) != -1) {
-    char *p;
-    part_t part;
-    char tmp[1024] = {0};
+    std::string s;
+
+    part_t part = {0};
+    part.mounted = false;
+    part.rom = false;
+    part.hotplug = false;
 
     if (n == 0 || !buf) continue;
 
-    /* check if the last found partition is already mounted */
-    if (count > 0 && strncmp("    Mount(", buf, 10) == 0) {
-      if ((p = strchr(buf + 10, ')')) == NULL) continue;
+    if ((s = getval("MOUNTPOINT", buf)) == "/") continue;
+    if (s != "") {
+      strncpy(part.mount, s.c_str(), sizeof(part.mount) - 1);
+      part.mounted = true;
+    }
 
-      snprintf(tmp, sizeof(tmp) - 1, "): %s -> file://%s\n",
-               part_vec.at(count - 1).label, part_vec.at(count - 1).mount);
+    s = getval("TYPE", buf);
+    if (s != "part" && s != "rom") continue;
+    if (s == "rom") {
+      if (!part.mounted) continue;
+      part.rom = true;
+    }
 
-      if (strcmp(p, tmp) == 0) {
-        part_vec.at(count - 1).is_mounted = true;
+    if ((s = getval("NAME", buf)) == "") continue;
+    strncpy(part.dev, s.c_str(), sizeof(part.dev) - 1);
+
+    if ((s = getval("LABEL", buf)) != "") {
+      strncpy(part.label, s.c_str(), sizeof(part.label) - 1);
+
+      if (!part.mounted) {
+        /* replace directory delimiters */
+        for (size_t i = 0; i < s.size(); ++i) {
+          if (s[i] == '/') {
+            s[i] = '_';
+          }
+        }
+        snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, s.c_str());
+      }
+    } else {
+      if ((s = getval("UUID", buf)) == "") continue;
+
+      if (!part.mounted) {
+        snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, s.c_str());
+      }
+
+      if ((s = getval("SIZE", buf)) == "") {
+        strncpy(part.label, "Drive", sizeof(part.label) - 1);
       } else {
-        continue;
+        snprintf(part.label, sizeof(part.label) - 1, "Drive %s", s.c_str());
       }
     }
 
-    if (strncmp(buf, "  Volume(", 9) != 0) continue;
-    if ((p = strchr(buf + 9, ' ')) == NULL) continue;
-    p[strlen(p) - 1] = 0;
-    strncpy(part.label, ++p, sizeof(part.label) - 1);
-
-#define NEXTLINE \
-  if (getline(&buf, &n, fp) == -1) break; \
-  if (n == 0 || !buf) continue;
-
-    NEXTLINE;
-    if (strncmp(buf, "    Type: ", 10) != 0) continue;
-
-    NEXTLINE;
-    if (strcmp(buf, "    ids:\n") != 0) continue;
-
-    NEXTLINE;
-    if (strcmp(buf, "     class: 'device'\n") != 0) continue;
-
-    NEXTLINE;
-    if (strncmp(buf, "     unix-device: '", 19) != 0) continue;
-    buf[strlen(buf) - 1] = 0;
-    strncpy(part.dev, buf + 18, sizeof(part.dev) - 1);
-
-    NEXTLINE;
-    if (strncmp(buf, "     uuid: '", 12) != 0) continue;
-    p = buf + 12;
-    p[strlen(p) - 2] = 0;
-    snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, p);
-
-    NEXTLINE;
-    if (strncmp(buf, "     label: '", 13) == 0) {
-      p = buf + 13;
-      p[strlen(p) - 2] = 0;
-      snprintf(part.mount, sizeof(part.mount) - 1, "/media/%s/%s", user, p);
+    if (getval("HOTPLUG", buf) == "1") {
+      part.hotplug = true;
     }
 
-    part.is_mounted = false;
     part_vec.push_back(part);
-
     count++;
   }
 
@@ -215,20 +244,40 @@ extern "C" void *get_partitions(void *)
   pclose(fp);
 
   if (count == 0) {
-    return nullptr;
+    return;
+  }
+
+  /* remove duplicates (same mountpoint or device) */
+  for (auto it = part_vec.begin(); it != part_vec.end(); ++it) {
+    part_t p = *it;
+    for (auto it2 = it + 1; it2 != part_vec.end(); ++it2) {
+      part_t q = *it2;
+      if (strcmp(p.mount, q.mount) == 0 || strcmp(p.dev, q.dev) == 0) {
+        part_vec.erase(it2);
+        it2--;
+      }
+    }
   }
 
   /* add entries to sidebar */
-
-  Fl::lock();
 
   SIDEBAR_LABELLINE("Devices");
 
   int sbW = sidebar->w();
 
+  sidebar_first_device = sidebar->size() + 1;
+
   for (auto &p : part_vec) {
     sidebar->add(p.label, reinterpret_cast<void *>(&p));
-    sidebar->icon(sidebar->size(), &icon_hdd);
+    sidebar_last_device = sidebar->size();
+
+    if (p.rom) {
+      sidebar->icon(sidebar->size(), &icon_rom);
+    } else if (p.hotplug) {
+      sidebar->icon(sidebar->size(), &icon_plugged);
+    } else {
+      sidebar->icon(sidebar->size(), &icon_hdd);
+    }
     //tooltip => p.dev ??
 
     int m = measure_button_width(p.label, SIDEBAR_EXTRA_W);
@@ -239,11 +288,6 @@ extern "C" void *get_partitions(void *)
   }
 
   resize_sidebar(sbW);
-
-  Fl::unlock();
-  Fl::awake();
-
-  return nullptr;
 }
 
 /* look for gtk3 bookmarks;
@@ -654,23 +698,34 @@ static void up_callback(Fl_Widget *)
   br_change_dir();
 }
 
+static void mount_timeout(void)
+{
+  if (access(current_dir.c_str(), R_OK) == 0 || mount_timeout_limit <= 0) {
+    Fl::remove_timeout(htimeout);
+    br_change_dir();
+    sidebar->deselect();
+  } else {
+    mount_timeout_limit -= 0.01;
+    Fl::add_timeout(0.01, hmount);
+  }
+}
+
 static void sidebar_callback(Fl_Widget *o)
 {
   std::string new_dir;
   part_t *p = NULL;
+  int val = sidebar->value();
 
-  if (sidebar->value() == 0 || sidebar->data(sidebar->value()) == NULL) {
+  if (val == 0 || sidebar->data(val) == NULL) {
     sidebar->deselect();
     return;
   }
 
-  const char *str = reinterpret_cast<const char *>(sidebar->data(sidebar->value()));
-
-  if (sidebar->icon(sidebar->value()) == &icon_hdd && strcmp(str, "/") != 0) {
-    p = reinterpret_cast<part_t *>(sidebar->data(sidebar->value()));
+  if (val >= sidebar_first_device && val <= sidebar_last_device) {
+    p = reinterpret_cast<part_t *>(sidebar->data(val));
     new_dir = p->mount;
   } else {
-    new_dir = str;
+    new_dir = reinterpret_cast<const char *>(sidebar->data(val));;
   }
 
   if (current_dir != new_dir) {
@@ -678,18 +733,21 @@ static void sidebar_callback(Fl_Widget *o)
     current_dir = new_dir;
   }
 
-  if (p && !p->is_mounted) {
+  if (p && !p->mounted) {
     std::string cmd = "gio mount -d ";
     cmd += p->dev;
     cmd += " >/dev/null 2>/dev/null";
 
     if (system(cmd.c_str()) == 0) {
-      p->is_mounted = true;
+      p->mounted = true;
     }
-  }
 
-  br_change_dir();
-  sidebar->deselect();
+    mount_timeout_limit = 2.0;
+    Fl::add_timeout(0.01, hmount);
+  } else {
+    br_change_dir();
+    sidebar->deselect();
+  }
 }
 
 static void hidden_callback(Fl_Widget *o)
@@ -727,7 +785,7 @@ static void selection_timeout(void) {
 }
 
 static void cancel_cb(Fl_Widget *o) {
-  pthread_cancel(th);
+  //pthread_cancel(th);
   o->window()->hide();
 }
 
@@ -761,7 +819,7 @@ static void ok_cb(Fl_Widget *o)
     selected_file = current_dir;
   }
 
-  pthread_cancel(th);
+  //pthread_cancel(th);
   o->window()->hide();
 }
 
@@ -1154,11 +1212,6 @@ void file_chooser_fltk::create_window(int mode)
   win->end();
 }
 
-int file_chooser_fltk::lookup_devices(void) {
-  Fl::lock();
-  return pthread_create(&th, 0, &get_partitions, NULL);
-}
-
 char *file_chooser_fltk::get_selection(void) {
   return selected_file.empty() ? NULL : strdup(selected_file.c_str());
 }
@@ -1177,12 +1230,7 @@ file_chooser_fltk::file_chooser_fltk(int mode, bool check_devices)
   get_gtk3_bookmarks();
 
   if (check_devices) {
-    int errsv = lookup_devices();
-
-    if (errsv != 0) {
-      errno = errsv;
-      perror("pthread_create()");
-    }
+    get_partitions();
   }
 
   win->show();

@@ -53,6 +53,8 @@ ICONS = \
   icon-home.png \
   icon-link-any.png \
   icon-link-dir.png \
+  icon-plugged.png \
+  icon-rom.png \
   list-ordered-1.png \
   list-ordered-2.png \
   $(NULL)
