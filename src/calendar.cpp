@@ -84,11 +84,11 @@ static int get_weekday(int y, int m, int d)
 static int get_iso_week_number(int y, int m, int d)
 {
   struct tm tm;
-  char tmp[16];
-  char wn[8];
+  char tmp[64];
+  char wn[32];
 
   memset(&tm, 0, sizeof(struct tm));
-  sprintf(tmp, "%d %d %d", y, m, d);
+  snprintf(tmp, sizeof(tmp) - 1, "%d %d %d", y, m, d);
   strptime(tmp, "%Y %m %d", &tm);
   strftime(wn, sizeof(wn), "%-V", &tm);
   return atoi(wn);
@@ -221,13 +221,20 @@ static void set_calendar(bool get_current_day, int y, int m, int d)
   n = get_iso_week_number(prev_m_year, prev_m, days_of_prev_m);
   box_weekn[1]->copy_label(itostr(n, buf, sizeof(buf)));
 
-  for (i = 0; i < 4; ++i) {
-    n = get_iso_week_number(y, m, wk[i]);
-    box_weekn[i + 2]->copy_label(itostr(n, buf, sizeof(buf)));
-  }
+  if (m > 1 && m < 12) {
+    n++;
+    for (i = 2; i < 7; ++i, ++n) {
+      box_weekn[i]->copy_label(itostr(n, buf, sizeof(buf)));
+    }
+  } else {
+    for (i = 0; i < 4; ++i) {
+      n = get_iso_week_number(y, m, wk[i]);
+      box_weekn[i + 2]->copy_label(itostr(n, buf, sizeof(buf)));
+    }
 
-  n = get_iso_week_number(next_m_year, next_m, first_days_of_next_m);
-  box_weekn[6]->copy_label(itostr(n, buf, sizeof(buf)));
+    n = get_iso_week_number(next_m_year, next_m, first_days_of_next_m);
+    box_weekn[6]->copy_label(itostr(n, buf, sizeof(buf)));
+  }
 
   win->redraw();
 }

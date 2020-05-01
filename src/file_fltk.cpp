@@ -42,6 +42,15 @@
 #include "fltk-dialog.hpp"
 #include "icons.h"
 
+class My_Hold_Browser : public Fl_Hold_Browser
+{
+public:
+  My_Hold_Browser(int X, int Y, int W, int H, const char *L=NULL)
+   : Fl_Hold_Browser(X, Y, W, H, L)
+  { }
+
+  void add_labelline(const char *l);
+};
 
 class file_chooser_fltk
 {
@@ -61,11 +70,6 @@ public:
 #define SIDEBAR_EXTRA_W   40
 #define STR2VP(x)         reinterpret_cast<void *>( const_cast<char *>(x) )
 
-#define SIDEBAR_LABELLINE(x) \
-  sidebar->add("@S8@. "); \
-  sidebar->add("@s@b@.   " x); \
-  sidebar->add("@S3@. ");
-
 typedef struct {
   char label[256];
   char dev[256];
@@ -77,7 +81,8 @@ typedef struct {
 
 static Fl_Double_Window *win;
 static Fl_Group *g;
-static Fl_Hold_Browser *br, *sidebar;
+static Fl_Hold_Browser *br;
+static My_Hold_Browser *sidebar;
 static Fl_Box *addrline, *infobox = NULL;
 static Fl_Button *bt_popd, *bt_up;
 static Fl_Return_Button *bt_ok;
@@ -120,6 +125,20 @@ PNG(icon_link_dir)
 PNG(list_ordered_1)
 PNG(list_ordered_2)
 
+
+void My_Hold_Browser::add_labelline(const char *l)
+{
+  if (!l || strlen(l) == 0) {
+    return;
+  }
+
+  std::string s = "@s@b@.   ";
+  s += l;
+
+  add("@S8@. ");
+  add(s.c_str());
+  add("@S3@. ");
+}
 
 /* sort by basename */
 static bool ignorecasesort(std::string s1, std::string s2) {
@@ -261,7 +280,7 @@ static void get_partitions(void)
 
   /* add entries to sidebar */
 
-  SIDEBAR_LABELLINE("Devices");
+  sidebar->add_labelline("Devices");
 
   int sbW = sidebar->w();
 
@@ -385,7 +404,7 @@ static void get_gtk3_bookmarks(void)
   vec.clear();
   //std::sort(bookmarks.begin(), bookmarks.end(), ignorecasesort);
 
-  SIDEBAR_LABELLINE("Bookmarks");
+  sidebar->add_labelline("Bookmarks");
 
   int sbW = sidebar->w();
 
@@ -1153,11 +1172,11 @@ void file_chooser_fltk::create_window(int mode)
         {
           int sbW = 100;
 
-          sidebar = new Fl_Hold_Browser(10, g_top->h(), sbW, h - g_top->h() - 76);
+          sidebar = new My_Hold_Browser(10, g_top->h(), sbW, h - g_top->h() - 76);
           sidebar->color(17);  /* yellow */
           sidebar->callback(sidebar_callback);
 
-          SIDEBAR_LABELLINE("Places");
+          sidebar->add_labelline("Places");
           sidebar->add("/", STR2VP("/"));
           sidebar->icon(sidebar->size(), &icon_hdd);
           sidebar->add("Home", STR2VP(home_dir.c_str()));

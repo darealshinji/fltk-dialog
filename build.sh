@@ -3,7 +3,7 @@ set -e
 set -x
 
 JOBS=4
-DEF_CFLAGS="-Wall -O3 -ffunction-sections -fdata-sections"
+DEF_CFLAGS="-Wall -O3 -ffunction-sections -fdata-sections -I/usr/include/harfbuzz"
 DEF_CXXFLAGS="$DEF_CFLAGS -std=c++11"
 DEF_LDFLAGS="-Wl,-O1 -Wl,--gc-sections -Wl,-z,defs -Wl,--as-needed"
 
