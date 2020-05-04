@@ -32,6 +32,7 @@
 #include <libgen.h>
 #include <limits.h>
 #include <magic.h>
+#include <mntent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -140,6 +141,18 @@ void My_Hold_Browser::add_labelline(const char *l)
   add("@S3@. ");
 }
 
+/* check if path is a directory and if we have read access */
+static bool access_dir(const char *path)
+{
+  struct stat st;
+
+  if (path && stat(path, &st) == 0 && S_ISDIR(st.st_mode) && access(path, R_OK) == 0) {
+    return true;
+  }
+
+  return false;
+}
+
 /* sort by basename */
 static bool ignorecasesort(std::string s1, std::string s2) {
   return (strcoll(s1.c_str() + s1.rfind('/') + 1, s2.c_str() + s2.rfind('/') + 1) < 0);
@@ -184,6 +197,8 @@ static std::string getval(std::string val, const char *line)
 static void get_partitions(void)
 {
   FILE *fp;
+  struct mntent *mnt;
+  std::vector<std::string> vec;
   char *user, *buf = NULL;
   size_t n = 0;
   unsigned int count = 0;
@@ -191,6 +206,23 @@ static void get_partitions(void)
   if ((user = getenv("USER")) == NULL) {
     return;
   }
+
+  /* check fstab file for mountpoints to ignore */
+
+  if ((fp = fopen("/etc/fstab", "r")) != NULL) {
+    mnt = getmntent(fp);
+
+    while (mnt != NULL) {
+      if (mnt->mnt_dir && mnt->mnt_dir[0] == '/') {
+        vec.push_back(std::string(mnt->mnt_dir));
+      }
+      mnt = getmntent(fp);
+    }
+    fclose(fp);
+  }
+  vec.push_back("/");
+
+  /* read output from lsblk */
 
   if ((fp = popen("lsblk -p -P -o mountpoint,type,name,label,uuid,size,hotplug 2>/dev/null", "r")) == NULL) {
     return;
@@ -200,14 +232,15 @@ static void get_partitions(void)
     std::string s;
 
     part_t part = {0};
-    part.mounted = false;
-    part.rom = false;
-    part.hotplug = false;
+    part.mounted = part.rom = part.hotplug = false;
 
     if (n == 0 || !buf) continue;
 
-    if ((s = getval("MOUNTPOINT", buf)) == "/") continue;
+    s = getval("MOUNTPOINT", buf);
     if (s != "") {
+      /* check if this mountpoint should be ignored */
+      if (std::find(vec.begin(), vec.end(), s) != vec.end()) continue;
+
       strncpy(part.mount, s.c_str(), sizeof(part.mount) - 1);
       part.mounted = true;
     }
@@ -255,6 +288,9 @@ static void get_partitions(void)
     part_vec.push_back(part);
     count++;
   }
+
+  vec.erase(vec.begin(), vec.end());
+  vec.clear();
 
   if (buf) {
     free(buf);
@@ -359,7 +395,7 @@ static void get_gtk3_bookmarks(void)
     char *p = strdup(line.c_str() + 7);
     fl_decode_uri(p);
 
-    if (!fl_filename_isdir(p)) {
+    if (!access_dir(p)) {
       free(p);
       continue;
     }
@@ -401,6 +437,7 @@ static void get_gtk3_bookmarks(void)
     return;
   }
 
+  vec.erase(vec.begin(), vec.end());
   vec.clear();
   //std::sort(bookmarks.begin(), bookmarks.end(), ignorecasesort);
 
@@ -530,11 +567,11 @@ static void xdg_user_dir_lookup(void)
           dir.pop_back();
         }
 
-        if (!fl_filename_isdir(dir.c_str())) {
+        if (!access_dir(dir.c_str())) {
           if (strcmp("XDG_DESKTOP_DIR", type) == 0) {
             /* fallback to "$HOME/Desktop" */
             dir = home_dir + "Desktop";
-            if (fl_filename_isdir(dir.c_str())) {
+            if (access_dir(dir.c_str())) {
               desktop = dir;
             }
           }
@@ -550,6 +587,7 @@ static void xdg_user_dir_lookup(void)
     }
   }
 
+  vec.erase(vec.begin(), vec.end());
   vec.clear();
 
   if (!desktop.empty()) {
@@ -719,7 +757,7 @@ static void up_callback(Fl_Widget *)
 
 static void mount_timeout(void)
 {
-  if (access(current_dir.c_str(), R_OK) == 0 || mount_timeout_limit <= 0) {
+  if (access_dir(current_dir.c_str()) || mount_timeout_limit <= 0) {
     Fl::remove_timeout(htimeout);
     br_change_dir();
     sidebar->deselect();
@@ -822,7 +860,7 @@ static void ok_cb(Fl_Widget *o)
     selected_file += p ? p + 2 : br->text(br->value());
 
     if (list_files && fl_filename_isdir(selected_file.c_str())) {
-      /* don't return path but change directory */
+      /* on access: change directory; otherwise return selected path */
       if (access(selected_file.c_str(), R_OK) == 0) {
         prev_dir = current_dir;
         current_dir = selected_file;
@@ -885,11 +923,12 @@ static void br_callback(Fl_Widget *o)
 
       if (icon == &icon_dir || icon == &icon_link_dir) {
         /* double-clicked on directory */
-        if (access(path.c_str(), R_OK) == 0) {
+        if (access_dir(path.c_str())) {
           prev_dir = current_dir;
           current_dir = path.c_str();
           br_change_dir();
         }
+        /* no access to directory -> do nothing (TODO: change icon?) */
       } else {
         /* double-clicked on file */
         ok_cb(o);
@@ -920,9 +959,9 @@ static void br_change_dir(void)
   const char *white = "@.";  // "@B255@."
   const char *yellow = "@B17@.";
 
-  /* current_dir was deleted in the meanwhile;
-   * move up until we are in an existing directory */
-  if (!fl_filename_isdir(current_dir.c_str())) {
+  /* current_dir was deleted in the meanwhile or we have no access rights;
+   * move up until we are in an accessible directory */
+  if (!access_dir(current_dir.c_str())) {
     for (auto i = std::count(current_dir.begin(), current_dir.end(), '/'); i > 0; --i) {
       size_t pos = current_dir.rfind('/');
 
@@ -932,13 +971,13 @@ static void br_change_dir(void)
       }
       current_dir.erase(pos);
 
-      if (fl_filename_isdir(current_dir.c_str())) {
+      if (access_dir(current_dir.c_str())) {
         break;
       }
     }
   }
 
-  if (prev_dir.empty() || prev_dir == "" || !fl_filename_isdir(prev_dir.c_str())) {
+  if (prev_dir.empty() || !access_dir(prev_dir.c_str())) {
     prev_dir.clear();
   }
 
