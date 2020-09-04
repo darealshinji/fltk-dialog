@@ -81,7 +81,6 @@ _SRCS = \
   notify.cpp \
   progress.cpp \
   radiolist.cpp \
-  radiolist_browser.cpp \
   textinfo.cpp \
   $(NULL)
 

@@ -29,6 +29,42 @@
 
 #include "fltk-dialog.hpp"
 
+class checklist_browser : public Fl_Check_Browser
+{
+public:
+  checklist_browser(int X, int Y, int W, int H) : Fl_Check_Browser(X, Y, W, H) { }
+
+  /* The destructor deletes all list items and destroys the browser. */
+  ~checklist_browser() { clear(); }
+
+protected:
+  void item_draw(void *v, int X, int Y, int, int) const
+  {
+    /* https://unicode-table.com/en/blocks/miscellaneous-symbols/ */
+    const char *u = "\u2610";  /* Ballot Box */
+    const char *c = "\u2611";  /* Ballot Box with Check */
+    //const char *c = "\u2612";  /* Ballot Box with X */
+
+    cb_item *i = reinterpret_cast<cb_item *>(v);
+    int tsize = textsize();
+    Fl_Color col = active_r() ? textcolor() : fl_inactive(textcolor());
+
+    X += 2;
+    Y += tsize - 1;
+
+    fl_color(active_r() ? FL_FOREGROUND_COLOR : fl_inactive(FL_FOREGROUND_COLOR));
+    fl_font(FL_HELVETICA, tsize);
+    fl_draw(i->checked ? c : u, X, Y);
+
+    fl_font(textfont(), tsize);
+    if (i->selected) {
+      col = fl_contrast(col, selection_color());
+    }
+    fl_color(col);
+    fl_draw(i->text, X + tsize + 4, Y);
+  }
+};
+
 static Fl_Double_Window *win;
 static int ret = 1;
 
@@ -70,7 +106,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
     {
       g_inside = new Fl_Group(0, 0, 420, 310);
       {
-        browser = new Fl_Check_Browser(10, 10, 400, 299);
+        browser = new checklist_browser(10, 10, 400, 299);
         browser->box(FL_THIN_DOWN_BOX);
         browser->color(fl_lighter(fl_lighter(FL_BACKGROUND_COLOR)));
         browser->clear_visible_focus();
@@ -120,7 +156,7 @@ int dialog_checklist(std::string checklist_options, bool return_value, bool chec
         }
       } else {
         list.append(quote);
-        list += (browser->checked(i)) ? "TRUE" : "FALSE";
+        list += browser->checked(i) ? "TRUE" : "FALSE";
         list.append(quote);
         list.push_back(separator);
       }

@@ -1,7 +1,7 @@
 --- a/FL/Fl_Help_Dialog.H
 +++ b/FL/Fl_Help_Dialog.H
-@@ -43,8 +43,9 @@ class FL_EXPORT Fl_Help_Dialog {
-   int find_pos_; 
+@@ -41,8 +41,9 @@ class FL_EXPORT Fl_Help_Dialog {
+   int find_pos_;
  public:
    Fl_Help_Dialog();
 -private:
@@ -11,7 +11,7 @@
    Fl_Button *back_;
    inline void cb_back__i(Fl_Button*, void*);
    static void cb_back_(Fl_Button*, void*);
-@@ -63,6 +64,8 @@ private:
+@@ -61,6 +62,8 @@ private:
    Fl_Help_View *view_;
    inline void cb_view__i(Fl_Help_View*, void*);
    static void cb_view_(Fl_Help_View*, void*);
@@ -22,10 +22,10 @@
    int h();
 --- a/src/Fl_Choice.cxx
 +++ b/src/Fl_Choice.cxx
-@@ -187,14 +187,14 @@ int Fl_Choice::handle(int e) {
+@@ -185,14 +185,14 @@ int Fl_Choice::handle(int e) {
    J1:
      if (Fl::scheme()
- 	|| fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {
+         || fl_contrast(textcolor(), FL_BACKGROUND2_COLOR) != textcolor()) {
 -      v = menu()->pulldown(x(), y(), w(), h(), mvalue(), this);
 +      v = menu()->pulldown(x(), y(), w(), h(), 0, this);
        if (wp.deleted()) return 1;
@@ -41,7 +41,7 @@
      }
 --- a/src/Fl_Color_Chooser.cxx
 +++ b/src/Fl_Color_Chooser.cxx
-@@ -571,7 +571,7 @@ Fl_Color_Chooser::Fl_Color_Chooser(int X, int Y, int W, int H, const char* L)
+@@ -569,7 +569,7 @@ Fl_Color_Chooser::Fl_Color_Chooser(int X, int Y, int W, int H, const char* L)
    bvalue.callback(rgb_cb);
    choice.callback(mode_cb);
    choice.box(FL_THIN_UP_BOX);
@@ -52,7 +52,7 @@
  ////////////////////////////////////////////////////////////////
 --- a/src/Fl_Help_Dialog.cxx
 +++ b/src/Fl_Help_Dialog.cxx
-@@ -144,6 +144,9 @@ void Fl_Help_Dialog::cb_view__i(Fl_Help_View*, void*) {
+@@ -142,6 +142,9 @@ void Fl_Help_Dialog::cb_view__i(Fl_Help_View*, void*) {
  void Fl_Help_Dialog::cb_view_(Fl_Help_View* o, void* v) {
    ((Fl_Help_Dialog*)(o->parent()->user_data()))->cb_view__i(o,v);
  }
@@ -62,7 +62,7 @@
  
  Fl_Help_Dialog::Fl_Help_Dialog() {
    { window_ = new Fl_Double_Window(530, 385, "Help Dialog");
-@@ -173,10 +176,10 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
+@@ -171,10 +174,10 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
          larger_->labelsize(16);
          larger_->callback((Fl_Callback*)cb_larger_);
        } // Fl_Button* larger_
@@ -75,7 +75,7 @@
            find_->tooltip("find text in document");
            find_->box(FL_FLAT_BOX);
            find_->labelsize(13);
-@@ -186,6 +189,12 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
+@@ -184,6 +187,12 @@ Fl_Help_Dialog::Fl_Help_Dialog() {
          } // Fl_Input* find_
          o->end();
        } // Fl_Group* o
@@ -88,4 +88,3 @@
        { Fl_Box* o = new Fl_Box(150, 10, 190, 25);
          Fl_Group::current()->resizable(o);
        } // Fl_Box* o
-

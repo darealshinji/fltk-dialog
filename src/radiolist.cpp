@@ -27,7 +27,48 @@
 #include <vector>
 
 #include "fltk-dialog.hpp"
-#include "radiolist_browser.hpp"
+
+class radiolist_browser : public Fl_Check_Browser
+{
+public:
+  radiolist_browser(int X, int Y, int W, int H) : Fl_Check_Browser(X, Y, W, H) { }
+
+  /* The destructor deletes all list items and destroys the browser. */
+  ~radiolist_browser() { clear(); }
+
+  void item_select(void *v, int) {
+    check_none();
+    reinterpret_cast<cb_item *>(v)->checked = 1;
+    redraw();
+  }
+
+protected:
+  void item_draw(void *v, int X, int Y, int, int) const
+  {
+    /* https://unicode-table.com/en/blocks/geometric-shapes/ */
+    const char *u = "\u25CB";  /* White Circle */
+    const char *c = "\u25C9";  /* Fisheye */
+    //const char *c = "\u25CF";  /* Black Circle */
+
+    cb_item *i = reinterpret_cast<cb_item *>(v);
+    int tsize = textsize();
+    Fl_Color col = active_r() ? textcolor() : fl_inactive(textcolor());
+
+    X += 2;
+    Y += tsize - 1;
+
+    fl_color(active_r() ? FL_FOREGROUND_COLOR : fl_inactive(FL_FOREGROUND_COLOR));
+    fl_font(FL_HELVETICA, tsize);
+    fl_draw(i->checked ? c : u, X, Y - 1);
+
+    fl_font(textfont(), tsize);
+    if (i->selected) {
+      col = fl_contrast(col, selection_color());
+    }
+    fl_color(col);
+    fl_draw(i->text, X + tsize + 4, Y);
+  }
+};
 
 static Fl_Double_Window *win;
 static Fl_Return_Button *but_ok;
